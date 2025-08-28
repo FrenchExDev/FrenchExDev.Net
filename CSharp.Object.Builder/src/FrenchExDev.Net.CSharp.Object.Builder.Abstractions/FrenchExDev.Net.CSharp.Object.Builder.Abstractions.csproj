@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Version>0.0.1</Version>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Description>Tiny abstractions around object building in .NET</Description>
+		<Copyright>FrenchExDev</Copyright>
+		<PackageProjectUrl></PackageProjectUrl>
+		<RepositoryUrl>https://www.github.com/FrenchExDev.Net/FrenchExDev.Net</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>object build pattern</PackageTags>
+		<IncludeSymbols>True</IncludeSymbols>
+		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+	</PropertyGroup>
+
+</Project>
