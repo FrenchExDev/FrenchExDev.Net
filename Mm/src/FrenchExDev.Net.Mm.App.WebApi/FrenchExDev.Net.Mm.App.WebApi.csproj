@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -17,14 +18,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Update="README.md">
-			<PackagePath>\</PackagePath>
-			<Pack>True</Pack>
-		</None>
-		<None Update="LICENSE">
-			<PackagePath>\</PackagePath>
-			<Pack>True</Pack>
-		</None>
+		<Content Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="README.md" />
+		<Content Include="..\..\LICENSE" Link="LICENSE" Pack="true" PackagePath="LICENSE" />
 	</ItemGroup>
 
 </Project>

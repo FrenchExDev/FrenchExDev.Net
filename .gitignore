@@ -7,3 +7,6 @@ packages/
 __Local_Nuget_Registry__/
 *.box
 *.iso
+*.csproj.user
+*..pubxml.user
+*.user

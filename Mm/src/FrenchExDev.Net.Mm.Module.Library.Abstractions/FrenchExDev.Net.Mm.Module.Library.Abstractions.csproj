@@ -14,6 +14,12 @@
 		<IncludeSymbols>True</IncludeSymbols>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="README.md" />
+		<Content Include="..\..\LICENSE" Link="LICENSE" Pack="true" PackagePath="LICENSE" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
 	</ItemGroup>
@@ -21,12 +27,10 @@
 	<ItemGroup Label="Deps.FrenchExDev.Release" Condition="$(Configuration) == 'Release'">
 		<PackageReference Include="FrenchExDev.Net.Mm.Abstractions" />
 	</ItemGroup>
+	
 	<ItemGroup Label="Deps.FrenchExDev.Debug" Condition="$(Configuration) == 'Debug'">
 		<ProjectReference Include="..\FrenchExDev.Net.Mm.Abstractions\FrenchExDev.Net.Mm.Abstractions.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Content Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="README.md" />
-		<Content Include="..\..\LICENSE" Link="LICENSE" Pack="true" PackagePath="LICENSE" />
-	</ItemGroup>
+
 </Project>

@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Obje
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Validator.Abstractions", "src\FrenchExDev.Net.CSharp.Object.Validator.Abstractions\FrenchExDev.Net.CSharp.Object.Validator.Abstractions.csproj", "{CB0AF25C-F075-4CBF-94DB-51A9E5BA2BFA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "Éléments de solution", "{F7B3D445-8A77-65FF-64DD-D0037FF5B8EB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_SolutionItems", "_SolutionItems", "{79A1E7AE-CC00-33D7-92ED-603B43B6E6A3}"
 	ProjectSection(SolutionItems) = preProject
 		.projects.yaml = .projects.yaml
 		LICENSE = LICENSE
