@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<Version>0.0.1</Version>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Description>Tiny abstractions around object building in .NET</Description>
+		<Description>Tiny Object building interface in .NET</Description>
 		<Copyright>FrenchExDev</Copyright>
 		<PackageProjectUrl></PackageProjectUrl>
 		<RepositoryUrl>https://www.github.com/FrenchExDev.Net/FrenchExDev.Net</RepositoryUrl>
@@ -19,6 +19,14 @@
 	<ItemGroup>
 		<Content Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="README.md" />
 		<Content Include="..\..\LICENSE" Link="LICENSE" Pack="true" PackagePath="LICENSE" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Shouldly" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\FrenchExDev.Net.CSharp.Object.Builder\FrenchExDev.Net.CSharp.Object.Builder.csproj" />
 	</ItemGroup>
 
 </Project>

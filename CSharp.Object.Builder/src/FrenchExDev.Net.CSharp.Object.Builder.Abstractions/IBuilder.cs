@@ -2,5 +2,5 @@
 
 public interface IBuilder<TClass>
 {
-    IBuildResult<TClass> Build();
+    IBuildResult<TClass> Build(Dictionary<object, object>? visited = null);
 }

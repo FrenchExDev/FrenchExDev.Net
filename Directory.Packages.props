@@ -3,6 +3,12 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageVersion Include="FrenchExDev.Net.CSharp.Object.Builder" Version="0.0.1" />
+		<PackageVersion Include="FrenchExDev.Net.CSharp.Object.Builder.Abstractions" Version="0.0.1" />
+		<PackageVersion Include="FrenchExDev.Net.CSharp.Object.Validator" Version="0.0.1" />
+		<PackageVersion Include="FrenchExDev.Net.CSharp.Object.Validator.Abstractions" Version="0.0.1" />
+	</ItemGroup>
+	<ItemGroup>
 		<PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.8" />
 		<PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.8" />
 		<PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.8" />
