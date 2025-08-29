@@ -1,6 +1,9 @@
-.idea
-.vs
+.idea/
+.vs/
+.vscode/
 bin/
 obj/
 packages/
 __Local_Nuget_Registry__/
+*.box
+*.iso
