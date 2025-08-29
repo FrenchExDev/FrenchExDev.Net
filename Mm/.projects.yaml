@@ -1,0 +1,12 @@
+src:
+    - DirectoryName: FrenchExDev.Net.Mm.Abstractions
+    - DirectoryName: FrenchExDev.Net.Mm.Module.Library.Abstractions
+    - DirectoryName: FrenchExDev.Net.Mm.Module.Library
+    - DirectoryName: FrenchExDev.Net.Mm.Module.Library.Testing
+    - DirectoryName: FrenchExDev.Net.Mm.Module.App.Cli.Abstractions
+    - DirectoryName: FrenchExDev.Net.Mm.Module.App.WebApi.Abstractions
+    - DirectoryName: FrenchExDev.Net.Mm.Module.App.WebWorker.Abstractions
+    - DirectoryName: FrenchExDev.Net.Mm.Module.App.Cli
+    - DirectoryName: FrenchExDev.Net.Mm.Module.App.WebApi
+    - DirectoryName: FrenchExDev.Net.Mm.Module.App.WebWorker
+  
