@@ -21,9 +21,9 @@ public class WorkflowObjectBuilderTests
             .Step(new LambdaStepObjectBuilder<Person>(true, (step, intermediates, cancellationToken) =>
             {
                 var person = new Person(
-                    name: (string)intermediates["Name"],
-                    age: (int)intermediates["Age"],
-                    addresses: (IEnumerable<Address>)intermediates["Addresses"]
+                    name: intermediates.Get<string>("Name"),
+                    age: intermediates.Get<int>("Age"),
+                    addresses: intermediates.Get<IEnumerable<Address>>("Addresses")
                 );
 
                 step.Set(person);
