@@ -2,6 +2,6 @@
 
 public interface IAbstractStep<TClass>
 {
-    bool IsFinalStep { get; }
-    Task<TClass> Result { get; }
+    bool HasResult();
+    TClass Result();
 }

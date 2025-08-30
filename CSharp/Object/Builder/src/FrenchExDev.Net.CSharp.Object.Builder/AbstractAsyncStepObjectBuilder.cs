@@ -11,10 +11,7 @@ namespace FrenchExDev.Net.CSharp.Object.Builder;
 /// <typeparam name="TClass">The type of the object being built by the step builder.</typeparam>
 public abstract class AbstractAsyncStepObjectBuilder<TClass> : IAsyncStepObjectBuilder<TClass>
 {
-    /// <summary>
-    /// Gets or sets a value indicating whether this step is the final step in the process.
-    /// </summary>
-    public virtual bool IsFinalStep { get; set; }
+    protected TClass? _result;
 
     /// <summary>
     /// Gets a task that represents the asynchronous operation and returns the result of type <typeparamref
@@ -30,9 +27,29 @@ public abstract class AbstractAsyncStepObjectBuilder<TClass> : IAsyncStepObjectB
     /// <remarks>This method processes the provided <paramref name="intermediate"/> data to produce the final
     /// output.  The optional <paramref name="visited"/> dictionary can be used to avoid processing the same objects
     /// multiple times.</remarks>
+    /// <param name="exceptions">A list to collect exceptions that occur during the build process.</param>
     /// <param name="intermediate">A dictionary containing the intermediate data used to construct the final output. Cannot be null.</param>
     /// <param name="visited">An optional dictionary to track visited nodes or objects during the build process. Can be null.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. The operation will terminate early if the token is canceled.</param>
     /// <returns>A task that represents the asynchronous build operation.</returns>
-    public abstract Task BuildAsync(IntermediateObjectsList intermediate, VisitedObjectsList visited, CancellationToken cancellationToken = default);
+    public abstract Task BuildAsync(
+        ExceptionBuildList exceptions,
+        IntermediateObjectDictionary intermediate,
+        VisitedObjectsList visited,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Determines whether the operation has produced a result.
+    /// </summary>
+    /// <returns><see langword="true"/> if the operation has a result; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public bool HasResult()
+    {
+        return _result is not null && _result is TClass;
+    }
+
+    TClass IAbstractStep<TClass>.Result()
+    {
+        throw new NotImplementedException();
+    }
 }

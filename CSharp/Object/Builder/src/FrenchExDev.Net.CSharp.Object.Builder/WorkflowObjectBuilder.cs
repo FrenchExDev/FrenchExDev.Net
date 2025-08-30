@@ -10,7 +10,7 @@ namespace FrenchExDev.Net.CSharp.Object.Builder;
 /// synchronous or asynchronous, and the  builder ensures that all steps are executed in the order they are
 /// added.</remarks>
 /// <typeparam name="TClass">The type of object to be built.</typeparam>
-public class WorkflowObjectBuilder<TClass> : IAsyncObjectBuilder<TClass>
+public class WorkflowObjectBuilder<TClass, TBuilder> : IAsyncObjectBuilder<TClass> where TBuilder : IAsyncObjectBuilder<TClass>
 {
     /// <summary>
     /// List of steps to be executed in the workflow.
@@ -32,7 +32,7 @@ public class WorkflowObjectBuilder<TClass> : IAsyncObjectBuilder<TClass>
     /// </summary>
     /// <param name="step"></param>
     /// <returns></returns>
-    public WorkflowObjectBuilder<TClass> Step(IAbstractStep<TClass> step)
+    public WorkflowObjectBuilder<TClass, TBuilder> Step(IAbstractStep<TClass> step)
     {
         _steps.Add(step);
         return this;
@@ -47,31 +47,51 @@ public class WorkflowObjectBuilder<TClass> : IAsyncObjectBuilder<TClass>
     /// <exception cref="InvalidOperationException"></exception>
     public async Task<IObjectBuildResult<TClass>> BuildAsync(VisitedObjectsList? visited = null, CancellationToken cancellationToken = default)
     {
-        var intermediates = new IntermediateObjectsList();
         visited ??= new VisitedObjectsList();
 
-        foreach (var step in _steps)
+        if (visited.TryGetValue(this, out var existing))
         {
-            switch (step)
-            {
-                case IStepObjectBuilder<TClass> syncStep:
-                    syncStep.Build(intermediates, visited);
-                    break;
-                case IAsyncStepObjectBuilder<TClass> asyncStep:
-                    await asyncStep.BuildAsync(intermediates, visited, cancellationToken);
-                    break;
-                default: throw new InvalidOperationException($"Unsupported step type: {step.GetType().FullName}");
-            }
-
-            if (step.IsFinalStep)
-            {
-                _instance = await step.Result;
-                break;
-            }
+            return new SuccessObjectBuildResult<TClass>((TClass)existing);
         }
 
-        ArgumentNullException.ThrowIfNull(_instance);
+        var intermediates = new IntermediateObjectDictionary();
+        var exceptions = new ExceptionBuildList();
 
-        return new SuccessObjectBuildResult<TClass>(_instance);
+        try
+        {
+            foreach (var step in _steps)
+            {
+                switch (step)
+                {
+                    case IStepObjectBuilder<TClass> syncStep:
+                        syncStep.Build(exceptions, intermediates, visited);
+                        break;
+                    case IAsyncStepObjectBuilder<TClass> asyncStep:
+                        await asyncStep.BuildAsync(exceptions, intermediates, visited, cancellationToken);
+                        break;
+                    default: throw new InvalidOperationException($"Unsupported step type: {step.GetType().FullName}");
+                }
+
+                if (exceptions.Count > 0)
+                {
+                    return new FailureAsyncObjectBuildResult<TClass, TBuilder>((TBuilder)(IAsyncObjectBuilder<TClass>)this, exceptions, visited);
+                }
+
+                if (step.HasResult())
+                {
+                    _instance = step.Result();
+                    break;
+                }
+            }
+
+            ArgumentNullException.ThrowIfNull(_instance);
+
+            return new SuccessObjectBuildResult<TClass>(_instance);
+        }
+        catch (Exception ex)
+        {
+            exceptions.Add(new BasicAsyncObjectBuildException<TClass, IAsyncObjectBuilder<TClass>>(ex.Message, this, visited));
+            return new FailureAsyncObjectBuildResult<TClass, TBuilder>((TBuilder)(IAsyncObjectBuilder<TClass>)this, exceptions, visited);
+        }
     }
 }

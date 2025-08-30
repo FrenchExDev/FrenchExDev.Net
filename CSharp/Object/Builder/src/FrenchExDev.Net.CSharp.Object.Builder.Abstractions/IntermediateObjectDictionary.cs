@@ -6,7 +6,7 @@
 /// <remarks>This class extends <see cref="Dictionary{object, object}"/> and provides additional methods for 
 /// setting and retrieving values with type safety. The <see cref="Get{T}(object)"/> method ensures that  the retrieved
 /// value matches the expected type, throwing an exception if the type does not match.</remarks>
-public class IntermediateObjectsList : Dictionary<object, object>
+public class IntermediateObjectDictionary : Dictionary<object, object>
 {
     /// <summary>
     /// Retrieves the value associated with the specified key and casts it to the specified type.

@@ -13,7 +13,7 @@ public interface IStepObjectBuilder<TClass> : IAbstractStep<TClass>
     /// <param name="intermediate">A dictionary representing the intermediate state of the object graph. This dictionary must not be null.</param>
     /// <param name="visited">An optional dictionary used to track already visited objects during the build process to prevent circular
     /// references. </param>
-    void Build(IntermediateObjectsList intermediate, VisitedObjectsList visited);
+    void Build(ExceptionBuildList exceptions, IntermediateObjectDictionary intermediate, VisitedObjectsList visited);
 
     /// <summary>
     /// Sets the result of the build operation.

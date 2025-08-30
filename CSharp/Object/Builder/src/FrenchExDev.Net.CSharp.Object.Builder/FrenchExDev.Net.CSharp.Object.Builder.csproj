@@ -24,9 +24,9 @@
 	<ItemGroup Condition="$(Configuration) == 'Release'">
 	  <PackageReference Include="FrenchExDev.Net.CSharp.Object.Builder.Abstractions" />
 	</ItemGroup>
-
-	<ItemGroup Condition="$(Configuration) == 'Debug'">
-		<ProjectReference Include="..\FrenchExDev.Net.CSharp.Object.Builder.Abstractions\FrenchExDev.Net.CSharp.Object.Builder.Abstractions.csproj" />
+	
+	<ItemGroup>
+	  <ProjectReference Include="..\FrenchExDev.Net.CSharp.Object.Builder.Abstractions\FrenchExDev.Net.CSharp.Object.Builder.Abstractions.csproj" />
 	</ItemGroup>
 
 </Project>

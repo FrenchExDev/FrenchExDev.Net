@@ -15,7 +15,7 @@ public class FailureAsyncObjectBuildResult<TClass, TBuilder> : IObjectBuildResul
     /// <summary>
     /// Exceptions that occurred during the build operation, or <see langword="null"/> if no exceptions
     /// </summary>
-    public IEnumerable<Exception> Exceptions { get; init; }
+    public ExceptionBuildList Exceptions { get; init; }
 
     /// <summary>
     /// Gets the dictionary of visited objects during the build process.
@@ -28,7 +28,7 @@ public class FailureAsyncObjectBuildResult<TClass, TBuilder> : IObjectBuildResul
     /// </summary>t
     /// <param name="builder"></param>
     /// <param name="exceptions"></param>
-    public FailureAsyncObjectBuildResult(TBuilder builder, IEnumerable<Exception> exceptions, VisitedObjectsList visited)
+    public FailureAsyncObjectBuildResult(TBuilder builder, ExceptionBuildList exceptions, VisitedObjectsList visited)
     {
         Builder = builder;
         Exceptions = exceptions;

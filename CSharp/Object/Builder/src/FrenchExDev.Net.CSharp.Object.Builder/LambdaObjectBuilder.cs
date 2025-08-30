@@ -30,7 +30,7 @@ public class LambdaObjectBuilder<TClass> : AbstractObjectBuilder<TClass, LambdaO
     /// the objects being visited, and values represent their corresponding processed states.</param>
     /// <returns>An object that implements <see cref="IObjectBuildResult{TClass}"/>, representing the result of the build
     /// operation.</returns>
-    protected override IObjectBuildResult<TClass> BuildInternal(Dictionary<object, object> visited)
+    protected override IObjectBuildResult<TClass> BuildInternal(VisitedObjectsList visited)
     {
         return _buildFunc(visited);
     }

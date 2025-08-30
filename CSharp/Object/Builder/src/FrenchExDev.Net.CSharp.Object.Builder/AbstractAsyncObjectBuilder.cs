@@ -41,7 +41,7 @@ public abstract class AbstractAsyncObjectBuilder<TClass> : IAsyncObjectBuilder<T
     /// <param name="exceptions">A collection of exceptions associated with the failure.</param>
     /// <param name="visited">A dictionary of objects that have already been processed, used to prevent cyclic references.</param>
     /// <returns>An <see cref="FailureAsyncObjectBuildResult{TClass, TBuilder}"/> representing the failure state.</returns>
-    protected FailureAsyncObjectBuildResult<TClass, TBuilder> AsyncFailureResult<TBuilder>(IEnumerable<Exception> exceptions, VisitedObjectsList visited) where TBuilder : IAsyncObjectBuilder<TClass>
+    protected FailureAsyncObjectBuildResult<TClass, TBuilder> AsyncFailureResult<TBuilder>(ExceptionBuildList exceptions, VisitedObjectsList visited) where TBuilder : IAsyncObjectBuilder<TClass>
     {
         return new FailureAsyncObjectBuildResult<TClass, TBuilder>((TBuilder)(this as IAsyncObjectBuilder<TClass>), exceptions, visited);
     }
