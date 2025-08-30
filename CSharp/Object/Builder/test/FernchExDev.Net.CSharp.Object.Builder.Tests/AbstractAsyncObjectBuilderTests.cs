@@ -5,6 +5,101 @@ using Shouldly;
 
 namespace FernchExDev.Net.CSharp.Object.Builder.Tests;
 
+public class AbstractObjectBuilderTests
+{
+    #region Test classes
+    internal class PersonBuilder : AbstractObjectBuilder<Person, PersonBuilder>
+    {
+        public const string ErrorInvalidName = "Invalid name";
+        public const string ErrorInvalidAge = "Invalid age";
+        public const string BuildError = "Failed to build person";
+        private string? _name;
+        private int? _age;
+        private List<AddressBuilder> _addresses = new();
+
+        public PersonBuilder Name(string? name)
+        {
+            _name = name;
+            return this;
+        }
+
+        public PersonBuilder Age(int? age)
+        {
+            _age = age;
+            return this;
+        }
+
+        public PersonBuilder Address(Action<AddressBuilder> addressBuilderAction)
+        {
+            var addressBuilder = new AddressBuilder();
+            addressBuilderAction(addressBuilder);
+            _addresses.Add(addressBuilder);
+            return this;
+        }
+
+        protected override IObjectBuildResult<Person> BuildInternal(VisitedObjectsList visited)
+        {
+            var addresses = new List<Address>();
+            foreach (var addressBuilder in _addresses)
+            {
+                var addressBuildResult = addressBuilder.Build(visited);
+                switch (addressBuildResult)
+                {
+                    case SuccessObjectBuildResult<Address> successResult:
+                        addresses.Add(successResult.Result);
+                        break;
+                    case FailureObjectBuildResult<Address, AddressBuilder> failureResult:
+                        return new FailureObjectBuildResult<Person, PersonBuilder>(this, failureResult.Exceptions, visited);
+                }
+            }
+            if (string.IsNullOrWhiteSpace(_name))
+            {
+                return FailureResult(ErrorInvalidName, visited);
+            }
+            if (_age == 0)
+            {
+                return FailureResult(ErrorInvalidAge, visited);
+            }
+            return new SuccessObjectBuildResult<Person>(new Person(_name!, _age!.Value, addresses));
+        }
+    }
+
+    internal class AddressBuilder : AbstractObjectBuilder<Address, AddressBuilder>
+    {
+        public const string ErrorInvalidStreet = "Invalid street";
+        public const string ERrorInvalidZipCode = "Invalid zip code";
+        private string? _street;
+        private string? _zipCode;
+
+        public AddressBuilder Street(string street)
+        {
+            _street = street;
+            return this;
+        }
+        public AddressBuilder ZipCode(string zipCode)
+        {
+            _zipCode = zipCode;
+            return this;
+        }
+        protected override IObjectBuildResult<Address> BuildInternal(VisitedObjectsList visited)
+        {
+            if (string.IsNullOrEmpty(_street))
+            {
+                return FailureResult(ErrorInvalidStreet, visited);
+            }
+
+            if (string.IsNullOrEmpty(_zipCode))
+            {
+                return FailureResult(ERrorInvalidZipCode, visited);
+            }
+
+            return new SuccessObjectBuildResult<Address>(new Address(_street, _zipCode));
+        }
+    }
+    #endregion
+}
+
+
 /// <summary>
 /// Tests for the <see cref="AbstractAsyncObjectBuilder{TClass}"/> class.
 /// </summary>

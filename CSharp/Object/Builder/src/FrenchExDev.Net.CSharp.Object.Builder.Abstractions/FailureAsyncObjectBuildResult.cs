@@ -20,14 +20,15 @@ public class FailureAsyncObjectBuildResult<TClass, TBuilder> : IObjectBuildResul
     /// <summary>
     /// Gets the dictionary of visited objects during the build process.
     /// </summary>
-    public Dictionary<object, object> Visited { get; init; }
+    public VisitedObjectsList Visited { get; init; }
+
 
     /// <summary>
     /// Constructor for creating a new instance of <see cref="FailureAsyncObjectBuildResult{TClass, TBuilder}"/>.
     /// </summary>t
     /// <param name="builder"></param>
     /// <param name="exceptions"></param>
-    public FailureAsyncObjectBuildResult(TBuilder builder, IEnumerable<Exception> exceptions, Dictionary<object, object> visited)
+    public FailureAsyncObjectBuildResult(TBuilder builder, IEnumerable<Exception> exceptions, VisitedObjectsList visited)
     {
         Builder = builder;
         Exceptions = exceptions;

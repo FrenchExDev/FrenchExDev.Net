@@ -34,13 +34,10 @@ public class WorkflowObjectBuilderTests
     [Fact]
     public async Task Can_Build_Complete_Person()
     {
-        // Arrange
         var builder = new PersonObjectBuilder();
 
-        // Act
-        IObjectBuildResult<Person> result = await builder.BuildAsync();
+        var result = await builder.BuildAsync();
 
-        // Assert
         result.ShouldNotBeNull();
         result.ShouldBeAssignableTo<SuccessObjectBuildResult<Person>>();
 

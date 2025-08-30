@@ -39,7 +39,7 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// <param name="visited">A dictionary used to track objects that have already been processed during the build operation.  This parameter
     /// may be <see langword="null"/> if no tracking is required.</param>
     /// <returns>An instance of <see cref="IObjectBuildResult{TClass}"/> representing the result of the build operation.</returns>
-    protected abstract IObjectBuildResult<TClass> BuildInternal(Dictionary<object, object> visited);
+    protected abstract IObjectBuildResult<TClass> BuildInternal(VisitedObjectsList visited);
 
 
     /// <summary>

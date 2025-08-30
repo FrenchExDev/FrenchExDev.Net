@@ -20,7 +20,7 @@ public class FailureObjectBuildResult<TClass, TBuilder> : IObjectBuildResult<TCl
     /// <param name="builder"></param>
     /// <param name="exceptions"></param>
     /// <param name="visited"></param>
-    public FailureObjectBuildResult(TBuilder builder, IEnumerable<Exception> exceptions, Dictionary<object, object> visited)
+    public FailureObjectBuildResult(TBuilder builder, IEnumerable<Exception> exceptions, VisitedObjectsList visited)
     {
         Builder = builder;
         Exceptions = exceptions;
