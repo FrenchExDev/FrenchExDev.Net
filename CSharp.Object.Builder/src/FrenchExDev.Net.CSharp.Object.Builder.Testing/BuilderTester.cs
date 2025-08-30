@@ -23,7 +23,7 @@ public static class BuilderTester
         (
             Func<TBuilder> builderFactory,
             Action<TBuilder> body
-        ) where TBuilder : IBuilder<TClass>
+        ) where TBuilder : IObjectBuilder<TClass>
     {
         var builder = builderFactory();
         body(builder);
@@ -47,7 +47,7 @@ public static class BuilderTester
             Func<TBuilder> builderFactory,
             Func<TBuilder, CancellationToken, Task> body,
             CancellationToken cancellationToken = default
-        ) where TBuilder : IBuilder<TClass>
+        ) where TBuilder : IObjectBuilder<TClass>
     {
         var builder = builderFactory();
         await body(builder, cancellationToken);
@@ -61,7 +61,7 @@ public static class BuilderTester
     /// <paramref name="body"/> parameter should configure the builder to create an invalid state,  and the optional
     /// <paramref name="assert"/> parameter can be used to verify the expected behavior  or state of the build
     /// result.</remarks>
-    /// <typeparam name="TBuilder">The type of the builder used to construct the object. Must implement <see cref="IBuilder{TClass}"/>.</typeparam>
+    /// <typeparam name="TBuilder">The type of the builder used to construct the object. Must implement <see cref="IObjectBuilder{TClass}"/>.</typeparam>
     /// <typeparam name="TClass">The type of the object being constructed by the builder.</typeparam>
     /// <param name="builderFactory">A function that creates an instance of the builder.</param>
     /// <param name="body">An action that configures the builder to produce an invalid object.</param>
@@ -71,8 +71,8 @@ public static class BuilderTester
         (
             Func<TBuilder> builderFactory,
             Action<TBuilder> body,
-            Action<IBuildResult<TClass>>? assert = null
-        ) where TBuilder : IBuilder<TClass>
+            Action<IObjectBuildResult<TClass>>? assert = null
+        ) where TBuilder : IObjectBuilder<TClass>
     {
         var builder = builderFactory();
         body(builder);
@@ -88,7 +88,7 @@ public static class BuilderTester
     /// to define a custom body function and optional assertions on the builder's result. The builder is created using
     /// the provided factory function, and the body function is executed before the builder's result is built and
     /// validated.</remarks>
-    /// <typeparam name="TBuilder">The type of the builder, which must implement <see cref="IAsyncBuilder{TClass}"/>.</typeparam>
+    /// <typeparam name="TBuilder">The type of the builder, which must implement <see cref="IAsyncObjectBuilder{TClass}"/>.</typeparam>
     /// <typeparam name="TClass">The type of the object being built by the builder.</typeparam>
     /// <param name="builderFactory">A factory function that creates an instance of <typeparamref name="TBuilder"/>.</param>
     /// <param name="body">An asynchronous function that operates on the builder. This function is executed before the builder's result is
@@ -101,9 +101,9 @@ public static class BuilderTester
         (
             Func<TBuilder> builderFactory,
             Func<TBuilder, CancellationToken, Task> body,
-            Action<IBuildResult<TClass>>? assert = null,
+            Action<IObjectBuildResult<TClass>>? assert = null,
             CancellationToken cancellationToken = default
-        ) where TBuilder : IAsyncBuilder<TClass>
+        ) where TBuilder : IAsyncObjectBuilder<TClass>
     {
         var builder = builderFactory();
         await body(builder, cancellationToken);
@@ -116,13 +116,13 @@ public static class BuilderTester
     /// </summary>
     /// <remarks>This method ensures that the builder successfully creates an object of the expected type, 
     /// that the object is marked as built, and that no exceptions are present in the builder's state.</remarks>
-    /// <typeparam name="TBuilder">The type of the builder, which must implement <see cref="IBuilder{TClass}"/>.</typeparam>
+    /// <typeparam name="TBuilder">The type of the builder, which must implement <see cref="IObjectBuilder{TClass}"/>.</typeparam>
     /// <typeparam name="TClass">The type of the object being built by the builder.</typeparam>
     /// <param name="builder">The builder instance to validate. Must not be <c>null</c>.</param>
-    public static void TestValidInternal<TBuilder, TClass>(TBuilder builder) where TBuilder : IBuilder<TClass>
+    public static void TestValidInternal<TBuilder, TClass>(TBuilder builder) where TBuilder : IObjectBuilder<TClass>
     {
         var built = builder.Build();
-        built.ShouldBeAssignableTo<SuccessResult<TClass>>();
+        built.ShouldBeAssignableTo<SuccessObjectBuildResult<TClass>>();
     }
 
     /// <summary>
@@ -134,10 +134,10 @@ public static class BuilderTester
     /// <typeparam name="TClass">The type of the object being built.</typeparam>
     /// <param name="assert">An optional assertion to apply to the build result. Can be <see langword="null"/>.</param>
     /// <param name="built">The build result to validate. Must not be <see langword="null"/>.</param>
-    private static void InternalTestInvalid<TClass>(Action<IBuildResult<TClass>>? assert, IBuildResult<TClass> built)
+    private static void InternalTestInvalid<TClass>(Action<IObjectBuildResult<TClass>>? assert, IObjectBuildResult<TClass> built)
     {
-        built.ShouldBeAssignableTo<FailureResult<TClass, IBuilder<TClass>>>();
-        var failureResult = (FailureResult<TClass, IBuilder<TClass>>)built;
+        built.ShouldBeAssignableTo<FailureObjectBuildResult<TClass, IObjectBuilder<TClass>>>();
+        var failureResult = (FailureObjectBuildResult<TClass, IObjectBuilder<TClass>>)built;
         failureResult.Exceptions.ShouldNotBeEmpty();
         failureResult.Exceptions.Count().ShouldBeGreaterThan(0);
 
