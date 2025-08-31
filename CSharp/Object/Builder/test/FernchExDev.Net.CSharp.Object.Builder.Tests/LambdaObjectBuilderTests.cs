@@ -11,6 +11,7 @@ public class LambdaObjectBuilderTests
     internal class PersonBuilder : LambdaObjectBuilder<Person, PersonBuilder>
     {
         public const string ErrorInvalidAge = "Invalid age";
+
         public PersonBuilder(Func<PersonBuilder, ExceptionBuildList, VisitedObjectsList, IObjectBuildResult<Person>> buildFunc) : base(buildFunc)
         {
         }
@@ -57,7 +58,7 @@ public class LambdaObjectBuilderTests
     /// </summary>
     /// <returns></returns>
     [Fact]
-    public void Cannot_Build_Complete_Person_Async()
+    public void Cannot_Build_Incomplete_Person_Async()
     {
         var p1b = new PersonBuilder((builder, exceptions, visited) =>
         {

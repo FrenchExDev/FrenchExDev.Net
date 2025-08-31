@@ -25,11 +25,20 @@ public abstract class AbstractStepObjectBuilder<TClass> : IStepObjectBuilder<TCl
     /// <param name="visited"></param>
     public abstract void Build(ExceptionBuildList exceptions, IntermediateObjectDictionary intermediate, VisitedObjectsList visited);
 
+    /// <summary>
+    /// Determines whether the current instance contains a valid result of the specified type.
+    /// </summary>
+    /// <returns><see langword="true"/> if the result is not <see langword="null"/> and is of type <typeparamref name="TClass"/>;
+    /// otherwise, <see langword="false"/>.</returns>
     public bool HasResult()
     {
         return _result is not null && _result is TClass;
     }
 
+    /// <summary>
+    /// Sets the result of the step to the provided instance of <typeparamref name="TClass"/>.
+    /// </summary>
+    /// <param name="result"></param>
     public void Set(TClass result)
     {
         _result = result;
