@@ -15,7 +15,7 @@ public class LambdaObjectValidator<TClass> : IObjectValidator<TClass>
     /// <summary>
     /// Gets the function used to validate an instance of <typeparamref name="TClass"/>.
     /// </summary>
-    public Func<TClass, IEnumerable<IValidation>> ValidatorFunc { get; init; }
+    public Func<TClass, IEnumerable<IObjectValidation>> ValidatorFunc { get; init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LambdaObjectValidator{TClass}"/> class with the specified
@@ -23,10 +23,10 @@ public class LambdaObjectValidator<TClass> : IObjectValidator<TClass>
     /// </summary>
     /// <remarks>The <paramref name="validatorFunc"/> parameter is used to define the validation logic for
     /// objects of type <typeparamref name="TClass"/>. The function should return an <see cref="IEnumerable{T}"/> of
-    /// <see cref="IValidation"/> representing the validation results.</remarks>
+    /// <see cref="IAbstractObjectValidator"/> representing the validation results.</remarks>
     /// <param name="validatorFunc">A function that takes an instance of <typeparamref name="TClass"/> and returns a collection of validation
     /// results.</param>
-    public LambdaObjectValidator(Func<TClass, IEnumerable<IValidation>> validatorFunc)
+    public LambdaObjectValidator(Func<TClass, IEnumerable<IObjectValidation>> validatorFunc)
     {
         ValidatorFunc = validatorFunc;
     }
@@ -35,9 +35,9 @@ public class LambdaObjectValidator<TClass> : IObjectValidator<TClass>
     /// Validates the specified instance and returns a collection of validation results.
     /// </summary>
     /// <param name="instance">The instance of type <typeparamref name="TClass"/> to validate.</param>
-    /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="IValidation"/> objects representing the validation results. The
+    /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="IAbstractObjectValidator"/> objects representing the validation results. The
     /// collection will be empty if the instance passes all validations.</returns>
-    public IEnumerable<IValidation> Validate(TClass instance)
+    public IEnumerable<IObjectValidation> Validate(TClass instance)
     {
         return ValidatorFunc(instance);
     }

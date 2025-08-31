@@ -13,9 +13,9 @@ public abstract class AbstractObjectValidator<TClass> : IObjectValidator<TClass>
     /// </summary>
     /// <param name="instance"></param>
     /// <returns></returns>
-    public IEnumerable<IValidation> Validate(TClass instance)
+    public IEnumerable<IObjectValidation> Validate(TClass instance)
     {
-        var result = new List<IValidation>();
+        var result = new List<IObjectValidation>();
         ValidateInternal(instance, result);
         return result;
 
@@ -26,5 +26,5 @@ public abstract class AbstractObjectValidator<TClass> : IObjectValidator<TClass>
     /// </summary>
     /// <param name="instance"></param>
     /// <param name="validations"></param>
-    protected abstract void ValidateInternal(TClass instance, List<IValidation> validations);
+    protected abstract void ValidateInternal(TClass instance, List<IObjectValidation> validations);
 }
