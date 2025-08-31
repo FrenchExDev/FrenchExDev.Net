@@ -19,7 +19,7 @@ public static class BuilderTester
     /// <typeparam name="TClass">The type of the class being built.</typeparam>
     /// <param name="builderFactory">A factory method to create the builder.</param>
     /// <param name="body">A test action to perform on the builder.</param>
-    public static void TestValid<TBuilder, TClass>
+    public static async Task TestValid<TBuilder, TClass>
         (
             Func<TBuilder> builderFactory,
             Action<TBuilder> body
@@ -27,7 +27,7 @@ public static class BuilderTester
     {
         var builder = builderFactory();
         body(builder);
-        TestValidInternal<TBuilder, TClass>(builder);
+        await TestValidInternalAsync<TBuilder, TClass>(builder);
     }
 
     /// <summary>
@@ -47,11 +47,11 @@ public static class BuilderTester
             Func<TBuilder> builderFactory,
             Func<TBuilder, CancellationToken, Task> body,
             CancellationToken cancellationToken = default
-        ) where TBuilder : IObjectBuilder<TClass>
+        ) where TBuilder : IAsyncObjectBuilder<TClass>
     {
         var builder = builderFactory();
         await body(builder, cancellationToken);
-        TestValidInternal<TBuilder, TClass>(builder);
+        await TestValidInternalAsync<TBuilder, TClass>(builder);
     }
 
     /// <summary>
@@ -119,9 +119,20 @@ public static class BuilderTester
     /// <typeparam name="TBuilder">The type of the builder, which must implement <see cref="IObjectBuilder{TClass}"/>.</typeparam>
     /// <typeparam name="TClass">The type of the object being built by the builder.</typeparam>
     /// <param name="builder">The builder instance to validate. Must not be <c>null</c>.</param>
-    public static void TestValidInternal<TBuilder, TClass>(TBuilder builder) where TBuilder : IObjectBuilder<TClass>
+    private static async Task TestValidInternalAsync<TBuilder, TClass>(TBuilder builder) where TBuilder : IAbstractObjectBuilder
     {
-        var built = builder.Build();
+        var localBuilder = async (TBuilder builder) =>
+        {
+            return builder switch
+            {
+                IObjectBuilder<TClass> syncBuilder => syncBuilder.Build(),
+                IAsyncObjectBuilder<TClass> asyncBuilder => await asyncBuilder.BuildAsync(),
+                _ => throw new InvalidOperationException("Builder must implement either IObjectBuilder<TClass> or IAsyncObjectBuilder<TClass>.")
+            };
+        };
+
+        var built = await localBuilder(builder);
+
         built.ShouldBeAssignableTo<SuccessObjectBuildResult<TClass>>();
     }
 
@@ -134,7 +145,10 @@ public static class BuilderTester
     /// <typeparam name="TClass">The type of the object being built.</typeparam>
     /// <param name="assert">An optional assertion to apply to the build result. Can be <see langword="null"/>.</param>
     /// <param name="built">The build result to validate. Must not be <see langword="null"/>.</param>
-    private static void InternalTestInvalid<TClass>(Action<IObjectBuildResult<TClass>>? assert, IObjectBuildResult<TClass> built)
+    private static void InternalTestInvalid<TClass>(
+        Action<IObjectBuildResult<TClass>>? assert,
+        IObjectBuildResult<TClass> built
+    )
     {
         built.ShouldBeAssignableTo<FailureObjectBuildResult<TClass, IObjectBuilder<TClass>>>();
         var failureResult = (FailureObjectBuildResult<TClass, IObjectBuilder<TClass>>)built;

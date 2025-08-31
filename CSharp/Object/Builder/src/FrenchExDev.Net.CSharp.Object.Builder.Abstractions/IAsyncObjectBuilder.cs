@@ -4,7 +4,7 @@
 /// Defines a contract for building an instance of <typeparamref name="TClass"/> asynchronously.
 /// </summary>
 /// <typeparam name="TClass">The type of the object to be built.</typeparam>
-public interface IAsyncObjectBuilder<TClass>
+public interface IAsyncObjectBuilder<TClass> : IAbstractObjectBuilder
 {
     /// <summary>
     /// Asynchronously builds an object of type <typeparamref name="TClass"/> and returns the result.

@@ -82,7 +82,7 @@ public class LibraryModuleLoader : ILibraryModuleLoader
             var modulesToLoad = new Dictionary<ModuleId, ILibraryModule>();
             foreach (var module in LibraryModulesToLoad)
             {
-                if (HasBeenAlreadyLoaded(module.Key) && modulesToLoad.ContainsKey(module.Key)) continue;
+                if (_loaded.ContainsKey(module.Key) || modulesToLoad.ContainsKey(module.Key)) continue;
 
                 var moduleToLoad = module.Value();
 

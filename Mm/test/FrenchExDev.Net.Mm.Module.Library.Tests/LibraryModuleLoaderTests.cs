@@ -3,7 +3,6 @@ using FrenchExDev.Net.Mm.Module.Library.Abstractions;
 using FrenchExDev.Net.Mm.Module.Library.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting.Internal;
 
 namespace FrenchExDev.Net.Mm.Module.Library.Tests;
 
@@ -11,19 +10,21 @@ public class LibraryModuleLoaderTests
 {
     internal sealed class ModuleA() : LibraryModule(Dependencies)
     {
+        public static readonly Guid Guid = Guid.Parse("6102d0af-cb8b-492a-b746-1e9deb31106e");
+
         public static readonly ModuleDependenciesDictionary Dependencies = new()
         {
-            { new ModuleId(Guid.Parse("b07SDfe0-4323-4fbe-81f0-260792ffe243")), () => new ModuleB()   }
+            { new ModuleId(ModuleB.Guid), () => new ModuleB() }
         };
 
         protected override ModuleId GetModuleId()
         {
-            return new ModuleId(Guid.Parse("a07SDfe0-4323-4fbe-81f0-260792ffe243"));
+            return new ModuleId(Guid);
         }
 
         protected override IModuleInformation GetModuleInformation()
         {
-            return new BasicModuleInformation("foo", "bar");
+            return new BasicModuleInformation("fooA", "barA");
         }
 
         protected override IModuleVersion GetModuleVersion()
@@ -34,17 +35,19 @@ public class LibraryModuleLoaderTests
 
     internal sealed class ModuleB() : LibraryModule(Dependencies)
     {
+        public static readonly Guid Guid = Guid.Parse("a45e2506-75ac-47d3-b51f-d149b85c938c");
+
         public static readonly ModuleDependenciesDictionary Dependencies = new()
         {
-            { new ModuleId(Guid.Parse("a07SDfe0-4323-4fbe-81f0-260792ffe243")), () => new ModuleA() }
+            { new ModuleId(ModuleA.Guid), () => new ModuleA() }
         };
         protected override ModuleId GetModuleId()
         {
-            return new ModuleId(Guid.Parse("b07SDfe0-4323-4fbe-81f0-260792ffe243"));
+            return new ModuleId(Guid);
         }
         protected override IModuleInformation GetModuleInformation()
         {
-            return new BasicModuleInformation("foo", "bar");
+            return new BasicModuleInformation("fooB", "barB");
         }
         protected override IModuleVersion GetModuleVersion()
         {
@@ -63,8 +66,8 @@ public class LibraryModuleLoaderTests
 
         await moduleLoader.LoadAsync(new Dictionary<ModuleId, Func<ILibraryModule>>()
         {
-            { new ModuleId(Guid.Parse("a07SDfe0-4323-4fbe-81f0-260792ffe243")), () => new ModuleA() },
-            { new ModuleId(Guid.Parse("b07SDfe0-4323-4fbe-81f0-260792ffe243")), () => new ModuleB() }
-        }, new ServiceCollection(), new ConfigurationManager(), new HostingEnvironment(), CancellationToken.None);
+            { new ModuleId(ModuleA.Guid), () => new ModuleA() },
+            { new ModuleId(ModuleB.Guid), () => new ModuleB() }
+        }, new ServiceCollection(), new ConfigurationManager(), new HostEnvironment(), CancellationToken.None);
     }
 }

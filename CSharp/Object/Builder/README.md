@@ -28,7 +28,10 @@ A builder that allows stepwise construction of an object using a lambda-based bu
 
 **Usage Example:**
 ```csharp
-var builder = new LambdaStepObjectBuilder<Person>((step, exceptions, intermediates, visited) => { var person = new Person( name: intermediates.Get<string>("Name"), age: intermediates.Get<int>("Age") ); step.Set(person); });
+var builder = new LambdaStepObjectBuilder<Person>((step, exceptions, intermediates, visited) => { 
+	var person = new Person( name: intermediates.Get<string>("Name"), age: intermediates.Get<int>("Age") ); 
+	step.Set(person); 
+});
 ```
 
 ### Supporting Types
@@ -60,7 +63,12 @@ var builder = new LambdaStepObjectBuilder<Person>((step, exceptions, intermediat
 ## Example
 
 ```csharp
-public class MyObjectBuilder : AbstractBuilder<MyObject> { public override MyObject Build() { // Custom build logic here return new MyObject(); } }
+public class MyObjectBuilder : AbstractBuilder<MyObject> 
+{ 
+	public override IBuildObjectResult Build() { 
+		// Custom build logic here return new MyObject(); 
+	}
+}
 ```
 
 ---

@@ -1,6 +1,7 @@
 ﻿using FernchExDev.Net.CSharp.Object.Builder.Tests.Fixtures;
 using FrenchExDev.Net.CSharp.Object.Builder;
 using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+using FrenchExDev.Net.CSharp.Object.Builder.Testing;
 using Shouldly;
 
 namespace FernchExDev.Net.CSharp.Object.Builder.Tests;
@@ -151,11 +152,19 @@ public class AbstractAsyncObjectBuilderTests
     [Fact]
     public async Task Can_Build_Complete_Person_Async()
     {
+        await BuilderTester.TestValidAsync<PersonBuilder, Person>(
+            () => new PersonBuilder(),
+            (builder, cancellationToken) =>
+            {
+                builder.Name("foo")
+                       .Age(30)
+                       .Address(ab => ab.Street("123 Main St").ZipCode("12345"))
+                       .Address(ab => ab.Street("456 Elm St").ZipCode("67890"));
+                return Task.CompletedTask;
+            });
+
         var p1b = new PersonBuilder()
-            .Name("foo")
-            .Age(30)
-            .Address(ab => ab.Street("123 Main St").ZipCode("12345"))
-            .Address(ab => ab.Street("456 Elm St").ZipCode("67890"));
+            ;
 
         var p1 = await p1b.BuildAsync();
 
