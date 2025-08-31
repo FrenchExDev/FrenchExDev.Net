@@ -17,7 +17,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\FrenchExDev.Net.Mm.Module.Library\FrenchExDev.Net.Mm.Module.Library.csproj" />
+	  <ProjectReference Include="..\..\src\FrenchExDev.Net.Mm.Module.Library.Testing\FrenchExDev.Net.Mm.Module.Library.Testing.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

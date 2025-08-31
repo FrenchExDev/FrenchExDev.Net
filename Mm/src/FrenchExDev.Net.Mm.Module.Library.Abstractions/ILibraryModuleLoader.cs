@@ -23,20 +23,10 @@ public interface ILibraryModuleLoader
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>A Task representing the asynchronous operation.</returns>
     Task LoadAsync(
-        Dictionary<ModuleId, Func<ILibraryModule>> libraryModules,
+        LoadableLibraryModules libraryModules,
         IServiceCollection servicesCollection,
         IConfigurationManager configurationManager,
         IHostEnvironment hostEnvironment,
         CancellationToken cancellationToken = default
     );
-
-    /// <summary>
-    /// Loads the next round of data for the specified module.
-    /// </summary>
-    /// <remarks>The <paramref name="libraryModule"/> function is invoked to retrieve the library module
-    /// instance, which is used to load the data for the specified module. Ensure that the provided <paramref
-    /// name="record"/> corresponds to a valid module identifier.</remarks>
-    /// <param name="record">The identifier of the module for which the next round of data should be loaded.</param>
-    /// <param name="libraryModule">A function that provides an instance of the library module to be used during the loading process.</param>
-    void LoadNextRound(ModuleId record, Func<ILibraryModule> libraryModule);
 }

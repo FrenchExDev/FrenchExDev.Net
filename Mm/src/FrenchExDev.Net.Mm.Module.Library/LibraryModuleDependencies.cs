@@ -1,6 +1,6 @@
-﻿using FrenchExDev.Net.Mm.Abstractions;
-using FrenchExDev.Net.Mm.Module.Library.Abstractions;
+﻿using FrenchExDev.Net.Mm.Module.Library.Abstractions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace FrenchExDev.Net.Mm.Module.Library;
@@ -12,8 +12,13 @@ namespace FrenchExDev.Net.Mm.Module.Library;
 /// <remarks>This class provides functionality to retrieve the types of the library modules and to load the 
 /// dependency modules in the next round of processing.</remarks>
 /// <param name="dependencies"></param>
-internal class LibraryModuleDependencies(Dictionary<ModuleId, Func<ILibraryModule>> dependencies)
+internal class LibraryModuleDependencies(LoadableLibraryModules dependencies)
 {
+    /// <summary>
+    /// Returns the collection of library module dependencies.
+    /// </summary>
+    public LoadableLibraryModules Dependencies => dependencies;
+
     /// <summary>
     /// Retrieves a collection of distinct types representing the library modules.
     /// </summary>
@@ -27,22 +32,33 @@ internal class LibraryModuleDependencies(Dictionary<ModuleId, Func<ILibraryModul
     }
 
     /// <summary>
-    /// Loads the dependency modules during the next round of module loading.
+    /// Asynchronously loads the dependencies of the current library module.
     /// </summary>
-    /// <param name="libraryModuleLoader">The module loader responsible for managing the loading of library modules.</param>
-    /// <param name="configurationManager">The configuration manager providing configuration settings for the modules.</param>
-    /// <param name="hostEnvironment">The host environment that provides information about the application's environment.</param>
-    /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>A completed <see cref="Task"/> representing the asynchronous operation.</returns>
-    public Task LoadDependencyModulesOnNextRound(
-        ILibraryModuleLoader libraryModuleLoader,
-        IConfigurationManager configurationManager,
-        IHostEnvironment hostEnvironment,
-        CancellationToken cancellationToken = default
+    /// <remarks>This method iterates through the dependencies of the current library module and invokes the 
+    /// <see cref="ILibraryModuleLoader.LoadAsync"/> method for each dependency. It ensures that all dependencies  are
+    /// loaded asynchronously and integrates them into the provided service collection.</remarks>
+    /// <param name="libraryModuleLoader">The loader responsible for loading library modules.</param>
+    /// <param name="serviceCollection">The service collection to which services can be added during the loading process.</param>
+    /// <param name="configurationManager">The configuration manager used to access configuration settings.</param>
+    /// <param name="hostEnvironment">The host environment providing information about the application's environment.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns></returns>
+    public async Task LoadAsync(
+        ILibraryModuleLoader libraryModuleLoader, 
+        IServiceCollection serviceCollection,
+        IConfigurationManager configurationManager, 
+        IHostEnvironment hostEnvironment, 
+        CancellationToken cancellationToken
     )
     {
-        foreach (var module in dependencies) libraryModuleLoader.LoadNextRound(module.Key, module.Value);
-
-        return Task.CompletedTask;
+        foreach (var dependency in Dependencies)
+        {
+            await libraryModuleLoader.LoadAsync(
+                dependencies,
+                serviceCollection,
+                configurationManager,
+                hostEnvironment,
+                cancellationToken);
+        }
     }
 }

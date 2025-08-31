@@ -10,12 +10,12 @@ namespace FrenchExDev.Net.Mm.Module.Library;
 /// <remarks>This dictionary is typically used to manage and resolve dependencies between modules in a library or
 /// application. The factory functions allow for deferred creation of module instances, enabling lazy initialization or
 /// dynamic resolution.</remarks>
-public class ModuleDependenciesDictionary : Dictionary<ModuleId, Func<ILibraryModule>>
+public class LibraryModuleDependenciesDictionary : Dictionary<ModuleId, Func<ILibraryModule>>
 {
-    public ModuleDependenciesDictionary() : base()
+    public LibraryModuleDependenciesDictionary() : base()
     {
     }
-    public ModuleDependenciesDictionary(IDictionary<ModuleId, Func<ILibraryModule>> dictionary) : base(dictionary)
+    public LibraryModuleDependenciesDictionary(IDictionary<ModuleId, Func<ILibraryModule>> dictionary) : base(dictionary)
     {
     }
 }

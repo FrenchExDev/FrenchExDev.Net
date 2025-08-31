@@ -10,23 +10,27 @@ namespace FrenchExDev.Net.Mm.Module.Library;
 /// Abstract base class for a library module in a modular monolith application.
 /// Provides mechanisms for dependency management, configuration, and service registration.
 /// </summary>
-public abstract class LibraryModule(Dictionary<ModuleId, Func<ILibraryModule>>? dependencies = null) : ILibraryModule
+public abstract class LibraryModule(LoadableLibraryModules? dependencies = null) : ILibraryModule
 {
     /// <summary>
     /// Manages the dependencies of this module.
     /// </summary>
-    private readonly LibraryModuleDependencies _libraryModuleDependencies = new(dependencies ?? new Dictionary<ModuleId, Func<ILibraryModule>>());
+    private readonly LibraryModuleDependencies _libraryModuleDependencies = new(dependencies ?? new LoadableLibraryModules());
 
     /// <summary>
     /// Gets the unique identifier of the module.
     /// </summary>
     public ModuleId ModuleId => GetModuleId();
 
+    /// <summary>
+    /// Returns the version of the module.
+    /// </summary>
     public IModuleVersion ModuleVersion => GetModuleVersion();
 
-    public IModuleInformation Information => GetModuleInformation();
-
-    public Mm.Abstractions.IModuleInformation ModuleInformation => throw new NotImplementedException();
+    /// <summary>
+    /// Returns information about the module.
+    /// </summary>
+    public IModuleInformation ModuleInformation => GetModuleInformation();
 
     /// <summary>
     /// Returns the types of all dependent library modules.
@@ -72,26 +76,28 @@ public abstract class LibraryModule(Dictionary<ModuleId, Func<ILibraryModule>>? 
     }
 
     /// <summary>
-    /// Configures the dependencies of this module by scheduling them for loading in the next round.
+    /// Configures the dependencies of this module.
     /// </summary>
     /// <param name="libraryModuleLoader">The module loader.</param>
+    /// <param name="serviceCollection">The service collection</param>
     /// <param name="configurationManager">The configuration manager.</param>
     /// <param name="hostEnvironment">The host environment.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task ConfigureDependenciesAsync(
         ILibraryModuleLoader libraryModuleLoader,
+        IServiceCollection serviceCollection,
         IConfigurationManager configurationManager,
         IHostEnvironment hostEnvironment,
         CancellationToken cancellationToken = default
     )
     {
-        await _libraryModuleDependencies.LoadDependencyModulesOnNextRound(
+        await _libraryModuleDependencies.LoadAsync(
             libraryModuleLoader,
+            serviceCollection,
             configurationManager,
             hostEnvironment,
-            cancellationToken
-        );
+            cancellationToken);
     }
 
     /// <summary>

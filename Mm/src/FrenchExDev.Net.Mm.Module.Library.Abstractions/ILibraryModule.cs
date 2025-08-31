@@ -27,12 +27,14 @@ public interface ILibraryModule : IModule
     /// Called to allow the module to register its dependencies or request other modules to be loaded.
     /// </summary>
     /// <param name="libraryModuleLoader">The module loader responsible for managing module lifecycles.</param>
+    /// <param name="serviceCollection">The service collection.</param>
     /// <param name="configurationManager">The configuration manager for accessing configuration settings.</param>
     /// <param name="hostEnvironment">The current host environment.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task ConfigureDependenciesAsync(
         ILibraryModuleLoader libraryModuleLoader,
+        IServiceCollection serviceCollection,
         IConfigurationManager configurationManager,
         IHostEnvironment hostEnvironment,
         CancellationToken cancellationToken = default
