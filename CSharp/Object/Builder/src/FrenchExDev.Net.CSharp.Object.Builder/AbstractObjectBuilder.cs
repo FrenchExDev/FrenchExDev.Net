@@ -14,6 +14,7 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// <returns></returns>
     public IObjectBuildResult<TClass> Build(VisitedObjectsList? visited = null)
     {
+        var exceptions = new ExceptionBuildList();
         visited ??= new VisitedObjectsList();
 
         if (visited.TryGetValue(this, out var existing))
@@ -23,7 +24,7 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
 
         visited[this] = default!;
 
-        var built = BuildInternal(visited);
+        var built = BuildInternal(exceptions, visited);
 
         visited[this] = built;
 
@@ -39,7 +40,7 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// <param name="visited">A dictionary used to track objects that have already been processed during the build operation.  This parameter
     /// may be <see langword="null"/> if no tracking is required.</param>
     /// <returns>An instance of <see cref="IObjectBuildResult{TClass}"/> representing the result of the build operation.</returns>
-    protected abstract IObjectBuildResult<TClass> BuildInternal(VisitedObjectsList visited);
+    protected abstract IObjectBuildResult<TClass> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited);
 
 
     /// <summary>

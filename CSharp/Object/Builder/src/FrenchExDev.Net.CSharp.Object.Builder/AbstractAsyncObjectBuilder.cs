@@ -8,7 +8,7 @@ namespace FrenchExDev.Net.CSharp.Object.Builder;
 /// <remarks>This class defines the contract for implementing asynchronous builders, requiring derived classes to
 /// provide an implementation of the <see cref="BuildAsync(CancellationToken)"/> method.</remarks>
 /// <typeparam name="TClass">The type of object to be built asynchronously.</typeparam>
-public abstract class AbstractAsyncObjectBuilder<TClass> : IAsyncObjectBuilder<TClass>
+public abstract class AbstractAsyncObjectBuilder<TClass, TBuilder> : IAsyncObjectBuilder<TClass> where TBuilder : IAsyncObjectBuilder<TClass>
 {
     /// <summary>
     /// Asynchronously builds an object of type <typeparamref name="TClass"/>.
@@ -21,6 +21,7 @@ public abstract class AbstractAsyncObjectBuilder<TClass> : IAsyncObjectBuilder<T
     /// cref="IObjectBuildResult{TClass}"/> representing the outcome of the build operation.</returns>
     public async Task<IObjectBuildResult<TClass>> BuildAsync(VisitedObjectsList? visited = null, CancellationToken cancellationToken = default)
     {
+        var exceptions = new ExceptionBuildList();
         visited ??= new VisitedObjectsList();
 
         if (visited.TryGetValue(this, out var existing))
@@ -30,7 +31,7 @@ public abstract class AbstractAsyncObjectBuilder<TClass> : IAsyncObjectBuilder<T
 
         visited[this] = new Dictionary<object, object>();
 
-        return await BuildInternalAsync(visited, cancellationToken);
+        return await BuildInternalAsync(exceptions, visited, cancellationToken);
     }
 
     /// <summary>
@@ -41,7 +42,7 @@ public abstract class AbstractAsyncObjectBuilder<TClass> : IAsyncObjectBuilder<T
     /// <param name="exceptions">A collection of exceptions associated with the failure.</param>
     /// <param name="visited">A dictionary of objects that have already been processed, used to prevent cyclic references.</param>
     /// <returns>An <see cref="FailureAsyncObjectBuildResult{TClass, TBuilder}"/> representing the failure state.</returns>
-    protected FailureAsyncObjectBuildResult<TClass, TBuilder> AsyncFailureResult<TBuilder>(ExceptionBuildList exceptions, VisitedObjectsList visited) where TBuilder : IAsyncObjectBuilder<TClass>
+    protected FailureAsyncObjectBuildResult<TClass, TBuilder> AsyncFailureResult(ExceptionBuildList exceptions, VisitedObjectsList visited)
     {
         return new FailureAsyncObjectBuildResult<TClass, TBuilder>((TBuilder)(this as IAsyncObjectBuilder<TClass>), exceptions, visited);
     }
@@ -57,6 +58,6 @@ public abstract class AbstractAsyncObjectBuilder<TClass> : IAsyncObjectBuilder<T
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains an <see
     /// cref="IObjectBuildResult{TClass}"/> representing the outcome of the build process.</returns>
-    protected abstract Task<IObjectBuildResult<TClass>> BuildInternalAsync(VisitedObjectsList visited, CancellationToken cancellationToken);
+    protected abstract Task<IObjectBuildResult<TClass>> BuildInternalAsync(ExceptionBuildList exceptions, VisitedObjectsList visited, CancellationToken cancellationToken);
 
 }

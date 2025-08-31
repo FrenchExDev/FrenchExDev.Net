@@ -5,7 +5,6 @@ using Shouldly;
 
 namespace FernchExDev.Net.CSharp.Object.Builder.Tests;
 
-
 /// <summary>
 /// Tests for the <see cref="AbstractAsyncObjectBuilder{TClass}"/> class.
 /// </summary>
@@ -17,7 +16,7 @@ public class AbstractAsyncObjectBuilderTests
     /// <summary>
     /// A builder for constructing instances of <see cref="Person"/>.
     /// </summary>
-    internal class PersonBuilder : AbstractAsyncObjectBuilder<Person>
+    internal class PersonBuilder : AbstractAsyncObjectBuilder<Person, PersonBuilder>
     {
         public const string ErrorInvalidName = "Invalid name";
         public const string ErrorInvalidAge = "Invalid age";
@@ -53,7 +52,7 @@ public class AbstractAsyncObjectBuilderTests
         /// <param name="visited"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected override async Task<IObjectBuildResult<Person>> BuildInternalAsync(VisitedObjectsList visited, CancellationToken cancellationToken = default)
+        protected override async Task<IObjectBuildResult<Person>> BuildInternalAsync(ExceptionBuildList exceptions, VisitedObjectsList visited, CancellationToken cancellationToken = default)
         {
             var addresses = new List<Address>();
 
@@ -72,7 +71,7 @@ public class AbstractAsyncObjectBuilderTests
 
             if (string.IsNullOrWhiteSpace(_name))
             {
-                return AsyncFailureResult<PersonBuilder>(ExceptionBuildList.New(this, [
+                return AsyncFailureResult(ExceptionBuildList.New(this, [
                     new BasicAsyncObjectBuildException<Person, PersonBuilder>(ErrorInvalidName, this, visited),
                     new BasicAsyncObjectBuildException<Person, PersonBuilder>(BuildError, this, visited)
                 ]), visited);
@@ -80,7 +79,7 @@ public class AbstractAsyncObjectBuilderTests
 
             if (_age == 0)
             {
-                return AsyncFailureResult<PersonBuilder>(ExceptionBuildList.New(this, [
+                return AsyncFailureResult(ExceptionBuildList.New(this, [
                     new BasicAsyncObjectBuildException<Person, PersonBuilder>(ErrorInvalidAge, this, visited),
                     new BasicAsyncObjectBuildException<Person, PersonBuilder>(BuildError, this, visited)
                 ]), visited);
@@ -97,7 +96,7 @@ public class AbstractAsyncObjectBuilderTests
     /// setting its properties, such as <see cref="Street"/> and <see cref="ZipCode"/>.  The builder validates the
     /// provided values during the build process and ensures that all required fields are set before creating the <see
     /// cref="Address"/> instance.</remarks>
-    internal class AddressBuilder : AbstractAsyncObjectBuilder<Address>
+    internal class AddressBuilder : AbstractAsyncObjectBuilder<Address, AddressBuilder>
     {
         public const string ErrorInvalidStreet = "Invalid street";
         public const string ErrorInvalidZipCode = "Invalid zip code";
@@ -121,18 +120,18 @@ public class AbstractAsyncObjectBuilderTests
         /// <param name="visited"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected override Task<IObjectBuildResult<Address>> BuildInternalAsync(VisitedObjectsList visited, CancellationToken cancellationToken = default)
+        protected override Task<IObjectBuildResult<Address>> BuildInternalAsync(ExceptionBuildList exceptions, VisitedObjectsList visited, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_street))
             {
                 return Task.FromResult<IObjectBuildResult<Address>>(
-                    AsyncFailureResult<AddressBuilder>(ExceptionBuildList.New(this, [new Exception(ErrorInvalidStreet)]), visited));
+                    AsyncFailureResult(ExceptionBuildList.New(this, [new Exception(ErrorInvalidStreet)]), visited));
             }
 
             if (string.IsNullOrEmpty(_zipCode))
             {
                 return Task.FromResult<IObjectBuildResult<Address>>(
-                    AsyncFailureResult<AddressBuilder>(ExceptionBuildList.New(this, [new Exception(ErrorInvalidZipCode)]), visited));
+                    AsyncFailureResult(ExceptionBuildList.New(this, [new Exception(ErrorInvalidZipCode)]), visited));
             }
 
             return Task.FromResult<IObjectBuildResult<Address>>(new SuccessObjectBuildResult<Address>(new Address(_street, _zipCode)));

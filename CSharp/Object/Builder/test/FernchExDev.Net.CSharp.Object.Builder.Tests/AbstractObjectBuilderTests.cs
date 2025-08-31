@@ -46,7 +46,7 @@ public class AbstractObjectBuilderTests
             return this;
         }
 
-        protected override IObjectBuildResult<Person> BuildInternal(VisitedObjectsList visited)
+        protected override IObjectBuildResult<Person> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
         {
             var addresses = new List<Address>();
             foreach (var addressBuilder in _addresses)
@@ -90,7 +90,7 @@ public class AbstractObjectBuilderTests
             _zipCode = zipCode;
             return this;
         }
-        protected override IObjectBuildResult<Address> BuildInternal(VisitedObjectsList visited)
+        protected override IObjectBuildResult<Address> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
         {
             if (string.IsNullOrEmpty(_street))
             {
@@ -107,7 +107,6 @@ public class AbstractObjectBuilderTests
     }
 
     #endregion
-
 
     /// <summary>
     /// Tests whether a <see cref="PersonBuilder"/> can successfully build a complete <see cref="Person"/> object with
