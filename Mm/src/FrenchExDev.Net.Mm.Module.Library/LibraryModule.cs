@@ -48,7 +48,7 @@ public abstract class LibraryModule(LoadableLibraryModules? dependencies = null)
     /// <param name="hostEnvironment">The host environment.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A completed task by default.</returns>
-    public Task ConfigureConfigurationAsync(
+    public virtual Task ConfigureConfigurationAsync(
         IConfigurationManager configurationManager,
         IHostEnvironment hostEnvironment,
         CancellationToken cancellationToken = default
@@ -84,7 +84,7 @@ public abstract class LibraryModule(LoadableLibraryModules? dependencies = null)
     /// <param name="hostEnvironment">The host environment.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public async Task ConfigureDependenciesAsync(
+    public virtual async Task ConfigureDependenciesAsync(
         ILibraryModuleLoader libraryModuleLoader,
         IServiceCollection serviceCollection,
         IConfigurationManager configurationManager,
