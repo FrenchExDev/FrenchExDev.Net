@@ -7,9 +7,16 @@ public class SuccessObjectBuildResult<TClass> : IObjectBuildResult<TClass>
     /// </summary>
     public TClass Result { get; init; }
 
+    /// <summary>
+    /// Enumerates any exceptions that occurred during the build process, or <see langword="null"/> if no exceptions were encountered.
     /// </summary>
     public IEnumerable<Exception>? Exceptions { get; init; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SuccessObjectBuildResult{TClass}"/> class  with the specified
+    /// result.
+    /// </summary>
+    /// <param name="result">The result object representing the successful outcome of the operation.</param>
     public SuccessObjectBuildResult(TClass result)
     {
         Result = result;

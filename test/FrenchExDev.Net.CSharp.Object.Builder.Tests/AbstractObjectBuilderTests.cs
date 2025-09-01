@@ -82,11 +82,11 @@ public class AbstractObjectBuilderTests
             }
             if (string.IsNullOrWhiteSpace(_name))
             {
-                return FailureResult(ErrorInvalidName, visited);
+                return Failure(ErrorInvalidName, visited);
             }
             if (_age == 0)
             {
-                return FailureResult(ErrorInvalidAge, visited);
+                return Failure(ErrorInvalidAge, visited);
             }
             return new SuccessObjectBuildResult<Person>(new Person(_name!, _age!.Value, addresses));
         }
@@ -128,12 +128,12 @@ public class AbstractObjectBuilderTests
         {
             if (string.IsNullOrEmpty(_street))
             {
-                return FailureResult(ErrorInvalidStreet, visited);
+                return Failure(ErrorInvalidStreet, visited);
             }
 
             if (string.IsNullOrEmpty(_zipCode))
             {
-                return FailureResult(ERrorInvalidZipCode, visited);
+                return Failure(ERrorInvalidZipCode, visited);
             }
 
             return new SuccessObjectBuildResult<Address>(new Address(_street, _zipCode));

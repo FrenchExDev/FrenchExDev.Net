@@ -14,18 +14,25 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// <returns></returns>
     public IObjectBuildResult<TClass> Build(VisitedObjectsList? visited = null)
     {
+        // Initialize exceptions build list to collect exceptions during the build process.
         var exceptions = new ExceptionBuildList();
+
+        // Initialize visited objects list if not provided.
         visited ??= new VisitedObjectsList();
 
+        // Check if the current builder instance has already been visited to prevent cyclic dependencies.
         if (visited.TryGetValue(this, out var existing))
         {
             return new SuccessObjectBuildResult<TClass>((TClass)existing);
         }
 
+        // Mark the current builder instance as visited with a temporary default value.
         visited[this] = default!;
 
+        // Perform the actual build operation using the internal method.
         var built = BuildInternal(exceptions, visited);
 
+        // Assign the built result to the visited objects list.
         visited[this] = built;
 
         return built;
@@ -52,10 +59,20 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// <param name="visited">A dictionary of objects that have been visited during the operation, used to track state and prevent cycles.</param>
     /// <returns>A <see cref="FailureObjectBuildResult{TClass, TBuilder}"/> representing the failure, including the error details and
     /// visited objects.</returns>
-    protected virtual FailureObjectBuildResult<TClass, TBuilder> FailureResult(string message, VisitedObjectsList visited)
+    protected virtual FailureObjectBuildResult<TClass, TBuilder> Failure(string message, VisitedObjectsList visited)
     {
         return new FailureObjectBuildResult<TClass, TBuilder>((TBuilder)(object)this, [
-            new BasicObjectBuildException< TClass, TBuilder >(message, (TBuilder)(this as IObjectBuilder<TClass>), visited),
+            new BasicObjectBuildException<TClass, TBuilder>(message, (TBuilder)(this as IObjectBuilder<TClass>), visited),
         ], visited);
+    }
+
+    /// <summary>
+    /// Creates a successful result containing the specified instance.
+    /// </summary>
+    /// <param name="instance">The instance to include in the successful result. Cannot be <see langword="null"/>.</param>
+    /// <returns>A <see cref="SuccessObjectBuildResult{TClass}"/> representing a successful operation with the provided instance.</returns>
+    protected virtual SuccessObjectBuildResult<TClass> Success(TClass instance)
+    {
+        return new SuccessObjectBuildResult<TClass>(instance);
     }
 }

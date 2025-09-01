@@ -222,6 +222,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D4851048-7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Builder.Tests", "test\FrenchExDev.Net.CSharp.Object.Builder.Tests\FrenchExDev.Net.CSharp.Object.Builder.Tests.csproj", "{418F7223-DC29-4871-BA5B-8895EFD1DE2E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Model.Tests", "CSharp\Object\Model\test\FrenchExDev.Net.CSharp.Object.Model.Tests\FrenchExDev.Net.CSharp.Object.Model.Tests.csproj", "{2BAFA1F0-B95F-BB2F-0434-3F4565426A28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -408,6 +410,10 @@ Global
 		{418F7223-DC29-4871-BA5B-8895EFD1DE2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{418F7223-DC29-4871-BA5B-8895EFD1DE2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{418F7223-DC29-4871-BA5B-8895EFD1DE2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BAFA1F0-B95F-BB2F-0434-3F4565426A28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BAFA1F0-B95F-BB2F-0434-3F4565426A28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BAFA1F0-B95F-BB2F-0434-3F4565426A28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BAFA1F0-B95F-BB2F-0434-3F4565426A28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -497,6 +503,7 @@ Global
 		{83C26A11-F188-B8B7-08F2-01870EC66E16} = {5A07744F-7871-F2B3-E1FF-5F00A6160159}
 		{D4851048-749A-603A-BC09-81D2D66ACB69} = {5A07744F-7871-F2B3-E1FF-5F00A6160159}
 		{418F7223-DC29-4871-BA5B-8895EFD1DE2E} = {C38B4B85-A05E-0F38-AC3E-977928BD0FBD}
+		{2BAFA1F0-B95F-BB2F-0434-3F4565426A28} = {34182781-BFA3-C61F-0083-709A9EBE234F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4BCE80FC-0AE1-4B5A-A6DA-D1999B8AA168}

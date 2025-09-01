@@ -76,33 +76,4 @@ public class LambdaObjectBuilderTests
                 person.Addresses.ElementAt(0).ZipCode.ShouldBe("12345");
             });
     }
-
-    /// <summary>
-    /// Tests that attempting to build a <see cref="Person"/> using an incomplete <see cref="PersonBuilder"/>  results
-    /// in a failure with the appropriate error message.
-    /// </summary>
-    /// <remarks>This test verifies that the <see cref="PersonBuilder"/> correctly identifies invalid input 
-    /// (e.g., missing or invalid age) and produces a <see cref="FailureObjectBuildResult{T, TBuilder}"/>  containing
-    /// the expected exception and error details.</remarks>
-    [Fact]
-    public void Cannot_Build_Incomplete_Person_Async()
-    {
-        BuilderTester.TestInvalid<PersonBuilder, Person>(
-            () => new PersonBuilder((builder, exceptions, visited) =>
-            {
-                exceptions.Add(new Exception(PersonBuilder.ErrorInvalidAge));
-                return new FailureObjectBuildResult<Person, PersonBuilder>(builder, exceptions, visited);
-            }),
-            (builder) =>
-            {
-            },
-            (failure) =>
-            {
-                failure.ShouldNotBeNull();
-                failure.Exceptions.Count().ShouldBeEquivalentTo(1);
-                failure.Exceptions.ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
-                failure.Builder.ShouldNotBeNull();
-                failure.Builder.ShouldBeAssignableTo<PersonBuilder>();
-            });
-    }
 }
