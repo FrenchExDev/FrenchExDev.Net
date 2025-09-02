@@ -2,6 +2,8 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
+namespace FrenchExDev.Net.CSharp.Object.Model.Infrastructure;
+
 /// <summary>
 /// Provides methods to convert various model representations of C# code elements  (e.g., classes, interfaces, enums,
 /// structs, methods, properties) into their corresponding  Roslyn syntax tree representations.
@@ -21,7 +23,6 @@ public static class RoslynModelConverter
     /// <returns></returns>
     public static NamespaceDeclarationSyntax ToSyntax(NamespaceDeclarationModel model)
     {
-        // Membres du namespace
         var members = new List<MemberDeclarationSyntax>();
         members.AddRange(model.Classes.Select(ToSyntax));
         members.AddRange(model.Interfaces.Select(ToSyntax));
@@ -29,7 +30,8 @@ public static class RoslynModelConverter
         members.AddRange(model.Structs.Select(ToSyntax));
         members.AddRange(model.NestedNamespaces.Select(ToSyntax));
 
-        var ns = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(model.Name))
+        var ns = SyntaxFactory
+            .NamespaceDeclaration(SyntaxFactory.ParseName(model.Name))
             .AddMembers(members.ToArray());
 
         return ns;
@@ -60,6 +62,7 @@ public static class RoslynModelConverter
             )
         ));
 
+        var baseType = !string.IsNullOrEmpty(model.BaseType) ? SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(model.BaseType)) : null;
         var baseTypes = new List<BaseTypeSyntax>();
         if (!string.IsNullOrWhiteSpace(model.BaseType))
             baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(model.BaseType)));
@@ -72,11 +75,15 @@ public static class RoslynModelConverter
         members.AddRange(model.Constructors.Select((x) => ToSyntax(x)));
         members.AddRange(model.NestedClasses.Select((x) => ToSyntax(x)));
 
-        return SyntaxFactory.ClassDeclaration(model.Name)
+        var classDeclaration = SyntaxFactory.ClassDeclaration(model.Name)
             .AddModifiers(modifiers)
             .AddAttributeLists(attributes.ToArray())
-            .AddBaseListTypes(baseTypes.ToArray())
             .AddMembers(members.ToArray());
+
+        if (!string.IsNullOrEmpty(model.BaseType) || model.ImplementedInterfaces.Count > 0)
+            classDeclaration = classDeclaration.AddBaseListTypes(baseTypes.ToArray());
+
+        return classDeclaration;
     }
 
     /// <summary>

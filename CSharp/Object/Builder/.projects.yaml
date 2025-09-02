@@ -1,3 +1,5 @@
 src:
   - DirectoryName: FrenchExDev.Net.CSharp.Object.Builder.Abstractions
   - DirectoryName: FrenchExDev.Net.CSharp.Object.Builder
+  - DirectoryName: FrenchExDev.Net.CSharp.Object.Builder.Testing
+publishTargetPath: ../../../../../__Local_Nuget_Registry__

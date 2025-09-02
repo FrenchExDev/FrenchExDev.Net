@@ -77,18 +77,31 @@ public class AbstractObjectBuilderTests
                         addresses.Add(successResult.Result);
                         break;
                     case FailureObjectBuildResult<Address, AddressBuilder> failureResult:
-                        return new FailureObjectBuildResult<Person, PersonBuilder>(this, failureResult.Exceptions, visited);
+                        exceptions.Add(new FailureObjectBuildResultException<Address, AddressBuilder>(new FailureObjectBuildResult<Address, AddressBuilder>(addressBuilder, failureResult.Exceptions, visited), "exceptions"));
+                        break;
                 }
             }
+
             if (string.IsNullOrWhiteSpace(_name))
             {
-                return Failure(ErrorInvalidName, visited);
+                exceptions.Add(new BasicObjectBuildException<Person, PersonBuilder>(ErrorInvalidName, this, visited));
             }
+
             if (_age == 0)
             {
-                return Failure(ErrorInvalidAge, visited);
+                exceptions.Add(new BasicObjectBuildException<Person, PersonBuilder>(ErrorInvalidAge, this, visited));
             }
-            return new SuccessObjectBuildResult<Person>(new Person(_name!, _age!.Value, addresses));
+
+
+            if (exceptions.Any())
+            {
+                return new FailureObjectBuildResult<Person, PersonBuilder>(this, exceptions, visited);
+            }
+
+            ArgumentNullException.ThrowIfNull(_name);
+            ArgumentNullException.ThrowIfNull(_age);
+
+            return new SuccessObjectBuildResult<Person>(new Person(_name, _age.Value, addresses));
         }
     }
 

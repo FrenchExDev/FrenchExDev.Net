@@ -1,6 +1,6 @@
 ﻿namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
-public class InterfaceDeclarationModel
+public class InterfaceDeclarationModel : IDeclarationModel
 {
     public string Name { get; set; } = string.Empty;
     public List<InterfaceModifier> Modifiers { get; set; } = new();

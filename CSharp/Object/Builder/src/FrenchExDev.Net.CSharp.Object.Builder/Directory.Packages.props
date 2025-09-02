@@ -1,8 +1,0 @@
-<Project>
-	<PropertyGroup>
-		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-	</PropertyGroup>
-	<ItemGroup>
-		<PackageVersion Include="FrenchExDev.Net.CSharp.Object.Builder.Abstractions"  Version="0.0.1" />
-	</ItemGroup>
-</Project>

@@ -21,11 +21,7 @@
 		<Content Include="..\..\LICENSE" Link="LICENSE" Pack="true" PackagePath="LICENSE" />
 	</ItemGroup>
 
-	<ItemGroup Condition="$(Configuration) == 'Release'">
-		<PackageReference Include="FrenchExDev.Net.CSharp.Object.Validator.Abstractions" />
-	</ItemGroup>
-
-	<ItemGroup Condition="$(Configuration) == 'Debug'">
+	<ItemGroup>
 		<ProjectReference Include="..\FrenchExDev.Net.CSharp.Object.Validator.Abstractions\FrenchExDev.Net.CSharp.Object.Validator.Abstractions.csproj" />
 	</ItemGroup>
 

@@ -1,6 +1,6 @@
 ﻿namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
-public class PropertyDeclarationModel
+public class PropertyDeclarationModel : IDeclarationModel
 {
     public List<string> Modifiers { get; set; } = new();
     public string Type { get; set; } = string.Empty;

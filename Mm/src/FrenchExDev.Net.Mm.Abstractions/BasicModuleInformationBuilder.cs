@@ -1,11 +1,12 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder;
+using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
 
 namespace FrenchExDev.Net.Mm.Abstractions;
 
 /// <summary>
 /// Represents a builder for creating instances of <see cref="BasicModuleInformation"/>.
 /// </summary>
-public class BasicModuleInformationBuilder : IBuilder<BasicModuleInformation>
+public class BasicModuleInformationBuilder : AbstractObjectBuilder<BasicModuleInformation, BasicModuleInformationBuilder>
 {
     private string? _displayName;
     private string? _name;
@@ -43,14 +44,34 @@ public class BasicModuleInformationBuilder : IBuilder<BasicModuleInformation>
         return this;
     }
 
-    public IBuildResult<BasicModuleInformation> Build()
+    protected override IObjectBuildResult<BasicModuleInformation> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
     {
-        return new BasicBuildResult<BasicModuleInformation>(true,
-            new BasicModuleInformation(
-                _displayName ?? throw new ArgumentNullException(nameof(_displayName)),
-                _name ?? throw new ArgumentNullException(nameof(_name)),
-                _description ?? throw new ArgumentNullException(nameof(_description)),
-                _website ?? string.Empty,
-                _documentation ?? string.Empty));
+        if (string.IsNullOrEmpty(_name))
+        {
+            exceptions.Add(new InvalidDataException($"The {nameof(Name)} field is required."));
+        }
+
+        if (string.IsNullOrEmpty(_displayName))
+        {
+            exceptions.Add(new InvalidDataException($"The {nameof(DisplayName)} field is required."));
+        }
+
+        if (string.IsNullOrEmpty(_description))
+        {
+            exceptions.Add(new InvalidDataException($"The {nameof(Description)} field is required."));
+        }
+
+        if (exceptions.Count > 0)
+        {
+            return Failure(exceptions, visited);
+        }
+
+        return Success(new BasicModuleInformation(
+            _displayName ?? throw new InvalidDataException(nameof(_displayName)),
+            _name ?? throw new InvalidDataException(nameof(_name)),
+            _description ?? throw new InvalidDataException(nameof(_description)),
+            _website ?? "",
+            _documentation ?? ""
+        ));
     }
 }

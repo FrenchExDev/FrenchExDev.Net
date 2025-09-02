@@ -67,6 +67,17 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     }
 
     /// <summary>
+    /// Creates a failure result containing the specified exceptions and a record of visited objects.
+    /// </summary>
+    /// <param name="exceptions"></param>
+    /// <param name="visited"></param>
+    /// <returns></returns>
+    protected virtual FailureObjectBuildResult<TClass, TBuilder> Failure(IEnumerable<Exception> exceptions, VisitedObjectsList visited)
+    {
+        return new FailureObjectBuildResult<TClass, TBuilder>((TBuilder)(object)this, exceptions, visited);
+    }
+
+    /// <summary>
     /// Creates a successful result containing the specified instance.
     /// </summary>
     /// <param name="instance">The instance to include in the successful result. Cannot be <see langword="null"/>.</param>

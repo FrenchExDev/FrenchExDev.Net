@@ -23,13 +23,13 @@ public class ClassDeclarationModelBuilder : AbstractObjectBuilder<ClassDeclarati
         _name = name;
         return this;
     }
-    
+
     public ClassDeclarationModelBuilder Modifier(ClassModifier modifier)
     {
         Modifiers.Add(modifier);
         return this;
     }
-    
+
     public ClassDeclarationModelBuilder Attribute(Action<AttributeDeclarationModelBuilder> attribute)
     {
         var builder = new AttributeDeclarationModelBuilder();
@@ -43,25 +43,25 @@ public class ClassDeclarationModelBuilder : AbstractObjectBuilder<ClassDeclarati
         _baseType = baseType;
         return this;
     }
-    
+
     public ClassDeclarationModelBuilder ImplementedInterface(string implementedInterface)
     {
         _implementedInterfaces.Add(implementedInterface);
         return this;
     }
-    
+
     public ClassDeclarationModelBuilder TypeParameter(TypeParameterDeclarationModelBuilder typeParameter)
     {
         _typeParameters.Add(typeParameter);
         return this;
     }
-    
+
     public ClassDeclarationModelBuilder TypeParameterConstraint(TypeParameterConstraintModelBuilder typeParameterConstraint)
     {
         _typeParameterConstraints.Add(typeParameterConstraint);
         return this;
     }
-    
+
     public ClassDeclarationModelBuilder Field(Action<FieldDeclarationModelBuilder> field)
     {
         var builder = new FieldDeclarationModelBuilder();
@@ -100,6 +100,56 @@ public class ClassDeclarationModelBuilder : AbstractObjectBuilder<ClassDeclarati
             .Select(x => x.Build(visited))
             .ToList();
 
+        var typeParameters = _typeParameters
+            .Select(x => x.Build(visited))
+            .ToList();
+
+        var typeParameterConstraints = _typeParameterConstraints
+            .Select(x => x.Build(visited))
+            .ToList();
+
+        var fields = _fields
+            .Select(x => x.Build(visited))
+            .ToList();
+
+        var properties = _properties
+            .Select(x => x.Build(visited))
+            .ToList();
+
+        var methods = _methods
+            .Select(x => x.Build(visited))
+            .ToList();
+
+        var constructors = _constructors
+            .Select(x => x.Build(visited))
+            .ToList();
+
+
+        var nestedClasses = _nestedClasses
+            .Select(x => x.Build(visited))
+            .ToList();
+
+        if (fields.OfType<FailureObjectBuildResult<FieldDeclarationModel, FieldDeclarationModelBuilder>>().Any())
+        {
+            exceptions.AddRange(fields
+                .OfType<FailureObjectBuildResult<FieldDeclarationModel, FieldDeclarationModelBuilder>>()
+                .SelectMany(x => x.Exceptions));
+        }
+
+        if (properties.OfType<FailureObjectBuildResult<PropertyDeclarationModel, PropertyDeclarationModelBuilder>>().Any())
+        {
+            exceptions.AddRange(properties
+                .OfType<FailureObjectBuildResult<PropertyDeclarationModel, PropertyDeclarationModelBuilder>>()
+                .SelectMany(x => x.Exceptions));
+        }
+
+        if (methods.OfType<FailureObjectBuildResult<MethodDeclarationModel, MethodDeclarationModelBuilder>>().Any())
+        {
+            exceptions.AddRange(methods
+                .OfType<FailureObjectBuildResult<MethodDeclarationModel, MethodDeclarationModelBuilder>>()
+                .SelectMany(x => x.Exceptions));
+        }
+
         if (attributes.OfType<FailureObjectBuildResult<AttributeDeclarationModel, AttributeDeclarationModelBuilder>>().Any())
         {
             exceptions.AddRange(attributes
@@ -107,20 +157,12 @@ public class ClassDeclarationModelBuilder : AbstractObjectBuilder<ClassDeclarati
                 .SelectMany(x => x.Exceptions));
         }
 
-        var typeParameters = _typeParameters
-            .Select(x => x.Build(visited))
-            .ToList();
-
         if (typeParameters.OfType<FailureObjectBuildResult<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>>().Any())
         {
             exceptions.AddRange(typeParameters
                 .OfType<FailureObjectBuildResult<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>>()
                 .SelectMany(x => x.Exceptions));
         }
-
-        var typeParameterConstraints = _typeParameterConstraints
-            .Select(x => x.Build(visited))
-            .ToList();
 
         if (typeParameterConstraints.OfType<FailureObjectBuildResult<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>>().Any())
         {
@@ -134,58 +176,17 @@ public class ClassDeclarationModelBuilder : AbstractObjectBuilder<ClassDeclarati
             exceptions.Add(new InvalidOperationException("Class name must be provided."));
         }
 
-        var fields = _fields
-            .Select(x => x.Build(visited))
-            .ToList();
-
-        if (fields.OfType<FailureObjectBuildResult<FieldDeclarationModel, FieldDeclarationModelBuilder>>().Any())
+        if (nestedClasses.OfType<FailureObjectBuildResult<ClassDeclarationModel, ClassDeclarationModelBuilder>>().Any())
         {
-            exceptions.AddRange(fields
-                .OfType<FailureObjectBuildResult<FieldDeclarationModel, FieldDeclarationModelBuilder>>()
+            exceptions.AddRange(nestedClasses
+                .OfType<FailureObjectBuildResult<ClassDeclarationModel, ClassDeclarationModelBuilder>>()
                 .SelectMany(x => x.Exceptions));
         }
-
-        var properties = _properties
-            .Select(x => x.Build(visited))
-            .ToList();
-
-        if (properties.OfType<FailureObjectBuildResult<PropertyDeclarationModel, PropertyDeclarationModelBuilder>>().Any())
-        {
-            exceptions.AddRange(properties
-                .OfType<FailureObjectBuildResult<PropertyDeclarationModel, PropertyDeclarationModelBuilder>>()
-                .SelectMany(x => x.Exceptions));
-        }
-
-        var methods = _methods
-            .Select(x => x.Build(visited))
-            .ToList();
-
-        if (methods.OfType<FailureObjectBuildResult<MethodDeclarationModel, MethodDeclarationModelBuilder>>().Any())
-        {
-            exceptions.AddRange(methods
-                .OfType<FailureObjectBuildResult<MethodDeclarationModel, MethodDeclarationModelBuilder>>()
-                .SelectMany(x => x.Exceptions));
-        }
-
-        var constructors = _constructors
-            .Select(x => x.Build(visited))
-            .ToList();
 
         if (constructors.OfType<FailureObjectBuildResult<ConstructorDeclarationModel, ConstructorDeclarationModelBuilder>>().Any())
         {
             exceptions.AddRange(constructors
                 .OfType<FailureObjectBuildResult<ConstructorDeclarationModel, ConstructorDeclarationModelBuilder>>()
-                .SelectMany(x => x.Exceptions));
-        }
-
-        var nestedClasses = _nestedClasses
-            .Select(x => x.Build(visited))
-            .ToList();
-
-        if (nestedClasses.OfType<FailureObjectBuildResult<ClassDeclarationModel, ClassDeclarationModelBuilder>>().Any())
-        {
-            exceptions.AddRange(nestedClasses
-                .OfType<FailureObjectBuildResult<ClassDeclarationModel, ClassDeclarationModelBuilder>>()
                 .SelectMany(x => x.Exceptions));
         }
 

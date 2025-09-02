@@ -1,6 +1,6 @@
 ﻿namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
-public class NamespaceDeclarationModel
+public class NamespaceDeclarationModel : IDeclarationModel
 {
     public string Name { get; set; } = string.Empty;
     public List<InterfaceDeclarationModel> Interfaces { get; set; } = new();

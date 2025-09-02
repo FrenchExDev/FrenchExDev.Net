@@ -1,4 +1,5 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder;
+using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
 
 namespace FrenchExDev.Net.Mm.Abstractions;
 
@@ -9,7 +10,7 @@ namespace FrenchExDev.Net.Mm.Abstractions;
 /// cref="SemanticModuleVersion"/> components such as major, minor, patch, pre-release,  and build metadata. Once all
 /// desired components are set, the <see cref="Build"/> method  can be called to produce a fully constructed <see
 /// cref="SemanticModuleVersion"/> instance.</remarks>
-public class SemanticModuleVersionBuilder : IBuilder<SemanticModuleVersion>
+public class SemanticModuleVersionBuilder : AbstractObjectBuilder<SemanticModuleVersion, SemanticModuleVersionBuilder>
 {
     /// <summary>
     /// Holds the components of the semantic version being built.
@@ -76,13 +77,34 @@ public class SemanticModuleVersionBuilder : IBuilder<SemanticModuleVersion>
     }
 
     /// <summary>
-    /// Builds and returns a result containing the semantic module version.
+    /// Builds an instance of <see cref="SemanticModuleVersion"/>, validating the required components.
     /// </summary>
-    /// <returns>An <see cref="IBuildResult{T}"/> containing the constructed <see cref="SemanticModuleVersion"/>. The result
-    /// indicates a successful build operation.</returns>
-    public IBuildResult<SemanticModuleVersion> Build()
+    /// <param name="exceptions"></param>
+    /// <param name="visited"></param>
+    /// <returns></returns>
+    protected override IObjectBuildResult<SemanticModuleVersion> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
     {
-        return new BasicBuildResult<SemanticModuleVersion>(true,
-            new SemanticModuleVersion(_major, _minor, _patch, _preRelease, _buildMetadata));
+
+        if (_major < 0)
+        {
+            exceptions.Add(new InvalidDataException($"The {nameof(Major)} version component cannot be negative."));
+        }
+
+        if (_minor < 0)
+        {
+            exceptions.Add(new InvalidDataException($"The {nameof(Minor)} version component cannot be negative."));
+        }
+
+        if (_patch < 0)
+        {
+            exceptions.Add(new InvalidDataException($"The {nameof(Patch)} version component cannot be negative."));
+        }
+
+        if (exceptions.Count > 0)
+        {
+            return new FailureObjectBuildResult<SemanticModuleVersion, SemanticModuleVersionBuilder>(this, exceptions, visited);
+        }
+
+        return new SuccessObjectBuildResult<SemanticModuleVersion>(new SemanticModuleVersion(_major, _minor, _patch, _preRelease, _buildMetadata));
     }
 }

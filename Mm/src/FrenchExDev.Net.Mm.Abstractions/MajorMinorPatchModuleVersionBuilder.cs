@@ -10,7 +10,7 @@ namespace FrenchExDev.Net.Mm.Abstractions;
 /// <remarks>This class follows the builder pattern, allowing the caller to configure version components  (major,
 /// minor, and patch) incrementally using method chaining. Once all desired components  are set, the <see cref="Build"/>
 /// method can be called to produce a new  <see cref="MajorMinorPatchModuleVersion"/> instance.</remarks>
-public class MajorMinorPatchModuleVersionBuilder : AbstractBuilder<MajorMinorPatchModuleVersion>
+public class MajorMinorPatchModuleVersionBuilder : AbstractObjectBuilder<MajorMinorPatchModuleVersion, MajorMinorPatchModuleVersionBuilder>
 {
     /// <summary>
     /// Holds the major, minor, and patch version components.
@@ -51,37 +51,42 @@ public class MajorMinorPatchModuleVersionBuilder : AbstractBuilder<MajorMinorPat
     }
 
     /// <summary>
-    /// Builds and returns a new instance of <see cref="MajorMinorPatchModuleVersion"/> with the configured version components.
+    /// Builds an object representing a major, minor, and patch version, validating the required components.
     /// </summary>
-    /// <returns>A new instance of <see cref="MajorMinorPatchModuleVersion"/> initialized with the specified major, minor, and patch values.</returns>
-    public override IBuildResult<MajorMinorPatchModuleVersion> Build()
+    /// <remarks>This method ensures that the major, minor, and patch components are provided and have valid
+    /// values. If any of these components are missing, corresponding exceptions are added to the <paramref
+    /// name="exceptions"/> list.</remarks>
+    /// <param name="exceptions">A collection to which any validation exceptions encountered during the build process are added.</param>
+    /// <param name="visited">A list of objects that have already been visited during the build process to prevent circular references.</param>
+    /// <returns>An <see cref="IObjectBuildResult{MajorMinorPatchModuleVersion}"/> representing the result of the build
+    /// operation. If validation fails, the result contains the collected exceptions; otherwise, it contains the
+    /// successfully built version object.</returns>
+    protected override IObjectBuildResult<MajorMinorPatchModuleVersion> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
     {
-        var exceptions = new List<Exception>();
-
-        if (_major == null)
+        if (_major == null || !_major.HasValue)
         {
             exceptions.Add(new ArgumentNullException(nameof(_major), "Major version is required."));
         }
 
-        if (_minor == null)
+        if (_minor == null || !_minor.HasValue)
         {
             exceptions.Add(new ArgumentNullException(nameof(_minor), "Minor version is required."));
         }
 
-        if (_patch == null)
+        if (_patch == null || !_patch.HasValue)
         {
             exceptions.Add(new ArgumentNullException(nameof(_patch), "Patch version is required."));
         }
 
         if (exceptions.Any())
         {
-                       return new BasicBuildResult<MajorMinorPatchModuleVersion>(false, null, exceptions);
+            return Failure(exceptions, visited);
         }
 
-        return new BasicBuildResult<MajorMinorPatchModuleVersion>(true,
-                    new MajorMinorPatchModuleVersion(
-                        _major ?? throw new ArgumentNullException(nameof(_major)),
-                        _minor ?? throw new ArgumentNullException(nameof(_minor)),
-                        _patch ?? throw new ArgumentNullException(nameof(_patch))));
+        ArgumentNullException.ThrowIfNull(_major);
+        ArgumentNullException.ThrowIfNull(_minor);
+        ArgumentNullException.ThrowIfNull(_patch);
+
+        return Success(new MajorMinorPatchModuleVersion(_major.Value, _minor.Value, _patch.Value));
     }
 }

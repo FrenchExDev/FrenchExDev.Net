@@ -1,6 +1,6 @@
 ﻿namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
-public class EnumMemberDeclarationModel
+public class EnumMemberDeclarationModel : IDeclarationModel
 {
     public string Name { get; set; } = string.Empty;
     public string? Value { get; set; }

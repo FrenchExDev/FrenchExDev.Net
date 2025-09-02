@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<Version>0.0.1</Version>
+		<Version>0.0.9</Version>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Description>Tiny Object building interface in .NET</Description>
 		<Copyright>FrenchExDev</Copyright>
@@ -19,10 +19,6 @@
 	<ItemGroup>
 		<Content Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="README.md" />
 		<Content Include="..\..\LICENSE" Link="LICENSE" Pack="true" PackagePath="LICENSE" />
-	</ItemGroup>
-	
-	<ItemGroup Condition="$(Configuration) == 'Release'">
-	  <PackageReference Include="FrenchExDev.Net.CSharp.Object.Builder.Abstractions" />
 	</ItemGroup>
 	
 	<ItemGroup>

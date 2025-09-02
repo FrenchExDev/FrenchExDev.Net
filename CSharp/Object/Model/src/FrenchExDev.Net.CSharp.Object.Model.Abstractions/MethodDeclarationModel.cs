@@ -1,6 +1,6 @@
 ﻿namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
-public class MethodDeclarationModel
+public class MethodDeclarationModel : IDeclarationModel
 {
     public List<string> Modifiers { get; set; } = new();
     public string ReturnType { get; set; } = "void";

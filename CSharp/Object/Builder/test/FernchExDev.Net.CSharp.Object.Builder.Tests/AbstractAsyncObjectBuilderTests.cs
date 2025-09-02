@@ -1,7 +1,6 @@
 ﻿using FernchExDev.Net.CSharp.Object.Builder.Tests.Fixtures;
 using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
 using FrenchExDev.Net.CSharp.Object.Builder.Testing;
-using FrenchExDev.Net.CSharp.Object.Builder.Tests.Fixtures;
 using Shouldly;
 namespace FrenchExDev.Net.CSharp.Object.Builder.Tests;
 
