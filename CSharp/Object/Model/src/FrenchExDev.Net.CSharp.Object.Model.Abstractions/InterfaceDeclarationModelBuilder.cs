@@ -90,20 +90,6 @@ public class InterfaceDeclarationModelBuilder : AbstractObjectBuilder<InterfaceD
         return this;
     }
 
-    private List<IObjectBuildResult<TClass>> BuildList<TClass, TBuilder>(List<TBuilder> instances, VisitedObjectsList visited) where TBuilder : IObjectBuilder<TClass>
-    {
-        return instances.Select(x => x.Build(visited)).ToList();
-    }
-
-    private void AddExceptions<TClass, TBuilder>(List<IObjectBuildResult<TClass>> results, ExceptionBuildList exceptions) where TBuilder : IObjectBuilder<TClass>
-    {
-        if (results.OfType<FailureObjectBuildResult<TClass, TBuilder>>().Any())
-        {
-            exceptions.AddRange(results
-                .OfType<FailureObjectBuildResult<TClass, TBuilder>>()
-                .SelectMany(x => x.Exceptions));
-        }
-    }
 
     protected override IObjectBuildResult<InterfaceDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
     {
@@ -130,10 +116,10 @@ public class InterfaceDeclarationModelBuilder : AbstractObjectBuilder<InterfaceD
 
         if (exceptions.Any())
         {
-            return new FailureObjectBuildResult<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(this, exceptions, visited);
+            return Failure(exceptions, visited);
         }
 
-        return new SuccessObjectBuildResult<InterfaceDeclarationModel>(new InterfaceDeclarationModel
+        return Success(new InterfaceDeclarationModel
         {
             Name = _name ?? string.Empty,
             Modifiers = Modifiers,

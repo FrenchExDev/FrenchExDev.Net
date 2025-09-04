@@ -85,31 +85,23 @@ public class ConstructorDeclarationModelBuilder : AbstractObjectBuilder<Construc
     /// <returns>A build result containing either the constructed model or failure details.</returns>
     protected override IObjectBuildResult<ConstructorDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
     {
-        List<IObjectBuildResult<ParameterDeclarationModel>> parameters = _parameters
-          .Select(x => x.Build(visited))
-          .ToList();
-
+        var parameters = BuildList<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(_parameters, visited);
 
         if (string.IsNullOrEmpty(_name))
         {
             exceptions.Add(new InvalidOperationException("Constructor name must be provided."));
         }
 
-        if (parameters.OfType<FailureObjectBuildResult<ParameterDeclarationModel, ParameterDeclarationModelBuilder>>().Any())
-        {
-            exceptions.AddRange(parameters
-                .OfType<FailureObjectBuildResult<ParameterDeclarationModel, ParameterDeclarationModelBuilder>>()
-                .SelectMany(x => x.Exceptions));
-        }
+        AddExceptions<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(parameters, exceptions);
 
         if (exceptions.Any())
         {
-            return new FailureObjectBuildResult<ConstructorDeclarationModel, ConstructorDeclarationModelBuilder>(this, exceptions, visited);
+            return Failure(exceptions, visited);
         }
 
         ArgumentNullException.ThrowIfNull(_name);
 
-        return new SuccessObjectBuildResult<ConstructorDeclarationModel>(new ConstructorDeclarationModel
+        return Success(new ConstructorDeclarationModel
         {
             Name = _name,
             Modifiers = Modifiers,

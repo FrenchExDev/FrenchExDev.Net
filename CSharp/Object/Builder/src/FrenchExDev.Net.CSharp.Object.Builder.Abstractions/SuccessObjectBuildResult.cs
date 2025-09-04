@@ -1,5 +1,14 @@
 ﻿namespace FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
 
+/// <summary>
+/// Represents the result of a successful object build operation, including the resulting object and any exceptions
+/// encountered during the build process.
+/// </summary>
+/// <remarks>This class is used to encapsulate the outcome of a build operation that succeeded, providing access
+/// to the resulting object and any exceptions that may have occurred during the process. The <see cref="Result"/>
+/// property contains the successfully built object, while the <see cref="Exceptions"/> property enumerates any
+/// exceptions encountered during the build.</remarks>
+/// <typeparam name="TClass">The type of the object produced by the build operation.</typeparam>
 public class SuccessObjectBuildResult<TClass> : IObjectBuildResult<TClass>
 {
     /// <summary>

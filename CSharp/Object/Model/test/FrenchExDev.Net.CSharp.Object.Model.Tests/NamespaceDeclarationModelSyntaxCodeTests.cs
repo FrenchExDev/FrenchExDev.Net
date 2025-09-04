@@ -6,11 +6,18 @@ using Shouldly;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Tests;
 
+/// <summary>
+/// Contains unit tests for validating the behavior of NamespaceDeclarationModel building and code generation.
+/// </summary>
 public class NamespaceDeclarationModelSyntaxCodeTests
 {
+    /// <summary>
+    /// Tests that building a namespace without specifying a name results in a failure with the correct exception message.
+    /// </summary>
     [Fact]
     public void Cannot_Build_Namespace_Without_Name()
     {
+        // Attempt to build a namespace without a name and assert that the result is a failure with the expected exception.
         ModelSyntaxCodeTester.NamespaceInvalid(
             configure: (builder) =>
             {
@@ -21,13 +28,17 @@ public class NamespaceDeclarationModelSyntaxCodeTests
                 result.ShouldBeAssignableTo<FailureObjectBuildResult<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>>();
                 var failedResult = result.Failure<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>();
                 failedResult.Exceptions.Count().ShouldBe(1);
-                failedResult.Exceptions.ElementAt(0).Message.ShouldBe("Namespace name is required.");
+                failedResult.Exceptions.ElementAt(0).Message.ShouldBe("Namespace name must be provided.");
             });
     }
 
+    /// <summary>
+    /// Tests that a simple namespace with a class and a field can be modeled, built, and code-generated correctly.
+    /// </summary>
     [Fact]
     public void Can_Model_And_Build_And_Generate_Simple_Namespace_With_Class_With_Field()
     {
+        // Build a namespace with a public class containing a private int field with an initializer, then assert the model and generated code.
         ModelSyntaxCodeTester.Valid<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>(
             body: (builder) =>
             {
@@ -45,6 +56,7 @@ public class NamespaceDeclarationModelSyntaxCodeTests
                 });
             }, assertBuiltModel: (@namespace) =>
             {
+                // Assert the namespace and class structure
                 @namespace.Name.ShouldBe("FrenchExDev.MyDev.Lib");
                 @namespace.Classes.Count.ShouldBe(1);
                 @namespace.Classes[0].Name.ShouldBe("MyFoo");
@@ -54,9 +66,10 @@ public class NamespaceDeclarationModelSyntaxCodeTests
                 @namespace.Classes[0].Fields[0].Type.ShouldBe("int");
                 @namespace.Classes[0].Fields[0].Modifiers.ShouldContain("private");
 
-            }, assertGeneratedCode: (namespaceGeneratorCode) =>
+            }, assertGeneratedCode: (namespaceGeneratedCode) =>
             {
-                namespaceGeneratorCode.ShouldBeEquivalentTo(@"namespace FrenchExDev.MyDev.Lib
+                // Assert the generated C# code matches the expected output
+                namespaceGeneratedCode.ShouldBeEquivalentTo(@"namespace FrenchExDev.MyDev.Lib
 {
     public class MyFoo
     {

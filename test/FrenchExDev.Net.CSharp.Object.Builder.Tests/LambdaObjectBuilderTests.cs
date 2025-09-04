@@ -60,14 +60,14 @@ public class LambdaObjectBuilderTests
     public async Task Can_Build_Complete_Person()
     {
         await BuilderTester.TestValid<PersonBuilder, Person>(
-            () => new PersonBuilder((builder, exceptions, visited) =>
+            builderFactory: () => new PersonBuilder((builder, exceptions, visited) =>
             {
                 return SuccessObjectBuildResult<Person>.Success(new Person("foo", 30, [new Address("123 Main St", "12345")]));
             }),
-            (builder) =>
+            body: (builder) =>
             {
             },
-            (person) =>
+            asserts: (person) =>
             {
                 person.Name.ShouldBe("foo");
                 person.Age.ShouldBe(30);

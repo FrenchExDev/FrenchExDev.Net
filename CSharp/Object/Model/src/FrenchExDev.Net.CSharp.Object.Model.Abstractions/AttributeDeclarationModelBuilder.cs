@@ -57,12 +57,12 @@ public class AttributeDeclarationModelBuilder : AbstractObjectBuilder<AttributeD
 
         if (exceptions.Any())
         {
-            return new FailureObjectBuildResult<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(this, exceptions, visited);
+            return Failure(exceptions, visited);
         }
 
         ArgumentNullException.ThrowIfNull(_name);
 
-        return new SuccessObjectBuildResult<AttributeDeclarationModel>(new AttributeDeclarationModel
+        return Success(new AttributeDeclarationModel
         {
             Name = _name,
             Arguments = _arguments

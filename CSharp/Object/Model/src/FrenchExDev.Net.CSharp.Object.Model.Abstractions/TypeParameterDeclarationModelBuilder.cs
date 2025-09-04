@@ -22,12 +22,12 @@ public class TypeParameterDeclarationModelBuilder : AbstractObjectBuilder<TypePa
 
         if (exceptions.Any())
         {
-            return new FailureObjectBuildResult<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(this, exceptions, visited);
+            return Failure(exceptions, visited);
         }
 
         ArgumentNullException.ThrowIfNull(_name);
 
-        return new SuccessObjectBuildResult<TypeParameterDeclarationModel>(new TypeParameterDeclarationModel
+        return Success(new TypeParameterDeclarationModel
         {
             Name = _name
         });

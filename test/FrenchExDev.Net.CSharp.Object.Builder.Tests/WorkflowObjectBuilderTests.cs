@@ -38,11 +38,9 @@ public class WorkflowObjectBuilderTests
     /// specified criteria.</remarks>
     /// <returns></returns>
     [Fact]
-    public async Task Can_Build_Complete_Person()
-    {
-        await BuilderTester.TestValidAsync<PersonBuilder, Person>(
-            () => new PersonBuilder(),
-            async (builder, cancellationToken) =>
+    public async Task Can_Build_Complete_Person() => await BuilderTester.TestValidAsync<PersonBuilder, Person>(
+            builderFactory: () => new PersonBuilder(),
+            body: async (builder, cancellationToken) =>
             {
                 builder
                     .Step(new LambdaStepObjectBuilder<Person>((step, exceptions, intermediates, cancellationToken) =>
@@ -62,7 +60,7 @@ public class WorkflowObjectBuilderTests
                     }));
                 await Task.CompletedTask;
             },
-            (person) =>
+            asserts: (person) =>
             {
                 person.ShouldNotBeNull();
                 person.Name.ShouldBe("John Doe");
@@ -72,7 +70,6 @@ public class WorkflowObjectBuilderTests
                 person.Addresses.First().Street.ShouldBe("123 Main St");
                 person.Addresses.First().ZipCode.ShouldBe("12345");
             });
-    }
 
     /// <summary>
     /// Tests that the <see cref="PersonBuilder"/> cannot build a complete <see cref="Person"/> object when
@@ -83,11 +80,9 @@ public class WorkflowObjectBuilderTests
     /// to zero, and that the failure contains the expected exception message and builder state.</remarks>
     /// <returns></returns>
     [Fact]
-    public async Task Cannot_Build_Complete_Person()
-    {
-        await BuilderTester.TestInvalidAsync<PersonBuilder, Person>(
-            () => new PersonBuilder(),
-            async (builder, cancellationToken) =>
+    public async Task Cannot_Build_Complete_Person() => await BuilderTester.TestInvalidAsync<PersonBuilder, Person>(
+            builderFactory: () => new PersonBuilder(),
+            body: async (builder, cancellationToken) =>
             {
                 builder
                     .Step(new LambdaStepObjectBuilder<Person>((step, exceptions, intermediates, cancellationToken) =>
@@ -113,13 +108,11 @@ public class WorkflowObjectBuilderTests
                     }));
                 await Task.CompletedTask;
             },
-            (failure) =>
+            assert: (failure) =>
             {
                 failure.ShouldNotBeNull();
                 failure.Exceptions.Count().ShouldBe(1);
                 failure.Exceptions.ElementAt(0).Message.ShouldBe("Invalid age provided.");
                 failure.Builder.ShouldNotBeNull();
             });
-    }
-
 }

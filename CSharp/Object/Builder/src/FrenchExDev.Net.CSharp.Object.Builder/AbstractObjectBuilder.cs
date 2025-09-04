@@ -86,4 +86,20 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     {
         return new SuccessObjectBuildResult<TClass>(instance);
     }
+
+    protected List<IObjectBuildResult<TOtherClass>> BuildList<TOtherClass, TOtherBuilder>(List<TOtherBuilder> instances, VisitedObjectsList visited) where TOtherBuilder : IObjectBuilder<TOtherClass>
+    {
+        return instances.Select(x => x.Build(visited)).ToList();
+    }
+
+    protected void AddExceptions<TOtherClass, TOtherBuilder>(List<IObjectBuildResult<TOtherClass>> results, ExceptionBuildList exceptions) where TOtherBuilder : IObjectBuilder<TOtherClass>
+    {
+        if (results.OfType<FailureObjectBuildResult<TOtherClass, TOtherBuilder>>().Any())
+        {
+            exceptions.AddRange(results
+                .OfType<FailureObjectBuildResult<TOtherClass, TOtherBuilder>>()
+                .SelectMany(x => x.Exceptions));
+        }
+    }
+
 }

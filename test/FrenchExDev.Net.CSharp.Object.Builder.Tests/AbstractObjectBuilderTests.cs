@@ -20,31 +20,60 @@ public class AbstractObjectBuilderTests
     /// <summary>
     /// Provides a builder for creating instances of the <see cref="Person"/> class.
     /// </summary>
-    /// <remarks>This builder allows for the step-by-step construction of a <see cref="Person"/> object, 
-    /// including setting the name, age, and associated addresses. It validates the input data  during the build process
-    /// and returns either a successfully constructed <see cref="Person"/>  or a failure result with detailed
-    /// exceptions.</remarks>
+    /// <remarks>
+    /// This builder allows for the step-by-step construction of a <see cref="Person"/> object, 
+    /// including setting the name, age, and associated addresses. It validates the input data during the build process
+    /// and returns either a successfully constructed <see cref="Person"/> or a failure result with detailed
+    /// exceptions.
+    /// </remarks>
     internal class PersonBuilder : AbstractObjectBuilder<Person, PersonBuilder>
     {
+        /// <summary>
+        /// Error message for invalid name.
+        /// </summary>
         public const string ErrorInvalidName = "Invalid name";
+        /// <summary>
+        /// Error message for invalid age.
+        /// </summary>
         public const string ErrorInvalidAge = "Invalid age";
+        /// <summary>
+        /// Error message for a general build failure.
+        /// </summary>
         public const string BuildError = "Failed to build person";
+        /// <summary>
+        /// Stores the name of the person being built.
+        /// </summary>
         private string? _name;
+        /// <summary>
+        /// Stores the age of the person being built.
+        /// </summary>
         private int? _age;
+        /// <summary>
+        /// Stores the list of address builders for the person.
+        /// </summary>
         private List<AddressBuilder> _addresses = new();
 
+        /// <summary>
+        /// Sets the name of the person.
+        /// </summary>
         public PersonBuilder Name(string? name)
         {
             _name = name;
             return this;
         }
 
+        /// <summary>
+        /// Sets the age of the person.
+        /// </summary>
         public PersonBuilder Age(int? age)
         {
             _age = age;
             return this;
         }
 
+        /// <summary>
+        /// Adds an address to the person using an address builder action.
+        /// </summary>
         public PersonBuilder Address(Action<AddressBuilder> addressBuilderAction)
         {
             var addressBuilder = new AddressBuilder();
@@ -56,10 +85,12 @@ public class AbstractObjectBuilderTests
         /// <summary>
         /// Builds a <see cref="Person"/> object using the configured properties and child builders.
         /// </summary>
-        /// <remarks>The method validates the configured properties, such as <c>_name</c> and <c>_age</c>,
+        /// <remarks>
+        /// The method validates the configured properties, such as <c>_name</c> and <c>_age</c>,
         /// and ensures that all child builders for <see cref="Address"/> objects produce successful results. If any
         /// validation fails or a child builder returns a failure, the method returns a failure result with the relevant
-        /// exceptions.</remarks>
+        /// exceptions.
+        /// </remarks>
         /// <param name="exceptions">A collection to which any exceptions encountered during the build process are added.</param>
         /// <param name="visited">A list of objects that have already been visited during the build process to prevent circular references.</param>
         /// <returns>A <see cref="SuccessObjectBuildResult{T}"/> containing the constructed <see cref="Person"/> object if the
@@ -67,6 +98,7 @@ public class AbstractObjectBuilderTests
         /// encountered exceptions.</returns>
         protected override IObjectBuildResult<Person> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
         {
+            // Build all addresses and collect their results
             var addresses = new List<Address>();
             foreach (var addressBuilder in _addresses)
             {
@@ -82,6 +114,7 @@ public class AbstractObjectBuilderTests
                 }
             }
 
+            // Validate name and age
             if (string.IsNullOrWhiteSpace(_name))
             {
                 exceptions.Add(new BasicObjectBuildException<Person, PersonBuilder>(ErrorInvalidName, this, visited));
@@ -92,38 +125,60 @@ public class AbstractObjectBuilderTests
                 exceptions.Add(new BasicObjectBuildException<Person, PersonBuilder>(ErrorInvalidAge, this, visited));
             }
 
-
+            // Return failure if any exceptions were collected
             if (exceptions.Any())
             {
-                return new FailureObjectBuildResult<Person, PersonBuilder>(this, exceptions, visited);
+                return Failure(exceptions, visited);
             }
 
+            // Ensure required fields are not null
             ArgumentNullException.ThrowIfNull(_name);
             ArgumentNullException.ThrowIfNull(_age);
 
-            return new SuccessObjectBuildResult<Person>(new Person(_name, _age.Value, addresses));
+            // Return a successful build result with the constructed Person
+            return Success(new Person(_name, _age.Value, addresses));
         }
     }
 
     /// <summary>
     /// Provides a builder for creating instances of the <see cref="Address"/> class.
     /// </summary>
-    /// <remarks>This builder allows for the step-by-step construction of an <see cref="Address"/> object by
+    /// <remarks>
+    /// This builder allows for the step-by-step construction of an <see cref="Address"/> object by
     /// setting its properties, such as <see cref="Street"/> and <see cref="ZipCode"/>.  The builder validates the
     /// required fields during the build process and returns either a  successful result or a failure result with
-    /// appropriate error messages.</remarks>
+    /// appropriate error messages.
+    /// </remarks>
     internal class AddressBuilder : AbstractObjectBuilder<Address, AddressBuilder>
     {
+        /// <summary>
+        /// Error message for invalid street.
+        /// </summary>
         public const string ErrorInvalidStreet = "Invalid street";
-        public const string ERrorInvalidZipCode = "Invalid zip code";
+        /// <summary>
+        /// Error message for invalid zip code.
+        /// </summary>
+        public const string ErrorInvalidZipCode = "Invalid zip code";
+        /// <summary>
+        /// Stores the street value for the address being built.
+        /// </summary>
         private string? _street;
+        /// <summary>
+        /// Stores the zip code value for the address being built.
+        /// </summary>
         private string? _zipCode;
 
+        /// <summary>
+        /// Sets the street value for the address.
+        /// </summary>
         public AddressBuilder Street(string street)
         {
             _street = street;
             return this;
         }
+        /// <summary>
+        /// Sets the zip code value for the address.
+        /// </summary>
         public AddressBuilder ZipCode(string zipCode)
         {
             _zipCode = zipCode;
@@ -139,17 +194,29 @@ public class AbstractObjectBuilderTests
         /// valid; otherwise, a failure result with the appropriate error message.</returns>
         protected override IObjectBuildResult<Address> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
         {
+            // Validate street and zip code
             if (string.IsNullOrEmpty(_street))
             {
-                return Failure(ErrorInvalidStreet, visited);
+                exceptions.Add(new BasicObjectBuildException<Address, AddressBuilder>(ErrorInvalidStreet, this, visited));
             }
 
             if (string.IsNullOrEmpty(_zipCode))
             {
-                return Failure(ERrorInvalidZipCode, visited);
+                exceptions.Add(new BasicObjectBuildException<Address, AddressBuilder>(ErrorInvalidZipCode, this, visited));
             }
 
-            return new SuccessObjectBuildResult<Address>(new Address(_street, _zipCode));
+            // Return failure if any exceptions were collected
+            if (exceptions.Any())
+            {
+                return Failure(exceptions, visited);
+            }
+
+            // Ensure required fields are not null
+            ArgumentNullException.ThrowIfNull(_street);
+            ArgumentNullException.ThrowIfNull(_zipCode);
+
+            // Return a successful build result with the constructed Address
+            return Success(new Address(_street, _zipCode));
         }
     }
 
@@ -164,17 +231,15 @@ public class AbstractObjectBuilderTests
     /// object is of type <see cref="SuccessObjectBuildResult{T}"/> and that all properties are set as expected.</remarks>
     /// <returns></returns>
     [Fact]
-    public async Task Can_Build_Complete_Person()
-    {
-        await BuilderTester.TestValid<PersonBuilder, Person>(
-            () => new PersonBuilder(),
-            (builder) =>
+    public async Task Can_Build_Complete_Person() => await BuilderTester.TestValid<PersonBuilder, Person>(
+            builderFactory: () => new PersonBuilder(),
+            body: (builder) =>
             {
                 builder.Name("foo")
                        .Age(30)
                        .Address(ab => ab.Street("123 Main St").ZipCode("12345"))
                        .Address(ab => ab.Street("456 Elm St").ZipCode("67890"));
-            }, (person) =>
+            }, asserts: (person) =>
             {
                 person.Name.ShouldBe("foo");
                 person.Age.ShouldBe(30);
@@ -184,28 +249,24 @@ public class AbstractObjectBuilderTests
                 person.Addresses.ElementAt(1).Street.ShouldBe("456 Elm St");
                 person.Addresses.ElementAt(1).ZipCode.ShouldBe("67890");
             });
-    }
 
     /// <summary>
     /// Tests whether a <see cref="PersonBuilder"/> correctly handles the case where an invalid age is provided,
     /// </summary>
     /// <returns></returns>
     [Fact]
-    public void Cannot_Build_Complete_Person()
-    {
-        BuilderTester.TestInvalid<PersonBuilder, Person>(
-            () => new PersonBuilder(),
-            (builder) =>
+    public void Cannot_Build_Complete_Person() => BuilderTester.TestInvalid<PersonBuilder, Person>(
+            builderFactory: () => new PersonBuilder(),
+            body: (builder) =>
             {
                 builder.Name("foo")
-                       .Age(0)
+                       .Age(0) // invalid age
                        .Address(ab => ab.Street("123 Main St").ZipCode("12345"))
                        .Address(ab => ab.Street("456 Elm St").ZipCode("67890"));
-            }, (buildResult) =>
+            }, assert: (buildResult) =>
             {
                 var failure = (FailureObjectBuildResult<Person, PersonBuilder>)buildResult;
                 failure.Exceptions.Count().ShouldBe(1);
                 failure.Exceptions.ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
             });
-    }
 }

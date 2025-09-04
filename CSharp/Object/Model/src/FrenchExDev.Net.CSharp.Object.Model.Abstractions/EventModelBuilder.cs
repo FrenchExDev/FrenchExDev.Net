@@ -3,28 +3,68 @@ using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
+/// <summary>
+/// Builder class for constructing <see cref="EventModel"/> instances.
+/// Provides a fluent interface to set event modifiers, type, name, and attributes.
+/// Ensures required properties are set and validates attribute builders.
+/// </summary>
 public class EventModelBuilder : AbstractObjectBuilder<EventModel, EventModelBuilder>
 {
+    /// <summary>
+    /// Stores the type of the event handler (e.g., EventHandler, Action).
+    /// </summary>
     private string? _type;
+    /// <summary>
+    /// Stores the name of the event.
+    /// </summary>
     private string? _name;
+    /// <summary>
+    /// Stores the list of modifiers applied to the event (e.g., public, static).
+    /// </summary>
     private readonly List<string> _modifiers = new();
+    /// <summary>
+    /// Stores the list of attribute builders for the event.
+    /// </summary>
     private readonly List<AttributeDeclarationModelBuilder> _attributes = new();
 
+    /// <summary>
+    /// Adds a modifier to the event (e.g., public, static).
+    /// </summary>
+    /// <param name="modifier">The modifier to add.</param>
+    /// <returns>The current builder instance.</returns>
     public EventModelBuilder Modifier(string modifier)
     {
         _modifiers.Add(modifier);
         return this;
     }
+
+    /// <summary>
+    /// Sets the type of the event handler.
+    /// </summary>
+    /// <param name="type">The event handler type.</param>
+    /// <returns>The current builder instance.</returns>
     public EventModelBuilder Type(string type)
     {
         _type = type;
         return this;
     }
+
+    /// <summary>
+    /// Sets the name of the event.
+    /// </summary>
+    /// <param name="name">The event name.</param>
+    /// <returns>The current builder instance.</returns>
     public EventModelBuilder Name(string name)
     {
         _name = name;
         return this;
     }
+
+    /// <summary>
+    /// Adds an attribute to the event using a builder action.
+    /// </summary>
+    /// <param name="attribute">An action to configure the attribute builder.</param>
+    /// <returns>The current builder instance.</returns>
     public EventModelBuilder Attribute(Action<AttributeDeclarationModelBuilder> attribute)
     {
         var builder = new AttributeDeclarationModelBuilder();
@@ -33,38 +73,43 @@ public class EventModelBuilder : AbstractObjectBuilder<EventModel, EventModelBui
         return this;
     }
 
+    /// <summary>
+    /// Builds the <see cref="EventModel"/> instance, validating required properties and attributes.
+    /// </summary>
+    /// <param name="exceptions">A list to collect build exceptions.</param>
+    /// <param name="visited">A list of visited objects for cycle detection.</param>
+    /// <returns>A build result containing either the constructed model or failure details.</returns>
     protected override IObjectBuildResult<EventModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
     {
-        var attributes = _attributes
-            .Select(x => x.Build(visited))
-            .ToList();
+        // Build all attributes and collect their results
+        var attributes = BuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
 
-        if (attributes.OfType<FailureObjectBuildResult<AttributeDeclarationModel, AttributeDeclarationModelBuilder>>().Any())
-        {
-            exceptions.AddRange(attributes
-                .OfType<FailureObjectBuildResult<AttributeDeclarationModel, AttributeDeclarationModelBuilder>>()
-                .SelectMany(x => x.Exceptions));
-        }
+        AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(attributes, exceptions);
 
+        // Validate that the event name is provided
         if (string.IsNullOrEmpty(_name))
         {
             exceptions.Add(new InvalidOperationException("Event name must be provided."));
         }
 
+        // Validate that the event type is provided
         if (string.IsNullOrEmpty(_type))
         {
             exceptions.Add(new InvalidOperationException("Event type must be provided."));
         }
 
+        // If there are any exceptions, return a failure result
         if (exceptions.Any())
         {
-            return new FailureObjectBuildResult<EventModel, EventModelBuilder>(this, exceptions, visited);
+            return Failure(exceptions, visited);
         }
 
+        // Ensure required fields are not null
         ArgumentNullException.ThrowIfNull(_name);
         ArgumentNullException.ThrowIfNull(_type);
 
-        return new SuccessObjectBuildResult<EventModel>(new EventModel
+        // Return a successful build result with the constructed EventModel
+        return Success(new EventModel
         {
             Modifiers = _modifiers,
             Type = _type,

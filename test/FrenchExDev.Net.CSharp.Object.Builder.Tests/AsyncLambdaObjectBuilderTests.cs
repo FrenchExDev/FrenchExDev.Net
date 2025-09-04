@@ -58,16 +58,16 @@ public class AsyncLambdaObjectBuilderTests
     public async Task Cannot_Build_Incomplete_Person_Async()
     {
         await BuilderTester.TestInvalidAsync<PersonBuilder, Person>(
-            () => new PersonBuilder((builder, exceptions, visited, cancellationToken) =>
+            builderFactory: () => new PersonBuilder((builder, exceptions, visited, cancellationToken) =>
             {
                 exceptions.Add(new Exception(PersonBuilder.ErrorInvalidAge));
                 return Task.FromResult<IObjectBuildResult<Person>>(new FailureAsyncObjectBuildResult<Person, PersonBuilder>(builder, exceptions, visited));
             }),
-            (builder, cancellationToken) =>
+            body: (builder, cancellationToken) =>
             {
                 return Task.CompletedTask;
             },
-            (failure) =>
+            assert: (failure) =>
             {
                 failure.ShouldNotBeNull();
                 failure.Exceptions.Count().ShouldBeEquivalentTo(1);
