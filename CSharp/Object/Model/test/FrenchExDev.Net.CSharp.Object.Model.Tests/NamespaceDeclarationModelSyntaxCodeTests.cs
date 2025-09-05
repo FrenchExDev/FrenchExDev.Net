@@ -18,8 +18,8 @@ public class NamespaceDeclarationModelSyntaxCodeTests
     public void Cannot_Build_Namespace_Without_Name()
     {
         // Attempt to build a namespace without a name and assert that the result is a failure with the expected exception.
-        ModelSyntaxCodeTester.NamespaceInvalid(
-            configure: (builder) =>
+        ModelSyntaxCodeTester.Invalid<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>(
+            body: (builder) =>
             {
                 // No name configured
             },

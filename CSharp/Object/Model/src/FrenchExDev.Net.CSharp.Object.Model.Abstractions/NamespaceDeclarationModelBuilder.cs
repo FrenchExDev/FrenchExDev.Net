@@ -24,22 +24,34 @@ public class NamespaceDeclarationModelBuilder : AbstractObjectBuilder<NamespaceD
     /// Stores the name of the namespace to be built.
     /// </summary>
     private string? _name;
+
+    /// <summary>
+    /// Represents the scoping configuration for the namespace. 
+    /// </summary>
+    /// <remarks>This field determines the scope in which the namespace operates.  It may be null if no
+    /// specific scoping is defined.</remarks>
+    private NamespaceScoping? _scoping;
+
     /// <summary>
     /// Stores the list of interface builders for the namespace.
     /// </summary>
     private readonly List<InterfaceDeclarationModelBuilder> _interfaces = new();
+
     /// <summary>
     /// Stores the list of class builders for the namespace.
     /// </summary>
     private readonly List<ClassDeclarationModelBuilder> _classes = new();
+
     /// <summary>
     /// Stores the list of enum builders for the namespace.
     /// </summary>
     private readonly List<EnumDeclarationModelBuilder> _enums = new();
+
     /// <summary>
     /// Stores the list of struct builders for the namespace.
     /// </summary>
     private readonly List<StructDeclarationModelBuilder> _structs = new();
+
     /// <summary>
     /// Stores the list of nested namespace builders for the namespace.
     /// </summary>
@@ -56,6 +68,26 @@ public class NamespaceDeclarationModelBuilder : AbstractObjectBuilder<NamespaceD
     public NamespaceDeclarationModelBuilder Name(string name)
     {
         _name = name;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the namespace scoping to file-scoped.
+    /// </summary>
+    /// <returns>The current builder instance.</returns>
+    public NamespaceDeclarationModelBuilder FileScoped()
+    {
+        _scoping = NamespaceScoping.File;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the namespace scoping to name-scoped (project/assembly level).
+    /// </summary>
+    /// <returns>The current builder instance.</returns>
+    public NamespaceDeclarationModelBuilder NameScoped()
+    {
+        _scoping = NamespaceScoping.Name;
         return this;
     }
 

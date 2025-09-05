@@ -3,7 +3,6 @@ using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 using FrenchExDev.Net.CSharp.Object.Model.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Testing;
@@ -26,7 +25,7 @@ public static class ModelSyntaxCodeTester
          Action<TModel> assertBuiltModel,
          Action<string> assertGeneratedCode
      )
-         where TModel : class
+         where TModel : class, IDeclarationModel
          where TBuilder : IObjectBuilder<TModel>, new()
     {
         // Instantiate the builder and configure it using the provided action
@@ -42,21 +41,9 @@ public static class ModelSyntaxCodeTester
         assertBuiltModel(builtModel);
 
         // Convert the built model to a Roslyn syntax node for code generation
-        var builtModelSyntax = builtModel switch
-        {
-            NamespaceDeclarationModel namespaceDeclarationModel => namespaceDeclarationModel.ToSyntax() as MemberDeclarationSyntax,
-            InterfaceDeclarationModel interfaceModel => interfaceModel.ToSyntax() as MemberDeclarationSyntax,
-            ClassDeclarationModel classModel => classModel.ToSyntax() as MemberDeclarationSyntax,
-            EnumDeclarationModel enumModel => enumModel.ToSyntax() as MemberDeclarationSyntax,
-            StructDeclarationModel structModel => structModel.ToSyntax() as MemberDeclarationSyntax,
-            ConstructorDeclarationModel constructorModel => constructorModel.ToSyntax() as MemberDeclarationSyntax,
-            PropertyDeclarationModel propertyModel => propertyModel.ToSyntax() as MemberDeclarationSyntax,
-            MethodDeclarationModel methodModel => methodModel.ToSyntax() as MemberDeclarationSyntax,
-            FieldDeclarationModel fieldModel => fieldModel.ToSyntax() as MemberDeclarationSyntax,
-            EventModel eventModel => eventModel.ToSyntax() as MemberDeclarationSyntax,
-            _ => throw new NotSupportedException($"Unsupported model type: {typeof(TModel).FullName}")
-        };
-
+        var builtModelSyntax = builtModel.ToSyntax();
+        builtModelSyntax.ShouldNotBeNull();
+        
         // Generate the C# code from the syntax node and normalize whitespace
         var builtModelSyntaxGeneratedCode = SyntaxFactory.CompilationUnit()
             .AddMembers(builtModelSyntax)
@@ -66,22 +53,19 @@ public static class ModelSyntaxCodeTester
         assertGeneratedCode(builtModelSyntaxGeneratedCode.ToFullString());
     }
 
-    /// <summary>
-    /// Tests that a namespace builder produces an invalid result and allows custom assertions on the result.
-    /// </summary>
-    /// <param name="configure">An action to configure the namespace builder.</param>
-    /// <param name="assertResult">An action to assert the build result (expected to be invalid).</param>
-    public static void NamespaceInvalid(
-        Action<NamespaceDeclarationModelBuilder> configure, 
-        Action<IObjectBuildResult<NamespaceDeclarationModel>> assertResult
-    )
+    public static void Invalid<TModel, TBuilder>(
+         Action<TBuilder> body,
+         Action<IObjectBuildResult<TModel>> assertResult
+     )
+         where TModel : class, IDeclarationModel
+         where TBuilder : IObjectBuilder<TModel>, new()
     {
-        // Instantiate the namespace builder and configure it
-        var builder = new NamespaceDeclarationModelBuilder();
-        configure(builder);
-
-        // Build the namespace model and assert the result
+        // Instantiate the builder and configure it using the provided action
+        var builder = new TBuilder();
+        body(builder);
+        // Build the model
         var buildResult = builder.Build();
+        // Assert the build result using the provided assertion (expected to be invalid)
         assertResult(buildResult);
     }
 }
