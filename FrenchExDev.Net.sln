@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_SolutionItems", "_Solution
 		Directory.Builds.props = Directory.Builds.props
 		Directory.Packages.props = Directory.Packages.props
 		global.json = global.json
-		LICENSING = LICENSING
+		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -106,7 +106,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Proj
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Alpine", "Alpine", "{3B92AC28-41A0-CB50-4330-17F99EB80A13}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VersionSearcher", "VersionSearcher", "{5052BB47-7C59-06AC-EC03-867B59B31F6F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Version", "Version", "{5052BB47-7C59-06AC-EC03-867B59B31F6F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BoxMaker", "BoxMaker", "{A90E2C55-8E79-EBF9-4E10-F0F9090BF188}"
 EndProject
@@ -235,6 +235,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Mm.App.Desktop.Builder.Infrastructure", "Mm\src\FrenchExDev.Net.Mm.App.Desktop.Builder.Infrastructure\FrenchExDev.Net.Mm.App.Desktop.Builder.Infrastructure.csproj", "{8F383597-BEB5-19CB-26BC-855257452252}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Mm.App.Desktop.Builder.Testing", "Mm\src\FrenchExDev.Net.Mm.App.Desktop.Builder.Testing\FrenchExDev.Net.Mm.App.Desktop.Builder.Testing.csproj", "{A713CFFF-5B7D-6CF1-55F8-8AF155AF77EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Alpine.Version", "Alpine\src\FrenchExDev.Alpine.Version\FrenchExDev.Alpine.Version.csproj", "{EFBCB329-3382-AC21-9298-032FDF05045D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Alpine.Version.Testing", "Alpine\src\FrenchExDev.Alpine.Version.Testing\FrenchExDev.Alpine.Version.Testing.csproj", "{5305CA53-823A-BDAB-3E70-548FB460644D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Alpine.Version.Tests", "Alpine\test\FrenchExDev.Alpine.Version.Tests\FrenchExDev.Alpine.Version.Tests.csproj", "{A6728409-3324-A5B3-9355-BA1AC890D81B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -450,6 +456,18 @@ Global
 		{A713CFFF-5B7D-6CF1-55F8-8AF155AF77EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A713CFFF-5B7D-6CF1-55F8-8AF155AF77EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A713CFFF-5B7D-6CF1-55F8-8AF155AF77EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFBCB329-3382-AC21-9298-032FDF05045D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFBCB329-3382-AC21-9298-032FDF05045D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFBCB329-3382-AC21-9298-032FDF05045D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFBCB329-3382-AC21-9298-032FDF05045D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5305CA53-823A-BDAB-3E70-548FB460644D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5305CA53-823A-BDAB-3E70-548FB460644D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5305CA53-823A-BDAB-3E70-548FB460644D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5305CA53-823A-BDAB-3E70-548FB460644D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6728409-3324-A5B3-9355-BA1AC890D81B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6728409-3324-A5B3-9355-BA1AC890D81B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6728409-3324-A5B3-9355-BA1AC890D81B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6728409-3324-A5B3-9355-BA1AC890D81B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -546,6 +564,9 @@ Global
 		{B5FC69EB-A801-C53E-5BF5-A7A4B13FEFEB} = {C3549AB6-3A11-C51C-E5F7-74E379252964}
 		{8F383597-BEB5-19CB-26BC-855257452252} = {C3549AB6-3A11-C51C-E5F7-74E379252964}
 		{A713CFFF-5B7D-6CF1-55F8-8AF155AF77EA} = {C3549AB6-3A11-C51C-E5F7-74E379252964}
+		{EFBCB329-3382-AC21-9298-032FDF05045D} = {BB1A9915-F70C-6051-828F-28F664B63ED2}
+		{5305CA53-823A-BDAB-3E70-548FB460644D} = {BB1A9915-F70C-6051-828F-28F664B63ED2}
+		{A6728409-3324-A5B3-9355-BA1AC890D81B} = {E49994AA-0854-A67D-A0F6-058A4C33AE57}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4BCE80FC-0AE1-4B5A-A6DA-D1999B8AA168}
