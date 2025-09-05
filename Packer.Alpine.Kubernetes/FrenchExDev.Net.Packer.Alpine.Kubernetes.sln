@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0C88DD14-F956-CE84-757C-A364CCF449FC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "Éléments de solution", "{F7B3D445-8A77-65FF-64DD-D0037FF5B8EB}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSING = LICENSING
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Packer.Alpine.Kubernetes", "src\FrenchExDev.Net.Packer.Alpine.Kubernetes\FrenchExDev.Net.Packer.Alpine.Kubernetes.csproj", "{DC6C52EE-9C50-49D8-AE18-AE4A770E5F14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Packer.Alpine.Kubernetes.Abstractions", "src\FrenchExDev.Net.Packer.Alpine.Kubernetes.Abstractions\FrenchExDev.Net.Packer.Alpine.Kubernetes.Abstractions.csproj", "{30C0CC31-62C8-618B-2470-A70C89EFC587}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Packer.Alpine.Kubernetes.Testing", "src\FrenchExDev.Net.Packer.Alpine.Kubernetes.Testing\FrenchExDev.Net.Packer.Alpine.Kubernetes.Testing.csproj", "{DAF2BCAD-F873-7612-B54B-468D03D71F23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Packer.Alpine.Kubernetes.Tests", "test\FrenchExDev.Net.Packer.Alpine.Kubernetes.Tests\FrenchExDev.Net.Packer.Alpine.Kubernetes.Tests.csproj", "{75ECEFE5-0E58-BBAF-B050-83961BF5C8AE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DC6C52EE-9C50-49D8-AE18-AE4A770E5F14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC6C52EE-9C50-49D8-AE18-AE4A770E5F14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC6C52EE-9C50-49D8-AE18-AE4A770E5F14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC6C52EE-9C50-49D8-AE18-AE4A770E5F14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30C0CC31-62C8-618B-2470-A70C89EFC587}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30C0CC31-62C8-618B-2470-A70C89EFC587}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30C0CC31-62C8-618B-2470-A70C89EFC587}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30C0CC31-62C8-618B-2470-A70C89EFC587}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAF2BCAD-F873-7612-B54B-468D03D71F23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAF2BCAD-F873-7612-B54B-468D03D71F23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAF2BCAD-F873-7612-B54B-468D03D71F23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAF2BCAD-F873-7612-B54B-468D03D71F23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75ECEFE5-0E58-BBAF-B050-83961BF5C8AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75ECEFE5-0E58-BBAF-B050-83961BF5C8AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75ECEFE5-0E58-BBAF-B050-83961BF5C8AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75ECEFE5-0E58-BBAF-B050-83961BF5C8AE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DC6C52EE-9C50-49D8-AE18-AE4A770E5F14} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{30C0CC31-62C8-618B-2470-A70C89EFC587} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{DAF2BCAD-F873-7612-B54B-468D03D71F23} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{75ECEFE5-0E58-BBAF-B050-83961BF5C8AE} = {0C88DD14-F956-CE84-757C-A364CCF449FC}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {16D368AA-B628-46A8-857B-F33CC099B79A}
+	EndGlobalSection
+EndGlobal
