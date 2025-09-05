@@ -1,0 +1,4 @@
+src:
+  - DirectoryName: FrenchExDev.Net.Alpine.Version
+  - DirectoryName: FrenchExDev.Net.Alpine.Version.Testing
+publishTargetPath: ../../__Local_Nuget_Registry__

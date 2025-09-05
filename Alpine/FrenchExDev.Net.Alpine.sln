@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0C88DD14-F956-CE84-757C-A364CCF449FC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "Éléments de solution", "{F7B3D445-8A77-65FF-64DD-D0037FF5B8EB}"
+	ProjectSection(SolutionItems) = preProject
+		.projects.yaml = .projects.yaml
+		LICENSE = LICENSE
+		NuGet.config = NuGet.config
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Alpine.Version", "src\FrenchExDev.Net.Alpine.Version\FrenchExDev.Net.Alpine.Version.csproj", "{2A7E9FB8-9A4F-4434-A028-2A7DD9F4C2BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Alpine.Version.Testing", "src\FrenchExDev.Net.Alpine.Version.Testing\FrenchExDev.Net.Alpine.Version.Testing.csproj", "{5F0A9A6C-7FB9-4353-BA84-77769109C93B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Alpine.Version.Tests", "test\FrenchExDev.Net.Alpine.Version.Tests\FrenchExDev.Net.Alpine.Version.Tests.csproj", "{0E9D15BC-2135-4F6A-B835-E81B3D478858}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2A7E9FB8-9A4F-4434-A028-2A7DD9F4C2BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A7E9FB8-9A4F-4434-A028-2A7DD9F4C2BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A7E9FB8-9A4F-4434-A028-2A7DD9F4C2BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A7E9FB8-9A4F-4434-A028-2A7DD9F4C2BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F0A9A6C-7FB9-4353-BA84-77769109C93B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F0A9A6C-7FB9-4353-BA84-77769109C93B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F0A9A6C-7FB9-4353-BA84-77769109C93B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F0A9A6C-7FB9-4353-BA84-77769109C93B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E9D15BC-2135-4F6A-B835-E81B3D478858}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E9D15BC-2135-4F6A-B835-E81B3D478858}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E9D15BC-2135-4F6A-B835-E81B3D478858}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E9D15BC-2135-4F6A-B835-E81B3D478858}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2A7E9FB8-9A4F-4434-A028-2A7DD9F4C2BC} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{5F0A9A6C-7FB9-4353-BA84-77769109C93B} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{0E9D15BC-2135-4F6A-B835-E81B3D478858} = {0C88DD14-F956-CE84-757C-A364CCF449FC}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DF1C0377-3305-40C2-9A91-C36D08CDE8EC}
+	EndGlobalSection
+EndGlobal
