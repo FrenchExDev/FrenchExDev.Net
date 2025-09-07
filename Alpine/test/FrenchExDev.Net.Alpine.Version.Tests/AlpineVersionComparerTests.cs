@@ -32,6 +32,12 @@ public class AlpineVersionComparerTests
     [InlineData("3.21.0", Operator.Equal, "3.22.0", false)]
     [InlineData("3.22.0", Operator.Equal, "3.23.0", false)]
 
+    [InlineData("3.18.1", Operator.Equal, "3.19.1", false)]
+    [InlineData("3.19.0", Operator.Equal, "3.20.1", false)]
+    [InlineData("3.20.0", Operator.Equal, "3.21.1", false)]
+    [InlineData("3.21.0", Operator.Equal, "3.22.1", false)]
+    [InlineData("3.22.2", Operator.Equal, "3.22.1", false)]
+
     [InlineData("3.18.0", Operator.NotEqual, "3.19.0", true)]
     [InlineData("3.19.0", Operator.NotEqual, "3.20.0", true)]
     [InlineData("3.20.0", Operator.NotEqual, "3.21.0", true)]

@@ -1,0 +1,4 @@
+src:
+  - DirectoryName: FrenchExDev.Net.CSharp.Object.Validator.Abstractions
+  - DirectoryName: FrenchExDev.Net.CSharp.Object.Validator
+publishTargetPath: ../../__Local_Nuget_Registry__

@@ -21,4 +21,9 @@
 		<Content Include="..\..\LICENSE" Link="LICENSE" Pack="true" PackagePath="LICENSE" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\..\CSharp.Object.Model\src\FrenchExDev.Net.CSharp.Object.Model.Abstractions\FrenchExDev.Net.CSharp.Object.Model.Abstractions.csproj" />
+	</ItemGroup>
+
 </Project>
+

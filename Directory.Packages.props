@@ -32,9 +32,5 @@
     <PackageVersion Include="YamlDotNet" Version="16.2.1" />
     <PackageVersion Include="ByteSize" Version="2.1.2" />
     <PackageVersion Include="Figgle" Version="0.5.1" />
-    <PackageVersion Include="FrenchExDev.Net.CSharp.Object.Builder" Version="0.0.9" />
-    <PackageVersion Include="FrenchExDev.Net.CSharp.Object.Builder.Abstractions" Version="0.0.9" />
-    <PackageVersion Include="FrenchExDev.Net.CSharp.Object.Validator" Version="0.0.9" />
-    <PackageVersion Include="FrenchExDev.Net.CSharp.Object.Validator.Abstractions" Version="0.0.9" />
   </ItemGroup>
 </Project>
