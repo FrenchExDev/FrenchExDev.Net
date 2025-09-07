@@ -49,7 +49,7 @@ public class AlpineVersionComparerTests
     [InlineData("3.21.0", Operator.LessThan, "3.22.0", true)]
     [InlineData("3.22.0", Operator.LessThan, "3.23.0", true)]
 
-    [InlineData("3.18.0", Operator.LessThanOrEqual, "3.19.0", true)]
+    [InlineData("3.18.7", Operator.LessThanOrEqual, "3.18.8", true)]
     [InlineData("3.19.0", Operator.LessThanOrEqual, "3.20.0", true)]
     [InlineData("3.20.0", Operator.LessThanOrEqual, "3.21.0", true)]
     [InlineData("3.21.0", Operator.LessThanOrEqual, "3.22.0", true)]

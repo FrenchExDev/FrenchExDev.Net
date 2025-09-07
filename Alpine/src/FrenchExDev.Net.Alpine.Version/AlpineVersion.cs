@@ -148,6 +148,7 @@ public class AlpineVersion : IComparable<AlpineVersion>
     {
         return Major == "edge" ? "edge" : "v" + ToMajorMinor();
     }
+
     /// <summary>
     /// Specifies the comparison operators that can be used in conditional expressions.
     /// </summary>
