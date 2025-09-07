@@ -14,14 +14,41 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Infrastructure;
 /// class handle the creation of syntax nodes for various C# constructs, including  namespaces, classes, interfaces,
 /// enums, structs, methods, properties, fields, events, and constructors.  Each method takes a specific model type as
 /// input and returns the corresponding Roslyn syntax node.</remarks>
-public static class RoslynModelConverter
+public class ModelRoslynConverter : IModelRoselynConverter
 {
+    /// <summary>
+    /// Converts the specified <see cref="IDeclarationModel"/> into its corresponding <see
+    /// cref="MemberDeclarationSyntax"/> representation.
+    /// </summary>
+    /// <param name="model">The declaration model to convert. This parameter must be an instance of a supported <see
+    /// cref="IDeclarationModel"/> subtype, such as <see cref="NamespaceDeclarationModel"/>, <see
+    /// cref="ClassDeclarationModel"/>, or other supported types.</param>
+    /// <returns>A <see cref="MemberDeclarationSyntax"/> representing the syntax tree node for the provided declaration model.</returns>
+    /// <exception cref="NotSupportedException">Thrown if the <paramref name="model"/> is not of a supported type.</exception>
+    public MemberDeclarationSyntax ToSyntax(IDeclarationModel model)
+    {
+        return model switch
+        {
+            NamespaceDeclarationModel ns => ToSyntax(ns),
+            InterfaceDeclarationModel iface => ToSyntax(iface),
+            ClassDeclarationModel cls => ToSyntax(cls),
+            PropertyDeclarationModel prop => ToSyntax(prop),
+            EnumDeclarationModel enm => ToSyntax(enm),
+            ConstructorDeclarationModel ctor => ToSyntax(ctor),
+            EventModel evt => ToSyntax(evt),
+            StructDeclarationModel strct => ToSyntax(strct),
+            FieldDeclarationModel field => ToSyntax(field),
+            MethodDeclarationModel method => ToSyntax(method),
+            _ => throw new NotSupportedException($"Model type {model.GetType().Name} not supported.")
+        };
+    }
+
     /// <summary>
     /// Converts a <see cref="NamespaceDeclarationModel"/> to a Roslyn <see cref="NamespaceDeclarationSyntax"/>.
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    public static NamespaceDeclarationSyntax ToSyntax(NamespaceDeclarationModel model)
+    public NamespaceDeclarationSyntax ToSyntax(NamespaceDeclarationModel model)
     {
         var members = new List<MemberDeclarationSyntax>();
         members.AddRange(model.Classes.Select(ToSyntax));
@@ -42,7 +69,7 @@ public static class RoslynModelConverter
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    public static ClassDeclarationSyntax ToSyntax(ClassDeclarationModel model)
+    public ClassDeclarationSyntax ToSyntax(ClassDeclarationModel model)
     {
         var modifiers = model.Modifiers.Select(m => SyntaxFactory.ParseToken(ToModifierString(m))).ToArray();
 
@@ -91,7 +118,7 @@ public static class RoslynModelConverter
     /// </summary>
     /// <param name="prop"></param>
     /// <returns></returns>
-    public static PropertyDeclarationSyntax ToSyntax(PropertyDeclarationModel prop)
+    public PropertyDeclarationSyntax ToSyntax(PropertyDeclarationModel prop)
     {
         var modifiers = prop.Modifiers.Select(SyntaxFactory.ParseToken).ToArray();
         var accessors = new List<AccessorDeclarationSyntax>();
@@ -121,7 +148,7 @@ public static class RoslynModelConverter
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    public static InterfaceDeclarationSyntax ToSyntax(InterfaceDeclarationModel model)
+    public InterfaceDeclarationSyntax ToSyntax(InterfaceDeclarationModel model)
     {
         var modifiers = model.Modifiers.Select((x) => SyntaxFactory.ParseToken(x.ToString())).ToArray();
         var attributes = SyntaxFactory.List(model.Attributes.Select(attr =>
@@ -154,7 +181,7 @@ public static class RoslynModelConverter
     /// </summary>
     /// <param name="evt"></param>
     /// <returns></returns>
-    public static EventDeclarationSyntax ToSyntax(EventModel evt)
+    public EventDeclarationSyntax ToSyntax(EventModel evt)
     {
         var modifiers = evt.Modifiers.Select(SyntaxFactory.ParseToken).ToArray();
 
@@ -186,7 +213,7 @@ public static class RoslynModelConverter
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    public static EnumDeclarationSyntax ToSyntax(EnumDeclarationModel model)
+    public EnumDeclarationSyntax ToSyntax(EnumDeclarationModel model)
     {
         var modifiers = model.Modifiers.Select((x) => SyntaxFactory.ParseToken(x.ToString())).ToArray();
         var attributes = SyntaxFactory.List(model.Attributes.Select(attr =>
@@ -230,7 +257,7 @@ public static class RoslynModelConverter
     /// <param name="model">The model representing the structure declaration, including its name, modifiers, and attributes.</param>
     /// <returns>A <see cref="StructDeclarationSyntax"/> object that represents the structure declaration described by the
     /// provided <paramref name="model"/>.</returns>
-    public static StructDeclarationSyntax ToSyntax(StructDeclarationModel model)
+    public StructDeclarationSyntax ToSyntax(StructDeclarationModel model)
     {
         var modifiers = model.Modifiers.Select((x) => SyntaxFactory.ParseToken(x.ToString())).ToArray();
         var attributes = SyntaxFactory.List(model.Attributes.Select(attr =>
@@ -252,7 +279,7 @@ public static class RoslynModelConverter
     /// </summary>
     /// <param name="ctor"></param>
     /// <returns></returns>
-    public static ConstructorDeclarationSyntax ToSyntax(ConstructorDeclarationModel ctor)
+    public ConstructorDeclarationSyntax ToSyntax(ConstructorDeclarationModel ctor)
     {
         var modifiers = ctor.Modifiers.Select(SyntaxFactory.ParseToken).ToArray();
 
@@ -291,7 +318,7 @@ public static class RoslynModelConverter
     /// <param name="field">The model representing the field declaration, including its name, type, and modifiers.</param>
     /// <returns>A <see cref="FieldDeclarationSyntax"/> object that represents the field declaration described by the
     /// provided <paramref name="field"/>.</returns>
-    public static FieldDeclarationSyntax ToSyntax(FieldDeclarationModel field)
+    public FieldDeclarationSyntax ToSyntax(FieldDeclarationModel field)
     {
         var modifiers = field.Modifiers.Select(SyntaxFactory.ParseToken).ToArray();
 
@@ -321,7 +348,7 @@ public static class RoslynModelConverter
     /// declaration.</remarks>
     /// <param name="method">The model representing the method, including its name, return type, modifiers, attributes, parameters, and body.</param>
     /// <returns>A <see cref="MethodDeclarationSyntax"/> object representing the method declaration in Roslyn's syntax tree.</returns>
-    public static MethodDeclarationSyntax ToSyntax(MethodDeclarationModel method)
+    public MethodDeclarationSyntax ToSyntax(MethodDeclarationModel method)
     {
         var modifiers = method.Modifiers.Select(SyntaxFactory.ParseToken).ToArray();
 
@@ -377,7 +404,7 @@ public static class RoslynModelConverter
     /// <returns>A string representing the specified <see cref="ClassModifier"/>. For example,  <see
     /// cref="ClassModifier.Public"/> is converted to "public".</returns>
     /// <exception cref="NotSupportedException">Thrown if the specified <paramref name="modifier"/> is not a recognized <see cref="ClassModifier"/> value.</exception>
-    public static string ToModifierString(ClassModifier modifier)
+    public string ToModifierString(ClassModifier modifier)
     {
         return modifier switch
         {

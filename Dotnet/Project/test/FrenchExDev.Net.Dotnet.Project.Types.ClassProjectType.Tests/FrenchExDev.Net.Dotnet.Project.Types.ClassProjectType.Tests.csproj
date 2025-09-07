@@ -14,6 +14,10 @@
 		<PackageReference Include="xunit.runner.visualstudio" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing.csproj" />
+	</ItemGroup>
+
 
 	<ItemGroup>
 		<Using Include="Xunit" />

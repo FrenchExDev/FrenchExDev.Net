@@ -2,6 +2,7 @@
 
 namespace FrenchExDev.Net.CSharp.Object.Builder;
 
+
 /// <summary>
 /// Abstract base class for building objects of type <typeparamref name="TClass"/>.
 /// </summary>

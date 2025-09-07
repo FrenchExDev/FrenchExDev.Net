@@ -64,6 +64,7 @@ public class PackageReferenceBuilder : AbstractObjectBuilder<IPackageReference, 
         var _version = builder.Build().Success();
         return this;
     }
+
     /// <summary>
     /// Implements the build logic for creating an <see cref="IPackageReference"/> instance.
     /// </summary>
@@ -83,7 +84,7 @@ public class PackageReferenceBuilder : AbstractObjectBuilder<IPackageReference, 
             exceptions.Add(new ArgumentException("Name is required"));
         }
 
-        if (exceptions.Count > 0)
+        if (exceptions.Any())
         {
             return Failure(exceptions, visited);
         }

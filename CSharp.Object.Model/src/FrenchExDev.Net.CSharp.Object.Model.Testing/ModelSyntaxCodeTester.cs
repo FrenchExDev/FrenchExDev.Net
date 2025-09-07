@@ -42,7 +42,7 @@ public static class ModelSyntaxCodeTester
         // Convert the built model to a Roslyn syntax node for code generation
         var builtModelSyntax = builtModel.ToSyntax();
         builtModelSyntax.ShouldNotBeNull();
-        
+
         // Generate the C# code from the syntax node and normalize whitespace
         var builtModelSyntaxGeneratedCode = SyntaxFactory.CompilationUnit()
             .AddMembers(builtModelSyntax)
@@ -52,6 +52,23 @@ public static class ModelSyntaxCodeTester
         assertGeneratedCode(builtModelSyntaxGeneratedCode.ToFullString());
     }
 
+    /// <summary>
+    /// Validates that a builder produces an invalid model and allows assertions on the build result.
+    /// </summary>
+    /// <typeparam name="TModel">The type of the model to build (e.g., class, interface, enum).</typeparam>
+    /// <typeparam name="TBuilder">The type of the builder for the model.</typeparam>
+    /// <param name="body">An action to configure the builder.</param>
+    /// <param name="assertResult">An action to assert the build result (expected to be invalid).</param>
+    /// <remarks>
+    /// Use this method to test scenarios where the builder should fail validation, such as missing required properties.
+    /// Example:
+    /// <code>
+    /// ModelSyntaxCodeTester.Invalid<MyModel, MyModelBuilder>(
+    ///     builder => builder.Name(null),
+    ///     result => result.ShouldBeAssignableTo<FailureObjectBuildResult<MyModel, MyModelBuilder>>()
+    /// );
+    /// </code>
+    /// </remarks>
     public static void Invalid<TModel, TBuilder>(
          Action<TBuilder> body,
          Action<IObjectBuildResult<TModel>> assertResult
@@ -64,6 +81,10 @@ public static class ModelSyntaxCodeTester
         body(builder);
         // Build the model
         var buildResult = builder.Build();
+
+        // Asserts the type of buildResult as Failure object
+        buildResult.ShouldBeAssignableTo<FailureObjectBuildResult<TModel, TBuilder>>();
+
         // Assert the build result using the provided assertion (expected to be invalid)
         assertResult(buildResult);
     }

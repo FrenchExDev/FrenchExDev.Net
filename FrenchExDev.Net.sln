@@ -125,8 +125,20 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dotnet.NuGet", "Dotnet.NuGet", "{CE4DAB33-0EEF-E220-65A0-D26B4133C35B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dotnet.Solution", "Dotnet.Solution", "{C90B00D4-734E-5927-234F-582767C2E41C}"
+	ProjectSection(SolutionItems) = preProject
+		Dotnet\Solution\.projects.yaml = Dotnet\Solution\.projects.yaml
+		Dotnet\Solution\LICENSE = Dotnet\Solution\LICENSE
+		Dotnet\Solution\NuGet.config = Dotnet\Solution\NuGet.config
+		Dotnet\Solution\README.md = Dotnet\Solution\README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dotnet.Project", "Dotnet.Project", "{FF5D5AD3-3FCD-C3F4-BC7F-506B8ED4CC43}"
+	ProjectSection(SolutionItems) = preProject
+		Dotnet\Project\.projects.yaml = Dotnet\Project\.projects.yaml
+		Dotnet\Project\LICENSE = Dotnet\Project\LICENSE
+		Dotnet\Project\NuGet.config = Dotnet\Project\NuGet.config
+		Dotnet\Project\README.md = Dotnet\Project\README.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Infrastructure", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Infrastructure\FrenchExDev.Net.Dotnet.Project.Infrastructure.csproj", "{08C4F66E-065A-F8B9-5901-E85A98777AF4}"
 EndProject

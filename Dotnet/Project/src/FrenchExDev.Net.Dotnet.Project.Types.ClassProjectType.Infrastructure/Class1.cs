@@ -1,7 +1,6 @@
-﻿namespace FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure
-{
-    public class Class1
-    {
+﻿namespace FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure;
 
-    }
+public class Class1
+{
+
 }

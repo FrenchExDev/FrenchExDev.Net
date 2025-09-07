@@ -120,20 +120,44 @@ public abstract class AbstractProjectModel<T> : IProjectModel where T : IProject
     public List<IDeclarationModel> DeclarationModels { get; protected set; } = new List<IDeclarationModel>();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AbstractProjectModel{T}"/> class with the specified project metadata.
+    /// Initializes a new instance of the <see cref="AbstractProjectModel"/> class with the specified project
+    /// configuration details.
     /// </summary>
-    /// <param name="name">Project name.</param>
-    /// <param name="directory">Project directory path.</param>
-    /// <param name="sdk">Project SDK.</param>
-    /// <param name="targetFramework">Target framework.</param>
-    /// <param name="outputType">Output type.</param>
-    /// <param name="langVersion">C# language version.</param>
-    /// <param name="nullable">Enable nullable reference types (default: true).</param>
-    /// <param name="implicitUsings">Enable implicit global usings (default: true).</param>
-    /// <remarks>
-    /// This constructor sets up the basic project metadata. Derived classes may extend or customize initialization.
-    /// </remarks>
-    public AbstractProjectModel(string name, string directory, string sdk, string targetFramework, string outputType, string langVersion, bool nullable = true, bool implicitUsings = true)
+    /// <param name="name">The name of the project. This value cannot be <see langword="null"/> or empty.</param>
+    /// <param name="directory">The directory path where the project is located. This value cannot be <see langword="null"/> or empty.</param>
+    /// <param name="sdk">The SDK used by the project (e.g., "Microsoft.NET.Sdk"). This value cannot be <see langword="null"/> or empty.</param>
+    /// <param name="targetFramework">The target framework for the project (e.g., "net6.0"). This value cannot be <see langword="null"/> or empty.</param>
+    /// <param name="outputType">The output type of the project (e.g., "Library", "Exe"). This value cannot be <see langword="null"/> or empty.</param>
+    /// <param name="langVersion">The C# language version used by the project (e.g., "10.0"). This value cannot be <see langword="null"/> or
+    /// empty.</param>
+    /// <param name="nullable">A value indicating whether nullable reference types are enabled for the project. Set to <see langword="true"/>
+    /// to enable nullable reference types; otherwise, <see langword="false"/>.</param>
+    /// <param name="implicitUsings">A value indicating whether implicit global usings are enabled for the project. Set to <see langword="true"/> to
+    /// enable implicit usings; otherwise, <see langword="false"/>.</param>
+    /// <param name="projectReferences">A list of project references included in the project. This value cannot be <see langword="null"/> but may be
+    /// empty.</param>
+    /// <param name="packageReferences">A list of NuGet package references included in the project. This value cannot be <see langword="null"/> but may
+    /// be empty.</param>
+    /// <param name="analyzers">A list of analyzers applied to the project. This value cannot be <see langword="null"/> but may be empty.</param>
+    /// <param name="additionalProperties">A dictionary of additional properties for the project. Keys represent property names, and values represent their
+    /// corresponding values. This value cannot be <see langword="null"/> but may be empty.</param>
+    /// <param name="declarationModels">A list of declaration models representing the code structure of the project. This value cannot be <see
+    /// langword="null"/> but may be empty.</param>
+    protected AbstractProjectModel(
+        string name,
+        string directory,
+        string sdk,
+        string targetFramework,
+        string outputType,
+        string langVersion,
+        bool nullable,
+        bool implicitUsings,
+        List<ProjectReference> projectReferences,
+        List<IPackageReference> packageReferences,
+        List<IPackageReference> analyzers,
+        Dictionary<string, object> additionalProperties,
+        List<IDeclarationModel> declarationModels
+    )
     {
         Name = name;
         Directory = directory;
@@ -143,5 +167,10 @@ public abstract class AbstractProjectModel<T> : IProjectModel where T : IProject
         LangVersion = langVersion;
         Nullable = nullable;
         ImplicitUsings = implicitUsings;
+        ProjectReferences = projectReferences;
+        PackageReferences = packageReferences;
+        Analyzers = analyzers;
+        AdditionalProperties = additionalProperties;
+        DeclarationModels = declarationModels;
     }
 }

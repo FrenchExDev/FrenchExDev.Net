@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents an event declaration, including its modifiers, type, name, and attributes.
 /// </summary>
-public class EventModel
+public class EventModel : IDeclarationModel
 {
     /// <summary>
     /// Gets or sets the list of modifiers applied to the event (e.g., public, static).
