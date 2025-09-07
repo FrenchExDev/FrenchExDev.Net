@@ -1,7 +1,6 @@
 ﻿using FrenchExDev.Net.Alpine.Version;
-using FrenchExDev.Net.Alpine.Version.Testing;
 using Shouldly;
-using static FrenchExDev.Net.Alpine.Version.Testing.AlpineVersionSearcherTester;
+using static FrenchExDev.Net.Alpine.Version.AlpineVersion;
 
 namespace FrenchExDev.Alpine.Version.Tests;
 
@@ -69,6 +68,6 @@ public class AlpineVersionComparerTests
     [InlineData("3.22.0", Operator.GreaterThanOrEqual, "3.23.0", false)]
     public void Can_Compare(string left, Operator @operator, string right, bool expected)
     {
-        AlpineVersionSearcherTester.Compare(left.AsAlpineVersion(), @operator, right.AsAlpineVersion()).ShouldBeEquivalentTo(expected);
+        AlpineVersion.Compare(left.AsAlpineVersion(), @operator, right.AsAlpineVersion()).ShouldBeEquivalentTo(expected);
     }
 }
