@@ -22,7 +22,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-    <ProjectReference Include="..\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj" />
     <ProjectReference Include="..\FrenchExDev.Net.Dotnet.Project.Infrastructure\FrenchExDev.Net.Dotnet.Project.Infrastructure.csproj" />
   </ItemGroup>
 

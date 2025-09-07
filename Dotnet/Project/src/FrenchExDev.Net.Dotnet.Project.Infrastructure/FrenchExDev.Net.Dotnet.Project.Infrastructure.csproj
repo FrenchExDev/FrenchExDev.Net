@@ -22,7 +22,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-    <ProjectReference Include="..\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj" />
-  </ItemGroup>
+		<ProjectReference Include="..\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj" />
+	</ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+		<PackageReference Include="Microsoft.CSharp" />
+	</ItemGroup>
+	
 </Project>
