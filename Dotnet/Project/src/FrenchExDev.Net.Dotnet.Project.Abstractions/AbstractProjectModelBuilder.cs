@@ -6,7 +6,7 @@ namespace FrenchExDev.Net.Dotnet.Project.Abstractions;
 
 /// <summary>
 /// Abstract builder base class for constructing project models implementing <see cref="IProjectModel"/>.
-/// Provides a fluent API for configuring project metadata, references, and code declarations.
+/// Provides a fluent API for configuring project metadata, references, package information, and code declarations.
 /// Validates required properties and supports extensibility for custom project types.
 /// </summary>
 /// <remarks>
@@ -22,6 +22,15 @@ namespace FrenchExDev.Net.Dotnet.Project.Abstractions;
 ///     .LangVersion("13.0")
 ///     .Nullable(true)
 ///     .ImplicitUsings(true)
+///     .PackageVersion(b => b.Version("1.0.0"))
+///     .Description("A sample project")
+///     .Copyright("Copyright 2024")
+///     .PackageProjectUrl("https://github.com/example")
+///     .RepositoryUrl("https://github.com/example/repo")
+///     .RepositoryType("git")
+///     .PackageTags("sample", "dotnet")
+///     .IncludeSymbols(true)
+///     .EnforceCodeStyleInBuild(true)
 ///     .ProjectReferences(new List<ProjectReference> { ... })
 ///     .PackageReferences(new List<IPackageReference> { ... })
 ///     .DeclarationModels(new List<IDeclarationModel> { ... });
@@ -111,6 +120,151 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
     /// Indicates whether implicit usings are enabled.
     /// </summary>
     protected bool? _implicitUsings;
+
+    /// <summary>
+    /// Represents the version information of the package associated with this instance.
+    /// </summary>
+    /// <remarks>This field is intended for use within derived classes to access or modify the package
+    /// version.</remarks>
+    protected IPackageVersion? _packageVersion;
+
+    protected bool? _generatePackageOnBuild;
+
+    protected string? _description;
+
+    protected string? _copyright;
+
+    protected string? _packageProjectUrl;
+
+    protected string? _repositoryUrl;
+    protected string? _repositoryType;
+    protected string[]? _packageTags;
+    protected bool? _includeSymbols;
+    protected bool? _enforceCodeStyleInBuild;
+
+    /// <summary>
+    /// Sets the package version using a builder action.
+    /// </summary>
+    /// <param name="body">An action to configure the package version builder.</param>
+    /// <returns>The current builder instance.</returns>
+    /// <remarks>
+    /// Example:
+    /// <code>
+    /// builder.PackageVersion(b => b.Version("1.2.3"));
+    /// </code>
+    /// </remarks>
+    public TBuilder PackageVersion(Action<PackageVersionBuilder> body)
+    {
+        var builder = new PackageVersionBuilder();
+        body(builder);
+        _packageVersion = builder.Build().Success();
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
+    /// <summary>
+    /// Sets whether to generate a NuGet package on build.
+    /// </summary>
+    /// <param name="generatePackageOnBuild">True to generate package on build; otherwise, false.</param>
+    /// <returns>The current builder instance.</returns>
+    public TBuilder GeneratePackageOnBuild(bool? generatePackageOnBuild = true)
+    {
+        _generatePackageOnBuild = generatePackageOnBuild;
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
+    /// <summary>
+    /// Sets the project description.
+    /// </summary>
+    /// <param name="description">The project description.</param>
+    /// <returns>The current builder instance.</returns>
+    public TBuilder Description(string description)
+    {
+        _description = description;
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
+    /// <summary>
+    /// Sets the copyright information for the project.
+    /// </summary>
+    /// <param name="copyright">The copyright string.</param>
+    /// <returns>The current builder instance.</returns>
+    public TBuilder Copyright(string copyright)
+    {
+        _copyright = copyright;
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
+    /// <summary>
+    /// Sets the project URL for the NuGet package.
+    /// </summary>
+    /// <param name="packageProjectUrl">The project URL.</param>
+    /// <returns>The current builder instance.</returns>
+    public TBuilder PackageProjectUrl(string packageProjectUrl)
+    {
+        _packageProjectUrl = packageProjectUrl;
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
+    /// <summary>
+    /// Sets the repository URL for the project.
+    /// </summary>
+    /// <param name="repositoryUrl">The repository URL.</param>
+    /// <returns>The current builder instance.</returns>
+    public TBuilder RepositoryUrl(string repositoryUrl)
+    {
+        _repositoryUrl = repositoryUrl;
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
+    /// <summary>
+    /// Sets the repository type (e.g., "git").
+    /// </summary>
+    /// <param name="repositoryType">The repository type.</param>
+    /// <returns>The current builder instance.</returns>
+    public TBuilder RepositoryType(string repositoryType)
+    {
+        _repositoryType = repositoryType;
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
+    /// <summary>
+    /// Sets the package tags for the NuGet package.
+    /// </summary>
+    /// <param name="packageTags">An array of tags.</param>
+    /// <returns>The current builder instance.</returns>
+    /// <remarks>
+    /// Example:
+    /// <code>
+    /// builder.PackageTags("library", "dotnet", "csharp");
+    /// </code>
+    /// </remarks>
+    public TBuilder PackageTags(params string[] packageTags)
+    {
+        _packageTags = packageTags;
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
+    /// <summary>
+    /// Sets whether to include symbols in the NuGet package.
+    /// </summary>
+    /// <param name="includeSymbols">True to include symbols; otherwise, false.</param>
+    /// <returns>The current builder instance.</returns>
+    public TBuilder IncludeSymbols(bool includeSymbols)
+    {
+        _includeSymbols = includeSymbols;
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
+    /// <summary>
+    /// Sets whether to enforce code style rules during build.
+    /// </summary>
+    /// <param name="enforceCodeStyleInBuild">True to enforce code style; otherwise, false.</param>
+    /// <returns>The current builder instance.</returns>
+    public TBuilder EnforceCodeStyleInBuild(bool? enforceCodeStyleInBuild = true)
+    {
+        _enforceCodeStyleInBuild = enforceCodeStyleInBuild;
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
 
     /// <summary>
     /// Stores the list of project references.
