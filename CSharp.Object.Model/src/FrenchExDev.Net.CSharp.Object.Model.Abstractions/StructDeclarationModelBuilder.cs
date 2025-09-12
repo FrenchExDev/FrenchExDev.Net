@@ -84,7 +84,7 @@ public class StructDeclarationModelBuilder : AbstractObjectBuilder<StructDeclara
     /// <remarks>
     /// This method ensures that the struct name is provided. If not, a failure result is returned.
     /// </remarks>
-    protected override IObjectBuildResult<StructDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<StructDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         // Validate that the struct name is provided
         if (string.IsNullOrEmpty(_name))

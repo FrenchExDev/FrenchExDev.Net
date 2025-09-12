@@ -55,7 +55,7 @@ public class WorkflowObjectBuilder<TClass, TBuilder> : IAsyncObjectBuilder<TClas
         }
 
         var intermediates = new IntermediateObjectDictionary();
-        var exceptions = new ExceptionBuildList();
+        var exceptions = new ExceptionBuildDictionary();
 
         try
         {
@@ -90,7 +90,7 @@ public class WorkflowObjectBuilder<TClass, TBuilder> : IAsyncObjectBuilder<TClas
         }
         catch (Exception ex)
         {
-            exceptions.Add(new BasicAsyncObjectBuildException<TClass, IAsyncObjectBuilder<TClass>>(ex.Message, this, visited));
+            exceptions.Add(nameof(_steps).ToMemberName(), new BasicAsyncObjectBuildException<TClass, IAsyncObjectBuilder<TClass>>(nameof(_steps).ToMemberName(), ex.Message, this, visited));
             return new FailureAsyncObjectBuildResult<TClass, TBuilder>((TBuilder)(IAsyncObjectBuilder<TClass>)this, exceptions, visited);
         }
     }

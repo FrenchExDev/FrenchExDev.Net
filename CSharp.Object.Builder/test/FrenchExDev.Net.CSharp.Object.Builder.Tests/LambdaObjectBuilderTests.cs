@@ -28,7 +28,7 @@ public class LambdaObjectBuilderTests
     {
         public const string ErrorInvalidAge = "Invalid age";
 
-        public PersonBuilder(Func<PersonBuilder, ExceptionBuildList, VisitedObjectsList, IObjectBuildResult<Person>> buildFunc) : base(buildFunc)
+        public PersonBuilder(Func<PersonBuilder, ExceptionBuildDictionary, VisitedObjectsList, IObjectBuildResult<Person>> buildFunc) : base(buildFunc)
         {
         }
     }
@@ -41,7 +41,7 @@ public class LambdaObjectBuilderTests
     /// object creation patterns.</remarks>
     internal class AddressBuilder : LambdaObjectBuilder<Address, AddressBuilder>
     {
-        public AddressBuilder(Func<AddressBuilder, ExceptionBuildList, VisitedObjectsList, IObjectBuildResult<Address>> buildFunc) : base(buildFunc)
+        public AddressBuilder(Func<AddressBuilder, ExceptionBuildDictionary, VisitedObjectsList, IObjectBuildResult<Address>> buildFunc) : base(buildFunc)
         {
         }
     }

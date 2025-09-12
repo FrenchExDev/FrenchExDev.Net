@@ -40,7 +40,7 @@ public class DesktopProjectModelBuilder : AbstractProjectModelBuilder<DesktopPro
     /// if (result.IsSuccess) { /* use result.Success<CliProjectModel>() */ }
     /// </code>
     /// </remarks>
-    protected override IObjectBuildResult<DesktopProjectModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<DesktopProjectModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         VisiteObjectAndCollectExceptions(visited, exceptions);
 

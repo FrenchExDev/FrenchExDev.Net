@@ -87,19 +87,39 @@ public class AbstractAsyncObjectBuilderTests
             return this;
         }
 
-        protected async Task<IEnumerable<TOtherClass>> BuildListAsync<TOtherClass, TOtherBuilder>(List<TOtherBuilder> list, ExceptionBuildList exceptions, VisitedObjectsList visited, CancellationToken cancellationToken = default) where TOtherBuilder : class, IAsyncObjectBuilder<TOtherClass>
+        /// <summary>
+        /// Asynchronously builds a collection of objects from the specified list of builders, recording any build
+        /// failures in the provided exception dictionary.
+        /// </summary>
+        /// <remarks>If a builder fails to construct an object, the failure is recorded in the <paramref
+        /// name="exceptions"/> dictionary under the specified <paramref name="memberName"/>. Builders that return
+        /// references may defer addition of their results until resolved. The method does not throw on individual build
+        /// failures; all exceptions are aggregated in the provided dictionary.</remarks>
+        /// <typeparam name="TOtherClass">The type of object to be built by each builder in the list.</typeparam>
+        /// <typeparam name="TOtherBuilder">The type of builder used to construct objects of type <typeparamref name="TOtherClass"/>. Must implement
+        /// <see cref="IAsyncObjectBuilder{TOtherClass}"/>.</typeparam>
+        /// <param name="memberName">The name of the member associated with the builders. Used for exception tracking and reporting.</param>
+        /// <param name="list">The list of builders that will be used to asynchronously construct objects of type <typeparamref
+        /// name="TOtherClass"/>.</param>
+        /// <param name="exceptions">A dictionary for recording exceptions that occur during the build process for each member.</param>
+        /// <param name="visited">A list of objects that have already been visited during the build process to prevent cycles or redundant
+        /// operations.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous build operation.</param>
+        /// <returns>A collection of successfully built objects of type <typeparamref name="TOtherClass"/>. The collection may be
+        /// empty if no objects are built successfully.</returns>
+        protected async Task<IEnumerable<TOtherClass>> BuildListAsync<TOtherClass, TOtherBuilder>(string memberName, List<TOtherBuilder> list, ExceptionBuildDictionary exceptions, VisitedObjectsList visited, CancellationToken cancellationToken = default) where TOtherBuilder : class, IAsyncObjectBuilder<TOtherClass>
         {
             var built = new List<TOtherClass>();
             foreach (var builder in list)
             {
-                var addressBuildResult = await builder.BuildAsync(visited);
-                switch (addressBuildResult)
+                var buildResult = await builder.BuildAsync(visited);
+                switch (buildResult)
                 {
                     case SuccessObjectBuildResult<TOtherClass> successResult:
                         built.Add(successResult.Result);
                         break;
                     case FailureAsyncObjectBuildResult<TOtherClass, TOtherBuilder> failureResult:
-                        exceptions.Add(new AsyncFailureObjectBuildResultException<TOtherClass, TOtherBuilder>(failureResult, ErrorInvalidAddress));
+                        exceptions.Add(memberName.ToMemberName(), new AsyncFailureObjectBuildResultException<TOtherClass, TOtherBuilder>(failureResult, ErrorInvalidAddress));
                         break;
                     case AsyncBuildReference<TOtherClass, TOtherBuilder> buildRefResult:
                         buildRefResult.AddAction(built.Add);
@@ -116,21 +136,21 @@ public class AbstractAsyncObjectBuilderTests
         /// <param name="visited"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected override async Task<IObjectBuildResult<Person>> BuildInternalAsync(ExceptionBuildList exceptions, VisitedObjectsList visited, CancellationToken cancellationToken = default)
+        protected override async Task<IObjectBuildResult<Person>> BuildInternalAsync(ExceptionBuildDictionary exceptions, VisitedObjectsList visited, CancellationToken cancellationToken = default)
         {
-            var addresses = await BuildListAsync<Address, AddressBuilder>(_addresses, exceptions, visited, cancellationToken);
-            var people = await BuildListAsync<Person, PersonBuilder>(_people, exceptions, visited, cancellationToken);
+            var addresses = await BuildListAsync<Address, AddressBuilder>(nameof(_addresses), _addresses, exceptions, visited, cancellationToken);
+            var people = await BuildListAsync<Person, PersonBuilder>(nameof(_people), _people, exceptions, visited, cancellationToken);
 
             // Validate name
             if (string.IsNullOrWhiteSpace(_name))
             {
-                exceptions.Add(new BasicAsyncObjectBuildException<Person, PersonBuilder>(ErrorInvalidName, this, visited));
+                exceptions.Add(nameof(_name), new BasicAsyncObjectBuildException<Person, PersonBuilder>(nameof(_name).ToMemberName(), ErrorInvalidName, this, visited));
             }
 
             // Validate age
             if (_age is null || _age == 0)
             {
-                exceptions.Add(new BasicAsyncObjectBuildException<Person, PersonBuilder>(ErrorInvalidAge, this, visited));
+                exceptions.Add(nameof(_age), new BasicAsyncObjectBuildException<Person, PersonBuilder>(nameof(_age).ToMemberName(), ErrorInvalidAge, this, visited));
             }
 
             // Return failure if any exceptions were collected
@@ -174,18 +194,19 @@ public class AbstractAsyncObjectBuilderTests
         /// <param name="visited"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected override Task<IObjectBuildResult<Address>> BuildInternalAsync(ExceptionBuildList exceptions, VisitedObjectsList visited, CancellationToken cancellationToken = default)
+        protected override Task<IObjectBuildResult<Address>> BuildInternalAsync(ExceptionBuildDictionary exceptions, VisitedObjectsList visited, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_street))
             {
+                exceptions.Add(new MemberName(nameof(_street)), new InvalidDataException(ErrorInvalidStreet));
                 return Task.FromResult<IObjectBuildResult<Address>>(
-                    AsyncFailureResult(ExceptionBuildList.New(this, [new Exception(ErrorInvalidStreet)]), visited));
+                    AsyncFailureResult(exceptions, visited));
             }
 
             if (string.IsNullOrEmpty(_zipCode))
             {
                 return Task.FromResult<IObjectBuildResult<Address>>(
-                    AsyncFailureResult(ExceptionBuildList.New(this, [new Exception(ErrorInvalidZipCode)]), visited));
+                    AsyncFailureResult(exceptions, visited));
             }
 
             return Task.FromResult<IObjectBuildResult<Address>>(new SuccessObjectBuildResult<Address>(new Address(_street, _zipCode)));
@@ -244,7 +265,7 @@ public class AbstractAsyncObjectBuilderTests
             (failure) =>
             {
                 failure.ShouldNotBeNull();
-                failure.Exceptions.ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
+                failure.Exceptions[new MemberName("_age")].ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
                 failure.Exceptions.Count.ShouldBeEquivalentTo(1);
                 failure.Builder.ShouldNotBeNull();
                 failure.Builder.ShouldBeAssignableTo<PersonBuilder>();

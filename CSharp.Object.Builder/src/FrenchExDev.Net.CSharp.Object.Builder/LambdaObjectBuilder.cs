@@ -11,14 +11,14 @@ public class LambdaObjectBuilder<TClass, TBuilder> : AbstractObjectBuilder<TClas
     /// <summary>
     /// Holds the lambda function used to build the object.
     /// </summary>
-    private readonly Func<TBuilder, ExceptionBuildList, VisitedObjectsList, IObjectBuildResult<TClass>> _buildFunc;
+    private readonly Func<TBuilder, ExceptionBuildDictionary, VisitedObjectsList, IObjectBuildResult<TClass>> _buildFunc;
 
     /// <summary>
     /// Constructor for creating a new instance of <see cref="LambdaObjectBuilder{TClass}"/> with the specified build
     /// </summary>
     /// <param name="buildFunc"></param>
     /// <exception cref="ArgumentNullException"></exception>
-    public LambdaObjectBuilder(Func<TBuilder, ExceptionBuildList, VisitedObjectsList, IObjectBuildResult<TClass>> buildFunc)
+    public LambdaObjectBuilder(Func<TBuilder, ExceptionBuildDictionary, VisitedObjectsList, IObjectBuildResult<TClass>> buildFunc)
     {
         _buildFunc = buildFunc ?? throw new ArgumentNullException(nameof(buildFunc));
     }
@@ -30,7 +30,7 @@ public class LambdaObjectBuilder<TClass, TBuilder> : AbstractObjectBuilder<TClas
     /// the objects being visited, and values represent their corresponding processed states.</param>
     /// <returns>An object that implements <see cref="IObjectBuildResult{TClass}"/>, representing the result of the build
     /// operation.</returns>
-    protected override IObjectBuildResult<TClass> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<TClass> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         return _buildFunc((TBuilder)(this as IObjectBuilder<TClass>), exceptions, visited);
     }

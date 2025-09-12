@@ -23,7 +23,7 @@ public abstract class AbstractStepObjectBuilder<TClass> : IStepObjectBuilder<TCl
     /// </summary>
     /// <param name="intermediate"></param>
     /// <param name="visited"></param>
-    public abstract void Build(ExceptionBuildList exceptions, IntermediateObjectDictionary intermediate, VisitedObjectsList visited);
+    public abstract void Build(ExceptionBuildDictionary exceptions, IntermediateObjectDictionary intermediate, VisitedObjectsList visited);
 
     /// <summary>
     /// Determines whether the current instance contains a valid result of the specified type.

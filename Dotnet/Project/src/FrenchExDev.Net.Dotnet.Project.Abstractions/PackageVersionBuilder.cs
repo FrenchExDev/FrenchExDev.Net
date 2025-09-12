@@ -11,7 +11,7 @@ public class PackageVersionBuilder : AbstractObjectBuilder<PackageVersion, Packa
         _version = version;
         return this;
     }
-    protected override IObjectBuildResult<PackageVersion> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<PackageVersion> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         if (string.IsNullOrWhiteSpace(_version))
         {

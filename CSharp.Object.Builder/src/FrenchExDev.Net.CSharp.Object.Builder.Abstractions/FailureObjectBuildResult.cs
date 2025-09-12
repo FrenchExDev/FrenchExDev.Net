@@ -18,7 +18,7 @@ public class FailureObjectBuildResult<TClass, TBuilder> : AbstractFailureObjectB
     /// <param name="builder">The builder instance used to construct the object. Cannot be null.</param>
     /// <param name="exceptions">The collection of exceptions encountered during the build process. Cannot be null.</param>
     /// <param name="visited">The list of objects that were visited during the build operation. Cannot be null.</param>
-    public FailureObjectBuildResult(TBuilder builder, ExceptionBuildList exceptions, VisitedObjectsList visited) : base(builder, exceptions, visited)
+    public FailureObjectBuildResult(TBuilder builder, ExceptionBuildDictionary exceptions, VisitedObjectsList visited) : base(builder, exceptions, visited)
     {
     }
 }

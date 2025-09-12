@@ -91,7 +91,7 @@ public class InterfaceDeclarationModelBuilder : AbstractObjectBuilder<InterfaceD
     }
 
 
-    protected override IObjectBuildResult<InterfaceDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<InterfaceDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         var attributes = BuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
         var typeParameters = BuildList<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(_typeParameters, visited);

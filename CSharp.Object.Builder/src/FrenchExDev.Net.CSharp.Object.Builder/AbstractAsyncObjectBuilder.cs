@@ -21,7 +21,7 @@ public abstract class AbstractAsyncObjectBuilder<TClass, TBuilder> : IAsyncObjec
     /// cref="IObjectBuildResult{TClass}"/> representing the outcome of the build operation.</returns>
     public async Task<IObjectBuildResult<TClass>> BuildAsync(VisitedObjectsList? visited = null, CancellationToken cancellationToken = default)
     {
-        var exceptions = new ExceptionBuildList();
+        var exceptions = new ExceptionBuildDictionary();
         visited ??= new VisitedObjectsList();
 
         if (visited.TryGetValue(this, out var existing))
@@ -42,7 +42,7 @@ public abstract class AbstractAsyncObjectBuilder<TClass, TBuilder> : IAsyncObjec
     /// <param name="exceptions">A collection of exceptions associated with the failure.</param>
     /// <param name="visited">A dictionary of objects that have already been processed, used to prevent cyclic references.</param>
     /// <returns>An <see cref="FailureAsyncObjectBuildResult{TClass, TBuilder}"/> representing the failure state.</returns>
-    protected FailureAsyncObjectBuildResult<TClass, TBuilder> AsyncFailureResult(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected FailureAsyncObjectBuildResult<TClass, TBuilder> AsyncFailureResult(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         return new FailureAsyncObjectBuildResult<TClass, TBuilder>((TBuilder)(this as IAsyncObjectBuilder<TClass>), exceptions, visited);
     }
@@ -58,6 +58,5 @@ public abstract class AbstractAsyncObjectBuilder<TClass, TBuilder> : IAsyncObjec
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains an <see
     /// cref="IObjectBuildResult{TClass}"/> representing the outcome of the build process.</returns>
-    protected abstract Task<IObjectBuildResult<TClass>> BuildInternalAsync(ExceptionBuildList exceptions, VisitedObjectsList visited, CancellationToken cancellationToken);
-
+    protected abstract Task<IObjectBuildResult<TClass>> BuildInternalAsync(ExceptionBuildDictionary exceptions, VisitedObjectsList visited, CancellationToken cancellationToken);
 }

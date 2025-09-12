@@ -47,7 +47,7 @@ public class FreeTypeParameterConstraintDeclarationModelBuilder : AbstractObject
     /// <param name="exceptions">A list to collect build exceptions.</param>
     /// <param name="visited">A list of visited objects for cycle detection.</param>
     /// <returns>A build result containing either the constructed model or failure details.</returns>
-    protected override IObjectBuildResult<FreeTypeParameterConstraintDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<FreeTypeParameterConstraintDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         // Validate that at least one constraint is provided
         if (_constraint == null && !_constraints.Any())

@@ -40,7 +40,7 @@ public class LibraryProjectModelBuilder : AbstractProjectModelBuilder<LibraryPro
     /// if (result.IsSuccess) { /* use result.Success<LibraryProjectModel>() */ }
     /// </code>
     /// </remarks>
-    protected override IObjectBuildResult<LibraryProjectModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<LibraryProjectModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         VisiteObjectAndCollectExceptions(visited, exceptions);
 

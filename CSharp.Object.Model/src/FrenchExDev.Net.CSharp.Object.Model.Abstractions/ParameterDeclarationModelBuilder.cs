@@ -84,7 +84,7 @@ public class ParameterDeclarationModelBuilder : AbstractObjectBuilder<ParameterD
     /// <remarks>
     /// This method ensures that both the type and name are provided. If either is missing, a failure result is returned.
     /// </remarks>
-    protected override IObjectBuildResult<ParameterDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<ParameterDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         // Validate that the parameter type is provided
         if (string.IsNullOrEmpty(_type))

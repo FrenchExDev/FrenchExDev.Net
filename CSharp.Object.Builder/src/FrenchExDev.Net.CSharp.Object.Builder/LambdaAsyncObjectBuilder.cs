@@ -15,14 +15,14 @@ public class LambdaAsyncObjectBuilder<TClass, TBuilder> : AbstractAsyncObjectBui
     /// <summary>
     /// Holds the lambda function used to build the object.
     /// </summary>
-    private readonly Func<TBuilder, ExceptionBuildList, VisitedObjectsList, CancellationToken, Task<IObjectBuildResult<TClass>>> _buildFunc;
+    private readonly Func<TBuilder, ExceptionBuildDictionary, VisitedObjectsList, CancellationToken, Task<IObjectBuildResult<TClass>>> _buildFunc;
 
     /// <summary>
     /// Constructor for creating a new instance of <see cref="LambdaAsyncObjectBuilder{TClass}"/> with the specified build
     /// </summary>
     /// <param name="buildFunc"></param>
     /// <exception cref="ArgumentNullException"></exception>
-    public LambdaAsyncObjectBuilder(Func<TBuilder, ExceptionBuildList, VisitedObjectsList, CancellationToken, Task<IObjectBuildResult<TClass>>> buildFunc)
+    public LambdaAsyncObjectBuilder(Func<TBuilder, ExceptionBuildDictionary, VisitedObjectsList, CancellationToken, Task<IObjectBuildResult<TClass>>> buildFunc)
     {
         _buildFunc = buildFunc ?? throw new ArgumentNullException(nameof(buildFunc));
     }
@@ -33,7 +33,7 @@ public class LambdaAsyncObjectBuilder<TClass, TBuilder> : AbstractAsyncObjectBui
     /// <param name="visited"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override async Task<IObjectBuildResult<TClass>> BuildInternalAsync(ExceptionBuildList exceptions, VisitedObjectsList visited, CancellationToken cancellationToken)
+    protected override async Task<IObjectBuildResult<TClass>> BuildInternalAsync(ExceptionBuildDictionary exceptions, VisitedObjectsList visited, CancellationToken cancellationToken)
     {
         return await _buildFunc((TBuilder)(IAsyncObjectBuilder<TClass>)this, exceptions, visited, cancellationToken);
     }

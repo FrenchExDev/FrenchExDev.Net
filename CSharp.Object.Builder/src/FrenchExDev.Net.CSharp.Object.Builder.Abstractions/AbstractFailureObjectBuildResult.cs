@@ -19,7 +19,7 @@ public class AbstractFailureObjectBuildResult<TBuilder>
     /// <summary>
     /// Exceptions that occurred during the build operation, or <see langword="null"/> if no exceptions
     /// </summary>
-    public ExceptionBuildList Exceptions { get; init; }
+    public ExceptionBuildDictionary Exceptions { get; init; }
 
     /// <summary>
     /// Gets the dictionary of visited objects during the build process.
@@ -32,7 +32,7 @@ public class AbstractFailureObjectBuildResult<TBuilder>
     /// </summary>t
     /// <param name="builder"></param>
     /// <param name="exceptions"></param>
-    public AbstractFailureObjectBuildResult(TBuilder builder, ExceptionBuildList exceptions, VisitedObjectsList visited)
+    public AbstractFailureObjectBuildResult(TBuilder builder, ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         Builder = builder;
         Exceptions = exceptions;

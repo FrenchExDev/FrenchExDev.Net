@@ -44,7 +44,7 @@ public class BasicModuleInformationBuilder : AbstractObjectBuilder<BasicModuleIn
         return this;
     }
 
-    protected override IObjectBuildResult<BasicModuleInformation> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<BasicModuleInformation> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         if (string.IsNullOrEmpty(_name))
         {

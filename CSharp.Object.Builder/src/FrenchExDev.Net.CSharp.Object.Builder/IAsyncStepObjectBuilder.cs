@@ -24,7 +24,7 @@ public interface IAsyncStepObjectBuilder<TClass> : IAbstractStep<TClass>
     /// <param name="cancellationToken">An optional token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous build operation.</returns>
     Task BuildAsync(
-        ExceptionBuildList exceptions,
+        ExceptionBuildDictionary exceptions,
         IntermediateObjectDictionary intermediate,
         VisitedObjectsList visited,
         CancellationToken cancellationToken = default);

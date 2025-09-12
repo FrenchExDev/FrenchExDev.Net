@@ -457,46 +457,46 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
     /// <remarks>
     /// This method checks that all required project metadata is set before building the project model.
     /// </remarks>
-    protected void VisiteObjectAndCollectExceptions(VisitedObjectsList visited, ExceptionBuildList exceptions)
+    protected void VisiteObjectAndCollectExceptions(VisitedObjectsList visited, ExceptionBuildDictionary exceptions)
     {
         if (string.IsNullOrWhiteSpace(_name))
         {
-            exceptions.Add(new ArgumentNullException(nameof(_name), ErrorProjectNameCannotBeNullOrEmpty));
+            exceptions.Add(nameof(_name), new ArgumentNullException(nameof(_name), ErrorProjectNameCannotBeNullOrEmpty));
         }
 
         if (string.IsNullOrWhiteSpace(_directory))
         {
-            exceptions.Add(new ArgumentNullException(nameof(_directory), ErrorProjectDirectoryCannotBeNullOrEmpty));
+            exceptions.Add(nameof(_directory), new ArgumentNullException(nameof(_directory), ErrorProjectDirectoryCannotBeNullOrEmpty));
         }
 
         if (string.IsNullOrWhiteSpace(_sdk))
         {
-            exceptions.Add(new ArgumentNullException(nameof(_sdk), ErrorProjectSdkCannotBeNullOrEmpty));
+            exceptions.Add(nameof(_sdk), new ArgumentNullException(nameof(_sdk), ErrorProjectSdkCannotBeNullOrEmpty));
         }
 
         if (string.IsNullOrWhiteSpace(_targetFramework))
         {
-            exceptions.Add(new ArgumentNullException(nameof(_targetFramework), ErrorProjectTargetFrameworkCannotBeNullOrEmpty));
+            exceptions.Add(nameof(_targetFramework), new ArgumentNullException(nameof(_targetFramework), ErrorProjectTargetFrameworkCannotBeNullOrEmpty));
         }
 
         if (string.IsNullOrWhiteSpace(_outputType))
         {
-            exceptions.Add(new ArgumentNullException(nameof(_outputType), ErrorProjectOutputTypeCannotBeNullOrEmpty));
+            exceptions.Add(nameof(_outputType), new ArgumentNullException(nameof(_outputType), ErrorProjectOutputTypeCannotBeNullOrEmpty));
         }
 
         if (string.IsNullOrWhiteSpace(_langVersion))
         {
-            exceptions.Add(new ArgumentNullException(nameof(_langVersion), ErrorProjectLanguageVersionCannotBeNullOrEmpty));
+            exceptions.Add(nameof(_langVersion), new ArgumentNullException(nameof(_langVersion), ErrorProjectLanguageVersionCannotBeNullOrEmpty));
         }
 
         if (_nullable == null)
         {
-            exceptions.Add(new ArgumentNullException(nameof(_nullable), ErrorProjectNullableCannotBeNullOrEmpty));
+            exceptions.Add(nameof(_nullable), new ArgumentNullException(nameof(_nullable), ErrorProjectNullableCannotBeNullOrEmpty));
         }
 
         if (_implicitUsings == null)
         {
-            exceptions.Add(new ArgumentNullException(nameof(_implicitUsings), ErrorPojectImplicitUsingsCannotBeNullOrEmpty));
+            exceptions.Add(nameof(_implicitUsings), new ArgumentNullException(nameof(_implicitUsings), ErrorPojectImplicitUsingsCannotBeNullOrEmpty));
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Testing;
+﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+using FrenchExDev.Net.CSharp.Object.Builder.Testing;
 using FrenchExDev.Net.CSharp.Object.Builder.Tests.Fixtures;
 using Shouldly;
 
@@ -97,7 +98,7 @@ public class WorkflowObjectBuilderTests
                         var age = intermediates.Get<int>("Age");
                         if (age <= 0)
                         {
-                            exceptions.Add(new Exception("Invalid age provided."));
+                            exceptions.Add("age", new Exception("Invalid age provided."));
                             return;
                         }
                         var person = new Person(
@@ -114,7 +115,7 @@ public class WorkflowObjectBuilderTests
             {
                 failure.ShouldNotBeNull();
                 failure.Exceptions.Count().ShouldBe(1);
-                failure.Exceptions.ElementAt(0).Message.ShouldBe("Invalid age provided.");
+                failure.Exceptions[new MemberName("age")].ElementAt(0).Message.ShouldBe("Invalid age provided.");
                 failure.Builder.ShouldNotBeNull();
             });
 }

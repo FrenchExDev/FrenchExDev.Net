@@ -40,7 +40,7 @@ public class CliProjectModelBuilder : AbstractProjectModelBuilder<CliProjectMode
     /// if (result.IsSuccess) { /* use result.Success<CliProjectModel>() */ }
     /// </code>
     /// </remarks>
-    protected override IObjectBuildResult<CliProjectModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<CliProjectModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         VisiteObjectAndCollectExceptions(visited, exceptions);
 

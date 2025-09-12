@@ -77,7 +77,7 @@ public class PackageReferenceBuilder : AbstractObjectBuilder<IPackageReference, 
     /// <example>
     /// var result = builder.Name("Newtonsoft.Json").Build();
     /// </example>
-    protected override IObjectBuildResult<IPackageReference> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<IPackageReference> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         if (string.IsNullOrWhiteSpace(_name))
         {

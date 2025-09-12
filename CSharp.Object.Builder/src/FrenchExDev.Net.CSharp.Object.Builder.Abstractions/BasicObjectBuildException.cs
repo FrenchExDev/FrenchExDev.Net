@@ -11,15 +11,16 @@
 public class BasicObjectBuildException<TClass, TBuilder> : Exception where TBuilder : IObjectBuilder<TClass>
 {
     private Dictionary<object, object>? _visited;
-
+    private readonly MemberName member;
     private TBuilder? _builder;
 
     public Dictionary<object, object> Visited => _visited ?? throw new InvalidOperationException("Visited is not set.");
 
     public TBuilder Builder => _builder ?? throw new InvalidOperationException("Builder is not set.");
 
-    public BasicObjectBuildException(string message, TBuilder builder, VisitedObjectsList? visited = null) : base(message)
+    public BasicObjectBuildException(MemberName member, string message, TBuilder builder, VisitedObjectsList? visited = null) : base(message)
     {
+        this.member = member;
         _builder = builder;
         _visited = visited;
     }

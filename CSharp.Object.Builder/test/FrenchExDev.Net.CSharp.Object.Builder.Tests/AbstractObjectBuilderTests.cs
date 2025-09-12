@@ -132,7 +132,7 @@ public class AbstractObjectBuilderTests
         /// <returns>A <see cref="SuccessObjectBuildResult{T}"/> containing the constructed <see cref="Person"/> object if the
         /// build is successful; otherwise, a <see cref="FailureObjectBuildResult{T, TBuilder}"/> containing the
         /// encountered exceptions.</returns>
-        protected override IObjectBuildResult<Person> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+        protected override IObjectBuildResult<Person> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
         {
             // next people variable will be used to collect built people
             // built people can be built successfully, fail to build, or be a build reference
@@ -149,7 +149,7 @@ public class AbstractObjectBuilderTests
                         people.Add(successResult.Result);
                         break;
                     case FailureObjectBuildResult<Person, PersonBuilder> failureResult:
-                        exceptions.Add(new FailureObjectBuildResultException<Person, PersonBuilder>(new FailureObjectBuildResult<Person, PersonBuilder>(peopleBuilder, failureResult.Exceptions, visited), "exceptions"));
+                        exceptions.Add(nameof(_people), new FailureObjectBuildResultException<Person, PersonBuilder>(new FailureObjectBuildResult<Person, PersonBuilder>(peopleBuilder, failureResult.Exceptions, visited), "exceptions"));
                         break;
                     case BuildReference<Person, PersonBuilder> buildRefResult:
                         buildRefResult.AddAction((builtPerson) => people.Add(builtPerson));
@@ -161,13 +161,13 @@ public class AbstractObjectBuilderTests
             // Validate name
             if (string.IsNullOrWhiteSpace(_name))
             {
-                exceptions.Add(new BasicObjectBuildException<Person, PersonBuilder>(ErrorInvalidName, this, visited));
+                exceptions.Add(nameof(_name), new BasicObjectBuildException<Person, PersonBuilder>(new MemberName(nameof(_name)), ErrorInvalidName, this, visited));
             }
 
             // Validate age
             if (_age is null || _age == 0)
             {
-                exceptions.Add(new BasicObjectBuildException<Person, PersonBuilder>(ErrorInvalidAge, this, visited));
+                exceptions.Add(nameof(_age), new BasicObjectBuildException<Person, PersonBuilder>(new MemberName(nameof(_age)), ErrorInvalidAge, this, visited));
             }
 
             // Return failure if any exceptions were collected
@@ -237,17 +237,17 @@ public class AbstractObjectBuilderTests
         /// <param name="visited">A list of objects visited during the build process to prevent circular references.</param>
         /// <returns>A successful build result containing the constructed <see cref="Address"/> object if the required fields are
         /// valid; otherwise, a failure result with the appropriate error message.</returns>
-        protected override IObjectBuildResult<Address> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+        protected override IObjectBuildResult<Address> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
         {
             // Validate street and zip code
             if (string.IsNullOrEmpty(_street))
             {
-                exceptions.Add(new BasicObjectBuildException<Address, AddressBuilder>(ErrorInvalidStreet, this, visited));
+                exceptions.Add(nameof(_street), new BasicObjectBuildException<Address, AddressBuilder>(nameof(_street).ToMemberName(), ErrorInvalidStreet, this, visited));
             }
 
             if (string.IsNullOrEmpty(_zipCode))
             {
-                exceptions.Add(new BasicObjectBuildException<Address, AddressBuilder>(ErrorInvalidZipCode, this, visited));
+                exceptions.Add(nameof(_zipCode), new BasicObjectBuildException<Address, AddressBuilder>(nameof(_zipCode).ToMemberName(), ErrorInvalidZipCode, this, visited));
             }
 
             // Return failure if any exceptions were collected
@@ -309,6 +309,6 @@ public class AbstractObjectBuilderTests
             {
                 var failure = (FailureObjectBuildResult<Person, PersonBuilder>)buildResult;
                 failure.Exceptions.Count().ShouldBe(1);
-                failure.Exceptions.ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
+                failure.Exceptions[new MemberName("_age")].ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
             });
 }

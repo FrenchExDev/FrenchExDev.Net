@@ -83,7 +83,7 @@ public class ConstructorDeclarationModelBuilder : AbstractObjectBuilder<Construc
     /// <param name="exceptions">A list to collect build exceptions.</param>
     /// <param name="visited">A list of visited objects for cycle detection.</param>
     /// <returns>A build result containing either the constructed model or failure details.</returns>
-    protected override IObjectBuildResult<ConstructorDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<ConstructorDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         var parameters = BuildList<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(_parameters, visited);
 

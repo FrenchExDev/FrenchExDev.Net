@@ -11,7 +11,7 @@ public class PackageNameBuilder : AbstractObjectBuilder<PackageName, PackageName
         _name = name;
         return this;
     }
-    protected override IObjectBuildResult<PackageName> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<PackageName> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         if (string.IsNullOrWhiteSpace(_name))
         {

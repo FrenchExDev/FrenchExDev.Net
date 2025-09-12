@@ -62,7 +62,7 @@ public class EnumMemberDeclarationModelBuilder : AbstractObjectBuilder<EnumMembe
     /// <param name="exceptions">A list to collect build exceptions.</param>
     /// <param name="visited">A list of visited objects for cycle detection.</param>
     /// <returns>A build result containing either the constructed model or failure details.</returns>
-    protected override IObjectBuildResult<EnumMemberDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<EnumMemberDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         // Validate that the enum member name is provided
         if (string.IsNullOrEmpty(_name))

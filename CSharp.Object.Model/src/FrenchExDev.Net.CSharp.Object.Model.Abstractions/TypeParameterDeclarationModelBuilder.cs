@@ -13,7 +13,7 @@ public class TypeParameterDeclarationModelBuilder : AbstractObjectBuilder<TypePa
         return this;
     }
 
-    protected override IObjectBuildResult<TypeParameterDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<TypeParameterDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         if (string.IsNullOrEmpty(_name))
         {

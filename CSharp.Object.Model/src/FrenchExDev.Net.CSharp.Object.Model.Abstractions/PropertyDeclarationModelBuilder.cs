@@ -141,7 +141,7 @@ public class PropertyDeclarationModelBuilder : AbstractObjectBuilder<PropertyDec
     /// <remarks>
     /// This method ensures that the property name is provided. If not, a failure result is returned.
     /// </remarks>
-    protected override IObjectBuildResult<PropertyDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<PropertyDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         // Validate that the property name is provided
         if (string.IsNullOrEmpty(_name))

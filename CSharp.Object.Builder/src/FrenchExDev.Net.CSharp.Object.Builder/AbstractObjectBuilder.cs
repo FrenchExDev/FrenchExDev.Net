@@ -46,7 +46,7 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
         }
 
         // Initialize exceptions build list to collect exceptions during the build process.
-        var exceptions = new ExceptionBuildList();
+        var exceptions = new ExceptionBuildDictionary();
 
         // Initialize visited objects list if not provided.
         visited ??= new VisitedObjectsList();
@@ -108,24 +108,7 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// <param name="visited">A dictionary used to track objects that have already been processed during the build operation.  This parameter
     /// may be <see langword="null"/> if no tracking is required.</param>
     /// <returns>An instance of <see cref="IObjectBuildResult{TClass}"/> representing the result of the build operation.</returns>
-    protected abstract IObjectBuildResult<TClass> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited);
-
-
-    /// <summary>
-    /// Creates a failure result containing the specified error message and a record of visited objects.
-    /// </summary>
-    /// <remarks>This method is intended to be overridden in derived classes to customize the behavior of
-    /// failure handling.</remarks>
-    /// <param name="message">The error message describing the reason for the failure.</param>
-    /// <param name="visited">A dictionary of objects that have been visited during the operation, used to track state and prevent cycles.</param>
-    /// <returns>A <see cref="FailureObjectBuildResult{TClass, TBuilder}"/> representing the failure, including the error details and
-    /// visited objects.</returns>
-    protected virtual FailureObjectBuildResult<TClass, TBuilder> Failure(string message, VisitedObjectsList visited)
-    {
-        return new FailureObjectBuildResult<TClass, TBuilder>((TBuilder)(object)this, [
-            new BasicObjectBuildException<TClass, TBuilder>(message, (TBuilder)(this as IObjectBuilder<TClass>), visited),
-        ], visited);
-    }
+    protected abstract IObjectBuildResult<TClass> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited);
 
     /// <summary>
     /// Creates a failure result containing the specified exceptions and a record of visited objects.
@@ -133,7 +116,7 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// <param name="exceptions"></param>
     /// <param name="visited"></param>
     /// <returns></returns>
-    protected virtual FailureObjectBuildResult<TClass, TBuilder> Failure(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected virtual FailureObjectBuildResult<TClass, TBuilder> Failure(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         return new FailureObjectBuildResult<TClass, TBuilder>((TBuilder)(object)this, exceptions, visited);
     }
@@ -171,14 +154,14 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// <typeparam name="TOtherBuilder">The type of builder used to construct objects of type <typeparamref name="TOtherClass"/>.</typeparam>
     /// <param name="results">A list of object build results from which exceptions will be collected.</param>
     /// <param name="exceptions">The exception list to which exceptions from failed build results will be added.</param>
-    protected void AddExceptions<TOtherClass, TOtherBuilder>(List<IObjectBuildResult<TOtherClass>> results, ExceptionBuildList exceptions) where TOtherBuilder : IObjectBuilder<TOtherClass>
+    protected void AddExceptions<TOtherClass, TOtherBuilder>(MemberName memberName, List<IObjectBuildResult<TOtherClass>> results, ExceptionBuildDictionary exceptions) where TOtherBuilder : IObjectBuilder<TOtherClass>
     {
         if (!results.OfType<FailureObjectBuildResult<TOtherClass, TOtherBuilder>>().Any())
         {
             return;
         }
 
-        exceptions.AddRange(results.OfType<FailureObjectBuildResult<TOtherClass, TOtherBuilder>>().SelectMany(x => x.Exceptions));
+        exceptions.Add(memberName, results.OfType<FailureObjectBuildResult<TOtherClass, TOtherBuilder>>().SelectMany(x => x.Exceptions));
     }
 
     /// <summary>

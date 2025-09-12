@@ -19,7 +19,7 @@ public class ClassProjectModelBuilder : AbstractProjectModelBuilder<ClassProject
     /// be null.</param>
     /// <returns>An <see cref="IObjectBuildResult{T}"/> containing the result of the build operation for <see
     /// cref="ClassProjectModel"/>.</returns>
-    protected override IObjectBuildResult<ClassProjectModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<ClassProjectModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         VisiteObjectAndCollectExceptions(visited, exceptions);
 

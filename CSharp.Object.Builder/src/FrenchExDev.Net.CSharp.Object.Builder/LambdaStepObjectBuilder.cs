@@ -13,7 +13,7 @@ public class LambdaStepObjectBuilder<TClass> : IStepObjectBuilder<TClass>
     /// <summary>
     /// Holds the action to be executed during the build process.
     /// </summary>
-    private readonly Action<LambdaStepObjectBuilder<TClass>, ExceptionBuildList, IntermediateObjectDictionary, VisitedObjectsList> _buildAction;
+    private readonly Action<LambdaStepObjectBuilder<TClass>, ExceptionBuildDictionary, IntermediateObjectDictionary, VisitedObjectsList> _buildAction;
 
     /// <summary>
     /// Holds the result of the building process for this step.
@@ -31,7 +31,7 @@ public class LambdaStepObjectBuilder<TClass> : IStepObjectBuilder<TClass>
     /// </summary>
     /// <param name="isFinal"></param>
     /// <param name="buildAction"></param>
-    public LambdaStepObjectBuilder(Action<LambdaStepObjectBuilder<TClass>, ExceptionBuildList, IntermediateObjectDictionary, VisitedObjectsList> buildAction)
+    public LambdaStepObjectBuilder(Action<LambdaStepObjectBuilder<TClass>, ExceptionBuildDictionary, IntermediateObjectDictionary, VisitedObjectsList> buildAction)
     {
         _buildAction = buildAction;
     }
@@ -62,7 +62,7 @@ public class LambdaStepObjectBuilder<TClass> : IStepObjectBuilder<TClass>
     /// <param name="intermediates">A list to store intermediate objects generated during the build process.</param>
     /// <param name="visited">A list to track objects that have already been processed to prevent duplication.</param>
     /// <inheritdoc/>
-    public void Build(ExceptionBuildList exceptions, IntermediateObjectDictionary intermediates, VisitedObjectsList visited)
+    public void Build(ExceptionBuildDictionary exceptions, IntermediateObjectDictionary intermediates, VisitedObjectsList visited)
     {
         _buildAction(this, exceptions, intermediates, visited);
     }

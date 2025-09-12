@@ -164,7 +164,7 @@ public class ClassDeclarationModelBuilder : AbstractObjectBuilder<ClassDeclarati
     /// <param name="exceptions">A list to collect build exceptions.</param>
     /// <param name="visited">A list of visited objects for cycle detection.</param>
     /// <returns>A build result containing either the constructed model or failure details.</returns>
-    protected override IObjectBuildResult<ClassDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<ClassDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         // Build all nested components and collect their results
         var attributes = BuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
@@ -177,19 +177,19 @@ public class ClassDeclarationModelBuilder : AbstractObjectBuilder<ClassDeclarati
         var nestedClasses = BuildList<ClassDeclarationModel, ClassDeclarationModelBuilder>(_nestedClasses, visited);
 
         // Collect exceptions from failed nested builds
-        AddExceptions<MethodDeclarationModel, MethodDeclarationModelBuilder>(methods, exceptions);
-        AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(attributes, exceptions);
-        AddExceptions<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(typeParameters, exceptions);
-        AddExceptions<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(typeParameterConstraints, exceptions);
-        AddExceptions<FieldDeclarationModel, FieldDeclarationModelBuilder>(fields, exceptions);
-        AddExceptions<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(properties, exceptions);
-        AddExceptions<ConstructorDeclarationModel, ConstructorDeclarationModelBuilder>(constructors, exceptions);
-        AddExceptions<ClassDeclarationModel, ClassDeclarationModelBuilder>(nestedClasses, exceptions);
+        AddExceptions<MethodDeclarationModel, MethodDeclarationModelBuilder>(new MemberName(nameof(methods)), methods, exceptions);
+        AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(new MemberName(nameof(attributes)), attributes, exceptions);
+        AddExceptions<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(new MemberName(nameof(typeParameters)), typeParameters, exceptions);
+        AddExceptions<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(new MemberName(nameof(typeParameterConstraints)), typeParameterConstraints, exceptions);
+        AddExceptions<FieldDeclarationModel, FieldDeclarationModelBuilder>(new MemberName(nameof(fields)), fields, exceptions);
+        AddExceptions<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(new MemberName(nameof(properties)), properties, exceptions);
+        AddExceptions<ConstructorDeclarationModel, ConstructorDeclarationModelBuilder>(new MemberName(nameof(constructors)), constructors, exceptions);
+        AddExceptions<ClassDeclarationModel, ClassDeclarationModelBuilder>(new MemberName(nameof(nestedClasses)), nestedClasses, exceptions);
 
         // Validate required class name
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Class name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Class name must be provided."));
         }
 
         // If any errors were collected, return a failure result

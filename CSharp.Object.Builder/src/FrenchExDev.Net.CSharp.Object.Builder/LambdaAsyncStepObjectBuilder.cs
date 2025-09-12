@@ -15,7 +15,7 @@ public class LambdaAsyncStepObjectBuilder<TClass> : IAsyncStepObjectBuilder<TCla
     /// <summary>
     /// Holds the user-defined asynchronous build action to be executed during the build process.
     /// </summary>
-    private readonly Func<ExceptionBuildList, IntermediateObjectDictionary, VisitedObjectsList, CancellationToken, Task> _buildAction;
+    private readonly Func<ExceptionBuildDictionary, IntermediateObjectDictionary, VisitedObjectsList, CancellationToken, Task> _buildAction;
 
     /// <summary>
     /// Holds the result of the build process, which can be set using the <see cref="Set"/> method.
@@ -31,7 +31,7 @@ public class LambdaAsyncStepObjectBuilder<TClass> : IAsyncStepObjectBuilder<TCla
     /// Constructor for creating a new instance of <see cref="LambdaAsyncStepObjectBuilder{TClass}"/> with the specified
     /// </summary>
     /// <param name="buildAction"></param>
-    public LambdaAsyncStepObjectBuilder(Func<ExceptionBuildList, IntermediateObjectDictionary, VisitedObjectsList, CancellationToken, Task> buildAction)
+    public LambdaAsyncStepObjectBuilder(Func<ExceptionBuildDictionary, IntermediateObjectDictionary, VisitedObjectsList, CancellationToken, Task> buildAction)
     {
         _buildAction = buildAction;
     }
@@ -54,7 +54,7 @@ public class LambdaAsyncStepObjectBuilder<TClass> : IAsyncStepObjectBuilder<TCla
     /// <param name="visited"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task BuildAsync(ExceptionBuildList exceptions, IntermediateObjectDictionary intermediates, VisitedObjectsList visited, CancellationToken cancellationToken = default)
+    public Task BuildAsync(ExceptionBuildDictionary exceptions, IntermediateObjectDictionary intermediates, VisitedObjectsList visited, CancellationToken cancellationToken = default)
     {
         return _buildAction(exceptions, intermediates, visited, cancellationToken);
     }

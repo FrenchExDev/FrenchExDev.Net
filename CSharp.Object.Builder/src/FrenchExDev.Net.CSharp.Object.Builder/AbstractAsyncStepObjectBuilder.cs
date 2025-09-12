@@ -33,7 +33,7 @@ public abstract class AbstractAsyncStepObjectBuilder<TClass> : IAsyncStepObjectB
     /// <param name="cancellationToken">A token to monitor for cancellation requests. The operation will terminate early if the token is canceled.</param>
     /// <returns>A task that represents the asynchronous build operation.</returns>
     public abstract Task BuildAsync(
-        ExceptionBuildList exceptions,
+        ExceptionBuildDictionary exceptions,
         IntermediateObjectDictionary intermediate,
         VisitedObjectsList visited,
         CancellationToken cancellationToken = default);

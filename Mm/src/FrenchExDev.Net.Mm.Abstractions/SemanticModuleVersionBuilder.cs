@@ -82,7 +82,7 @@ public class SemanticModuleVersionBuilder : AbstractObjectBuilder<SemanticModule
     /// <param name="exceptions"></param>
     /// <param name="visited"></param>
     /// <returns></returns>
-    protected override IObjectBuildResult<SemanticModuleVersion> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<SemanticModuleVersion> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
 
         if (_major < 0)

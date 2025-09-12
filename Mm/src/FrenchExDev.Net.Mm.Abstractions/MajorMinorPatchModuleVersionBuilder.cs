@@ -61,7 +61,7 @@ public class MajorMinorPatchModuleVersionBuilder : AbstractObjectBuilder<MajorMi
     /// <returns>An <see cref="IObjectBuildResult{MajorMinorPatchModuleVersion}"/> representing the result of the build
     /// operation. If validation fails, the result contains the collected exceptions; otherwise, it contains the
     /// successfully built version object.</returns>
-    protected override IObjectBuildResult<MajorMinorPatchModuleVersion> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<MajorMinorPatchModuleVersion> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         if (_major == null || !_major.HasValue)
         {

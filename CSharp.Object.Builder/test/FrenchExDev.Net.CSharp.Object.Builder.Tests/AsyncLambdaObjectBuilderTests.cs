@@ -27,7 +27,7 @@ public class AsyncLambdaObjectBuilderTests
     {
         public const string ErrorInvalidAge = "Invalid age";
 
-        public PersonBuilder(Func<PersonBuilder, ExceptionBuildList, VisitedObjectsList, CancellationToken, Task<IObjectBuildResult<Person>>> buildFunc) : base(buildFunc)
+        public PersonBuilder(Func<PersonBuilder, ExceptionBuildDictionary, VisitedObjectsList, CancellationToken, Task<IObjectBuildResult<Person>>> buildFunc) : base(buildFunc)
         {
         }
     }
@@ -40,7 +40,7 @@ public class AsyncLambdaObjectBuilderTests
     /// object creation patterns.</remarks>
     internal class AddressBuilder : LambdaAsyncObjectBuilder<Address, AddressBuilder>
     {
-        public AddressBuilder(Func<AddressBuilder, ExceptionBuildList, VisitedObjectsList, CancellationToken, Task<IObjectBuildResult<Address>>> buildFunc) : base(buildFunc)
+        public AddressBuilder(Func<AddressBuilder, ExceptionBuildDictionary, VisitedObjectsList, CancellationToken, Task<IObjectBuildResult<Address>>> buildFunc) : base(buildFunc)
         {
         }
     }
@@ -60,7 +60,7 @@ public class AsyncLambdaObjectBuilderTests
         await BuilderTester.InvalidAsync<PersonBuilder, Person>(
             builderFactory: () => new PersonBuilder((builder, exceptions, visited, cancellationToken) =>
             {
-                exceptions.Add(new Exception(PersonBuilder.ErrorInvalidAge));
+                exceptions.Add("age", new Exception(PersonBuilder.ErrorInvalidAge));
                 return Task.FromResult<IObjectBuildResult<Person>>(new FailureAsyncObjectBuildResult<Person, PersonBuilder>(builder, exceptions, visited));
             }),
             body: (builder, cancellationToken) =>
@@ -71,7 +71,7 @@ public class AsyncLambdaObjectBuilderTests
             {
                 failure.ShouldNotBeNull();
                 failure.Exceptions.Count().ShouldBeEquivalentTo(1);
-                failure.Exceptions.ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
+                failure.Exceptions[new MemberName("age")].ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
                 failure.Builder.ShouldNotBeNull();
                 failure.Builder.ShouldBeAssignableTo<PersonBuilder>();
             });

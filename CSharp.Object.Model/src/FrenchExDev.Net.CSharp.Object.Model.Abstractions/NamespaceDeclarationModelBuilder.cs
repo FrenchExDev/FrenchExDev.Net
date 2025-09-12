@@ -181,7 +181,7 @@ public class NamespaceDeclarationModelBuilder : AbstractObjectBuilder<NamespaceD
     /// This method builds all nested elements (interfaces, classes, enums, structs, and nested namespaces) and aggregates any exceptions.
     /// If the namespace name is not provided or any nested builder fails, a failure result is returned.
     /// </remarks>
-    protected override IObjectBuildResult<NamespaceDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<NamespaceDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         var interfaces = BuildList<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(_interfaces, visited);
         var enums = BuildList<EnumDeclarationModel, EnumDeclarationModelBuilder>(_enums, visited);

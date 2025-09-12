@@ -41,7 +41,7 @@ public class TypeParameterConstraintModelBuilder : AbstractObjectBuilder<TypePar
     /// <param name="exceptions">A list to collect validation exceptions.</param>
     /// <param name="visited">A list of visited objects for circular reference detection.</param>
     /// <returns>The build result containing the model or validation errors.</returns>
-    protected override IObjectBuildResult<TypeParameterConstraintModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<TypeParameterConstraintModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         if (string.IsNullOrEmpty(_typeParameter))
         {

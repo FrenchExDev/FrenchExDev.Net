@@ -48,11 +48,11 @@ public class AttributeDeclarationModelBuilder : AbstractObjectBuilder<AttributeD
     /// <param name="exceptions">A list to collect build exceptions.</param>
     /// <param name="visited">A list of visited objects for cycle detection.</param>
     /// <returns>A build result containing either the constructed model or failure details.</returns>
-    protected override IObjectBuildResult<AttributeDeclarationModel> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<AttributeDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Attribute name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Attribute name must be provided."));
         }
 
         if (exceptions.Any())

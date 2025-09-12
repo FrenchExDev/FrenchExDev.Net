@@ -12,7 +12,7 @@ public class ProjectReferenceBuilder : AbstractObjectBuilder<ProjectReference, P
         return this;
     }
 
-    protected override IObjectBuildResult<ProjectReference> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
+    protected override IObjectBuildResult<ProjectReference> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         if (_referencedProject is null)
         {
