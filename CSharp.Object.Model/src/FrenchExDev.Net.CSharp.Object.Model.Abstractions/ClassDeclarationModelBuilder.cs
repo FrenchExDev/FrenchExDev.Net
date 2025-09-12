@@ -167,14 +167,14 @@ public class ClassDeclarationModelBuilder : AbstractObjectBuilder<ClassDeclarati
     protected override IObjectBuildResult<ClassDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         // Build all nested components and collect their results
-        var attributes = BuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
-        var typeParameters = BuildList<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(_typeParameters, visited);
-        var typeParameterConstraints = BuildList<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(_typeParameterConstraints, visited);
-        var fields = BuildList<FieldDeclarationModel, FieldDeclarationModelBuilder>(_fields, visited);
-        var properties = BuildList<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(_properties, visited);
-        var methods = BuildList<MethodDeclarationModel, MethodDeclarationModelBuilder>(_methods, visited);
-        var constructors = BuildList<ConstructorDeclarationModel, ConstructorDeclarationModelBuilder>(_constructors, visited);
-        var nestedClasses = BuildList<ClassDeclarationModel, ClassDeclarationModelBuilder>(_nestedClasses, visited);
+        var attributes = BuildBuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
+        var typeParameters = BuildBuildList<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(_typeParameters, visited);
+        var typeParameterConstraints = BuildBuildList<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(_typeParameterConstraints, visited);
+        var fields = BuildBuildList<FieldDeclarationModel, FieldDeclarationModelBuilder>(_fields, visited);
+        var properties = BuildBuildList<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(_properties, visited);
+        var methods = BuildBuildList<MethodDeclarationModel, MethodDeclarationModelBuilder>(_methods, visited);
+        var constructors = BuildBuildList<ConstructorDeclarationModel, ConstructorDeclarationModelBuilder>(_constructors, visited);
+        var nestedClasses = BuildBuildList<ClassDeclarationModel, ClassDeclarationModelBuilder>(_nestedClasses, visited);
 
         // Collect exceptions from failed nested builds
         AddExceptions<MethodDeclarationModel, MethodDeclarationModelBuilder>(new MemberName(nameof(methods)), methods, exceptions);

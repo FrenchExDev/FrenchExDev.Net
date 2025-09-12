@@ -120,11 +120,11 @@ public class MethodDeclarationModelBuilder : AbstractObjectBuilder<MethodDeclara
         }
 
         // Build all parameters and collect their results
-        var buildParameters = BuildList<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(_parameters, visited);
+        var buildParameters = BuildBuildList<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(_parameters, visited);
         AddExceptions<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(nameof(_parameters), buildParameters, exceptions);
 
         // Build all attributes and collect their results
-        var attributes = BuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
+        var attributes = BuildBuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
         AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(nameof(_attributes), attributes, exceptions);
 
         // Return failure if any exceptions were collected during parameter or attribute building

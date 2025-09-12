@@ -71,7 +71,7 @@ public class AsyncLambdaObjectBuilderTests
             {
                 failure.ShouldNotBeNull();
                 failure.Exceptions.Count().ShouldBeEquivalentTo(1);
-                failure.Exceptions[new MemberName("age")].ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
+                failure.Exceptions["age"].ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
                 failure.Builder.ShouldNotBeNull();
                 failure.Builder.ShouldBeAssignableTo<PersonBuilder>();
             });

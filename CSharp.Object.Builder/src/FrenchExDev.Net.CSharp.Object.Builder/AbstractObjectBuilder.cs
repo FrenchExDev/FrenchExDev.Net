@@ -2,6 +2,16 @@
 
 namespace FrenchExDev.Net.CSharp.Object.Builder;
 
+public class FailureObjectsBuildResultListExceptions : Exception
+{
+    public IEnumerable<Exception> Exceptions { get; init; }
+    public FailureObjectsBuildResultListExceptions(IEnumerable<Exception> exceptions)
+        : base("One or more builders failed. See the 'Exceptions' property for details.")
+    {
+        Exceptions = exceptions;
+    }
+}
+
 /// <summary>
 /// Provides a base class for building objects of type specified by <typeparamref name="TClass"/> using a builder
 /// pattern, supporting cyclic dependency detection and customizable build result handling.
@@ -100,15 +110,46 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     }
 
     /// <summary>
-    /// Constructs the object of type <typeparamref name="TClass"/> using the specified context of visited objects.
+    /// Asynchronously builds a collection of objects from the specified list of builders, recording any build
+    /// failures in the provided exception dictionary.
     /// </summary>
-    /// <remarks>This method is intended to be implemented by derived classes to define the specific logic for
-    /// constructing  an object of type <typeparamref name="TClass"/>. The <paramref name="visited"/> dictionary can be
-    /// used to  prevent cyclic dependencies or redundant processing during the build process.</remarks>
-    /// <param name="visited">A dictionary used to track objects that have already been processed during the build operation.  This parameter
-    /// may be <see langword="null"/> if no tracking is required.</param>
-    /// <returns>An instance of <see cref="IObjectBuildResult{TClass}"/> representing the result of the build operation.</returns>
-    protected abstract IObjectBuildResult<TClass> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited);
+    /// <remarks>If a builder fails to construct an object, the failure is recorded in the <paramref
+    /// name="exceptions"/> dictionary under the specified <paramref name="memberName"/>. Builders that return
+    /// references may defer addition of their results until resolved. The method does not throw on individual build
+    /// failures; all exceptions are aggregated in the provided dictionary.</remarks>
+    /// <typeparam name="TOtherClass">The type of object to be built by each builder in the list.</typeparam>
+    /// <typeparam name="TOtherBuilder">The type of builder used to construct objects of type <typeparamref name="TOtherClass"/>. Must implement
+    /// <see cref="IAsyncObjectBuilder{TOtherClass}"/>.</typeparam>
+    /// <param name="memberName">The name of the member associated with the builders. Used for exception tracking and reporting.</param>
+    /// <param name="list">The list of builders that will be used to asynchronously construct objects of type <typeparamref
+    /// name="TOtherClass"/>.</param>
+    /// <param name="exceptions">A dictionary for recording exceptions that occur during the build process for each member.</param>
+    /// <param name="visited">A list of objects that have already been visited during the build process to prevent cycles or redundant
+    /// operations.</param>
+    /// <returns>A collection of successfully built objects of type <typeparamref name="TOtherClass"/>. The collection may be
+    /// empty if no objects are built successfully.</returns>
+    protected IEnumerable<TOtherClass> BuildList<TOtherClass, TOtherBuilder>(string memberName, string error, List<TOtherBuilder> list, ExceptionBuildDictionary exceptions, VisitedObjectsList visited) where TOtherBuilder : class, IObjectBuilder<TOtherClass>
+    {
+        var built = new List<TOtherClass>();
+        foreach (var builder in list)
+        {
+            var buildResult = builder.Build(visited);
+            switch (buildResult)
+            {
+                case SuccessObjectBuildResult<TOtherClass> successResult:
+                    built.Add(successResult.Result);
+                    break;
+                case FailureObjectBuildResult<TOtherClass, TOtherBuilder> failureResult:
+                    exceptions.Add(memberName, failureResult.Exceptions);
+                    break;
+                case BuildReference<TOtherClass, TOtherBuilder> buildRefResult:
+                    buildRefResult.AddAction(built.Add);
+                    break;
+            }
+        }
+
+        return built;
+    }
 
     /// <summary>
     /// Creates a failure result containing the specified exceptions and a record of visited objects.
@@ -140,7 +181,7 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// <param name="instances">A list of builder instances that will be used to construct objects.</param>
     /// <param name="visited">A list tracking objects that have already been built to prevent redundant construction or circular references.</param>
     /// <returns>A list of build results for each object constructed by the provided builders.</returns>
-    protected List<IObjectBuildResult<TOtherClass>> BuildList<TOtherClass, TOtherBuilder>(List<TOtherBuilder> instances, VisitedObjectsList visited) where TOtherBuilder : IObjectBuilder<TOtherClass>
+    protected List<IObjectBuildResult<TOtherClass>> BuildBuildList<TOtherClass, TOtherBuilder>(List<TOtherBuilder> instances, VisitedObjectsList visited) where TOtherBuilder : IObjectBuilder<TOtherClass>
     {
         return instances.Select(x => x.Build(visited)).ToList();
     }
@@ -154,6 +195,20 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// <typeparam name="TOtherBuilder">The type of builder used to construct objects of type <typeparamref name="TOtherClass"/>.</typeparam>
     /// <param name="results">A list of object build results from which exceptions will be collected.</param>
     /// <param name="exceptions">The exception list to which exceptions from failed build results will be added.</param>
+    protected void AddExceptions<TOtherClass, TOtherBuilder>(string memberName, List<IObjectBuildResult<TOtherClass>> results, ExceptionBuildDictionary exceptions) where TOtherBuilder : IObjectBuilder<TOtherClass>
+    {
+        AddExceptions<TOtherClass, TOtherBuilder>(new MemberName(memberName), results, exceptions);
+    }
+
+    /// <summary>
+    /// Adds exceptions from failed object build results to the specified exception dictionary for the given member.
+    /// </summary>
+    /// <typeparam name="TOtherClass">The type of object being built.</typeparam>
+    /// <typeparam name="TOtherBuilder">The type of builder used to construct objects of type <typeparamref name="TOtherClass"/>. Must implement <see
+    /// cref="IObjectBuilder{TOtherClass}"/>.</typeparam>
+    /// <param name="memberName">The name of the member associated with the build results and exceptions.</param>
+    /// <param name="results">A list of object build results to inspect for failures and associated exceptions.</param>
+    /// <param name="exceptions">The dictionary to which exceptions from failed build results will be added.</param>
     protected void AddExceptions<TOtherClass, TOtherBuilder>(MemberName memberName, List<IObjectBuildResult<TOtherClass>> results, ExceptionBuildDictionary exceptions) where TOtherBuilder : IObjectBuilder<TOtherClass>
     {
         if (!results.OfType<FailureObjectBuildResult<TOtherClass, TOtherBuilder>>().Any())
@@ -161,19 +216,8 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
             return;
         }
 
-        exceptions.Add(memberName, results.OfType<FailureObjectBuildResult<TOtherClass, TOtherBuilder>>().SelectMany(x => x.Exceptions));
+        exceptions.Add(memberName, new FailureObjectsBuildResultListExceptions(results.OfType<FailureObjectBuildResult<TOtherClass, TOtherBuilder>>().SelectMany(x => x.Exceptions).SelectMany(x => x.Value)));
     }
-
-    /// <summary>
-    /// Adds exceptions from failed object build results to the specified exception list.
-    /// </summary>
-    /// <typeparam name="TOtherClass"></typeparam>
-    /// <typeparam name="TOtherBuilder"></typeparam>
-    /// <param name="memberName"></param>
-    /// <param name="results"></param>
-    /// <param name="exceptions"></param>
-    protected void AddExceptions<TOtherClass, TOtherBuilder>(string memberName, List<IObjectBuildResult<TOtherClass>> results, ExceptionBuildDictionary exceptions) where TOtherBuilder : IObjectBuilder<TOtherClass>
-            => AddExceptions<TOtherClass, TOtherBuilder>(new MemberName(memberName), results, exceptions);
 
     /// <summary>
     /// Holds a reference to an instance of <typeparamref name="TClass"/> or <see langword="null"/> if no reference is set.
@@ -220,4 +264,15 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
         _reference = func();
         return this as TBuilder ?? throw new InvalidCastException();
     }
+
+    /// <summary>
+    /// Constructs the object of type <typeparamref name="TClass"/> using the specified context of visited objects.
+    /// </summary>
+    /// <remarks>This method is intended to be implemented by derived classes to define the specific logic for
+    /// constructing  an object of type <typeparamref name="TClass"/>. The <paramref name="visited"/> dictionary can be
+    /// used to  prevent cyclic dependencies or redundant processing during the build process.</remarks>
+    /// <param name="visited">A dictionary used to track objects that have already been processed during the build operation.  This parameter
+    /// may be <see langword="null"/> if no tracking is required.</param>
+    /// <returns>An instance of <see cref="IObjectBuildResult{TClass}"/> representing the result of the build operation.</returns>
+    protected abstract IObjectBuildResult<TClass> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited);
 }

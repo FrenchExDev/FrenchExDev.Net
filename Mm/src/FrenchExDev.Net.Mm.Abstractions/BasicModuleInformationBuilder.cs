@@ -48,17 +48,17 @@ public class BasicModuleInformationBuilder : AbstractObjectBuilder<BasicModuleIn
     {
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidDataException($"The {nameof(Name)} field is required."));
+            exceptions.Add(nameof(_name), new InvalidDataException($"The {nameof(Name)} field is required."));
         }
 
         if (string.IsNullOrEmpty(_displayName))
         {
-            exceptions.Add(new InvalidDataException($"The {nameof(DisplayName)} field is required."));
+            exceptions.Add(nameof(_displayName), new InvalidDataException($"The {nameof(DisplayName)} field is required."));
         }
 
         if (string.IsNullOrEmpty(_description))
         {
-            exceptions.Add(new InvalidDataException($"The {nameof(Description)} field is required."));
+            exceptions.Add(nameof(_description), new InvalidDataException($"The {nameof(Description)} field is required."));
         }
 
         if (exceptions.Count > 0)

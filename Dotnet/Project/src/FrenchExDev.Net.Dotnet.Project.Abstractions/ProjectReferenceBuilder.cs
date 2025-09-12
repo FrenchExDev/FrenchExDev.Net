@@ -16,8 +16,9 @@ public class ProjectReferenceBuilder : AbstractObjectBuilder<ProjectReference, P
     {
         if (_referencedProject is null)
         {
-            exceptions.Add(new InvalidOperationException("ReferencedProject is required"));
+            exceptions.Add(nameof(_referencedProject), new InvalidOperationException("ReferencedProject is required"));
         }
+
         if (exceptions.Any())
         {
             return Failure(exceptions, visited);
@@ -26,30 +27,3 @@ public class ProjectReferenceBuilder : AbstractObjectBuilder<ProjectReference, P
         return Success(new ProjectReference(_referencedProject ?? throw new InvalidOperationException("ReferencedProject is required")));
     }
 }
-
-//}
-
-//public class ClassProjectModel : AbstractProjectModel<ClassProjectModel>
-//{
-//}
-
-
-//public class DesktopProjectModel : AbstractProjectModel<DesktopProjectModel>
-//{
-
-//}
-
-//public class CliProjectModel : AbstractProjectModel<CliProjectModel>
-//{
-
-//}
-
-//public class WebApiProjectModel : AbstractProjectModel<WebApiProjectModel>
-//{
-
-//}
-
-//public class WebWorkerProjectModel : AbstractProjectModel<WebWorkerProjectModel>
-//{
-
-//}

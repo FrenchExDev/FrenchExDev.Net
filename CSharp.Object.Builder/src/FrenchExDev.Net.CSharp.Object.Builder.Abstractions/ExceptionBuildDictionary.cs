@@ -8,7 +8,7 @@ namespace FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
 /// <remarks>This class extends <see cref="List{T}"/> with the type parameter <see cref="Exception"/>,  allowing
 /// it to be used as a collection specifically for exceptions. It can be useful in scenarios  where multiple exceptions
 /// need to be aggregated, such as in batch processing or error handling workflows.</remarks>
-public class ExceptionBuildDictionary : Dictionary<MemberName, List<Exception>>
+public class ExceptionBuildDictionary : Dictionary<string, List<Exception>>
 {
     /// <summary>
     /// Adds an entry to the dictionary that associates the specified member name with the given exception to be thrown
@@ -19,7 +19,14 @@ public class ExceptionBuildDictionary : Dictionary<MemberName, List<Exception>>
     /// <returns>The current <see cref="ExceptionBuildDictionary"/> instance with the new association added.</returns>
     public ExceptionBuildDictionary Add(string memberName, Exception invalidDataException)
     {
-        return Add(new MemberName(memberName), invalidDataException);
+        var list = this.GetValueOrDefault(memberName);
+        if (list is null)
+        {
+            list = new List<Exception>();
+            this[memberName] = list;
+        }
+        list.Add(invalidDataException);
+        return this;
     }
 
     /// <summary>
@@ -29,14 +36,7 @@ public class ExceptionBuildDictionary : Dictionary<MemberName, List<Exception>>
     /// <param name="invalidDataException"></param>
     public ExceptionBuildDictionary Add(MemberName memberName, Exception invalidDataException)
     {
-        var list = this.GetValueOrDefault(memberName);
-        if (list is null)
-        {
-            list = new List<Exception>();
-            this[memberName] = list;
-        }
-        list.Add(invalidDataException);
-        return this;
+        return Add(memberName.Name, invalidDataException);
     }
 
     /// <summary>
@@ -50,12 +50,59 @@ public class ExceptionBuildDictionary : Dictionary<MemberName, List<Exception>>
     /// <returns>The current instance of <see cref="ExceptionBuildDictionary"/>.</returns>
     public ExceptionBuildDictionary Add(MemberName memberName, IEnumerable<KeyValuePair<MemberName, List<Exception>>> enumerable)
     {
+        foreach (var kv in enumerable)
+        {
+            Add(kv.Key.Name, kv.Value);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a collection of exception entries associated with the specified member name to the dictionary. If no entry
+    /// exists for the member name, a new entry is created.
+    /// </summary>
+    /// <param name="memberName">The name of the member to associate with the exception entries. Cannot be null.</param>
+    /// <param name="enumerable">A collection of key-value pairs where each key is a member name and each value is a list of exceptions to add.
+    /// Cannot be null.</param>
+    /// <returns>The current instance of <see cref="ExceptionBuildDictionary"/> with the updated exception entries.</returns>
+    public ExceptionBuildDictionary Add(string memberName, IEnumerable<KeyValuePair<MemberName, List<Exception>>> enumerable)
+    {
         var list = this.GetValueOrDefault(memberName);
         if (list is null)
         {
             list = new List<Exception>();
             this[memberName] = list;
         }
+        return this;
+    }
+
+    /// <summary>
+    /// Adds all exception mappings from the specified dictionary to the current dictionary under the given member name.
+    /// </summary>
+    /// <remarks>If any keys in <paramref name="exceptions"/> already exist for the specified member name,
+    /// their values will be overwritten.</remarks>
+    /// <param name="memberName">The name of the member to associate with the exception mappings. Cannot be null or empty.</param>
+    /// <param name="exceptions">A dictionary containing exception mappings to add. Each mapping will be associated with the specified member
+    /// name. Cannot be null.</param>
+    /// <returns>The current <see cref="ExceptionBuildDictionary"/> instance with the added exception mappings.</returns>
+    public ExceptionBuildDictionary Add(string memberName, ExceptionBuildDictionary exceptions)
+    {
+        foreach (var ex in exceptions)
+        {
+            Add(ex.Key, ex.Value);
+        }
+
+        return this;
+    }
+
+    public ExceptionBuildDictionary Add(MemberName memberName, List<Exception> exceptions)
+    {
+        foreach (var ex in exceptions)
+        {
+            Add(memberName.Name, ex);
+        }
+
         return this;
     }
 }

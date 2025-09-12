@@ -59,4 +59,47 @@ public abstract class AbstractAsyncObjectBuilder<TClass, TBuilder> : IAsyncObjec
     /// <returns>A task that represents the asynchronous operation. The task result contains an <see
     /// cref="IObjectBuildResult{TClass}"/> representing the outcome of the build process.</returns>
     protected abstract Task<IObjectBuildResult<TClass>> BuildInternalAsync(ExceptionBuildDictionary exceptions, VisitedObjectsList visited, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Asynchronously builds a collection of objects from the specified list of builders, recording any build
+    /// failures in the provided exception dictionary.
+    /// </summary>
+    /// <remarks>If a builder fails to construct an object, the failure is recorded in the <paramref
+    /// name="exceptions"/> dictionary under the specified <paramref name="memberName"/>. Builders that return
+    /// references may defer addition of their results until resolved. The method does not throw on individual build
+    /// failures; all exceptions are aggregated in the provided dictionary.</remarks>
+    /// <typeparam name="TOtherClass">The type of object to be built by each builder in the list.</typeparam>
+    /// <typeparam name="TOtherBuilder">The type of builder used to construct objects of type <typeparamref name="TOtherClass"/>. Must implement
+    /// <see cref="IAsyncObjectBuilder{TOtherClass}"/>.</typeparam>
+    /// <param name="memberName">The name of the member associated with the builders. Used for exception tracking and reporting.</param>
+    /// <param name="list">The list of builders that will be used to asynchronously construct objects of type <typeparamref
+    /// name="TOtherClass"/>.</param>
+    /// <param name="exceptions">A dictionary for recording exceptions that occur during the build process for each member.</param>
+    /// <param name="visited">A list of objects that have already been visited during the build process to prevent cycles or redundant
+    /// operations.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous build operation.</param>
+    /// <returns>A collection of successfully built objects of type <typeparamref name="TOtherClass"/>. The collection may be
+    /// empty if no objects are built successfully.</returns>
+    protected async Task<IEnumerable<TOtherClass>> BuildListAsync<TOtherClass, TOtherBuilder>(string memberName, List<TOtherBuilder> list, ExceptionBuildDictionary exceptions, VisitedObjectsList visited, CancellationToken cancellationToken = default) where TOtherBuilder : class, IAsyncObjectBuilder<TOtherClass>
+    {
+        var built = new List<TOtherClass>();
+        foreach (var builder in list)
+        {
+            var buildResult = await builder.BuildAsync(visited);
+            switch (buildResult)
+            {
+                case SuccessObjectBuildResult<TOtherClass> successResult:
+                    built.Add(successResult.Result);
+                    break;
+                case FailureAsyncObjectBuildResult<TOtherClass, TOtherBuilder> failureResult:
+                    exceptions.Add(memberName, failureResult.Exceptions);
+                    break;
+                case AsyncBuildReference<TOtherClass, TOtherBuilder> buildRefResult:
+                    buildRefResult.AddAction(built.Add);
+                    break;
+            }
+        }
+
+        return built;
+    }
 }

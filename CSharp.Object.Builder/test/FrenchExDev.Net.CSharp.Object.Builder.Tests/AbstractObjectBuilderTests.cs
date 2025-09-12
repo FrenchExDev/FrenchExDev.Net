@@ -139,24 +139,7 @@ public class AbstractObjectBuilderTests
             // we need to handle each case appropriately
             // if any people fail to build, we collect the exceptions
             // if any people are build references, we register an action to add them once built
-            var people = new List<Person>();
-            foreach (var peopleBuilder in _people)
-            {
-                var peopleBuildResult = peopleBuilder.Build(visited);
-                switch (peopleBuildResult)
-                {
-                    case SuccessObjectBuildResult<Person> successResult:
-                        people.Add(successResult.Result);
-                        break;
-                    case FailureObjectBuildResult<Person, PersonBuilder> failureResult:
-                        exceptions.Add(nameof(_people), new FailureObjectBuildResultException<Person, PersonBuilder>(new FailureObjectBuildResult<Person, PersonBuilder>(peopleBuilder, failureResult.Exceptions, visited), "exceptions"));
-                        break;
-                    case BuildReference<Person, PersonBuilder> buildRefResult:
-                        buildRefResult.AddAction((builtPerson) => people.Add(builtPerson));
-                        break;
-
-                }
-            }
+            var people = BuildList<Person, PersonBuilder>(nameof(_people), ErrorInvalidAge, _people, exceptions, visited);
 
             // Validate name
             if (string.IsNullOrWhiteSpace(_name))
@@ -309,6 +292,6 @@ public class AbstractObjectBuilderTests
             {
                 var failure = (FailureObjectBuildResult<Person, PersonBuilder>)buildResult;
                 failure.Exceptions.Count().ShouldBe(1);
-                failure.Exceptions[new MemberName("_age")].ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
+                failure.Exceptions["_age"].ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
             });
 }

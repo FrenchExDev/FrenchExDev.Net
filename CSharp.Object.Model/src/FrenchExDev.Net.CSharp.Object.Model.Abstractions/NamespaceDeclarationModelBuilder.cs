@@ -188,19 +188,19 @@ public class NamespaceDeclarationModelBuilder : AbstractObjectBuilder<NamespaceD
             exceptions.Add(nameof(_name), new InvalidOperationException("Namespace name must be provided."));
         }
 
-        var interfaces = BuildList<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(_interfaces, visited);
+        var interfaces = BuildBuildList<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(_interfaces, visited);
         AddExceptions<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(nameof(_interfaces), interfaces, exceptions);
 
-        var enums = BuildList<EnumDeclarationModel, EnumDeclarationModelBuilder>(_enums, visited);
+        var enums = BuildBuildList<EnumDeclarationModel, EnumDeclarationModelBuilder>(_enums, visited);
         AddExceptions<EnumDeclarationModel, EnumDeclarationModelBuilder>(nameof(_enums), enums, exceptions);
 
-        var classes = BuildList<ClassDeclarationModel, ClassDeclarationModelBuilder>(_classes, visited);
+        var classes = BuildBuildList<ClassDeclarationModel, ClassDeclarationModelBuilder>(_classes, visited);
         AddExceptions<ClassDeclarationModel, ClassDeclarationModelBuilder>(nameof(_classes), classes, exceptions);
 
-        var structs = BuildList<StructDeclarationModel, StructDeclarationModelBuilder>(_structs, visited);
+        var structs = BuildBuildList<StructDeclarationModel, StructDeclarationModelBuilder>(_structs, visited);
         AddExceptions<StructDeclarationModel, StructDeclarationModelBuilder>(nameof(_structs), structs, exceptions);
 
-        var nestedNamespaces = BuildList<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>(_nestedNamespaces, visited);
+        var nestedNamespaces = BuildBuildList<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>(_nestedNamespaces, visited);
         AddExceptions<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>(nameof(_nestedNamespaces), nestedNamespaces, exceptions);
 
         // Return failure if any exceptions were collected

@@ -88,49 +88,6 @@ public class AbstractAsyncObjectBuilderTests
         }
 
         /// <summary>
-        /// Asynchronously builds a collection of objects from the specified list of builders, recording any build
-        /// failures in the provided exception dictionary.
-        /// </summary>
-        /// <remarks>If a builder fails to construct an object, the failure is recorded in the <paramref
-        /// name="exceptions"/> dictionary under the specified <paramref name="memberName"/>. Builders that return
-        /// references may defer addition of their results until resolved. The method does not throw on individual build
-        /// failures; all exceptions are aggregated in the provided dictionary.</remarks>
-        /// <typeparam name="TOtherClass">The type of object to be built by each builder in the list.</typeparam>
-        /// <typeparam name="TOtherBuilder">The type of builder used to construct objects of type <typeparamref name="TOtherClass"/>. Must implement
-        /// <see cref="IAsyncObjectBuilder{TOtherClass}"/>.</typeparam>
-        /// <param name="memberName">The name of the member associated with the builders. Used for exception tracking and reporting.</param>
-        /// <param name="list">The list of builders that will be used to asynchronously construct objects of type <typeparamref
-        /// name="TOtherClass"/>.</param>
-        /// <param name="exceptions">A dictionary for recording exceptions that occur during the build process for each member.</param>
-        /// <param name="visited">A list of objects that have already been visited during the build process to prevent cycles or redundant
-        /// operations.</param>
-        /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous build operation.</param>
-        /// <returns>A collection of successfully built objects of type <typeparamref name="TOtherClass"/>. The collection may be
-        /// empty if no objects are built successfully.</returns>
-        protected async Task<IEnumerable<TOtherClass>> BuildListAsync<TOtherClass, TOtherBuilder>(string memberName, List<TOtherBuilder> list, ExceptionBuildDictionary exceptions, VisitedObjectsList visited, CancellationToken cancellationToken = default) where TOtherBuilder : class, IAsyncObjectBuilder<TOtherClass>
-        {
-            var built = new List<TOtherClass>();
-            foreach (var builder in list)
-            {
-                var buildResult = await builder.BuildAsync(visited);
-                switch (buildResult)
-                {
-                    case SuccessObjectBuildResult<TOtherClass> successResult:
-                        built.Add(successResult.Result);
-                        break;
-                    case FailureAsyncObjectBuildResult<TOtherClass, TOtherBuilder> failureResult:
-                        exceptions.Add(memberName.ToMemberName(), new AsyncFailureObjectBuildResultException<TOtherClass, TOtherBuilder>(failureResult, ErrorInvalidAddress));
-                        break;
-                    case AsyncBuildReference<TOtherClass, TOtherBuilder> buildRefResult:
-                        buildRefResult.AddAction(built.Add);
-                        break;
-                }
-            }
-
-            return built;
-        }
-
-        /// <summary>
         /// Implements the internal build logic for constructing a <see cref="Person"/> instance.
         /// </summary>
         /// <param name="visited"></param>
@@ -159,7 +116,11 @@ public class AbstractAsyncObjectBuilderTests
                 return AsyncFailureResult(exceptions, visited);
             }
 
-            return new SuccessObjectBuildResult<Person>(new Person(_name!, _age!.Value, addresses, people));
+            // Ensure required fields are not null
+            ArgumentNullException.ThrowIfNull(_name);
+            ArgumentNullException.ThrowIfNull(_age);
+
+            return new SuccessObjectBuildResult<Person>(new Person(_name, _age.Value, addresses, people));
         }
     }
 
@@ -227,15 +188,15 @@ public class AbstractAsyncObjectBuilderTests
     public async Task Can_Build_Complete_Person_Async()
     {
         await BuilderTester.ValidAsync<PersonBuilder, Person>(
-            () => new PersonBuilder(),
-            (builder, cancellationToken) =>
+            builderFactory: () => new PersonBuilder(),
+            body: (builder, cancellationToken) =>
             {
                 builder.Name("foo")
                        .Age(30)
                        .Address(ab => ab.Street("123 Main St").ZipCode("12345"))
                        .Address(ab => ab.Street("456 Elm St").ZipCode("67890"));
                 return Task.CompletedTask;
-            }, (person) =>
+            }, asserts: (person) =>
             {
                 person.Name.ShouldBe("foo");
                 person.Age.ShouldBe(30);
@@ -255,17 +216,17 @@ public class AbstractAsyncObjectBuilderTests
     public async Task Cannot_Build_Complete_Person_Async()
     {
         await BuilderTester.InvalidAsync<PersonBuilder, Person>(
-            () => new PersonBuilder(),
-            (builder, cancellationToken) =>
+            builderFactory: () => new PersonBuilder(),
+            body: (builder, cancellationToken) =>
             {
                 builder.Name("foo")
                        .Age(0);
                 return Task.CompletedTask;
             },
-            (failure) =>
+            assert: (failure) =>
             {
                 failure.ShouldNotBeNull();
-                failure.Exceptions[new MemberName("_age")].ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
+                failure.Exceptions["_age"].ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
                 failure.Exceptions.Count.ShouldBeEquivalentTo(1);
                 failure.Builder.ShouldNotBeNull();
                 failure.Builder.ShouldBeAssignableTo<PersonBuilder>();

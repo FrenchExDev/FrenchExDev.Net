@@ -81,7 +81,7 @@ public class PackageReferenceBuilder : AbstractObjectBuilder<IPackageReference, 
     {
         if (string.IsNullOrWhiteSpace(_name))
         {
-            exceptions.Add(new ArgumentException("Name is required"));
+            exceptions.Add(nameof(_name), new ArgumentException("Name is required"));
         }
 
         if (exceptions.Any())

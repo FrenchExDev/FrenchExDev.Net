@@ -115,7 +115,7 @@ public class WorkflowObjectBuilderTests
             {
                 failure.ShouldNotBeNull();
                 failure.Exceptions.Count().ShouldBe(1);
-                failure.Exceptions[new MemberName("age")].ElementAt(0).Message.ShouldBe("Invalid age provided.");
+                failure.Exceptions["age"].ElementAt(0).Message.ShouldBe("Invalid age provided.");
                 failure.Builder.ShouldNotBeNull();
             });
 }

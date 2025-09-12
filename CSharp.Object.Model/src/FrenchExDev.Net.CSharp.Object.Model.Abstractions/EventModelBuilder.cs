@@ -82,7 +82,7 @@ public class EventModelBuilder : AbstractObjectBuilder<EventModel, EventModelBui
     protected override IObjectBuildResult<EventModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         // Build all attributes and collect their results
-        var attributes = BuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
+        var attributes = BuildBuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
         AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(nameof(_attributes), attributes, exceptions);
 
         // Validate that the event name is provided

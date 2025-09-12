@@ -15,8 +15,9 @@ public class PackageNameBuilder : AbstractObjectBuilder<PackageName, PackageName
     {
         if (string.IsNullOrWhiteSpace(_name))
         {
-            exceptions.Add(new ArgumentException("Name is required"));
+            exceptions.Add(nameof(_name), new ArgumentException("Name is required"));
         }
+
         if (exceptions.Count > 0)
         {
             return Failure(exceptions, visited);
@@ -24,30 +25,3 @@ public class PackageNameBuilder : AbstractObjectBuilder<PackageName, PackageName
         return Success(new PackageName(_name!));
     }
 }
-
-//}
-
-//public class ClassProjectModel : AbstractProjectModel<ClassProjectModel>
-//{
-//}
-
-
-//public class DesktopProjectModel : AbstractProjectModel<DesktopProjectModel>
-//{
-
-//}
-
-//public class CliProjectModel : AbstractProjectModel<CliProjectModel>
-//{
-
-//}
-
-//public class WebApiProjectModel : AbstractProjectModel<WebApiProjectModel>
-//{
-
-//}
-
-//public class WebWorkerProjectModel : AbstractProjectModel<WebWorkerProjectModel>
-//{
-
-//}

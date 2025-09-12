@@ -15,7 +15,7 @@ public class PackageVersionBuilder : AbstractObjectBuilder<PackageVersion, Packa
     {
         if (string.IsNullOrWhiteSpace(_version))
         {
-            exceptions.Add(new ArgumentException("Version is required"));
+            exceptions.Add(nameof(_version), new ArgumentException("Version is required"));
         }
         if (exceptions.Count > 0)
         {

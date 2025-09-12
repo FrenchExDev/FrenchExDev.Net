@@ -65,17 +65,17 @@ public class MajorMinorPatchModuleVersionBuilder : AbstractObjectBuilder<MajorMi
     {
         if (_major == null || !_major.HasValue)
         {
-            exceptions.Add(new ArgumentNullException(nameof(_major), "Major version is required."));
+            exceptions.Add(nameof(_major), new ArgumentNullException(nameof(_major), "Major version is required."));
         }
 
         if (_minor == null || !_minor.HasValue)
         {
-            exceptions.Add(new ArgumentNullException(nameof(_minor), "Minor version is required."));
+            exceptions.Add(nameof(_minor), new ArgumentNullException(nameof(_minor), "Minor version is required."));
         }
 
         if (_patch == null || !_patch.HasValue)
         {
-            exceptions.Add(new ArgumentNullException(nameof(_patch), "Patch version is required."));
+            exceptions.Add(nameof(_patch), new ArgumentNullException(nameof(_patch), "Patch version is required."));
         }
 
         if (exceptions.Any())

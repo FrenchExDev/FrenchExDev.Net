@@ -93,13 +93,13 @@ public class InterfaceDeclarationModelBuilder : AbstractObjectBuilder<InterfaceD
 
     protected override IObjectBuildResult<InterfaceDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
-        var attributes = BuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
-        var typeParameters = BuildList<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(_typeParameters, visited);
-        var typeParameterConstraints = BuildList<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(_typeParameterConstraints, visited);
-        var properties = BuildList<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(_properties, visited);
-        var methods = BuildList<MethodDeclarationModel, MethodDeclarationModelBuilder>(_methods, visited);
-        var events = BuildList<EventModel, EventModelBuilder>(_events, visited);
-        var nestedInterfaces = BuildList<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(_nestedInterfaces, visited);
+        var attributes = BuildBuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
+        var typeParameters = BuildBuildList<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(_typeParameters, visited);
+        var typeParameterConstraints = BuildBuildList<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(_typeParameterConstraints, visited);
+        var properties = BuildBuildList<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(_properties, visited);
+        var methods = BuildBuildList<MethodDeclarationModel, MethodDeclarationModelBuilder>(_methods, visited);
+        var events = BuildBuildList<EventModel, EventModelBuilder>(_events, visited);
+        var nestedInterfaces = BuildBuildList<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(_nestedInterfaces, visited);
 
         if (string.IsNullOrEmpty(_name))
         {

@@ -87,17 +87,17 @@ public class SemanticModuleVersionBuilder : AbstractObjectBuilder<SemanticModule
 
         if (_major < 0)
         {
-            exceptions.Add(new InvalidDataException($"The {nameof(Major)} version component cannot be negative."));
+            exceptions.Add(nameof(_major), new InvalidDataException($"The {nameof(Major)} version component cannot be negative."));
         }
 
         if (_minor < 0)
         {
-            exceptions.Add(new InvalidDataException($"The {nameof(Minor)} version component cannot be negative."));
+            exceptions.Add(nameof(_minor), new InvalidDataException($"The {nameof(Minor)} version component cannot be negative."));
         }
 
         if (_patch < 0)
         {
-            exceptions.Add(new InvalidDataException($"The {nameof(Patch)} version component cannot be negative."));
+            exceptions.Add(nameof(_patch), new InvalidDataException($"The {nameof(Patch)} version component cannot be negative."));
         }
 
         if (exceptions.Count > 0)

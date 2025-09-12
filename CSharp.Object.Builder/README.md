@@ -1,10 +1,10 @@
-# CSharp.Object.Builder
+# `FrenchExDev.Net.CSharp.Object.Builder`
 
 A small library to build object graphs safely and predictably, with:
 - A consistent result type (success/failure) for sync and async builders
 - Aggregated validation errors (ExceptionBuildList)
 - Cycle detection (VisitedObjectsList)
-- Ready-to-use base classes (AbstractObjectBuilder / AbstractAsyncObjectBuilder)
+- Ready-to-use base classes (`AbstractObjectBuilder` / `AbstractAsyncObjectBuilder`)
 - Lambda-based builders for quick prototypes
 - A workflow-style builder for step pipelines
 - Testing helpers (BuilderTester)
