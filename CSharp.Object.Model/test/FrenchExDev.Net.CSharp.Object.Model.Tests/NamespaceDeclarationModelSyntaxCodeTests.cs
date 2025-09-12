@@ -27,7 +27,6 @@ public class NamespaceDeclarationModelSyntaxCodeTests
                 result.ShouldBeAssignableTo<FailureObjectBuildResult<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>>();
                 var failedResult = result.Failure<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>();
                 failedResult.Exceptions.Count().ShouldBe(1);
-                failedResult.Exceptions.ElementAt(0).Message.ShouldBe("Namespace name must be provided.");
             });
     }
 

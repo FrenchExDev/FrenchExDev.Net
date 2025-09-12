@@ -103,16 +103,16 @@ public class InterfaceDeclarationModelBuilder : AbstractObjectBuilder<InterfaceD
 
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Interface name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Interface name must be provided."));
         }
 
-        AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(attributes, exceptions);
-        AddExceptions<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(typeParameters, exceptions);
-        AddExceptions<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(typeParameterConstraints, exceptions);
-        AddExceptions<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(properties, exceptions);
-        AddExceptions<MethodDeclarationModel, MethodDeclarationModelBuilder>(methods, exceptions);
-        AddExceptions<EventModel, EventModelBuilder>(events, exceptions);
-        AddExceptions<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(nestedInterfaces, exceptions);
+        AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(nameof(_attributes), attributes, exceptions);
+        AddExceptions<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(nameof(_typeParameters), typeParameters, exceptions);
+        AddExceptions<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(nameof(_typeParameterConstraints), typeParameterConstraints, exceptions);
+        AddExceptions<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(nameof(_properties), properties, exceptions);
+        AddExceptions<MethodDeclarationModel, MethodDeclarationModelBuilder>(nameof(_methods), methods, exceptions);
+        AddExceptions<EventModel, EventModelBuilder>(nameof(events), events, exceptions);
+        AddExceptions<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(nameof(nestedInterfaces), nestedInterfaces, exceptions);
 
         if (exceptions.Any())
         {

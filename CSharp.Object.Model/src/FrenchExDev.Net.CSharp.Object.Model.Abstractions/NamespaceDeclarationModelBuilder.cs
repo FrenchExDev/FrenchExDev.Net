@@ -183,21 +183,25 @@ public class NamespaceDeclarationModelBuilder : AbstractObjectBuilder<NamespaceD
     /// </remarks>
     protected override IObjectBuildResult<NamespaceDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
-        var interfaces = BuildList<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(_interfaces, visited);
-        var enums = BuildList<EnumDeclarationModel, EnumDeclarationModelBuilder>(_enums, visited);
-        var classes = BuildList<ClassDeclarationModel, ClassDeclarationModelBuilder>(_classes, visited);
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Namespace name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Namespace name must be provided."));
         }
-        var structs = BuildList<StructDeclarationModel, StructDeclarationModelBuilder>(_structs, visited);
-        var nestedNamespaces = BuildList<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>(_nestedNamespaces, visited);
 
-        AddExceptions<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>(nestedNamespaces, exceptions);
-        AddExceptions<StructDeclarationModel, StructDeclarationModelBuilder>(structs, exceptions);
-        AddExceptions<EnumDeclarationModel, EnumDeclarationModelBuilder>(enums, exceptions);
-        AddExceptions<ClassDeclarationModel, ClassDeclarationModelBuilder>(classes, exceptions);
-        AddExceptions<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(interfaces, exceptions);
+        var interfaces = BuildList<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(_interfaces, visited);
+        AddExceptions<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(nameof(_interfaces), interfaces, exceptions);
+
+        var enums = BuildList<EnumDeclarationModel, EnumDeclarationModelBuilder>(_enums, visited);
+        AddExceptions<EnumDeclarationModel, EnumDeclarationModelBuilder>(nameof(_enums), enums, exceptions);
+
+        var classes = BuildList<ClassDeclarationModel, ClassDeclarationModelBuilder>(_classes, visited);
+        AddExceptions<ClassDeclarationModel, ClassDeclarationModelBuilder>(nameof(_classes), classes, exceptions);
+
+        var structs = BuildList<StructDeclarationModel, StructDeclarationModelBuilder>(_structs, visited);
+        AddExceptions<StructDeclarationModel, StructDeclarationModelBuilder>(nameof(_structs), structs, exceptions);
+
+        var nestedNamespaces = BuildList<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>(_nestedNamespaces, visited);
+        AddExceptions<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>(nameof(_nestedNamespaces), nestedNamespaces, exceptions);
 
         // Return failure if any exceptions were collected
         if (exceptions.Any())

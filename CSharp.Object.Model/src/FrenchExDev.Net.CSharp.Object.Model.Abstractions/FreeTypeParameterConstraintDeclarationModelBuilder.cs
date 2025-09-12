@@ -52,7 +52,7 @@ public class FreeTypeParameterConstraintDeclarationModelBuilder : AbstractObject
         // Validate that at least one constraint is provided
         if (_constraint == null && !_constraints.Any())
         {
-            exceptions.Add(new InvalidOperationException("At least one constraint must be provided."));
+            exceptions.Add(nameof(_constraint), new InvalidOperationException("At least one constraint must be provided."));
         }
 
         // If there are any exceptions, return a failure result

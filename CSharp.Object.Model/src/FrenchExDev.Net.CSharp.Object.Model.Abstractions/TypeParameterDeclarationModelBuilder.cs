@@ -17,7 +17,7 @@ public class TypeParameterDeclarationModelBuilder : AbstractObjectBuilder<TypePa
     {
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Type parameter name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Type parameter name must be provided."));
         }
 
         if (exceptions.Any())

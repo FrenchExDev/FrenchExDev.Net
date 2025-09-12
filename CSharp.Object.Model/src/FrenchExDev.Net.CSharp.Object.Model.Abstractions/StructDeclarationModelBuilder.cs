@@ -89,7 +89,7 @@ public class StructDeclarationModelBuilder : AbstractObjectBuilder<StructDeclara
         // Validate that the struct name is provided
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Struct name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Struct name must be provided."));
         }
 
         // Return failure if any exceptions were collected

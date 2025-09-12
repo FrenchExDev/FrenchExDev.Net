@@ -146,7 +146,7 @@ public class PropertyDeclarationModelBuilder : AbstractObjectBuilder<PropertyDec
         // Validate that the property name is provided
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Property name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Property name must be provided."));
         }
 
         // Return failure if any exceptions were collected

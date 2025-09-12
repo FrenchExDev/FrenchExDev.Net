@@ -89,13 +89,13 @@ public class ParameterDeclarationModelBuilder : AbstractObjectBuilder<ParameterD
         // Validate that the parameter type is provided
         if (string.IsNullOrEmpty(_type))
         {
-            exceptions.Add(new InvalidOperationException("Parameter type must be provided."));
+            exceptions.Add(nameof(_type), new InvalidOperationException("Parameter type must be provided."));
         }
 
         // Validate that the parameter name is provided
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Parameter name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Parameter name must be provided."));
         }
 
         // Return failure if any exceptions were collected

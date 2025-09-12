@@ -83,19 +83,18 @@ public class EventModelBuilder : AbstractObjectBuilder<EventModel, EventModelBui
     {
         // Build all attributes and collect their results
         var attributes = BuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
-
-        AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(attributes, exceptions);
+        AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(nameof(_attributes), attributes, exceptions);
 
         // Validate that the event name is provided
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Event name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Event name must be provided."));
         }
 
         // Validate that the event type is provided
         if (string.IsNullOrEmpty(_type))
         {
-            exceptions.Add(new InvalidOperationException("Event type must be provided."));
+            exceptions.Add(nameof(_type), new InvalidOperationException("Event type must be provided."));
         }
 
         // If there are any exceptions, return a failure result

@@ -45,7 +45,7 @@ public class TypeParameterConstraintModelBuilder : AbstractObjectBuilder<TypePar
     {
         if (string.IsNullOrEmpty(_typeParameter))
         {
-            exceptions.Add(new InvalidOperationException("Type parameter name must be provided."));
+            exceptions.Add(nameof(_typeParameter), new InvalidOperationException("Type parameter name must be provided."));
         }
 
         if (exceptions.Any())           

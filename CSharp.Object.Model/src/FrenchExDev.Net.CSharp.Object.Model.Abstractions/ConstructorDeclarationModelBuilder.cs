@@ -86,13 +86,12 @@ public class ConstructorDeclarationModelBuilder : AbstractObjectBuilder<Construc
     protected override IObjectBuildResult<ConstructorDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         var parameters = BuildList<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(_parameters, visited);
+        AddExceptions<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(nameof(_parameters).ToMemberName(), parameters, exceptions);
 
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Constructor name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Constructor name must be provided."));
         }
-
-        AddExceptions<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(parameters, exceptions);
 
         if (exceptions.Any())
         {

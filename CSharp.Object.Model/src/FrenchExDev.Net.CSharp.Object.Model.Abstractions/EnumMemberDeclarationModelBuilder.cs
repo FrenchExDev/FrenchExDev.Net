@@ -67,7 +67,7 @@ public class EnumMemberDeclarationModelBuilder : AbstractObjectBuilder<EnumMembe
         // Validate that the enum member name is provided
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Enum member name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Enum member name must be provided."));
         }
 
         // If there are any exceptions, return a failure result

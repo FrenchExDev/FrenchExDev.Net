@@ -165,6 +165,17 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     }
 
     /// <summary>
+    /// Adds exceptions from failed object build results to the specified exception list.
+    /// </summary>
+    /// <typeparam name="TOtherClass"></typeparam>
+    /// <typeparam name="TOtherBuilder"></typeparam>
+    /// <param name="memberName"></param>
+    /// <param name="results"></param>
+    /// <param name="exceptions"></param>
+    protected void AddExceptions<TOtherClass, TOtherBuilder>(string memberName, List<IObjectBuildResult<TOtherClass>> results, ExceptionBuildDictionary exceptions) where TOtherBuilder : IObjectBuilder<TOtherClass>
+            => AddExceptions<TOtherClass, TOtherBuilder>(new MemberName(memberName), results, exceptions);
+
+    /// <summary>
     /// Holds a reference to an instance of <typeparamref name="TClass"/> or <see langword="null"/> if no reference is set.
     /// </summary>
     protected TClass? _reference;

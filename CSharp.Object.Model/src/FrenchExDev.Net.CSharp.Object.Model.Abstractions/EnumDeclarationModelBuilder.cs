@@ -93,7 +93,7 @@ public class EnumDeclarationModelBuilder : AbstractObjectBuilder<EnumDeclaration
         // Validate required enum name
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Enum name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Enum name must be provided."));
         }
 
         // If any errors were collected, return a failure result

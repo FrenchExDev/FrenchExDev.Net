@@ -116,15 +116,16 @@ public class MethodDeclarationModelBuilder : AbstractObjectBuilder<MethodDeclara
         // Validate that the method name is provided
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Method name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Method name must be provided."));
         }
 
         // Build all parameters and collect their results
         var buildParameters = BuildList<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(_parameters, visited);
-        var attributes = BuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
+        AddExceptions<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(nameof(_parameters), buildParameters, exceptions);
 
-        AddExceptions<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(buildParameters, exceptions);
-        AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(attributes, exceptions);
+        // Build all attributes and collect their results
+        var attributes = BuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
+        AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(nameof(_attributes), attributes, exceptions);
 
         // Return failure if any exceptions were collected during parameter or attribute building
         if (exceptions.Any())

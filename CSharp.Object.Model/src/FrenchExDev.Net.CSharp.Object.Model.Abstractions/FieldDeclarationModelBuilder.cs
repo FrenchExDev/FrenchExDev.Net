@@ -85,7 +85,7 @@ public class FieldDeclarationModelBuilder : AbstractObjectBuilder<FieldDeclarati
         // Validate that the field name is provided
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(new InvalidOperationException("Field name must be provided."));
+            exceptions.Add(nameof(_name), new InvalidOperationException("Field name must be provided."));
         }
 
         // If there are any exceptions, return a failure result
