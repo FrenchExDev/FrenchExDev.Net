@@ -11,10 +11,13 @@ public class Person
 
     public IEnumerable<Address> Addresses { get; }
 
-    public Person(string name, int age, IEnumerable<Address> addresses)
+    public IEnumerable<Person> Knows { get; }
+
+    public Person(string name, int age, IEnumerable<Address> addresses, IEnumerable<Person> knows)
     {
         Name = name;
         Age = age;
         Addresses = addresses;
+        Knows = knows;
     }
 }

@@ -32,26 +32,36 @@ public class AbstractObjectBuilderTests
         /// Error message for invalid name.
         /// </summary>
         public const string ErrorInvalidName = "Invalid name";
+
         /// <summary>
         /// Error message for invalid age.
         /// </summary>
         public const string ErrorInvalidAge = "Invalid age";
+
         /// <summary>
         /// Error message for a general build failure.
         /// </summary>
         public const string BuildError = "Failed to build person";
+
         /// <summary>
         /// Stores the name of the person being built.
         /// </summary>
         private string? _name;
+
         /// <summary>
         /// Stores the age of the person being built.
         /// </summary>
         private int? _age;
+
         /// <summary>
         /// Stores the list of address builders for the person.
         /// </summary>
         private List<AddressBuilder> _addresses = new();
+
+        /// <summary>
+        /// Stores the list of people known by this person.
+        /// </summary>
+        private List<PersonBuilder> _people = new();
 
         /// <summary>
         /// Sets the name of the person.
@@ -83,6 +93,32 @@ public class AbstractObjectBuilderTests
         }
 
         /// <summary>
+        /// Adds a new person to the builder and allows configuration of that person using the specified action.
+        /// </summary>
+        /// <remarks>Use this method to define relationships or properties for additional people within a
+        /// fluent builder pattern. The method enables chaining multiple calls to build complex person graphs.</remarks>
+        /// <param name="body">An action that receives a <see cref="PersonBuilder"/> to configure the new person. Cannot be null.</param>
+        /// <returns>The current <see cref="PersonBuilder"/> instance to allow method chaining.</returns>
+        public PersonBuilder Knows(Action<PersonBuilder> body)
+        {
+            var builder = new PersonBuilder();
+            body(builder);
+            _people.Add(builder);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a relationship indicating that the current person knows the specified person.
+        /// </summary>
+        /// <param name="builder">The builder representing the person to be added as someone known by the current person. Cannot be null.</param>
+        /// <returns>The current <see cref="PersonBuilder"/> instance to allow method chaining.</returns>
+        public PersonBuilder Knows(PersonBuilder builder)
+        {
+            _people.Add(builder);
+            return this;
+        }
+
+        /// <summary>
         /// Builds a <see cref="Person"/> object using the configured properties and child builders.
         /// </summary>
         /// <remarks>
@@ -98,29 +134,38 @@ public class AbstractObjectBuilderTests
         /// encountered exceptions.</returns>
         protected override IObjectBuildResult<Person> BuildInternal(ExceptionBuildList exceptions, VisitedObjectsList visited)
         {
-            // Build all addresses and collect their results
-            var addresses = new List<Address>();
-            foreach (var addressBuilder in _addresses)
+            // next people variable will be used to collect built people
+            // built people can be built successfully, fail to build, or be a build reference
+            // we need to handle each case appropriately
+            // if any people fail to build, we collect the exceptions
+            // if any people are build references, we register an action to add them once built
+            var people = new List<Person>();
+            foreach (var peopleBuilder in _people)
             {
-                var addressBuildResult = addressBuilder.Build(visited);
-                switch (addressBuildResult)
+                var peopleBuildResult = peopleBuilder.Build(visited);
+                switch (peopleBuildResult)
                 {
-                    case SuccessObjectBuildResult<Address> successResult:
-                        addresses.Add(successResult.Result);
+                    case SuccessObjectBuildResult<Person> successResult:
+                        people.Add(successResult.Result);
                         break;
-                    case FailureObjectBuildResult<Address, AddressBuilder> failureResult:
-                        exceptions.Add(new FailureObjectBuildResultException<Address, AddressBuilder>(new FailureObjectBuildResult<Address, AddressBuilder>(addressBuilder, failureResult.Exceptions, visited), "exceptions"));
+                    case FailureObjectBuildResult<Person, PersonBuilder> failureResult:
+                        exceptions.Add(new FailureObjectBuildResultException<Person, PersonBuilder>(new FailureObjectBuildResult<Person, PersonBuilder>(peopleBuilder, failureResult.Exceptions, visited), "exceptions"));
                         break;
+                    case BuildReference<Person, PersonBuilder> buildRefResult:
+                        buildRefResult.AddAction((builtPerson) => people.Add(builtPerson));
+                        break;
+
                 }
             }
 
-            // Validate name and age
+            // Validate name
             if (string.IsNullOrWhiteSpace(_name))
             {
                 exceptions.Add(new BasicObjectBuildException<Person, PersonBuilder>(ErrorInvalidName, this, visited));
             }
 
-            if (_age == 0)
+            // Validate age
+            if (_age is null || _age == 0)
             {
                 exceptions.Add(new BasicObjectBuildException<Person, PersonBuilder>(ErrorInvalidAge, this, visited));
             }
@@ -136,7 +181,7 @@ public class AbstractObjectBuilderTests
             ArgumentNullException.ThrowIfNull(_age);
 
             // Return a successful build result with the constructed Person
-            return Success(new Person(_name, _age.Value, addresses));
+            return Success(new Person(_name, _age.Value, [], people));
         }
     }
 
@@ -231,23 +276,23 @@ public class AbstractObjectBuilderTests
     /// object is of type <see cref="SuccessObjectBuildResult{T}"/> and that all properties are set as expected.</remarks>
     /// <returns></returns>
     [Fact]
-    public async Task Can_Build_Complete_Person() => await BuilderTester.TestValid<PersonBuilder, Person>(
+    public async Task Can_Build_Complete_Person_With_Cyclic_Reference() => await BuilderTester.TestValid<PersonBuilder, Person>(
             builderFactory: () => new PersonBuilder(),
             body: (builder) =>
             {
                 builder.Name("foo")
                        .Age(30)
-                       .Address(ab => ab.Street("123 Main St").ZipCode("12345"))
-                       .Address(ab => ab.Street("456 Elm St").ZipCode("67890"));
+                       .Knows(k => k.Name("bar").Age(20).Knows(k => k.References(builder)));
             }, asserts: (person) =>
             {
                 person.Name.ShouldBe("foo");
                 person.Age.ShouldBe(30);
-                person.Addresses.Count().ShouldBe(2);
-                person.Addresses.ElementAt(0).Street.ShouldBe("123 Main St");
-                person.Addresses.ElementAt(0).ZipCode.ShouldBe("12345");
-                person.Addresses.ElementAt(1).Street.ShouldBe("456 Elm St");
-                person.Addresses.ElementAt(1).ZipCode.ShouldBe("67890");
+                person.Knows.Count().ShouldBe(1);
+                var knownPerson = person.Knows.ElementAt(0);
+                knownPerson.Name.ShouldBe("bar");
+                knownPerson.Age.ShouldBe(20);
+                knownPerson.Knows.Count().ShouldBe(1);
+                knownPerson.Knows.ElementAt(0).ShouldBe(person);
             });
 
     /// <summary>
@@ -255,14 +300,11 @@ public class AbstractObjectBuilderTests
     /// </summary>
     /// <returns></returns>
     [Fact]
-    public void Cannot_Build_Complete_Person() => BuilderTester.TestInvalid<PersonBuilder, Person>(
+    public void Cannot_Build_Complete_Invalid_Person() => BuilderTester.Invalid<PersonBuilder, Person>(
             builderFactory: () => new PersonBuilder(),
             body: (builder) =>
             {
-                builder.Name("foo")
-                       .Age(0) // invalid age
-                       .Address(ab => ab.Street("123 Main St").ZipCode("12345"))
-                       .Address(ab => ab.Street("456 Elm St").ZipCode("67890"));
+                builder.Name("foo");
             }, assert: (buildResult) =>
             {
                 var failure = (FailureObjectBuildResult<Person, PersonBuilder>)buildResult;

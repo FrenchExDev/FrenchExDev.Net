@@ -26,29 +26,88 @@ public class AbstractAsyncObjectBuilderTests
         public const string ErrorInvalidName = "Invalid name";
         public const string ErrorInvalidAge = "Invalid age";
         public const string BuildError = "Failed to build person";
+        public const string ErrorInvalidAddress = "Invalid person";
 
         private string? _name;
         private int? _age;
         private List<AddressBuilder> _addresses = new();
+        private List<PersonBuilder> _people = new();
 
+        /// <summary>
+        /// Sets the name of the person being built.
+        /// </summary>
+        /// <param name="name">The name to assign to the person. Can be null to indicate that no name is specified.</param>
+        /// <returns>The current <see cref="PersonBuilder"/> instance to allow method chaining.</returns>
         public PersonBuilder Name(string? name)
         {
             _name = name;
             return this;
         }
 
+        /// <summary>
+        /// Sets the age for the person being built.
+        /// </summary>
+        /// <param name="age">The age of the person, or <see langword="null"/> to leave the age unspecified.</param>
+        /// <returns>The current <see cref="PersonBuilder"/> instance to allow method chaining.</returns>
         public PersonBuilder Age(int? age)
         {
             _age = age;
             return this;
         }
 
-        public PersonBuilder Address(Action<AddressBuilder> addressBuilderAction)
+        /// <summary>
+        /// Adds an address to the person being built using the specified configuration action.
+        /// </summary>
+        /// <remarks>Multiple calls to this method will add multiple addresses to the person. The provided
+        /// action is invoked to configure each address before it is added.</remarks>
+        /// <param name="body">An action that configures the address by operating on an <see cref="AddressBuilder"/> instance. Cannot be
+        /// null.</param>
+        /// <returns>The current <see cref="PersonBuilder"/> instance to allow method chaining.</returns>
+        public PersonBuilder Address(Action<AddressBuilder> body)
         {
-            var addressBuilder = new AddressBuilder();
-            addressBuilderAction(addressBuilder);
-            _addresses.Add(addressBuilder);
+            var builder = new AddressBuilder();
+            body(builder);
+            _addresses.Add(builder);
             return this;
+        }
+
+        /// <summary>
+        /// Adds a new person to the builder and allows configuration of that person using the specified action.
+        /// </summary>
+        /// <remarks>Use this method to define relationships or properties for additional people within a
+        /// fluent builder pattern. The provided action is invoked with a new <see cref="PersonBuilder"/> instance
+        /// representing the person to be added.</remarks>
+        /// <param name="body">An action that receives a <see cref="PersonBuilder"/> to configure the details of the person being added.</param>
+        /// <returns>The current <see cref="PersonBuilder"/> instance to allow method chaining.</returns>
+        public PersonBuilder Knows(Action<PersonBuilder> body)
+        {
+            var builder = new PersonBuilder();
+            body(builder);
+            _people.Add(builder);
+            return this;
+        }
+
+        protected async Task<IEnumerable<TOtherClass>> BuildListAsync<TOtherClass, TOtherBuilder>(List<TOtherBuilder> list, ExceptionBuildList exceptions, VisitedObjectsList visited, CancellationToken cancellationToken = default) where TOtherBuilder : class, IAsyncObjectBuilder<TOtherClass>
+        {
+            var built = new List<TOtherClass>();
+            foreach (var builder in list)
+            {
+                var addressBuildResult = await builder.BuildAsync(visited);
+                switch (addressBuildResult)
+                {
+                    case SuccessObjectBuildResult<TOtherClass> successResult:
+                        built.Add(successResult.Result);
+                        break;
+                    case FailureAsyncObjectBuildResult<TOtherClass, TOtherBuilder> failureResult:
+                        exceptions.Add(new AsyncFailureObjectBuildResultException<TOtherClass, TOtherBuilder>(failureResult, ErrorInvalidAddress));
+                        break;
+                    case AsyncBuildReference<TOtherClass, TOtherBuilder> buildRefResult:
+                        buildRefResult.AddAction(built.Add);
+                        break;
+                }
+            }
+
+            return built;
         }
 
         /// <summary>
@@ -59,38 +118,28 @@ public class AbstractAsyncObjectBuilderTests
         /// <returns></returns>
         protected override async Task<IObjectBuildResult<Person>> BuildInternalAsync(ExceptionBuildList exceptions, VisitedObjectsList visited, CancellationToken cancellationToken = default)
         {
-            var addresses = new List<Address>();
+            var addresses = await BuildListAsync<Address, AddressBuilder>(_addresses, exceptions, visited, cancellationToken);
+            var people = await BuildListAsync<Person, PersonBuilder>(_people, exceptions, visited, cancellationToken);
 
-            foreach (var addressBuilder in _addresses)
-            {
-                var addressBuildResult = await addressBuilder.BuildAsync(visited);
-                switch (addressBuildResult)
-                {
-                    case SuccessObjectBuildResult<Address> successResult:
-                        addresses.Add(successResult.Result);
-                        break;
-                    case FailureAsyncObjectBuildResult<Address, AddressBuilder> failureResult:
-                        return new FailureAsyncObjectBuildResult<Person, PersonBuilder>(this, failureResult.Exceptions, visited);
-                }
-            }
-
+            // Validate name
             if (string.IsNullOrWhiteSpace(_name))
             {
-                return AsyncFailureResult(ExceptionBuildList.New(this, [
-                    new BasicAsyncObjectBuildException<Person, PersonBuilder>(ErrorInvalidName, this, visited),
-                    new BasicAsyncObjectBuildException<Person, PersonBuilder>(BuildError, this, visited)
-                ]), visited);
+                exceptions.Add(new BasicAsyncObjectBuildException<Person, PersonBuilder>(ErrorInvalidName, this, visited));
             }
 
-            if (_age == 0)
+            // Validate age
+            if (_age is null || _age == 0)
             {
-                return AsyncFailureResult(ExceptionBuildList.New(this, [
-                    new BasicAsyncObjectBuildException<Person, PersonBuilder>(ErrorInvalidAge, this, visited),
-                    new BasicAsyncObjectBuildException<Person, PersonBuilder>(BuildError, this, visited)
-                ]), visited);
+                exceptions.Add(new BasicAsyncObjectBuildException<Person, PersonBuilder>(ErrorInvalidAge, this, visited));
             }
 
-            return new SuccessObjectBuildResult<Person>(new Person(_name!, _age!.Value, addresses));
+            // Return failure if any exceptions were collected
+            if (exceptions.Any())
+            {
+                return AsyncFailureResult(exceptions, visited);
+            }
+
+            return new SuccessObjectBuildResult<Person>(new Person(_name!, _age!.Value, addresses, people));
         }
     }
 
@@ -156,7 +205,7 @@ public class AbstractAsyncObjectBuilderTests
     [Fact]
     public async Task Can_Build_Complete_Person_Async()
     {
-        await BuilderTester.TestValidAsync<PersonBuilder, Person>(
+        await BuilderTester.ValidAsync<PersonBuilder, Person>(
             () => new PersonBuilder(),
             (builder, cancellationToken) =>
             {
@@ -184,7 +233,7 @@ public class AbstractAsyncObjectBuilderTests
     [Fact]
     public async Task Cannot_Build_Complete_Person_Async()
     {
-        await BuilderTester.TestInvalidAsync<PersonBuilder, Person>(
+        await BuilderTester.InvalidAsync<PersonBuilder, Person>(
             () => new PersonBuilder(),
             (builder, cancellationToken) =>
             {
@@ -196,7 +245,7 @@ public class AbstractAsyncObjectBuilderTests
             {
                 failure.ShouldNotBeNull();
                 failure.Exceptions.ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
-                failure.Exceptions.ElementAt(1).Message.ShouldBe(PersonBuilder.BuildError);
+                failure.Exceptions.Count.ShouldBeEquivalentTo(1);
                 failure.Builder.ShouldNotBeNull();
                 failure.Builder.ShouldBeAssignableTo<PersonBuilder>();
             });

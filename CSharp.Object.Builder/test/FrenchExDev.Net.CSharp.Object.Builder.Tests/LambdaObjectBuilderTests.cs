@@ -62,7 +62,7 @@ public class LambdaObjectBuilderTests
         await BuilderTester.TestValid<PersonBuilder, Person>(
             builderFactory: () => new PersonBuilder((builder, exceptions, visited) =>
             {
-                return SuccessObjectBuildResult<Person>.Success(new Person("foo", 30, [new Address("123 Main St", "12345")]));
+                return SuccessObjectBuildResult<Person>.Success(new Person("foo", 30, [new Address("123 Main St", "12345")], []));
             }),
             body: (builder) =>
             {

@@ -5,33 +5,16 @@
 /// </summary>
 /// <typeparam name="TClass"></typeparam>
 /// <typeparam name="TBuilder"></typeparam>
-public class FailureAsyncObjectBuildResult<TClass, TBuilder> : IObjectBuildResult<TClass> where TBuilder : IAsyncObjectBuilder<TClass>
+public class FailureAsyncObjectBuildResult<TClass, TBuilder> : AbstractFailureObjectBuildResult<TBuilder>, IObjectBuildResult<TClass> where TBuilder : IAsyncObjectBuilder<TClass>
 {
     /// <summary>
-    /// Gets the builder instance used to configure and construct the object.
+    /// Initializes a new instance of the FailureAsyncObjectBuildResult class with the specified builder, exception
+    /// list, and visited objects.
     /// </summary>
-    public TBuilder Builder { get; init; }
-
-    /// <summary>
-    /// Exceptions that occurred during the build operation, or <see langword="null"/> if no exceptions
-    /// </summary>
-    public ExceptionBuildList Exceptions { get; init; }
-
-    /// <summary>
-    /// Gets the dictionary of visited objects during the build process.
-    /// </summary>
-    public VisitedObjectsList Visited { get; init; }
-
-
-    /// <summary>
-    /// Constructor for creating a new instance of <see cref="FailureAsyncObjectBuildResult{TClass, TBuilder}"/>.
-    /// </summary>t
-    /// <param name="builder"></param>
-    /// <param name="exceptions"></param>
-    public FailureAsyncObjectBuildResult(TBuilder builder, ExceptionBuildList exceptions, VisitedObjectsList visited)
+    /// <param name="builder">The builder instance used to construct the object. Cannot be null.</param>
+    /// <param name="exceptions">The collection of exceptions encountered during the build process. Cannot be null.</param>
+    /// <param name="visited">The list of objects that were visited during the build operation. Cannot be null.</param>
+    public FailureAsyncObjectBuildResult(TBuilder builder, ExceptionBuildList exceptions, VisitedObjectsList visited) : base(builder, exceptions, visited)
     {
-        Builder = builder;
-        Exceptions = exceptions;
-        Visited = visited;
     }
 }

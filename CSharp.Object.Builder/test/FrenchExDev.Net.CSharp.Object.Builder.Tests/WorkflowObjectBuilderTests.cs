@@ -38,7 +38,7 @@ public class WorkflowObjectBuilderTests
     /// specified criteria.</remarks>
     /// <returns></returns>
     [Fact]
-    public async Task Can_Build_Complete_Person() => await BuilderTester.TestValidAsync<PersonBuilder, Person>(
+    public async Task Can_Build_Complete_Person() => await BuilderTester.ValidAsync<PersonBuilder, Person>(
             builderFactory: () => new PersonBuilder(),
             body: async (builder, cancellationToken) =>
             {
@@ -54,7 +54,8 @@ public class WorkflowObjectBuilderTests
                         var person = new Person(
                             name: intermediates.Get<string>("Name"),
                             age: intermediates.Get<int>("Age"),
-                            addresses: intermediates.Get<IEnumerable<Address>>("Addresses")
+                            addresses: intermediates.Get<IEnumerable<Address>>("Addresses"),
+                            knows: Array.Empty<Person>()
                         );
                         step.Set(person);
                     }));
@@ -80,7 +81,7 @@ public class WorkflowObjectBuilderTests
     /// to zero, and that the failure contains the expected exception message and builder state.</remarks>
     /// <returns></returns>
     [Fact]
-    public async Task Cannot_Build_Complete_Person() => await BuilderTester.TestInvalidAsync<PersonBuilder, Person>(
+    public async Task Cannot_Build_Complete_Person() => await BuilderTester.InvalidAsync<PersonBuilder, Person>(
             builderFactory: () => new PersonBuilder(),
             body: async (builder, cancellationToken) =>
             {
@@ -102,7 +103,8 @@ public class WorkflowObjectBuilderTests
                         var person = new Person(
                             name: intermediates.Get<string>("Name"),
                             age: age,
-                            addresses: intermediates.Get<IEnumerable<Address>>("Addresses")
+                            addresses: intermediates.Get<IEnumerable<Address>>("Addresses"),
+                            knows: Array.Empty<Person>()
                         );
                         step.Set(person);
                     }));

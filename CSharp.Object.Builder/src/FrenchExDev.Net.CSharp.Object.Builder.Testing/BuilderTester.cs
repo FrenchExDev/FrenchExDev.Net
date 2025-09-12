@@ -45,7 +45,7 @@ public static class BuilderTester
     /// <param name="body">An asynchronous operation that performs actions on the builder.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public static async Task TestValidAsync<TBuilder, TClass>
+    public static async Task ValidAsync<TBuilder, TClass>
         (
             Func<TBuilder> builderFactory,
             Func<TBuilder, CancellationToken, Task> body,
@@ -73,7 +73,7 @@ public static class BuilderTester
     /// <param name="body">An action that configures the builder to produce an invalid object.</param>
     /// <param name="assert">An optional action to validate the result of the build operation. If provided, it is invoked with the build
     /// result.</param>
-    public static void TestInvalid<TBuilder, TClass>
+    public static void Invalid<TBuilder, TClass>
         (
             Func<TBuilder> builderFactory,
             Action<TBuilder> body,
@@ -104,7 +104,7 @@ public static class BuilderTester
     /// operation.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests. The token is passed to the body function and the build operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public static async Task TestInvalidAsync<TBuilder, TClass>
+    public static async Task InvalidAsync<TBuilder, TClass>
         (
             Func<TBuilder> builderFactory,
             Func<TBuilder, CancellationToken, Task> body,

@@ -1,6 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
-
-namespace FrenchExDev.Net.CSharp.Object.Builder;
+﻿namespace FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
 
 /// <summary>
 /// Builder class for constructing lists of objects using individual item builders.
