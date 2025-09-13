@@ -62,7 +62,11 @@ public class LibraryProjectModelBuilder : AbstractProjectModelBuilder<LibraryPro
             _packageReferences ?? throw new InvalidDataException(nameof(_packageReferences)),
             _analyzers ?? throw new InvalidDataException(nameof(_analyzers)),
             _additionalProperties ?? throw new InvalidDataException(nameof(_additionalProperties)),
-            _declarationModels ?? throw new InvalidDataException(nameof(_declarationModels))
+            _declarationModels ?? throw new InvalidDataException(nameof(_declarationModels)),
+            _version ?? throw new InvalidDataException(nameof(_version)),
+            _generatePackageOnBuild ?? throw new InvalidDataException(nameof(_generatePackageOnBuild)),
+            _packageTags ?? throw new InvalidDataException(nameof(_packageTags)),
+            _authors ?? throw new InvalidDataException(nameof(_authors))
             ));
     }
 }

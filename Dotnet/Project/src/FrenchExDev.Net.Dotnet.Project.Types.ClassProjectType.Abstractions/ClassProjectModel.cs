@@ -13,20 +13,24 @@ namespace FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions;
 public class ClassProjectModel : AbstractProjectModel<ClassProjectModel>
 {
     public ClassProjectModel(
-        string name,
-        string directory,
-        string sdk,
-        string targetFramework,
-        string outputType,
-        string langVersion,
-        bool nullable,
-        bool implicitUsings,
-        List<ProjectReference> projectReferences,
-        List<IPackageReference> packageReferences,
-        List<IPackageReference> analyzers,
-        Dictionary<string, object> additionalProperties,
-        List<IDeclarationModel> declarationModels)
-        : base(name, directory, sdk, targetFramework, outputType, langVersion, nullable, implicitUsings, projectReferences, packageReferences, analyzers, additionalProperties, declarationModels)
+        string? name,
+        string? directory,
+        string? sdk,
+        string? targetFramework,
+        string? outputType,
+        string? langVersion,
+        bool? nullable,
+        bool? implicitUsings,
+        List<ProjectReference>? projectReferences,
+        List<IPackageReference>? packageReferences,
+        List<IPackageReference>? analyzers,
+        Dictionary<string, object>? additionalProperties,
+        List<IDeclarationModel>? declarationModels,
+        string? version,
+        bool? generatePackageOnBuild,
+        string? packageTags,
+        string? authors
+    ) : base(name, directory, sdk, targetFramework, outputType, langVersion, nullable, implicitUsings, projectReferences, packageReferences, analyzers, additionalProperties, declarationModels, version, generatePackageOnBuild, packageTags, authors)
     {
     }
 }

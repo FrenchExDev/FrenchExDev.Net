@@ -50,19 +50,23 @@ public class CliProjectModelBuilder : AbstractProjectModelBuilder<CliProjectMode
         }
 
         return Success(new CliProjectModel(
-            _name ?? throw new InvalidDataException(nameof(_name)),
-            _directory ?? throw new InvalidDataException(nameof(_directory)),
-            _sdk ?? throw new InvalidDataException(nameof(_sdk)),
-            _targetFramework ?? throw new InvalidDataException(nameof(_targetFramework)),
-            _outputType ?? throw new InvalidDataException(nameof(_outputType)),
-            _langVersion ?? throw new InvalidDataException(nameof(_langVersion)),
-            _nullable ?? throw new InvalidDataException(nameof(_nullable)),
-            _implicitUsings ?? throw new InvalidDataException(nameof(_implicitUsings)),
-            _projectReferences ?? throw new InvalidDataException(nameof(_projectReferences)),
-            _packageReferences ?? throw new InvalidDataException(nameof(_packageReferences)),
-            _analyzers ?? throw new InvalidDataException(nameof(_analyzers)),
-            _additionalProperties ?? throw new InvalidDataException(nameof(_additionalProperties)),
-            _declarationModels ?? throw new InvalidDataException(nameof(_declarationModels))
+            _name,
+            _directory,
+            _sdk,
+            _targetFramework,
+            _outputType,
+            _langVersion,
+            _nullable,
+            _implicitUsings,
+            _projectReferences,
+            _packageReferences,
+            _analyzers,
+            _additionalProperties,
+            _declarationModels,
+            _version,
+            _generatePackageOnBuild,
+            _packageTags,
+            _authors
         ));
     }
 }

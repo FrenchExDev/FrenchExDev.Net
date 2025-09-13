@@ -45,15 +45,19 @@ public class ClassProjectTypeTests
     [Fact]
     public void Can_Build_Project_With_Valid_Configuration()
     {
-        ClassProjectTypeTester.Valid(body: (b) => b
+        ClassProjectTypeTester.Valid(body: (b) => ClassProjectType.Default(b)
                 .Name("MyClassProject")
                 .Directory("src/MyClassProject")
                 .LangVersion("13.0")
                 .TargetFramework("net9.0")
                 .Sdk("Microsoft.NET.Sdk")
                 .OutputType("Library")
-                .Nullable(true)
-                .ImplicitUsings(true)
+                .Nullable()
+                .ImplicitUsings()
+                .Version("1.0.0")
+                .GeneratePackageOnBuild()
+                .Authors("FrenchExDev Stéphane Erard")
+                .PackageTags(["tag1", "tag2", "tag3"])
         ,
         assertBuiltModel: (classProjectModel) =>
         {
@@ -63,15 +67,15 @@ public class ClassProjectTypeTests
             classProjectModel.TargetFramework.ShouldBe("net9.0");
             classProjectModel.Sdk.ShouldBe("Microsoft.NET.Sdk");
             classProjectModel.OutputType.ShouldBe("Library");
-            classProjectModel.Nullable.ShouldBeTrue();
-            classProjectModel.ImplicitUsings.ShouldBeTrue();
+
+            (true == classProjectModel.Nullable).ShouldBeTrue();
+            (true == classProjectModel.ImplicitUsings).ShouldBeTrue();
 
             classProjectModel.ProjectReferences.ShouldBeEmpty();
             classProjectModel.PackageReferences.ShouldBeEmpty();
             classProjectModel.Analyzers.ShouldBeEmpty();
             classProjectModel.DeclarationModels.ShouldBeEmpty();
             classProjectModel.AdditionalProperties.ShouldBeEmpty();
-
         });
     }
 }

@@ -22,6 +22,12 @@ public class ClassProjectType
         .OutputType("Library")
         .Sdk("Microsoft.NET.Sdk")
         .TargetFramework("net9.0")
+        .GeneratePackageOnBuild()
+        .Authors("")
+        .PackageTags(Array.Empty<string>())
+        .Version("0.0.1")
+        .Name("Dummy")
+        .Directory("/tmp")
         .Build()
         .Success();
 
@@ -33,14 +39,16 @@ public class ClassProjectType
     /// framework,  package references, project references, and additional properties.  It is a convenient way to start
     /// with a standard configuration before making further customizations.</remarks>
     /// <returns>A new instance of <see cref="ClassProjectModelBuilder"/> preconfigured with default settings.</returns>
-    public ClassProjectModelBuilder Default() => new ClassProjectModelBuilder()
+    public static ClassProjectModelBuilder Default(ClassProjectModelBuilder classProjectModelBuilder) => classProjectModelBuilder
         .Nullable(Defaults.Nullable)
         .ImplicitUsings(Defaults.ImplicitUsings)
         .LangVersion(Defaults.LangVersion)
         .OutputType(Defaults.OutputType)
         .Sdk(Defaults.Sdk)
         .TargetFramework(Defaults.TargetFramework)
-        .PackageReferences(Defaults.PackageReferences)
-        .ProjectReferences(Defaults.ProjectReferences)
-        .AdditionalProperties(Defaults.AdditionalProperties);
+        .GeneratePackageOnBuild(Defaults.GeneratePackageOnBuild)
+        .PackageReferences(Defaults.PackageReferences ?? [])
+        .ProjectReferences(Defaults.ProjectReferences ?? [])
+        .AdditionalProperties(Defaults.AdditionalProperties ?? [])
+        ;
 }

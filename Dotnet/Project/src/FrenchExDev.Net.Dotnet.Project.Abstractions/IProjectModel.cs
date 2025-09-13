@@ -2,32 +2,16 @@
 
 public interface IProjectModel
 {
-
+    string? TargetFramework { get; }
+    bool? ImplicitUsings { get; }
+    bool? Nullable { get; }
+    string? Version { get; }
+    string? Description { get; }
+    string? Copyright { get; }
+    string? PackageProjectUrl { get; }
+    string? RepositoryUrl { get; }
+    string? RepositoryType { get; }
+    string? Authors { get; }
+    List<string> PackageTags { get; }
+    bool? IncludeSymbols { get; }
 }
-
-//}
-
-//public class ClassProjectModel : AbstractProjectModel<ClassProjectModel>
-//{
-//}
-
-
-//public class DesktopProjectModel : AbstractProjectModel<DesktopProjectModel>
-//{
-
-//}
-
-//public class CliProjectModel : AbstractProjectModel<CliProjectModel>
-//{
-
-//}
-
-//public class WebApiProjectModel : AbstractProjectModel<WebApiProjectModel>
-//{
-
-//}
-
-//public class WebWorkerProjectModel : AbstractProjectModel<WebWorkerProjectModel>
-//{
-
-//}
