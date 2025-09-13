@@ -16,34 +16,34 @@ public class ClassDeclarationModelBuilder : AbstractObjectBuilder<ClassDeclarati
     // Stores the base type name, if any.
     private string? _baseType;
     // List of class modifiers (e.g., public, abstract, sealed).
-    public List<ClassModifier> Modifiers { get; } = new();
+    public List<ClassModifier> Modifiers { get; } = [];
 
     // List of attribute builders for decorating the class.
-    private readonly List<AttributeDeclarationModelBuilder> _attributes = new();
+    private readonly List<AttributeDeclarationModelBuilder> _attributes = [];
 
     // List of implemented interface names.
-    private readonly List<string> _implementedInterfaces = new();
+    private readonly List<string> _implementedInterfaces = [];
 
     // List of type parameter builders for generic class definitions.
-    private readonly List<TypeParameterDeclarationModelBuilder> _typeParameters = new();
+    private readonly List<TypeParameterDeclarationModelBuilder> _typeParameters = [];
 
     // List of type parameter constraint builders.
-    private readonly List<TypeParameterConstraintModelBuilder> _typeParameterConstraints = new();
+    private readonly List<TypeParameterConstraintModelBuilder> _typeParameterConstraints = [];
 
     // List of field builders for the class.
-    private readonly List<FieldDeclarationModelBuilder> _fields = new();
+    private readonly List<FieldDeclarationModelBuilder> _fields = [];
 
     // List of property builders for the class.
-    private readonly List<PropertyDeclarationModelBuilder> _properties = new();
+    private readonly List<PropertyDeclarationModelBuilder> _properties = [];
 
     // List of method builders for the class.
-    private readonly List<MethodDeclarationModelBuilder> _methods = new();
+    private readonly List<MethodDeclarationModelBuilder> _methods = [];
 
     // List of constructor builders for the class.
-    private readonly List<ConstructorDeclarationModelBuilder> _constructors = new();
+    private readonly List<ConstructorDeclarationModelBuilder> _constructors = [];
 
     // List of nested class builders.
-    private readonly List<ClassDeclarationModelBuilder> _nestedClasses = new();
+    private readonly List<ClassDeclarationModelBuilder> _nestedClasses = [];
 
     /// <summary>
     /// Sets the class name.
@@ -167,24 +167,14 @@ public class ClassDeclarationModelBuilder : AbstractObjectBuilder<ClassDeclarati
     protected override IObjectBuildResult<ClassDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         // Build all nested components and collect their results
-        var attributes = BuildBuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
-        var typeParameters = BuildBuildList<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(_typeParameters, visited);
-        var typeParameterConstraints = BuildBuildList<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(_typeParameterConstraints, visited);
-        var fields = BuildBuildList<FieldDeclarationModel, FieldDeclarationModelBuilder>(_fields, visited);
-        var properties = BuildBuildList<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(_properties, visited);
-        var methods = BuildBuildList<MethodDeclarationModel, MethodDeclarationModelBuilder>(_methods, visited);
-        var constructors = BuildBuildList<ConstructorDeclarationModel, ConstructorDeclarationModelBuilder>(_constructors, visited);
-        var nestedClasses = BuildBuildList<ClassDeclarationModel, ClassDeclarationModelBuilder>(_nestedClasses, visited);
-
-        // Collect exceptions from failed nested builds
-        AddExceptions<MethodDeclarationModel, MethodDeclarationModelBuilder>(new MemberName(nameof(methods)), methods, exceptions);
-        AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(new MemberName(nameof(attributes)), attributes, exceptions);
-        AddExceptions<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(new MemberName(nameof(typeParameters)), typeParameters, exceptions);
-        AddExceptions<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(new MemberName(nameof(typeParameterConstraints)), typeParameterConstraints, exceptions);
-        AddExceptions<FieldDeclarationModel, FieldDeclarationModelBuilder>(new MemberName(nameof(fields)), fields, exceptions);
-        AddExceptions<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(new MemberName(nameof(properties)), properties, exceptions);
-        AddExceptions<ConstructorDeclarationModel, ConstructorDeclarationModelBuilder>(new MemberName(nameof(constructors)), constructors, exceptions);
-        AddExceptions<ClassDeclarationModel, ClassDeclarationModelBuilder>(new MemberName(nameof(nestedClasses)), nestedClasses, exceptions);
+        var attributes = BuildBuildListAndVisitForExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited, nameof(_attributes), exceptions);
+        var typeParameters = BuildBuildListAndVisitForExceptions<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(_typeParameters, visited, nameof(_typeParameters), exceptions);
+        var typeParameterConstraints = BuildBuildListAndVisitForExceptions<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(_typeParameterConstraints, visited, nameof(_typeParameterConstraints), exceptions);
+        var fields = BuildBuildListAndVisitForExceptions<FieldDeclarationModel, FieldDeclarationModelBuilder>(_fields, visited, nameof(_fields), exceptions);
+        var properties = BuildBuildListAndVisitForExceptions<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(_properties, visited, nameof(_properties), exceptions);
+        var methods = BuildBuildListAndVisitForExceptions<MethodDeclarationModel, MethodDeclarationModelBuilder>(_methods, visited, nameof(_methods), exceptions);
+        var constructors = BuildBuildListAndVisitForExceptions<ConstructorDeclarationModel, ConstructorDeclarationModelBuilder>(_constructors, visited, nameof(_constructors), exceptions);
+        var nestedClasses = BuildBuildListAndVisitForExceptions<ClassDeclarationModel, ClassDeclarationModelBuilder>(_nestedClasses, visited, nameof(_nestedClasses), exceptions);
 
         // Validate required class name
         if (string.IsNullOrEmpty(_name))
