@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36414.22
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11010.61 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_SolutionItems", "_SolutionItems", "{79A1E7AE-CC00-33D7-92ED-603B43B6E6A3}"
 	ProjectSection(SolutionItems) = preProject
@@ -32,14 +32,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSharp.Object.Builder", "CS
 		CSharp.Object.Builder\LICENSE = CSharp.Object.Builder\LICENSE
 		CSharp.Object.Builder\NuGet.config = CSharp.Object.Builder\NuGet.config
 		CSharp.Object.Builder\README.md = CSharp.Object.Builder\README.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSharp.Object.Validator", "CSharp.Object.Validator", "{57CFE570-A08A-C23A-23E8-09FAFFEE0554}"
-	ProjectSection(SolutionItems) = preProject
-		CSharp.Object.Validator\.projects.yaml = CSharp.Object.Validator\.projects.yaml
-		CSharp.Object.Validator\LICENSE = CSharp.Object.Validator\LICENSE
-		CSharp.Object.Validator\NuGet.config = CSharp.Object.Validator\NuGet.config
-		CSharp.Object.Validator\README.md = CSharp.Object.Validator\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DFE515CA-4E74-417A-190B-9D55A817D470}"
@@ -77,10 +69,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Mm.App.WebWorker.Tests", "Mm\test\FrenchExDev.Net.Mm.App.WebWorker.Tests\FrenchExDev.Net.Mm.App.WebWorker.Tests.csproj", "{B37FE1B8-5BAF-A3CF-A10C-B1846DB1C27E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Mm.Module.Library.Tests", "Mm\test\FrenchExDev.Net.Mm.Module.Library.Tests\FrenchExDev.Net.Mm.Module.Library.Tests.csproj", "{B46E3090-6384-17D9-FC97-D19AA7694F00}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0616F728-848E-4D52-7B61-FA73E8698C40}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{231DCA9A-3677-E20E-7706-4F26B366CE27}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Mm.App.Cli.Builder.Tests", "Mm\test\FrenchExDev.Net.Mm.App.Cli.Builder.Tests\FrenchExDev.Net.Mm.App.Cli.Builder.Tests.csproj", "{CF34B11C-B290-46A5-9014-DCCC1DCD01D1}"
 EndProject
@@ -965,8 +953,6 @@ Global
 		{F679AF13-B342-FF09-00DB-65D88C9C3E2E} = {AC95C712-AA5D-37D7-BAAA-F38F717F6180}
 		{B37FE1B8-5BAF-A3CF-A10C-B1846DB1C27E} = {AC95C712-AA5D-37D7-BAAA-F38F717F6180}
 		{B46E3090-6384-17D9-FC97-D19AA7694F00} = {AC95C712-AA5D-37D7-BAAA-F38F717F6180}
-		{0616F728-848E-4D52-7B61-FA73E8698C40} = {57CFE570-A08A-C23A-23E8-09FAFFEE0554}
-		{231DCA9A-3677-E20E-7706-4F26B366CE27} = {57CFE570-A08A-C23A-23E8-09FAFFEE0554}
 		{CF34B11C-B290-46A5-9014-DCCC1DCD01D1} = {AC95C712-AA5D-37D7-BAAA-F38F717F6180}
 		{605DA268-EC15-E2A4-CA68-7F066CF1D98C} = {AC95C712-AA5D-37D7-BAAA-F38F717F6180}
 		{1AB41D67-77E4-1E47-5112-9615EAEBA03B} = {AC95C712-AA5D-37D7-BAAA-F38F717F6180}
