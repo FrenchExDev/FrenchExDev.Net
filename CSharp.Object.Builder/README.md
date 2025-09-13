@@ -11,35 +11,35 @@ A small library to build object graphs safely and predictably, with:
 
 ## Core concepts
 
-- IObjectBuilder<TClass>, IAsyncObjectBuilder<TClass>
+- `IObjectBuilder<TClass>`, `IAsyncObjectBuilder<TClass>`
   Contracts to build an instance of TClass either synchronously or asynchronously.
 
-- IObjectBuildResult<TClass>
-  Discriminated result. Use SuccessObjectBuildResult<TClass> or FailureObjectBuildResult<TClass, TBuilder>/FailureAsyncObjectBuildResult<TClass, TBuilder>.
+- `IObjectBuildResult<TClass>`
+  Discriminated result. Use `SuccessObjectBuildResult<TClass>` or `FailureObjectBuildResult<TClass, TBuilder>`/`FailureAsyncObjectBuildResult<TClass, TBuilder>`.
 
-- ExceptionBuildList
+- `ExceptionBuildList`
   A list collecting validation or build exceptions. Prefer accumulating exceptions over throwing at the first error.
 
-- VisitedObjectsList
+- `VisitedObjectsList`
   Tracks visited nodes to prevent infinite recursion in graphs (e.g., a person who knows a person that knows the first person).
 
-- AbstractObjectBuilder<TClass, TBuilder>
+- `AbstractObjectBuilder<TClass, TBuilder>`
   Base class for sync builders. Implement BuildInternal to create the object and return a Success/Failure result.
 
-- AbstractAsyncObjectBuilder<TClass, TBuilder>
+- `AbstractAsyncObjectBuilder<TClass, TBuilder>`
   Base class for async builders. Implement BuildInternalAsync and return a task with Success/Failure.
 
-- LambdaObjectBuilder / LambdaAsyncObjectBuilder
+- `LambdaObjectBuilder` / `LambdaAsyncObjectBuilder`
   Light wrappers that let you implement builders with a delegate instead of subclassing.
 
-- WorkflowObjectBuilder<TClass, TBuilder>
-  Compose a sequence of steps (IAbstractStep<TClass>) executed in order to build TClass.
+- `WorkflowObjectBuilder<TClass, TBuilder>`
+  Compose a sequence of steps (`IAbstractStep<TClass>`) executed in order to build `TClass`.
 
-- BuildReference / AbstractBuildReference<T>
+- `BuildReference` / `AbstractBuildReference<T>`
   Hold a reference to a built instance and queue actions to run once that reference is set (useful for deferred wiring).
 
 Notes
-- Base classes handle visited list creation and reuse. Always use the provided VisitedObjectsList parameter in your overrides and helpers.
+- Base classes handle visited list creation and reuse. Always use the provided `VisitedObjectsList` parameter in your overrides and helpers.
 - Builders are not thread-safe by default.
 
 ## Quick start (sync): Lambda builder

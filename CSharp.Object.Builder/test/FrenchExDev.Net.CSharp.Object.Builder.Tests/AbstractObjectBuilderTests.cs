@@ -259,7 +259,7 @@ public class AbstractObjectBuilderTests
     /// object is of type <see cref="SuccessObjectBuildResult{T}"/> and that all properties are set as expected.</remarks>
     /// <returns></returns>
     [Fact]
-    public async Task Can_Build_Complete_Person_With_Cyclic_Reference() => await BuilderTester.TestValid<PersonBuilder, Person>(
+    public async Task Can_Build_Complete_Person_With_Cyclic_Reference() => await BuilderTester.Valid<PersonBuilder, Person>(
             builderFactory: () => new PersonBuilder(),
             body: (builder) =>
             {

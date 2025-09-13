@@ -55,9 +55,7 @@ public class AsyncLambdaObjectBuilderTests
     /// (e.g., missing or invalid age) and produces a <see cref="FailureObjectBuildResult{T, TBuilder}"/>  containing
     /// the expected exception and error details.</remarks>
     [Fact]
-    public async Task Cannot_Build_Incomplete_Person_Async()
-    {
-        await BuilderTester.InvalidAsync<PersonBuilder, Person>(
+    public async Task Cannot_Build_Incomplete_Person_Async() => await BuilderTester.InvalidAsync<PersonBuilder, Person>(
             builderFactory: () => new PersonBuilder((builder, exceptions, visited, cancellationToken) =>
             {
                 exceptions.Add("age", new Exception(PersonBuilder.ErrorInvalidAge));
@@ -75,5 +73,4 @@ public class AsyncLambdaObjectBuilderTests
                 failure.Builder.ShouldNotBeNull();
                 failure.Builder.ShouldBeAssignableTo<PersonBuilder>();
             });
-    }
 }

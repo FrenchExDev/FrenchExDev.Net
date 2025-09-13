@@ -57,9 +57,7 @@ public class LambdaObjectBuilderTests
     /// object is of type <see cref="SuccessObjectBuildResult{T}"/> and that all properties are set as expected.</remarks>
     /// <returns></returns>
     [Fact]
-    public async Task Can_Build_Complete_Person()
-    {
-        await BuilderTester.TestValid<PersonBuilder, Person>(
+    public async Task Can_Build_Complete_Person() => await BuilderTester.Valid<PersonBuilder, Person>(
             builderFactory: () => new PersonBuilder((builder, exceptions, visited) =>
             {
                 return SuccessObjectBuildResult<Person>.Success(new Person("foo", 30, [new Address("123 Main St", "12345")], []));
@@ -75,5 +73,4 @@ public class LambdaObjectBuilderTests
                 person.Addresses.ElementAt(0).Street.ShouldBe("123 Main St");
                 person.Addresses.ElementAt(0).ZipCode.ShouldBe("12345");
             });
-    }
 }

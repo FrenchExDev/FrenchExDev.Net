@@ -19,7 +19,7 @@ public static class BuilderTester
     /// <typeparam name="TClass">The type of the class being built.</typeparam>
     /// <param name="builderFactory">A factory method to create the builder.</param>
     /// <param name="body">A test action to perform on the builder.</param>
-    public static async Task TestValid<TBuilder, TClass>
+    public static async Task Valid<TBuilder, TClass>
         (
             Func<TBuilder> builderFactory,
             Action<TBuilder> body,
@@ -105,23 +105,19 @@ public static class BuilderTester
     /// <param name="cancellationToken">A token to monitor for cancellation requests. The token is passed to the body function and the build operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task InvalidAsync<TBuilder, TClass>
-        (
-            Func<TBuilder> builderFactory,
-            Func<TBuilder, CancellationToken, Task> body,
-            Action<FailureAsyncObjectBuildResult<TClass, TBuilder>>? assert = null,
-            CancellationToken cancellationToken = default
-        ) where TBuilder : IAsyncObjectBuilder<TClass>
+    (
+        Func<TBuilder> builderFactory,
+        Func<TBuilder, CancellationToken, Task> body,
+        Action<FailureAsyncObjectBuildResult<TClass, TBuilder>>? assert = null,
+        CancellationToken cancellationToken = default
+    ) where TBuilder : IAsyncObjectBuilder<TClass>
     {
         var builder = builderFactory();
         await body(builder, cancellationToken);
         var built = await builder.BuildAsync(cancellationToken: cancellationToken);
-        var failureResult = (FailureAsyncObjectBuildResult<TClass, TBuilder>)built;
-        failureResult.Exceptions.ShouldNotBeEmpty();
-        failureResult.Exceptions.Count().ShouldBeGreaterThan(0);
-
         if (assert is not null)
         {
-            assert(failureResult);
+            InternalTestInvalidAsync(assert, built);
         }
     }
 
@@ -161,12 +157,13 @@ public static class BuilderTester
     /// <typeparam name="TClass">The type of the object being built.</typeparam>
     /// <param name="assert">An optional assertion to apply to the build result. Can be <see langword="null"/>.</param>
     /// <param name="built">The build result to validate. Must not be <see langword="null"/>.</param>
-    private static void InternalTestInvalidAsync<TClass>(
-        Action<FailureAsyncObjectBuildResult<TClass, IAsyncObjectBuilder<TClass>>>? assert,
+    private static void InternalTestInvalid<TClass, TBuilder>(
+        Action<FailureObjectBuildResult<TClass, TBuilder>>? assert,
         IObjectBuildResult<TClass> built
-    )
+    ) where TBuilder : IObjectBuilder<TClass>
     {
-        var failureResult = (FailureAsyncObjectBuildResult<TClass, IAsyncObjectBuilder<TClass>>)built;
+        built.ShouldBeAssignableTo<FailureObjectBuildResult<TClass, TBuilder>>();
+        var failureResult = (FailureObjectBuildResult<TClass, TBuilder>)built;
         failureResult.Exceptions.ShouldNotBeEmpty();
         failureResult.Exceptions.Count().ShouldBeGreaterThan(0);
 
@@ -177,21 +174,25 @@ public static class BuilderTester
     }
 
     /// <summary>
-    /// Verifies that the specified build result is invalid and optionally applies an assertion.
+    /// Verifies that the specified object build result represents a failed asynchronous build and optionally performs
+    /// additional assertions on the failure result.
     /// </summary>
-    /// <remarks>This method ensures that the build result is in an invalid state by checking that the object
-    /// was not built, the result is <see langword="null"/>, and the exceptions collection is not empty. If an assertion
-    /// is provided, it is invoked with the build result.</remarks>
-    /// <typeparam name="TClass">The type of the object being built.</typeparam>
-    /// <param name="assert">An optional assertion to apply to the build result. Can be <see langword="null"/>.</param>
-    /// <param name="built">The build result to validate. Must not be <see langword="null"/>.</param>
-    private static void InternalTestInvalid<TClass, TBuilder>(
-        Action<FailureObjectBuildResult<TClass, TBuilder>>? assert,
+    /// <remarks>This method is intended for use in test scenarios to ensure that an asynchronous object build
+    /// operation has failed as expected. It checks that the result contains at least one exception and allows for
+    /// further custom assertions on the failure details.</remarks>
+    /// <typeparam name="TClass">The type of object being built.</typeparam>
+    /// <typeparam name="TBuilder">The type of asynchronous object builder used to construct the object. Must implement <see
+    /// cref="IAsyncObjectBuilder{TClass}"/>.</typeparam>
+    /// <param name="assert">An optional action to perform additional assertions on the failure result. If <see langword="null"/>, no extra
+    /// assertions are performed.</param>
+    /// <param name="built">The object build result to verify. Must represent a failed asynchronous build.</param>
+    private static void InternalTestInvalidAsync<TClass, TBuilder>(
+        Action<FailureAsyncObjectBuildResult<TClass, TBuilder>>? assert,
         IObjectBuildResult<TClass> built
-    ) where TBuilder : IObjectBuilder<TClass>
+    ) where TBuilder : IAsyncObjectBuilder<TClass>
     {
-        built.ShouldBeAssignableTo<FailureObjectBuildResult<TClass, TBuilder>>();
-        var failureResult = (FailureObjectBuildResult<TClass, TBuilder>)built;
+        built.ShouldBeAssignableTo<FailureAsyncObjectBuildResult<TClass, TBuilder>>();
+        var failureResult = (FailureAsyncObjectBuildResult<TClass, TBuilder>)built;
         failureResult.Exceptions.ShouldNotBeEmpty();
         failureResult.Exceptions.Count().ShouldBeGreaterThan(0);
 
