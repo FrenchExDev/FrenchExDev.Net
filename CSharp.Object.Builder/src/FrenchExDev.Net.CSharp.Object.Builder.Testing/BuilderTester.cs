@@ -20,11 +20,11 @@ public static class BuilderTester
     /// <param name="builderFactory">A factory method to create the builder.</param>
     /// <param name="body">A test action to perform on the builder.</param>
     public static async Task Valid<TBuilder, TClass>
-        (
-            Func<TBuilder> builderFactory,
-            Action<TBuilder> body,
-            Action<TClass> asserts
-        ) where TBuilder : IObjectBuilder<TClass>
+    (
+        Func<TBuilder> builderFactory,
+        Action<TBuilder> body,
+        Action<TClass> asserts
+    ) where TBuilder : IObjectBuilder<TClass>
     {
         var builder = builderFactory();
         body(builder);
@@ -46,17 +46,19 @@ public static class BuilderTester
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public static async Task ValidAsync<TBuilder, TClass>
-        (
-            Func<TBuilder> builderFactory,
-            Func<TBuilder, CancellationToken, Task> body,
-            Action<TClass> asserts,
-            CancellationToken cancellationToken = default
-        ) where TBuilder : IAsyncObjectBuilder<TClass>
+    (
+        Func<TBuilder> builderFactory,
+        Func<TBuilder, CancellationToken, Task> body,
+        Action<TClass> asserts,
+        CancellationToken cancellationToken = default
+    )
+        where TBuilder : IAsyncObjectBuilder<TClass>
+        where TClass : class
     {
         var builder = builderFactory();
         await body(builder, cancellationToken);
         var buildResult = await TestValidInternalAsync<TBuilder, TClass>(builder);
-        var built = ((SuccessObjectBuildResult<TClass>)buildResult).Result;
+        var built = buildResult.Success();
         asserts(built);
     }
 
@@ -74,16 +76,18 @@ public static class BuilderTester
     /// <param name="assert">An optional action to validate the result of the build operation. If provided, it is invoked with the build
     /// result.</param>
     public static void Invalid<TBuilder, TClass>
-        (
-            Func<TBuilder> builderFactory,
-            Action<TBuilder> body,
-            Action<FailureObjectBuildResult<TClass, TBuilder>>? assert = null
-        ) where TBuilder : IObjectBuilder<TClass>
+    (
+        Func<TBuilder> builderFactory,
+        Action<TBuilder> body,
+        Action<FailureObjectBuildResult<TClass, TBuilder>>? assert = null
+    )
+        where TBuilder : IObjectBuilder<TClass>
+        where TClass : class
     {
         var builder = builderFactory();
         body(builder);
         var buildResult = builder.Build();
-        var failureResult = (FailureObjectBuildResult<TClass, TBuilder>)buildResult;
+        var failureResult = buildResult.Failure<TClass, TBuilder>();
         InternalTestInvalid(assert, failureResult);
     }
 
@@ -131,7 +135,7 @@ public static class BuilderTester
     /// <param name="builder">The builder instance to validate. Must not be <c>null</c>.</param>
     private static async Task<IObjectBuildResult<TClass>> TestValidInternalAsync<TBuilder, TClass>(TBuilder builder) where TBuilder : IAbstractObjectBuilder
     {
-        var localBuilder = async (TBuilder builder) =>
+        static async Task<IObjectBuildResult<TClass>> localBuilder(TBuilder builder)
         {
             return builder switch
             {
@@ -139,7 +143,7 @@ public static class BuilderTester
                 IAsyncObjectBuilder<TClass> asyncBuilder => await asyncBuilder.BuildAsync(),
                 _ => throw new InvalidOperationException("Builder must implement either IObjectBuilder<TClass> or IAsyncObjectBuilder<TClass>.")
             };
-        };
+        }
 
         var built = await localBuilder(builder);
 
@@ -165,7 +169,7 @@ public static class BuilderTester
         built.ShouldBeAssignableTo<FailureObjectBuildResult<TClass, TBuilder>>();
         var failureResult = (FailureObjectBuildResult<TClass, TBuilder>)built;
         failureResult.Exceptions.ShouldNotBeEmpty();
-        failureResult.Exceptions.Count().ShouldBeGreaterThan(0);
+        failureResult.Exceptions.Count.ShouldBeGreaterThan(0);
 
         if (assert is not null)
         {
@@ -194,7 +198,7 @@ public static class BuilderTester
         built.ShouldBeAssignableTo<FailureAsyncObjectBuildResult<TClass, TBuilder>>();
         var failureResult = (FailureAsyncObjectBuildResult<TClass, TBuilder>)built;
         failureResult.Exceptions.ShouldNotBeEmpty();
-        failureResult.Exceptions.Count().ShouldBeGreaterThan(0);
+        failureResult.Exceptions.Count.ShouldBeGreaterThan(0);
 
         if (assert is not null)
         {

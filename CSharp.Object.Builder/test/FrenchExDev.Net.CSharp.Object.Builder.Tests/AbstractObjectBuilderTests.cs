@@ -56,12 +56,12 @@ public class AbstractObjectBuilderTests
         /// <summary>
         /// Stores the list of address builders for the person.
         /// </summary>
-        private List<AddressBuilder> _addresses = new();
+        private readonly List<AddressBuilder> _addresses = [];
 
         /// <summary>
         /// Stores the list of people known by this person.
         /// </summary>
-        private List<PersonBuilder> _people = new();
+        private readonly List<PersonBuilder> _people = [];
 
         /// <summary>
         /// Sets the name of the person.
@@ -160,8 +160,8 @@ public class AbstractObjectBuilderTests
             }
 
             // Ensure required fields are not null
-            ArgumentNullException.ThrowIfNull(_name);
-            ArgumentNullException.ThrowIfNull(_age);
+            if (_name is null) throw new InvalidDataException(nameof(_name));
+            if (_age is null) throw new InvalidDataException(nameof(_age));
 
             // Return a successful build result with the constructed Person
             return Success(new Person(_name, _age.Value, [], people));
@@ -291,7 +291,7 @@ public class AbstractObjectBuilderTests
             }, assert: (buildResult) =>
             {
                 var failure = (FailureObjectBuildResult<Person, PersonBuilder>)buildResult;
-                failure.Exceptions.Count().ShouldBe(1);
+                failure.Exceptions.Count.ShouldBe(1);
                 failure.Exceptions["_age"].ElementAt(0).Message.ShouldBe(PersonBuilder.ErrorInvalidAge);
             });
 }

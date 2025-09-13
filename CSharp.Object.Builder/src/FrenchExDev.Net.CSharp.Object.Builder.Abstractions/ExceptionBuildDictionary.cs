@@ -1,6 +1,4 @@
-﻿
-
-namespace FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿namespace FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
 
 /// <summary>
 /// Represents a list of exceptions, providing functionality to store and manage multiple exceptions.
@@ -22,7 +20,7 @@ public class ExceptionBuildDictionary : Dictionary<string, List<Exception>>
         var list = this.GetValueOrDefault(memberName);
         if (list is null)
         {
-            list = new List<Exception>();
+            list = [];
             this[memberName] = list;
         }
         list.Add(invalidDataException);
@@ -52,28 +50,9 @@ public class ExceptionBuildDictionary : Dictionary<string, List<Exception>>
     {
         foreach (var kv in enumerable)
         {
-            Add(kv.Key.Name, kv.Value);
+            Add(memberName, kv.Value);
         }
 
-        return this;
-    }
-
-    /// <summary>
-    /// Adds a collection of exception entries associated with the specified member name to the dictionary. If no entry
-    /// exists for the member name, a new entry is created.
-    /// </summary>
-    /// <param name="memberName">The name of the member to associate with the exception entries. Cannot be null.</param>
-    /// <param name="enumerable">A collection of key-value pairs where each key is a member name and each value is a list of exceptions to add.
-    /// Cannot be null.</param>
-    /// <returns>The current instance of <see cref="ExceptionBuildDictionary"/> with the updated exception entries.</returns>
-    public ExceptionBuildDictionary Add(string memberName, IEnumerable<KeyValuePair<MemberName, List<Exception>>> enumerable)
-    {
-        var list = this.GetValueOrDefault(memberName);
-        if (list is null)
-        {
-            list = new List<Exception>();
-            this[memberName] = list;
-        }
         return this;
     }
 
@@ -90,7 +69,7 @@ public class ExceptionBuildDictionary : Dictionary<string, List<Exception>>
     {
         foreach (var ex in exceptions)
         {
-            Add(ex.Key, ex.Value);
+            Add(memberName, ex.Value);
         }
 
         return this;

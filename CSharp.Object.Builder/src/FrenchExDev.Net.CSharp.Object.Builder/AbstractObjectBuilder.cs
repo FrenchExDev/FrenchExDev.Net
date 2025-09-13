@@ -17,7 +17,17 @@ namespace FrenchExDev.Net.CSharp.Object.Builder;
 public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<TClass> where TBuilder : class, IObjectBuilder<TClass>
 {
     /// <summary>
-    /// Builds an instance of <typeparamref name="TClass"/> using the current builder configuration, optionally tracking
+    /// Holds a reference to an instance of <typeparamref name="TClass"/> or <see langword="null"/> if no reference is set.
+    /// </summary>
+    protected TClass? _reference;
+
+    /// <summary>
+    /// Holds a reference to instance of <typeparamref name="TBuilder"/> or <see langword="null"/> if no reference is set.
+    /// </summary>
+    private TBuilder? _referencedBuilder;
+
+    /// <summary>
+    /// Builds an instance of <typeparamref name="TClass"/> using the current builder configuration, tracking
     /// visited objects to prevent cyclic dependencies.
     /// </summary>
     /// <remarks>This method is intended for use in scenarios where object graphs may contain cycles or shared
@@ -49,7 +59,7 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
         var exceptions = new ExceptionBuildDictionary();
 
         // Initialize visited objects list if not provided.
-        visited ??= new VisitedObjectsList();
+        visited ??= [];
 
         // Check if the current builder instance has already been visited to prevent cyclic dependencies.
         if (visited.TryGetValue(this, out var existing))
@@ -163,6 +173,24 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     }
 
     /// <summary>
+    /// Builds a list of objects using the specified builders and records any exceptions encountered during the build
+    /// process.
+    /// </summary>
+    /// <typeparam name="TOtherClass">The type of object to be built by the builders.</typeparam>
+    /// <typeparam name="TOtherBuilder">The type of builder used to construct objects of type <typeparamref name="TOtherClass"/>. Must implement <see
+    /// cref="IObjectBuilder{TOtherClass}"/>.</typeparam>
+    /// <param name="list">The collection of builders used to construct objects of type <typeparamref name="TOtherClass"/>.</param>
+    /// <param name="visited">A list that tracks objects that have already been visited to prevent redundant processing.</param>
+    /// <param name="nameof">The name of the member associated with the build operation, used for exception tracking.</param>
+    /// <param name="exceptions">A dictionary that collects exceptions encountered during the build process, keyed by member name.</param>
+    protected List<IObjectBuildResult<TOtherClass>> BuildBuildListAndVisitForExceptions<TOtherClass, TOtherBuilder>(List<TOtherBuilder> list, VisitedObjectsList visited, string nameof, ExceptionBuildDictionary exceptions) where TOtherBuilder : IObjectBuilder<TOtherClass>
+    {
+        var buildResults = BuildBuildList<TOtherClass, TOtherBuilder>(list, visited);
+        AddExceptions<TOtherClass, TOtherBuilder>(new MemberName(nameof), buildResults, exceptions);
+        return buildResults;
+    }
+
+    /// <summary>
     /// Builds a list of object build results by invoking the builder on each provided instance.
     /// </summary>
     /// <typeparam name="TOtherClass">The type of object to be built by each builder.</typeparam>
@@ -173,7 +201,7 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// <returns>A list of build results for each object constructed by the provided builders.</returns>
     protected List<IObjectBuildResult<TOtherClass>> BuildBuildList<TOtherClass, TOtherBuilder>(List<TOtherBuilder> instances, VisitedObjectsList visited) where TOtherBuilder : IObjectBuilder<TOtherClass>
     {
-        return instances.Select(x => x.Build(visited)).ToList();
+        return [.. instances.Select(x => x.Build(visited))];
     }
 
     /// <summary>
@@ -208,16 +236,6 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
 
         exceptions.Add(memberName, new FailureObjectsBuildResultListExceptions(results.OfType<FailureObjectBuildResult<TOtherClass, TOtherBuilder>>().SelectMany(x => x.Exceptions).SelectMany(x => x.Value)));
     }
-
-    /// <summary>
-    /// Holds a reference to an instance of <typeparamref name="TClass"/> or <see langword="null"/> if no reference is set.
-    /// </summary>
-    protected TClass? _reference;
-
-    /// <summary>
-    /// Holds a reference to instance of <typeparamref name="TBuilder"/> or <see langword="null"/> if no reference is set.
-    /// </summary>
-    private TBuilder? _referencedBuilder;
 
     /// <summary>
     /// Sets the reference to the specified person and returns the current builder instance.
