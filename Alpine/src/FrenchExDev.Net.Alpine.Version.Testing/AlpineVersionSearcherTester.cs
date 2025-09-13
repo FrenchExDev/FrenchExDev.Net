@@ -15,7 +15,7 @@ public static class AlpineVersionSearcherTester
     /// <param name="filterBuilder">Action to configure the filter builder.</param>
     /// <param name="assert">Action to assert the search results.</param>
     /// <param name="cancellationToken">Optional cancellation token for the search operation.</param>
-    public static async Task TestValidAsync(
+    public static async Task ValidAsync(
         IAlpineVersionSearcher searcher,
         Action<AlpineVersionSearchingFiltersBuilder> filterBuilder,
         Action<AlpineVersionList> assert,
