@@ -139,7 +139,7 @@ public class AbstractObjectBuilderTests
             // we need to handle each case appropriately
             // if any people fail to build, we collect the exceptions
             // if any people are build references, we register an action to add them once built
-            var people = BuildList<Person, PersonBuilder>(nameof(_people), ErrorInvalidAge, _people, exceptions, visited);
+            var people = BuildList<Person, PersonBuilder>(nameof(_people), _people, exceptions, visited);
 
             // Validate name
             if (string.IsNullOrWhiteSpace(_name))

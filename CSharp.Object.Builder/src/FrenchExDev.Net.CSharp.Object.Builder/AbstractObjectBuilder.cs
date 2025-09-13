@@ -2,16 +2,6 @@
 
 namespace FrenchExDev.Net.CSharp.Object.Builder;
 
-public class FailureObjectsBuildResultListExceptions : Exception
-{
-    public IEnumerable<Exception> Exceptions { get; init; }
-    public FailureObjectsBuildResultListExceptions(IEnumerable<Exception> exceptions)
-        : base("One or more builders failed. See the 'Exceptions' property for details.")
-    {
-        Exceptions = exceptions;
-    }
-}
-
 /// <summary>
 /// Provides a base class for building objects of type specified by <typeparamref name="TClass"/> using a builder
 /// pattern, supporting cyclic dependency detection and customizable build result handling.
@@ -128,7 +118,7 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// operations.</param>
     /// <returns>A collection of successfully built objects of type <typeparamref name="TOtherClass"/>. The collection may be
     /// empty if no objects are built successfully.</returns>
-    protected IEnumerable<TOtherClass> BuildList<TOtherClass, TOtherBuilder>(string memberName, string error, List<TOtherBuilder> list, ExceptionBuildDictionary exceptions, VisitedObjectsList visited) where TOtherBuilder : class, IObjectBuilder<TOtherClass>
+    protected IEnumerable<TOtherClass> BuildList<TOtherClass, TOtherBuilder>(string memberName, List<TOtherBuilder> list, ExceptionBuildDictionary exceptions, VisitedObjectsList visited) where TOtherBuilder : class, IObjectBuilder<TOtherClass>
     {
         var built = new List<TOtherClass>();
         foreach (var builder in list)
