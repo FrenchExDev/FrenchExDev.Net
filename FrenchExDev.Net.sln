@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.0.11010.61 d18.0
+VisualStudioVersion = 18.0.11010.61
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_SolutionItems", "_SolutionItems", "{79A1E7AE-CC00-33D7-92ED-603B43B6E6A3}"
 	ProjectSection(SolutionItems) = preProject
@@ -108,7 +108,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C27554C5-EF1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{34182781-BFA3-C61F-0083-709A9EBE234F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VirtualBox", "VirtualBox", "{D884CDBA-AF85-3B7C-A9FB-C886207B0C25}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VirtualBox.Version", "VirtualBox.Version", "{D884CDBA-AF85-3B7C-A9FB-C886207B0C25}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dotnet.NuGet", "Dotnet.NuGet", "{CE4DAB33-0EEF-E220-65A0-D26B4133C35B}"
 EndProject
@@ -445,6 +445,26 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Tests", "Dotnet\Project\test\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Tests\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Tests.csproj", "{5AE31A61-1B08-6508-717D-760AC407B4C2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Tests", "Dotnet\Project\test\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Tests\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Tests.csproj", "{EDA818D9-9670-070C-E3E3-600C967AEACB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.VirtualBox.Version", "VirtualBox.Version\src\FrenchExDev.Net.VirtualBox.Version\FrenchExDev.Net.VirtualBox.Version.csproj", "{A6387451-4809-414F-BBB4-0BBCF6748CF7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.VirtualBox.Version.Testing", "VirtualBox.Version\src\FrenchExDev.Net.VirtualBox.Version.Testing\FrenchExDev.Net.VirtualBox.Version.Testing.csproj", "{E02D8ED5-9FCD-4128-A73B-7962E0314197}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.VirtualBox.Version.Tests", "VirtualBox.Version\test\FrenchExDev.Net.VirtualBox.Version.Tests\FrenchExDev.Net.VirtualBox.Version.Tests.csproj", "{18582BA5-06E3-4141-B432-7545E1BECAD6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.VirtualBox.Version.DependencyInjection", "VirtualBox.Version\src\FrenchExDev.Net.VirtualBox.Version.DependencyInjection\FrenchExDev.Net.VirtualBox.Version.DependencyInjection.csproj", "{7637E221-F80F-473D-A114-C4D01EE52F94}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ssh.Config", "Ssh.Config", "{13BD4212-135A-42FA-B10A-90A5A06ADE7E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E19F6EBF-467E-43B8-BF5E-B62F9C0171B0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3F7C4BBE-B1A4-4A32-9C5D-F1C0D82758E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Ssh.Config", "Ssh.Config\src\FrenchExDev.Net.Ssh.Config\FrenchExDev.Net.Ssh.Config.csproj", "{046E6A1D-F04F-454B-B9F6-EA7823BDB1E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Ssh.Config.Testing", "Ssh.Config\src\FrenchExDev.Net.Ssh.Config.Testing\FrenchExDev.Net.Ssh.Config.Testing.csproj", "{5E349C9F-0EA4-E79F-DBE5-79B1D1AEB766}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Ssh.Config.Tests", "Ssh.Config\test\FrenchExDev.Net.Ssh.Config.Tests\FrenchExDev.Net.Ssh.Config.Tests.csproj", "{F04B6503-42FF-4657-9519-7B5A26D4C2E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -924,6 +944,34 @@ Global
 		{EDA818D9-9670-070C-E3E3-600C967AEACB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDA818D9-9670-070C-E3E3-600C967AEACB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDA818D9-9670-070C-E3E3-600C967AEACB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6387451-4809-414F-BBB4-0BBCF6748CF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6387451-4809-414F-BBB4-0BBCF6748CF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6387451-4809-414F-BBB4-0BBCF6748CF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6387451-4809-414F-BBB4-0BBCF6748CF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E02D8ED5-9FCD-4128-A73B-7962E0314197}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E02D8ED5-9FCD-4128-A73B-7962E0314197}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E02D8ED5-9FCD-4128-A73B-7962E0314197}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E02D8ED5-9FCD-4128-A73B-7962E0314197}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18582BA5-06E3-4141-B432-7545E1BECAD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18582BA5-06E3-4141-B432-7545E1BECAD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18582BA5-06E3-4141-B432-7545E1BECAD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18582BA5-06E3-4141-B432-7545E1BECAD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7637E221-F80F-473D-A114-C4D01EE52F94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7637E221-F80F-473D-A114-C4D01EE52F94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7637E221-F80F-473D-A114-C4D01EE52F94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7637E221-F80F-473D-A114-C4D01EE52F94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{046E6A1D-F04F-454B-B9F6-EA7823BDB1E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{046E6A1D-F04F-454B-B9F6-EA7823BDB1E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{046E6A1D-F04F-454B-B9F6-EA7823BDB1E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{046E6A1D-F04F-454B-B9F6-EA7823BDB1E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E349C9F-0EA4-E79F-DBE5-79B1D1AEB766}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E349C9F-0EA4-E79F-DBE5-79B1D1AEB766}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E349C9F-0EA4-E79F-DBE5-79B1D1AEB766}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E349C9F-0EA4-E79F-DBE5-79B1D1AEB766}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F04B6503-42FF-4657-9519-7B5A26D4C2E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F04B6503-42FF-4657-9519-7B5A26D4C2E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F04B6503-42FF-4657-9519-7B5A26D4C2E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F04B6503-42FF-4657-9519-7B5A26D4C2E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1092,6 +1140,15 @@ Global
 		{0AA874CB-F688-D3F5-3876-2E5F7F5ECF64} = {E4A2F344-A2D6-A532-1680-5FC38962C65C}
 		{5AE31A61-1B08-6508-717D-760AC407B4C2} = {E4A2F344-A2D6-A532-1680-5FC38962C65C}
 		{EDA818D9-9670-070C-E3E3-600C967AEACB} = {E4A2F344-A2D6-A532-1680-5FC38962C65C}
+		{A6387451-4809-414F-BBB4-0BBCF6748CF7} = {08650216-69EE-DBF9-260E-785B86CF5863}
+		{E02D8ED5-9FCD-4128-A73B-7962E0314197} = {08650216-69EE-DBF9-260E-785B86CF5863}
+		{18582BA5-06E3-4141-B432-7545E1BECAD6} = {3649177F-8C01-CD9A-B5EC-47AE36CA5014}
+		{7637E221-F80F-473D-A114-C4D01EE52F94} = {08650216-69EE-DBF9-260E-785B86CF5863}
+		{E19F6EBF-467E-43B8-BF5E-B62F9C0171B0} = {13BD4212-135A-42FA-B10A-90A5A06ADE7E}
+		{3F7C4BBE-B1A4-4A32-9C5D-F1C0D82758E6} = {13BD4212-135A-42FA-B10A-90A5A06ADE7E}
+		{046E6A1D-F04F-454B-B9F6-EA7823BDB1E5} = {E19F6EBF-467E-43B8-BF5E-B62F9C0171B0}
+		{5E349C9F-0EA4-E79F-DBE5-79B1D1AEB766} = {E19F6EBF-467E-43B8-BF5E-B62F9C0171B0}
+		{F04B6503-42FF-4657-9519-7B5A26D4C2E8} = {3F7C4BBE-B1A4-4A32-9C5D-F1C0D82758E6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4BCE80FC-0AE1-4B5A-A6DA-D1999B8AA168}
