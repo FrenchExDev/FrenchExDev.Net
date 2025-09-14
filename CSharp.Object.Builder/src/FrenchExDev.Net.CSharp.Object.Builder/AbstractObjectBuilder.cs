@@ -283,4 +283,46 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// may be <see langword="null"/> if no tracking is required.</param>
     /// <returns>An instance of <see cref="IObjectBuildResult{TClass}"/> representing the result of the build operation.</returns>
     protected abstract IObjectBuildResult<TClass> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited);
+
+    /// <summary>
+    /// Validates that the specified string is not null, empty, or consists only of white-space characters. If the
+    /// validation fails, adds a corresponding exception to the provided exception dictionary.
+    /// </summary>
+    /// <param name="value">The string value to validate. If null, empty, or white-space, an exception will be added to <paramref
+    /// name="exceptions"/>.</param>
+    /// <param name="key">The key associated with the exception to be added if <paramref name="value"/> is invalid.</param>
+    /// <param name="exceptions">The dictionary to which a <see cref="MissingMemberException"/> will be added if <paramref name="value"/> is
+    /// null, empty, or white-space.</param>
+    protected void AssertNotEmptyOrWhitespace(string? value, string key, ExceptionBuildDictionary exceptions)
+    {
+        if (value is not null && string.IsNullOrWhiteSpace(value))
+            exceptions.Add(key, new MissingMemberException(key));
+    }
+
+    /// <summary>
+    /// Validates that each string in the specified collection is not null, empty, or consists only of white-space
+    /// characters. If any string fails validation, an exception is added to the provided exception dictionary.
+    /// </summary>
+    /// <param name="value">The collection of strings to validate for non-empty and non-white-space content.</param>
+    /// <param name="key">A value used to provide context or additional information for the validation process.</param>
+    /// <param name="exceptions">The dictionary to which exceptions are added if validation fails for any string in the collection.</param>
+    protected void AssertNotEmptyOrWhitespace(List<string> value, string key, ExceptionBuildDictionary exceptions)
+    {
+        foreach (var str in value)
+            AssertNotEmptyOrWhitespace(str, key, exceptions);
+    }
+
+    /// <summary>
+    /// Validates that the specified member name is not null, empty, or consists only of white-space characters. If the
+    /// validation fails, adds a corresponding exception to the provided exception dictionary.
+    /// </summary>
+    /// <param name="name">The member name to validate. Cannot be null, empty, or contain only white-space characters.</param>
+    /// <param name="v">The key to associate with the exception in the exception dictionary.</param>
+    /// <param name="exceptions">The dictionary to which the exception will be added if validation fails.</param>
+    protected void AssertNotNullOrEmptyOrWhitespace(string? name, string v, ExceptionBuildDictionary exceptions)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            exceptions.Add(v, new MissingMemberException(v));
+    }
+
 }
