@@ -24,7 +24,7 @@ public class VirtualBoxVersionInformationSearcherTests
     /// <param name="version">The VirtualBox version string to search for. Must be a valid version identifier.</param>
     /// <param name="checksum">The expected SHA-256 checksum of the Additions ISO for the specified version.</param>
     /// <returns>A task that represents the asynchronous test operation.</returns>
-    [Theory(Skip = "virtualbox.org does not provide checksums anymore")]
+    [Theory]
     [Trait("needs", "internet")]
     [InlineData("7.1.4", "80c91d35742f68217cf47b13e5b50d53f54c22c485bacce41ad7fdc321649e61")]
     public async Task Can_Get_VersionInformation(string version, string checksum)

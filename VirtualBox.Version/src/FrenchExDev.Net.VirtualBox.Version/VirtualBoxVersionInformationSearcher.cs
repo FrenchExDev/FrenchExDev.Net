@@ -14,7 +14,7 @@ public sealed class VirtualBoxVersionInformationSearcher : IVirtualBoxVersionInf
     /// </summary>
     /// <remarks>Replace the #VERSION# placeholder in the pattern with the desired VirtualBox version to
     /// construct the full URL for the corresponding SHA256SUMS file.</remarks>
-    private static readonly string ShaChecksumsUrlPattern = "https://www.virtualbox.org/download/hashes/#VERSION#/SHA256SUMS";
+    private static readonly string ShaChecksumsUrlPattern = "https://download.virtualbox.org/virtualbox/#VERSION#/SHA256SUMS";
 
     /// <summary>
     /// Stores the HttpClient instance used for making HTTP requests to retrieve version information.
