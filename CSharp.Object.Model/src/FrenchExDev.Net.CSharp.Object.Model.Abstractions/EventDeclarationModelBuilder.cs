@@ -8,7 +8,7 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// Provides a fluent interface to set event modifiers, type, name, and attributes.
 /// Ensures required properties are set and validates attribute builders.
 /// </summary>
-public class EventModelBuilder : AbstractObjectBuilder<EventModel, EventModelBuilder>
+public class EventDeclarationModelBuilder : AbstractObjectBuilder<EventModel, EventDeclarationModelBuilder>
 {
     /// <summary>
     /// Stores the type of the event handler (e.g., EventHandler, Action).
@@ -32,7 +32,7 @@ public class EventModelBuilder : AbstractObjectBuilder<EventModel, EventModelBui
     /// </summary>
     /// <param name="modifier">The modifier to add.</param>
     /// <returns>The current builder instance.</returns>
-    public EventModelBuilder Modifier(string modifier)
+    public EventDeclarationModelBuilder Modifier(string modifier)
     {
         _modifiers.Add(modifier);
         return this;
@@ -43,7 +43,7 @@ public class EventModelBuilder : AbstractObjectBuilder<EventModel, EventModelBui
     /// </summary>
     /// <param name="type">The event handler type.</param>
     /// <returns>The current builder instance.</returns>
-    public EventModelBuilder Type(string type)
+    public EventDeclarationModelBuilder Type(string type)
     {
         _type = type;
         return this;
@@ -54,7 +54,7 @@ public class EventModelBuilder : AbstractObjectBuilder<EventModel, EventModelBui
     /// </summary>
     /// <param name="name">The event name.</param>
     /// <returns>The current builder instance.</returns>
-    public EventModelBuilder Name(string name)
+    public EventDeclarationModelBuilder Name(string name)
     {
         _name = name;
         return this;
@@ -65,7 +65,7 @@ public class EventModelBuilder : AbstractObjectBuilder<EventModel, EventModelBui
     /// </summary>
     /// <param name="attribute">An action to configure the attribute builder.</param>
     /// <returns>The current builder instance.</returns>
-    public EventModelBuilder Attribute(Action<AttributeDeclarationModelBuilder> attribute)
+    public EventDeclarationModelBuilder Attribute(Action<AttributeDeclarationModelBuilder> attribute)
     {
         var builder = new AttributeDeclarationModelBuilder();
         attribute(builder);

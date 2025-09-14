@@ -13,9 +13,9 @@ public class ExceptionBuildDictionary : Dictionary<string, List<Exception>>
     /// for invalid data.
     /// </summary>
     /// <param name="memberName">The name of the member to associate with the exception. Cannot be null.</param>
-    /// <param name="invalidDataException">The exception to be thrown when the specified member contains invalid data. Cannot be null.</param>
+    /// <param name="exception">The exception to be thrown when the specified member contains invalid data. Cannot be null.</param>
     /// <returns>The current <see cref="ExceptionBuildDictionary"/> instance with the new association added.</returns>
-    public ExceptionBuildDictionary Add(string memberName, Exception invalidDataException)
+    public ExceptionBuildDictionary Add(string memberName, Exception exception)
     {
         var list = this.GetValueOrDefault(memberName);
         if (list is null)
@@ -23,7 +23,7 @@ public class ExceptionBuildDictionary : Dictionary<string, List<Exception>>
             list = [];
             this[memberName] = list;
         }
-        list.Add(invalidDataException);
+        list.Add(exception);
         return this;
     }
 
@@ -31,10 +31,10 @@ public class ExceptionBuildDictionary : Dictionary<string, List<Exception>>
     /// Adds the specified exceptions to the dictionary under the key representing the type of the provided object.
     /// </summary>
     /// <param name="memberName"></param>
-    /// <param name="invalidDataException"></param>
-    public ExceptionBuildDictionary Add(MemberName memberName, Exception invalidDataException)
+    /// <param name="exception"></param>
+    public ExceptionBuildDictionary Add(MemberName memberName, Exception exception)
     {
-        return Add(memberName.Name, invalidDataException);
+        return Add(memberName.Name, exception);
     }
 
     /// <summary>
@@ -75,6 +75,13 @@ public class ExceptionBuildDictionary : Dictionary<string, List<Exception>>
         return this;
     }
 
+    /// <summary>
+    /// Adds the specified exceptions to the collection associated with the given member name.
+    /// </summary>
+    /// <param name="memberName">The member name to associate with the provided exceptions. Cannot be null.</param>
+    /// <param name="exceptions">The list of exceptions to add for the specified member name. Cannot be null. Each exception in the list will be
+    /// added individually.</param>
+    /// <returns>The current instance of <see cref="ExceptionBuildDictionary"/> to allow for method chaining.</returns>
     public ExceptionBuildDictionary Add(MemberName memberName, List<Exception> exceptions)
     {
         foreach (var ex in exceptions)
@@ -83,5 +90,20 @@ public class ExceptionBuildDictionary : Dictionary<string, List<Exception>>
         }
 
         return this;
+    }
+
+
+    /// <summary>
+    /// Adds a collection of exception lists associated with a specified key to the current instance.
+    /// </summary>
+    /// <param name="v">The key with which the provided exception lists are to be associated. Cannot be null.</param>
+    /// <param name="enumerable">An enumerable collection of key-value pairs, where each key is a string and each value is a list of exceptions
+    /// to add. Cannot be null.</param>
+    public void Add(string v, IEnumerable<KeyValuePair<string, List<Exception>>> enumerable)
+    {
+        foreach (var el in enumerable)
+        {
+            Add(v, enumerable);
+        }
     }
 }

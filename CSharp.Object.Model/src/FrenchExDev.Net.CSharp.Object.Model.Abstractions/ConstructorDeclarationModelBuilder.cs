@@ -85,8 +85,7 @@ public class ConstructorDeclarationModelBuilder : AbstractObjectBuilder<Construc
     /// <returns>A build result containing either the constructed model or failure details.</returns>
     protected override IObjectBuildResult<ConstructorDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
-        var parameters = BuildBuildList<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(_parameters, visited);
-        AddExceptions<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(nameof(_parameters).ToMemberName(), parameters, exceptions);
+        var parameters = BuildBuildListAndVisitForExceptions<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(_parameters, visited, nameof(_parameters), exceptions);
 
         if (string.IsNullOrEmpty(_name))
         {

@@ -7,6 +7,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\FrenchExDev.Net.Packer.Bundle\FrenchExDev.Net.Packer.Bundle.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Shouldly" />
 	</ItemGroup>
 

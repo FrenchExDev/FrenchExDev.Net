@@ -1,7 +1,5 @@
 ﻿using FrenchExDev.Net.CSharp.Object.Builder;
 using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
-using System;
-using System.Collections.Generic;
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
 /// <summary>

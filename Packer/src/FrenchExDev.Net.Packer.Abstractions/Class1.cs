@@ -1,7 +1,1 @@
-﻿namespace FrenchExDev.Net.Packer.Abstractions
-{
-    public class Class1
-    {
-
-    }
-}
+﻿namespace FrenchExDev.Net.Packer.Abstractions;

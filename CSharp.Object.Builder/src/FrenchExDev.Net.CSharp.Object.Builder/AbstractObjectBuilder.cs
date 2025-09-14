@@ -285,6 +285,20 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     protected abstract IObjectBuildResult<TClass> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited);
 
     /// <summary>
+    /// Validates that the specified collection is not null and contains at least one element. If the collection is null
+    /// or empty, adds an exception to the provided exception dictionary using the specified key.
+    /// </summary>
+    /// <typeparam name="T">The type of elements contained in the collection to validate.</typeparam>
+    /// <param name="list">The collection to validate. The method checks that this list is not null and contains at least one element.</param>
+    /// <param name="v">The key to associate with the exception in the exception dictionary if validation fails.</param>
+    /// <param name="exceptions">The dictionary to which the exception is added if the collection is null or empty.</param>
+    protected void AssertNotNullNotEmptyCollection<T>(List<T>? list, string v, ExceptionBuildDictionary exceptions)
+    {
+        if (list is null || list.Count == 0)
+            exceptions.Add(v, new InvalidDataException(v));
+    }
+
+    /// <summary>
     /// Validates that the specified string is not null, empty, or consists only of white-space characters. If the
     /// validation fails, adds a corresponding exception to the provided exception dictionary.
     /// </summary>
@@ -306,8 +320,10 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
     /// <param name="value">The collection of strings to validate for non-empty and non-white-space content.</param>
     /// <param name="key">A value used to provide context or additional information for the validation process.</param>
     /// <param name="exceptions">The dictionary to which exceptions are added if validation fails for any string in the collection.</param>
-    protected void AssertNotEmptyOrWhitespace(List<string> value, string key, ExceptionBuildDictionary exceptions)
+    protected void AssertNotEmptyOrWhitespace(List<string>? value, string key, ExceptionBuildDictionary exceptions)
     {
+        if (value is null) return;
+
         foreach (var str in value)
             AssertNotEmptyOrWhitespace(str, key, exceptions);
     }
@@ -325,4 +341,49 @@ public abstract class AbstractObjectBuilder<TClass, TBuilder> : IObjectBuilder<T
             exceptions.Add(v, new MissingMemberException(v));
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="compressionLevel"></param>
+    /// <param name="v"></param>
+    /// <param name="exceptions"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    protected void AssertNotNull(int? compressionLevel, string v, ExceptionBuildDictionary exceptions)
+    {
+        if (compressionLevel is null)
+            exceptions.Add(v, new InvalidDataException(v));
+    }
+
+    /// <summary>
+    /// Builds objects from the specified builders, records any failures in the provided exception dictionary, and
+    /// returns a list of successful build results. Returns null if the builders list is null.
+    /// </summary>
+    /// <remarks>If any builder fails to construct its object, all related exceptions are added to the
+    /// exception dictionary under the given property name. Only successful build results are returned; failures are not
+    /// included in the result list.</remarks>
+    /// <typeparam name="TClass">The type of object to be built by each builder.</typeparam>
+    /// <typeparam name="TBuilder">The type of builder used to construct objects of type <typeparamref name="TClass"/>. Must implement <see
+    /// cref="IObjectBuilder{TClass}"/>.</typeparam>
+    /// <param name="builders">A list of builders used to construct objects. If null, the method returns null.</param>
+    /// <param name="propertyName">The name of the property associated with the build operation. Used as a key when recording exceptions.</param>
+    /// <param name="exceptions">A dictionary in which any exceptions encountered during the build process are recorded under the specified
+    /// property name.</param>
+    /// <param name="visited">A list of objects that have already been visited during the build process to prevent cycles or redundant
+    /// operations.</param>
+    /// <returns>A list of successful build results if there are no failures; otherwise, null if the builders list is null. If
+    /// any failures occur, they are recorded in the exceptions dictionary.</returns>
+    protected List<SuccessObjectBuildResult<TOtherClass>>? BuildAndAssertNullOrWithoutFailuresAndReturnSuccesses<TOtherClass, TOtherBuilder>(List<TOtherBuilder>? builders, string propertyName, ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+        where TOtherBuilder : IObjectBuilder<TOtherClass>
+        where TOtherClass : class
+    {
+        var buildersResults = builders?.Select(x => x.Build(visited)).ToList();
+
+        var errors = buildersResults?.Failures<TOtherClass, TOtherBuilder>();
+        if (errors is not null && errors.Count > 0)
+        {
+            exceptions.Add(propertyName, errors.SelectMany(x => x.Exceptions));
+        }
+
+        return buildersResults?.Successes<TOtherClass, TOtherBuilder>();
+    }
 }

@@ -9,7 +9,7 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// <remarks>
 /// This builder allows the configuration of field modifiers, type, name, and an optional initializer for
 /// creating a <see cref="FieldDeclarationModel"/>. Use the provided fluent methods to configure the field declaration
-/// before calling <see cref="AbstractObjectBuilder{TObject, TBuilder}.Build"/> to generate the final model.
+/// before calling <see cref="DeconstructedAbstractObjectBuilder{TObject, TBuilder}.Build"/> to generate the final model.
 /// </remarks>
 public class FieldDeclarationModelBuilder : AbstractObjectBuilder<FieldDeclarationModel, FieldDeclarationModelBuilder>
 {

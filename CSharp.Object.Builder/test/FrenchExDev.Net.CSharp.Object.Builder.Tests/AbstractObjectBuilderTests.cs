@@ -7,7 +7,7 @@ namespace FrenchExDev.Net.CSharp.Object.Builder.Tests;
 
 /// <summary>
 /// Provides unit tests for verifying the behavior of object builders derived from  <see
-/// cref="AbstractObjectBuilder{TObject, TBuilder}"/>.
+/// cref="DeconstructedAbstractObjectBuilder{TObject, TBuilder}"/>.
 /// </summary>
 /// <remarks>This class contains nested test-specific builder implementations, such as <c>PersonBuilder</c>  and
 /// <c>AddressBuilder</c>, which are used to validate the functionality of the abstract object  builder pattern. These

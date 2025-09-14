@@ -13,7 +13,7 @@ public class InterfaceDeclarationModelBuilder : AbstractObjectBuilder<InterfaceD
     private readonly List<TypeParameterConstraintModelBuilder> _typeParameterConstraints = new();
     private readonly List<PropertyDeclarationModelBuilder> _properties = new();
     private readonly List<MethodDeclarationModelBuilder> _methods = new();
-    private readonly List<EventModelBuilder> _events = new();
+    private readonly List<EventDeclarationModelBuilder> _events = new();
     private readonly List<InterfaceDeclarationModelBuilder> _nestedInterfaces = new();
 
     public InterfaceDeclarationModelBuilder Name(string name)
@@ -74,9 +74,9 @@ public class InterfaceDeclarationModelBuilder : AbstractObjectBuilder<InterfaceD
         return this;
     }
 
-    public InterfaceDeclarationModelBuilder Event(Action<EventModelBuilder> eventModel)
+    public InterfaceDeclarationModelBuilder Event(Action<EventDeclarationModelBuilder> eventModel)
     {
-        var builder = new EventModelBuilder();
+        var builder = new EventDeclarationModelBuilder();
         eventModel(builder);
         _events.Add(builder);
         return this;
@@ -93,26 +93,18 @@ public class InterfaceDeclarationModelBuilder : AbstractObjectBuilder<InterfaceD
 
     protected override IObjectBuildResult<InterfaceDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
-        var attributes = BuildBuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
-        var typeParameters = BuildBuildList<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(_typeParameters, visited);
-        var typeParameterConstraints = BuildBuildList<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(_typeParameterConstraints, visited);
-        var properties = BuildBuildList<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(_properties, visited);
-        var methods = BuildBuildList<MethodDeclarationModel, MethodDeclarationModelBuilder>(_methods, visited);
-        var events = BuildBuildList<EventModel, EventModelBuilder>(_events, visited);
-        var nestedInterfaces = BuildBuildList<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(_nestedInterfaces, visited);
+        var attributes = BuildBuildListAndVisitForExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited, nameof(_attributes), exceptions);
+        var typeParameters = BuildBuildListAndVisitForExceptions<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(_typeParameters, visited, nameof(_typeParameters), exceptions);
+        var typeParameterConstraints = BuildBuildListAndVisitForExceptions<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(_typeParameterConstraints, visited, nameof(_typeParameterConstraints), exceptions);
+        var properties = BuildBuildListAndVisitForExceptions<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(_properties, visited, nameof(_properties), exceptions);
+        var methods = BuildBuildListAndVisitForExceptions<MethodDeclarationModel, MethodDeclarationModelBuilder>(_methods, visited, nameof(_methods), exceptions);
+        var events = BuildBuildListAndVisitForExceptions<EventModel, EventDeclarationModelBuilder>(_events, visited, nameof(_events), exceptions);
+        var nestedInterfaces = BuildBuildListAndVisitForExceptions<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(_nestedInterfaces, visited, nameof(_nestedInterfaces), exceptions);
 
         if (string.IsNullOrEmpty(_name))
         {
             exceptions.Add(nameof(_name), new InvalidOperationException("Interface name must be provided."));
         }
-
-        AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(nameof(_attributes), attributes, exceptions);
-        AddExceptions<TypeParameterDeclarationModel, TypeParameterDeclarationModelBuilder>(nameof(_typeParameters), typeParameters, exceptions);
-        AddExceptions<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>(nameof(_typeParameterConstraints), typeParameterConstraints, exceptions);
-        AddExceptions<PropertyDeclarationModel, PropertyDeclarationModelBuilder>(nameof(_properties), properties, exceptions);
-        AddExceptions<MethodDeclarationModel, MethodDeclarationModelBuilder>(nameof(_methods), methods, exceptions);
-        AddExceptions<EventModel, EventModelBuilder>(nameof(events), events, exceptions);
-        AddExceptions<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(nameof(nestedInterfaces), nestedInterfaces, exceptions);
 
         if (exceptions.Any())
         {

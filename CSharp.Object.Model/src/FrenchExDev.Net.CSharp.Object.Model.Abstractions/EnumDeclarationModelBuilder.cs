@@ -8,7 +8,7 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// Provides a fluent API to configure enum name, modifiers, attributes, underlying type, and members.
 /// Validates required properties and produces a build result indicating success or failure.
 /// </summary>
-public class EnumDeclarationModelBuilder : AbstractObjectBuilder<EnumDeclarationModel, EnumDeclarationModelBuilder>
+public class EnumDeclarationModelBuilder : DeconstructedAbstractObjectBuilder<EnumDeclarationModel, EnumDeclarationModelBuilder>
 {
     // Stores the enum name.
     private string? _name;
@@ -82,37 +82,39 @@ public class EnumDeclarationModelBuilder : AbstractObjectBuilder<EnumDeclaration
     }
 
     /// <summary>
-    /// Builds the <see cref="EnumDeclarationModel"/> instance.
-    /// Validates required properties and collects any build errors.
+    /// Creates a new instance of <see cref="EnumDeclarationModel"/> using the current builder state.
     /// </summary>
-    /// <param name="exceptions">A list to collect build exceptions.</param>
-    /// <param name="visited">A list of visited objects for cycle detection.</param>
-    /// <returns>A build result containing either the constructed model or failure details.</returns>
-    protected override IObjectBuildResult<EnumDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <remarks>Throws an <see cref="ArgumentNullException"/> if the name has not been set. This method is
+    /// typically called by consumers of the builder to finalize and retrieve the constructed enum
+    /// declaration.</remarks>
+    /// <returns>An <see cref="EnumDeclarationModel"/> initialized with the specified name, modifiers, attributes, underlying
+    /// type, and members.</returns>
+    protected override EnumDeclarationModel Instantiate()
     {
-        // Validate required enum name
-        if (string.IsNullOrEmpty(_name))
-        {
-            exceptions.Add(nameof(_name), new InvalidOperationException("Enum name must be provided."));
-        }
-
-        // If any errors were collected, return a failure result
-        if (exceptions.Any())
-        {
-            return Failure(exceptions, visited);
-        }
-
-        // Ensure enum name is not null
         ArgumentNullException.ThrowIfNull(_name);
 
-        // Return a successful build result with the constructed EnumDeclarationModel
-        return Success(new EnumDeclarationModel
+        return new EnumDeclarationModel
         {
             Name = _name,
             Modifiers = Modifiers,
             Attributes = _attributes,
             UnderlyingType = _underlyingType,
             Members = _members
-        });
+        };
+    }
+
+    /// <summary>
+    /// Validates the current enum definition and adds any validation errors to the specified exception dictionary.
+    /// </summary>
+    /// <param name="exceptions">A dictionary to which any validation exceptions encountered during the process are added. Must not be null.</param>
+    /// <param name="visited">A list of objects that have already been visited during validation to prevent redundant checks. Must not be
+    /// null.</param>
+    protected override void Validate(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    {   // Validate required enum name
+        if (string.IsNullOrEmpty(_name))
+        {
+            exceptions.Add(nameof(_name), new InvalidOperationException("Enum name must be provided."));
+        }
+
     }
 }

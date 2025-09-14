@@ -7,7 +7,7 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// Builder for creating <see cref="AttributeDeclarationModel"/> instances.
 /// Allows configuration of attribute name and arguments for code generation scenarios.
 /// </summary>
-public class AttributeDeclarationModelBuilder : AbstractObjectBuilder<AttributeDeclarationModel, AttributeDeclarationModelBuilder>
+public class AttributeDeclarationModelBuilder : DeconstructedAbstractObjectBuilder<AttributeDeclarationModel, AttributeDeclarationModelBuilder>
 {
     /// <summary>
     /// Stores the name of the attribute to be built.
@@ -42,30 +42,32 @@ public class AttributeDeclarationModelBuilder : AbstractObjectBuilder<AttributeD
     }
 
     /// <summary>
-    /// Builds the <see cref="AttributeDeclarationModel"/> instance.
-    /// Validates that the attribute name is provided and collects any build errors.
+    /// Creates a new instance of <see cref="AttributeDeclarationModel"/> using the current attribute name and
+    /// arguments.
     /// </summary>
-    /// <param name="exceptions">A list to collect build exceptions.</param>
-    /// <param name="visited">A list of visited objects for cycle detection.</param>
-    /// <returns>A build result containing either the constructed model or failure details.</returns>
-    protected override IObjectBuildResult<AttributeDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <returns>An <see cref="AttributeDeclarationModel"/> initialized with the specified name and arguments.</returns>
+    protected override AttributeDeclarationModel Instantiate()
+    {
+        ArgumentNullException.ThrowIfNull(_name);
+
+        return new AttributeDeclarationModel
+        {
+            Name = _name,
+            Arguments = _arguments
+        };
+    }
+
+    /// <summary>
+    /// Validates the current object's state and adds any validation exceptions to the specified dictionary.
+    /// </summary>
+    /// <param name="exceptions">A dictionary to which validation exceptions are added if the object's state is invalid.</param>
+    /// <param name="visited">A list of objects that have already been visited during validation to prevent redundant checks or circular
+    /// references.</param>
+    protected override void Validate(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
     {
         if (string.IsNullOrEmpty(_name))
         {
             exceptions.Add(nameof(_name), new InvalidOperationException("Attribute name must be provided."));
         }
-
-        if (exceptions.Any())
-        {
-            return Failure(exceptions, visited);
-        }
-
-        ArgumentNullException.ThrowIfNull(_name);
-
-        return Success(new AttributeDeclarationModel
-        {
-            Name = _name,
-            Arguments = _arguments
-        });
     }
 }
