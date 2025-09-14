@@ -466,6 +466,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Ssh.Config.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Ssh.Config.Tests", "Ssh.Config\test\FrenchExDev.Net.Ssh.Config.Tests\FrenchExDev.Net.Ssh.Config.Tests.csproj", "{F04B6503-42FF-4657-9519-7B5A26D4C2E8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.VirtualBox.Version.Mm", "VirtualBox.Version\src\FrenchExDev.Net.VirtualBox.Version.Mm\FrenchExDev.Net.VirtualBox.Version.Mm.csproj", "{F78C37C1-91CF-4F6D-8AC3-100D095ECAD5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -972,6 +974,10 @@ Global
 		{F04B6503-42FF-4657-9519-7B5A26D4C2E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F04B6503-42FF-4657-9519-7B5A26D4C2E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F04B6503-42FF-4657-9519-7B5A26D4C2E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F78C37C1-91CF-4F6D-8AC3-100D095ECAD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F78C37C1-91CF-4F6D-8AC3-100D095ECAD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F78C37C1-91CF-4F6D-8AC3-100D095ECAD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F78C37C1-91CF-4F6D-8AC3-100D095ECAD5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1149,6 +1155,7 @@ Global
 		{046E6A1D-F04F-454B-B9F6-EA7823BDB1E5} = {E19F6EBF-467E-43B8-BF5E-B62F9C0171B0}
 		{5E349C9F-0EA4-E79F-DBE5-79B1D1AEB766} = {E19F6EBF-467E-43B8-BF5E-B62F9C0171B0}
 		{F04B6503-42FF-4657-9519-7B5A26D4C2E8} = {3F7C4BBE-B1A4-4A32-9C5D-F1C0D82758E6}
+		{F78C37C1-91CF-4F6D-8AC3-100D095ECAD5} = {08650216-69EE-DBF9-260E-785B86CF5863}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4BCE80FC-0AE1-4B5A-A6DA-D1999B8AA168}
