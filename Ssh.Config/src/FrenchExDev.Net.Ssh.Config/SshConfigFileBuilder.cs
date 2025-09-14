@@ -27,7 +27,7 @@ public class SshConfigFileBuilder : AbstractObjectBuilder<SshConfigFile, SshConf
     /// <summary>
     /// Holds the list of host builders used to construct individual SSH host configurations.
     /// </summary>
-    private readonly List<SshConfigHostBuilder> _hostBuilders = new();
+    private readonly List<SshConfigHostBuilder> _hostBuilders = [];
 
     /// <summary>
     /// Adds a new host entry to the SSH configuration using the specified configuration action.
@@ -63,13 +63,11 @@ public class SshConfigFileBuilder : AbstractObjectBuilder<SshConfigFile, SshConf
             .SelectMany(x => x.Exceptions)
             .ToList();
 
-        if (!errors.Any())
+        if (errors.Count == 0)
         {
             return Success(new SshConfigFile()
             {
-                Hosts = buildErrors.OfType<SuccessObjectBuildResult<SshConfigHost>>()
-                    .Select(x => x.Result)
-                    .ToList()
+                Hosts = [.. buildErrors.OfType<SuccessObjectBuildResult<SshConfigHost>>().Select(x => x.Result)]
             });
         }
 

@@ -31,7 +31,7 @@ public class SshConfigFileReader : IReader<SshConfigFile>
     {
         var sshConfigFile = new SshConfigFile()
         {
-            Hosts = new List<SshConfigHost>()
+            Hosts = []
         };
 
         var currentHostLines = new List<string>();
