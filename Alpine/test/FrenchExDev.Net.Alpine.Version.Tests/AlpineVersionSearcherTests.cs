@@ -46,8 +46,8 @@ public class AlpineVersionSearcherTests
                 result.ShouldNotBeNull();
                 result.Count.ShouldBeGreaterThan(0);
                 result.ElementAt(0).Version.ToString().ShouldBe(searchingVersion);
-                result.ElementAt(0).Flavor.ShouldBeEquivalentTo(AlpineFlavors.Virt.ToString().ToLowerInvariant());
-                result.ElementAt(0).Architecture.ShouldBeEquivalentTo(AlpineArchitectures.x86_64.ToString().ToLowerInvariant());
+                result.ElementAt(0).Flavor.ShouldBeEquivalentTo(flavor.ToString().ToLowerInvariant());
+                result.ElementAt(0).Architecture.ShouldBeEquivalentTo(architecture.ToString().ToLowerInvariant());
             });
     }
 }
