@@ -9,9 +9,7 @@ public class SshConfigFileTests
     [InlineData(AddressFamilyEnum.All)]
     [InlineData(AddressFamilyEnum.Inet)]
     [InlineData(AddressFamilyEnum.Inet6)]
-    public void Can_Set_AddressFamily(AddressFamilyEnum addressFamilyEnum)
-    {
-        SshConfigTesting.FileTestter.Valid(
+    public void Can_Set_AddressFamily(AddressFamilyEnum addressFamilyEnum) => SshConfigTesting.FileTestter.Valid(
             body: builder =>
             {
                 builder.Host(hostBuilder =>
@@ -25,5 +23,4 @@ public class SshConfigFileTests
                 file.Hosts.Count.ShouldBe(1);
                 file.Hosts[0].AddressFamily.ShouldBe(addressFamilyEnum);
             });
-    }
 }
