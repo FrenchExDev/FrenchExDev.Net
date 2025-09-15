@@ -391,9 +391,12 @@ public class PackerBundlerTests : PackerBundlerTests<PackerBundlerTester>
                         .AddLine(@"sed '/PermitRootLogin yes/d' -i /etc/ssh/sshd_config"))
                     .Build();
             },
-            bundle =>
+            assertBuiltBody: bundle =>
             {
                 bundle.ShouldNotBeNull();
                 bundle.ShouldBeAssignableTo<PackerBundle>();
-            }, serialized => { serialized.ShouldNotBeEmpty(); });
+            }, serialized =>
+            {
+                serialized.ShouldNotBeEmpty();
+            });
 }
