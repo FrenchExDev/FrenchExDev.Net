@@ -6,9 +6,5 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\CSharp.Object.Builder\src\FrenchExDev.Net.CSharp.Object.Builder\FrenchExDev.Net.CSharp.Object.Builder.csproj" />
-  </ItemGroup>
-
 
 </Project>

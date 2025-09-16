@@ -1,53 +1,6 @@
 ﻿namespace FrenchExDev.Net.CSharp.Object.Builder2;
 
 /// <summary>
-/// Provides extension methods for extracting success objects and failure details from build result instances.
-/// </summary>
-/// <remarks>These methods simplify access to the underlying result data when working with types implementing <see
-/// cref="IBuildResult"/>. They throw exceptions if the result does not match the expected success or failure state, so
-/// callers should ensure the result type before invoking these methods.</remarks>
-public static class Extensions
-{
-    /// <summary>
-    /// Retrieves the successful result object from the specified build result.
-    /// </summary>
-    /// <remarks>Use this method to extract the result object when the build operation has completed
-    /// successfully. If the build result is not successful, an exception is thrown.</remarks>
-    /// <typeparam name="TClass">The type of the object contained in the successful build result.</typeparam>
-    /// <param name="result">The build result instance from which to retrieve the successful object.</param>
-    /// <returns>The object of type <typeparamref name="TClass"/> contained in the successful build result.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if <paramref name="result"/> does not represent a successful build result.</exception>
-    public static TClass Success<TClass>(this IBuildResult result) where TClass : class
-    {
-        return result switch
-        {
-            SuccessBuildResult<TClass> success => success.Object,
-            _ => throw new InvalidOperationException("Result is not a success"),
-        };
-    }
-
-    /// <summary>
-    /// Retrieves the collection of failures associated with the specified build result for the given class type.
-    /// </summary>
-    /// <remarks>Use this method to access detailed failure information when a build operation has failed.
-    /// This method should only be called on build results that represent failures; otherwise, an exception is
-    /// thrown.</remarks>
-    /// <typeparam name="TClass">The class type for which failures are retrieved. Must be a reference type.</typeparam>
-    /// <param name="result">The build result to inspect for failures. Must represent a failed build.</param>
-    /// <returns>A dictionary containing failure information for the specified class type. The dictionary is empty if no failures
-    /// are present.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the specified build result does not represent a failure.</exception>
-    public static FailuresDictionary Failures<TClass>(this IBuildResult result) where TClass : class
-    {
-        return result switch
-        {
-            FailureBuildResult failure => failure.Failures,
-            _ => throw new InvalidOperationException("Result is not a failure"),
-        };
-    }
-}
-
-/// <summary>
 /// Represents the result of a build operation, providing information about the outcome and any associated data.
 /// </summary>
 /// <remarks>Implementations of this interface typically expose properties or methods to access build status,
@@ -95,7 +48,6 @@ public class FailuresDictionary : Dictionary<string, List<object>>
         list.Add(failure);
         return this;
     }
-
 }
 
 /// <summary>
@@ -324,5 +276,52 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     public void OnBuilt(Action<TClass> hook)
     {
         _hooks.Add(hook);
+    }
+}
+
+/// <summary>
+/// Provides extension methods for extracting success objects and failure details from build result instances.
+/// </summary>
+/// <remarks>These methods simplify access to the underlying result data when working with types implementing <see
+/// cref="IBuildResult"/>. They throw exceptions if the result does not match the expected success or failure state, so
+/// callers should ensure the result type before invoking these methods.</remarks>
+public static class Extensions
+{
+    /// <summary>
+    /// Retrieves the successful result object from the specified build result.
+    /// </summary>
+    /// <remarks>Use this method to extract the result object when the build operation has completed
+    /// successfully. If the build result is not successful, an exception is thrown.</remarks>
+    /// <typeparam name="TClass">The type of the object contained in the successful build result.</typeparam>
+    /// <param name="result">The build result instance from which to retrieve the successful object.</param>
+    /// <returns>The object of type <typeparamref name="TClass"/> contained in the successful build result.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if <paramref name="result"/> does not represent a successful build result.</exception>
+    public static TClass Success<TClass>(this IBuildResult result) where TClass : class
+    {
+        return result switch
+        {
+            SuccessBuildResult<TClass> success => success.Object,
+            _ => throw new InvalidOperationException("Result is not a success"),
+        };
+    }
+
+    /// <summary>
+    /// Retrieves the collection of failures associated with the specified build result for the given class type.
+    /// </summary>
+    /// <remarks>Use this method to access detailed failure information when a build operation has failed.
+    /// This method should only be called on build results that represent failures; otherwise, an exception is
+    /// thrown.</remarks>
+    /// <typeparam name="TClass">The class type for which failures are retrieved. Must be a reference type.</typeparam>
+    /// <param name="result">The build result to inspect for failures. Must represent a failed build.</param>
+    /// <returns>A dictionary containing failure information for the specified class type. The dictionary is empty if no failures
+    /// are present.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the specified build result does not represent a failure.</exception>
+    public static FailuresDictionary Failures<TClass>(this IBuildResult result) where TClass : class
+    {
+        return result switch
+        {
+            FailureBuildResult failure => failure.Failures,
+            _ => throw new InvalidOperationException("Result is not a failure"),
+        };
     }
 }
