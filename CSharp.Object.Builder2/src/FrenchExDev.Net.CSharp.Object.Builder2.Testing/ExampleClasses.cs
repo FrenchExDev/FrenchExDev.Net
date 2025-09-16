@@ -1,22 +1,6 @@
 ﻿namespace FrenchExDev.Net.CSharp.Object.Builder2.Testing;
 
 /// <summary>
-/// Represents a reference wrapper for a <see cref="Person"/> instance, used for cyclic reference resolution in builders.
-/// </summary>
-/// <remarks>
-/// This class is used by <see cref="PersonBuilder"/> to manage references to <see cref="Person"/> objects, allowing for deferred resolution and handling of cyclic graphs.
-/// </remarks>
-public class PersonReference : Reference<Person> { }
-
-/// <summary>
-/// Represents a reference wrapper for an <see cref="Address"/> instance, used for cyclic reference resolution in builders.
-/// </summary>
-/// <remarks>
-/// This class is used by <see cref="PersonBuilder"/> and <see cref="AddressBuilder"/> to manage references to <see cref="Address"/> objects, allowing for deferred resolution and handling of cyclic graphs.
-/// </remarks>
-public class AddressReference : Reference<Address> { }
-
-/// <summary>
 /// Represents a person with a name, age, contact, addresses, and known persons.
 /// </summary>
 /// <remarks>
@@ -35,15 +19,16 @@ public class Person
     /// <summary>
     /// Reference to the contact person, resolved via <see cref="PersonReference"/>.
     /// </summary>
-    protected PersonReference _contact;
+    protected Reference<Person> _contact;
     /// <summary>
     /// List of address references associated with this person.
     /// </summary>
-    protected List<AddressReference> _addresses;
+    protected List<Reference<Address>> _addresses;
     /// <summary>
     /// List of known person references associated with this person.
     /// </summary>
-    protected List<PersonReference> _knownPersons;
+    protected List<Reference<Person>> _knownPersons;
+
     /// <summary>
     /// Gets the contact person, resolving the reference. Throws if not resolved.
     /// </summary>
@@ -64,7 +49,7 @@ public class Person
     /// <param name="addresses">The list of address references.</param>
     /// <param name="knownPersons">The list of known person references.</param>
     /// <param name="contact">The contact person reference.</param>
-    public Person(string name, int age, List<AddressReference> addresses, List<PersonReference> knownPersons, PersonReference contact)
+    public Person(string name, int age, List<Reference<Address>> addresses, List<Reference<Person>> knownPersons, Reference<Person> contact)
     {
         Name = name;
         Age = age;
@@ -113,7 +98,7 @@ public class Address(string street, string city)
 /// if (result is FailureBuildResult failure) { var failures = failure.Failures; }
 /// </code>
 /// </remarks>
-public class PersonBuilder : AbstractBuilder<Person, PersonReference>
+public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
 {
     /// <summary>
     /// Stores the name for the <see cref="Person"/> being built.
@@ -300,7 +285,7 @@ public class PersonBuilder : AbstractBuilder<Person, PersonReference>
         var contactReference = _contact.Reference();
         _contact.OnBuilt(contactReference.Resolve);
 
-        var knownPersonsReferences = new List<PersonReference>();
+        var knownPersonsReferences = new List<Reference<Person>>();
         foreach (var person in _knownPersons)
         {
             var personReference = person.Reference();
@@ -308,7 +293,7 @@ public class PersonBuilder : AbstractBuilder<Person, PersonReference>
             knownPersonsReferences.Add(personReference);
         }
 
-        var addressesReferences = new List<AddressReference>();
+        var addressesReferences = new List<Reference<Address>>();
         foreach (var address in _addresses)
         {
             var addressReference = address.Reference();
@@ -342,7 +327,7 @@ public class PersonBuilder : AbstractBuilder<Person, PersonReference>
     }
 }
 
-public class AddressBuilder : AbstractBuilder<Address, AddressReference>
+public class AddressBuilder : AbstractBuilder<Address, Reference<Address>>
 {
     private string? _street;
     public AddressBuilder Street(string? street)

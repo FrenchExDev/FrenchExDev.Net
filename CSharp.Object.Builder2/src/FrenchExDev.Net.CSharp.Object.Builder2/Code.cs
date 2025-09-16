@@ -160,7 +160,7 @@ public interface IReference<TClass> : IBuildResult where TClass : class
 /// methods to set and retrieve the referenced instance, and indicates whether the reference has been resolved. Derived
 /// types can extend this functionality to implement custom resolution strategies.</remarks>
 /// <typeparam name="TClass">The type of the class instance referenced by this object. Must be a reference type.</typeparam>
-public abstract class Reference<TClass> : IReference<TClass> where TClass : class
+public class Reference<TClass> : IReference<TClass> where TClass : class
 {
     public TClass? Instance { get; protected set; }
     public bool IsResolved => Instance is not null;
