@@ -9,7 +9,7 @@ public static class Extensions
         return result switch
         {
             SuccessBuildResult<TClass> success => success.Object,
-            _ => throw new InvalidOperationException(),
+            _ => throw new InvalidOperationException("Result is not a success"),
         };
     }
 
@@ -18,7 +18,7 @@ public static class Extensions
         return result switch
         {
             FailureBuildResult failure => failure.Failures,
-            _ => throw new InvalidOperationException(),
+            _ => throw new InvalidOperationException("Result is not a failure"),
         };
     }
 }
@@ -90,6 +90,7 @@ public abstract class AbstractReference<TClass> : IReference<TClass> where TClas
     {
         Instance = instance;
     }
+    public TClass Resolved() => Instance ?? throw new InvalidOperationException("Reference is not resolved yet.");
 }
 
 public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TReference> where TClass : class where TReference : class, IReference<TClass>, new()
@@ -165,16 +166,35 @@ public class UnitTest1
 
     internal class AddressReference : AbstractReference<Address> { }
 
-    internal class Person(string name, int age, List<AddressReference> addresses, List<PersonReference> knownPersons, PersonReference contact)
+    internal class Person
     {
-        public string Name { get; set; } = name;
-        public int Age { get; set; } = age;
-        public PersonReference Contact { get; protected set; } = contact;
-        public List<AddressReference> Addresses { get; protected set; } = addresses;
-        public List<PersonReference> KnownPersons { get; protected set; } = knownPersons;
+        public string Name { get; set; }
+        public int Age { get; set; }
+        protected PersonReference _contact;
+
+        protected List<AddressReference> _addresses;
+
+        protected List<PersonReference> _knownPersons;
+
+        public Person Contact => _contact.IsResolved ? _contact.Instance! : throw new InvalidOperationException("Contact is not resolved yet.");
+        public List<Address> Addresses => _addresses.Select(a => a.Resolved()).ToList();
+        public List<Person> KnownPersons => _knownPersons.Select(p => p.Resolved()).ToList();
+
+        public Person(string name, int age, List<AddressReference> addresses, List<PersonReference> knownPersons, PersonReference contact)
+        {
+            Name = name;
+            Age = age;
+            _contact = contact;
+            _addresses = addresses;
+            _knownPersons = knownPersons;
+        }
     }
 
-    internal record Address(string Street, string City);
+    internal class Address(string street, string city)
+    {
+        public string Street { get; set; } = street;
+        public string City { get; set; } = city;
+    }
 
     internal class PersonBuilder : AbstractBuilder<Person, PersonReference>
     {
@@ -233,6 +253,11 @@ public class UnitTest1
             public MustHaveContactException() : base("Person must have a contact") { }
         }
 
+        internal class MustKnowAtLeastOnePersonException : Exception
+        {
+            public MustKnowAtLeastOnePersonException() : base("Person must know at least one other person") { }
+        }
+
         protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
         {
             if (string.IsNullOrWhiteSpace(_name))
@@ -258,6 +283,15 @@ public class UnitTest1
                 {
                     failures.Failure(nameof(_contact), contactFailures);
                 }
+            }
+            else
+            {
+                failures.Failure(nameof(_contact), new MustHaveContactException());
+            }
+
+            if (_knownPersons.Count == 0)
+            {
+                failures.Failure(nameof(_knownPersons), new MustKnowAtLeastOnePersonException());
             }
 
             foreach (var person in _knownPersons)
@@ -293,7 +327,7 @@ public class UnitTest1
             foreach (var address in _addresses)
             {
                 var addressReference = address.Reference();
-                address.OnBuilt(addressReference.Resolve);
+                address.OnBuilt(x => addressReference.Resolve(x));
                 addressesReferences.Add(addressReference);
             }
 
@@ -407,6 +441,6 @@ public class UnitTest1
 
         person.ShouldBeAssignableTo<Person>();
 
-        person.Contact.IsResolved.ShouldBeTrue();
+        person.Contact.ShouldBeAssignableTo<Person>();
     }
 }
