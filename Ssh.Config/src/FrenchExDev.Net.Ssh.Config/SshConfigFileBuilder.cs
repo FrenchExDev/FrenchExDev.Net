@@ -7,8 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 
 #endregion
@@ -22,12 +21,12 @@ namespace FrenchExDev.Net.Ssh.Config;
 /// config file. Host entries can be added using the <see cref="Host"/> method, which allows customization of each
 /// host's settings. This class is typically used in scenarios where SSH configuration needs to be generated or modified
 /// dynamically within an application.</remarks>
-public class SshConfigFileBuilder : AbstractObjectBuilder<SshConfigFile, SshConfigFileBuilder>
+public class SshConfigFileBuilder : AbstractBuilder<SshConfigFile>
 {
     /// <summary>
     /// Holds the list of host builders used to construct individual SSH host configurations.
     /// </summary>
-    private readonly List<SshConfigHostBuilder> _hostBuilders = [];
+    private readonly BuilderList<SshConfigHost, SshConfigHostBuilder> _hostBuilders = [];
 
     /// <summary>
     /// Adds a new host entry to the SSH configuration using the specified configuration action.
@@ -46,34 +45,27 @@ public class SshConfigFileBuilder : AbstractObjectBuilder<SshConfigFile, SshConf
     }
 
     /// <summary>
-    /// Builds an instance of <see cref="SshConfigFile"/> by aggregating results from host builders, collecting any
-    /// build errors encountered.
+    /// Creates a new instance of the <see cref="SshConfigFile"/> class with its hosts initialized from the current host
+    /// builders.
     /// </summary>
-    /// <param name="exceptions">A dictionary used to collect exceptions that occur during the build process. Existing entries may be augmented
-    /// with additional errors.</param>
-    /// <param name="visited">A list of objects that have already been visited during the build process to prevent redundant processing or
-    /// circular references.</param>
-    /// <returns>An <see cref="IObjectBuildResult{SshConfigFile}"/> representing either a successful build containing the
-    /// constructed <see cref="SshConfigFile"/>, or a failure result containing the collected exceptions.</returns>
-    protected override IObjectBuildResult<SshConfigFile> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <returns>A new <see cref="SshConfigFile"/> object containing the hosts defined by the host builders.</returns>
+    protected override SshConfigFile Instantiate()
     {
-        var buildErrors = _hostBuilders.Select(x => x.Build(visited)).ToList();
-
-        var errors = buildErrors.OfType<FailureObjectBuildResult<SshConfigFile, SshConfigFileBuilder>>()
-            .SelectMany(x => x.Exceptions)
-            .ToList();
-
-        if (errors.Count == 0)
+        return new SshConfigFile()
         {
-            return Success(new SshConfigFile()
-            {
-                Hosts = [.. buildErrors.OfType<SuccessObjectBuildResult<SshConfigHost>>().Select(x => x.Result)]
-            });
-        }
+            Hosts = _hostBuilders.BuildSuccess()
+        };
+    }
 
-        foreach (KeyValuePair<string, List<Exception>> error in errors)
-            exceptions.Add(error.Key, error.Value);
-
-        return Failure(exceptions, visited);
+    /// <summary>
+    /// Performs validation on the collection of host builders, recording any validation failures encountered.
+    /// </summary>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
+    /// and circular references.</param>
+    /// <param name="failures">A dictionary for collecting validation failures, where each entry represents a specific validation error found
+    /// during the process.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
+        ValidateListInternal(_hostBuilders, nameof(_hostBuilders), visitedCollector, failures);
     }
 }

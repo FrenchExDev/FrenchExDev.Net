@@ -1,31 +1,33 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
 /// <summary>
-/// Builder class for constructing <see cref="EventModel"/> instances.
+/// Builder class for constructing <see cref="EventDeclarationModel"/> instances.
 /// Provides a fluent interface to set event modifiers, type, name, and attributes.
 /// Ensures required properties are set and validates attribute builders.
 /// </summary>
-public class EventDeclarationModelBuilder : AbstractObjectBuilder<EventModel, EventDeclarationModelBuilder>
+public class EventDeclarationModelBuilder : AbstractBuilder<EventDeclarationModel>, IDeclarationModelBuilder
 {
     /// <summary>
     /// Stores the type of the event handler (e.g., EventHandler, Action).
     /// </summary>
     private string? _type;
+
     /// <summary>
     /// Stores the name of the event.
     /// </summary>
     private string? _name;
+
     /// <summary>
     /// Stores the list of modifiers applied to the event (e.g., public, static).
     /// </summary>
-    private readonly List<string> _modifiers = new();
+    private readonly List<string> _modifiers = [];
+
     /// <summary>
     /// Stores the list of attribute builders for the event.
     /// </summary>
-    private readonly List<AttributeDeclarationModelBuilder> _attributes = new();
+    private readonly BuilderList<AttributeDeclarationModel, AttributeDeclarationModelBuilder> _attributes = [];
 
     /// <summary>
     /// Adds a modifier to the event (e.g., public, static).
@@ -74,46 +76,62 @@ public class EventDeclarationModelBuilder : AbstractObjectBuilder<EventModel, Ev
     }
 
     /// <summary>
-    /// Builds the <see cref="EventModel"/> instance, validating required properties and attributes.
+    /// Builds the internal representation of the object's attributes using the specified visited object dictionary.
     /// </summary>
-    /// <param name="exceptions">A list to collect build exceptions.</param>
-    /// <param name="visited">A list of visited objects for cycle detection.</param>
-    /// <returns>A build result containing either the constructed model or failure details.</returns>
-    protected override IObjectBuildResult<EventModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during the build process. This helps prevent
+    /// processing the same object multiple times.</param>
+    protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
     {
-        // Build all attributes and collect their results
-        var attributes = BuildBuildList<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(_attributes, visited);
-        AddExceptions<AttributeDeclarationModel, AttributeDeclarationModelBuilder>(nameof(_attributes), attributes, exceptions);
+        BuildList(_attributes, visitedCollector);
+    }
 
+    /// <summary>
+    /// Performs validation on the current event object and records any validation failures encountered.
+    /// </summary>
+    /// <remarks>This method checks that the event name and event type are provided, and validates each
+    /// attribute associated with the event. Any validation errors are recorded in the <paramref name="failures"/>
+    /// dictionary. This method is intended to be called by the validation framework and is not typically invoked
+    /// directly.</remarks>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
+    /// and circular references.</param>
+    /// <param name="failures">A dictionary for collecting validation failures found during the validation process. Failures are added to this
+    /// dictionary if required event properties are missing or if attribute validation fails.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
         // Validate that the event name is provided
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(nameof(_name), new InvalidOperationException("Event name must be provided."));
+            failures.Failure(nameof(_name), new InvalidOperationException("Event name must be provided."));
         }
 
         // Validate that the event type is provided
         if (string.IsNullOrEmpty(_type))
         {
-            exceptions.Add(nameof(_type), new InvalidOperationException("Event type must be provided."));
+            failures.Failure(nameof(_type), new InvalidOperationException("Event type must be provided."));
         }
 
-        // If there are any exceptions, return a failure result
-        if (exceptions.Any())
+        foreach (var attr in _attributes)
         {
-            return Failure(exceptions, visited);
+            var attrFailures = new FailuresDictionary();
+            attr.Validate(visitedCollector, attrFailures);
+            if (attrFailures.Count > 0)
+            {
+                failures.Failure(nameof(_attributes), attrFailures);
+            }
         }
+    }
 
-        // Ensure required fields are not null
+    /// <summary>
+    /// Creates a new instance of the event declaration model using the current builder state.
+    /// </summary>
+    /// <remarks>Throws an exception if required fields are not set prior to instantiation. This method is
+    /// typically called after all necessary properties have been configured.</remarks>
+    /// <returns>An <see cref="EventDeclarationModel"/> representing the event declaration configured by the builder.</returns>
+    protected override EventDeclarationModel Instantiate()
+    {
         ArgumentNullException.ThrowIfNull(_name);
         ArgumentNullException.ThrowIfNull(_type);
 
-        // Return a successful build result with the constructed EventModel
-        return Success(new EventModel
-        {
-            Modifiers = _modifiers,
-            Type = _type,
-            Name = _name,
-            Attributes = attributes.ToResultList()
-        });
+        return new(_modifiers, _type, _name, _attributes.AsReferenceList());
     }
 }

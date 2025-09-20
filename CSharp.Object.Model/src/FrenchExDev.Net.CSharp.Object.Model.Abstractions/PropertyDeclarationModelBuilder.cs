@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
@@ -21,12 +20,12 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// var result = builder.Build();
 /// </code>
 /// </remarks>
-public class PropertyDeclarationModelBuilder : AbstractObjectBuilder<PropertyDeclarationModel, PropertyDeclarationModelBuilder>
+public class PropertyDeclarationModelBuilder : AbstractBuilder<PropertyDeclarationModel>
 {
     /// <summary>
     /// Stores the list of modifiers applied to the property (e.g., "public", "static").
     /// </summary>
-    private readonly List<string> _modifiers = new();
+    private readonly List<string> _modifiers = [];
     /// <summary>
     /// Stores the type of the property (e.g., "int", "string").
     /// </summary>
@@ -132,41 +131,25 @@ public class PropertyDeclarationModelBuilder : AbstractObjectBuilder<PropertyDec
         return this;
     }
 
-    /// <summary>
-    /// Builds the <see cref="PropertyDeclarationModel"/> instance, validating required properties.
-    /// </summary>
-    /// <param name="exceptions">A list to collect build exceptions.</param>
-    /// <param name="visited">A list of visited objects for cycle detection.</param>
-    /// <returns>A build result containing either the constructed model or failure details.</returns>
-    /// <remarks>
-    /// This method ensures that the property name is provided. If not, a failure result is returned.
-    /// </remarks>
-    protected override IObjectBuildResult<PropertyDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
     {
-        // Validate that the property name is provided
+        // No additional build steps required for this builder.
+    }
+
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(nameof(_name), new InvalidOperationException("Property name must be provided."));
+            failures.Failure(nameof(_name), new InvalidOperationException("Property name must be provided."));
         }
+    }
 
-        // Return failure if any exceptions were collected
-        if (exceptions.Any())
-        {
-            return Failure(exceptions, visited);
-        }
-
+    protected override PropertyDeclarationModel Instantiate()
+    {
         // Ensure the property name is not null before proceeding
         ArgumentNullException.ThrowIfNull(_name);
 
         // Return a successful build result with the constructed PropertyDeclarationModel
-        return Success(new PropertyDeclarationModel
-        {
-            Modifiers = _modifiers,
-            Type = _type,
-            Name = _name,
-            HasGetter = _hasGetter,
-            HasSetter = _hasSetter,
-            Initializer = _initializer
-        });
+        return new(_modifiers, _type, _name, _hasGetter, _hasSetter, _initializer);
     }
 }

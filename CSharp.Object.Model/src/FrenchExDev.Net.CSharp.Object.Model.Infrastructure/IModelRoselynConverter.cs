@@ -36,6 +36,6 @@ public interface IModelRoselynConverter
     InterfaceDeclarationSyntax ToSyntax(InterfaceDeclarationModel model);
     EnumDeclarationSyntax ToSyntax(EnumDeclarationModel model);
     ConstructorDeclarationSyntax ToSyntax(ConstructorDeclarationModel model);
-    EventDeclarationSyntax ToSyntax(EventModel evt);
+    EventDeclarationSyntax ToSyntax(EventDeclarationModel evt);
 
 }

@@ -1,5 +1,4 @@
-﻿using FrenchexDev.VirtualBox.Net;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace FrenchExDev.Net.VirtualBox.Version.DependencyInjection;
 

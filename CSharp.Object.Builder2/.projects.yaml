@@ -1,0 +1,4 @@
+src:
+  - DirectoryName: FrenchExDev.Net.CSharp.Object.Builder2.Abstractions
+  - DirectoryName: FrenchExDev.Net.CSharp.Object.Builder2
+publishTargetPath: ../../__Local_Nuget_Registry__

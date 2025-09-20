@@ -7,9 +7,9 @@
 
 #region Usings
 
+using FrenchExDev.Net.HttpClient;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
-
 
 #endregion
 
@@ -24,13 +24,13 @@ namespace FrenchExDev.Net.Alpine.Version;
 /// </remarks>
 public class AlpineVersionSearcher : IAlpineVersionSearcher
 {
-    private readonly HttpClient _httpClient;
+    private readonly IHttpClient _httpClient;
 
     /// <summary>
     /// Initializes a new instance of <see cref="AlpineVersionSearcher"/> with the specified HTTP client.
     /// </summary>
     /// <param name="httpClient">The HTTP client used for web requests.</param>
-    public AlpineVersionSearcher(HttpClient httpClient)
+    public AlpineVersionSearcher(IHttpClient httpClient)
     {
         _httpClient = httpClient;
     }
@@ -53,7 +53,6 @@ public class AlpineVersionSearcher : IAlpineVersionSearcher
         var filters = builder.Build();
         return SearchAsync(filters, cancellationToken);
     }
-
 
     /// <summary>
     /// Searches for Alpine Linux versions matching the provided filters.
@@ -122,14 +121,14 @@ public class AlpineVersionSearcher : IAlpineVersionSearcher
         {
             Major = minimalVersionObj?.Major ?? "3",
             Minor = minimalVersionObj?.Minor ?? "0",
-            Patch = string.Empty
+            Patch = minimalVersionObj?.Patch ?? string.Empty
         };
 
         var maximalVersionMajorMinorObj = new AlpineVersion
         {
             Major = maximumVersionObj?.Major ?? "edge",
             Minor = maximumVersionObj?.Minor ?? string.Empty,
-            Patch = string.Empty
+            Patch = maximumVersionObj?.Patch ?? string.Empty
         };
 
         var listAlpineVersions = GetMatchingAlpineVersions(

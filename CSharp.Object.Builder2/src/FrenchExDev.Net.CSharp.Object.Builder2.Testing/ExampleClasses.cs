@@ -12,35 +12,42 @@ public class Person
     /// Gets or sets the name of the person.
     /// </summary>
     public string Name { get; set; }
+
     /// <summary>
     /// Gets or sets the age of the person.
     /// </summary>
     public int Age { get; set; }
+
     /// <summary>
     /// Reference to the contact person, resolved via <see cref="PersonReference"/>.
     /// </summary>
     protected Reference<Person> _contact;
+
     /// <summary>
     /// List of address references associated with this person.
     /// </summary>
-    protected List<Reference<Address>> _addresses;
+    protected ReferenceList<Address> _addresses;
+
     /// <summary>
     /// List of known person references associated with this person.
     /// </summary>
-    protected List<Reference<Person>> _knownPersons;
+    protected ReferenceList<Person> _knownPersons;
 
     /// <summary>
     /// Gets the contact person, resolving the reference. Throws if not resolved.
     /// </summary>
-    public Person Contact => _contact.IsResolved ? _contact.Instance! : throw new InvalidOperationException("Contact is not resolved yet.");
+    public Person Contact => _contact.Resolved();
+
     /// <summary>
     /// Gets the addresses associated with this person, resolving each reference.
     /// </summary>
-    public IEnumerable<Address> Addresses => _addresses.Select(a => a.Resolved());
+    public IEnumerable<Address> Addresses => _addresses.AsEnumerable();
+
     /// <summary>
     /// Gets the known persons associated with this person, resolving each reference.
     /// </summary>
-    public IEnumerable<Person> KnownPersons => _knownPersons.Select(p => p.Resolved());
+    public IEnumerable<Person> KnownPersons => _knownPersons.AsEnumerable();
+
     /// <summary>
     /// Initializes a new instance of <see cref="Person"/> with the specified properties and references.
     /// </summary>
@@ -49,7 +56,7 @@ public class Person
     /// <param name="addresses">The list of address references.</param>
     /// <param name="knownPersons">The list of known person references.</param>
     /// <param name="contact">The contact person reference.</param>
-    public Person(string name, int age, List<Reference<Address>> addresses, List<Reference<Person>> knownPersons, Reference<Person> contact)
+    public Person(string name, int age, ReferenceList<Address> addresses, ReferenceList<Person> knownPersons, Reference<Person> contact)
     {
         Name = name;
         Age = age;
@@ -88,14 +95,12 @@ public class Address(string street, string city)
 /// var jane = new PersonBuilder().Name("Jane").Age(28).Address(new AddressBuilder().Street("1 Rue").City("Paris"));
 /// var john = new PersonBuilder().Name("John").Age(30).Contact(jane).Address(new AddressBuilder().Street("2 Rue").City("Lyon"));
 /// jane.Contact(john);
-/// var result = john.Build();
-/// if (result is SuccessBuildResult&lt;Person&gt; success) { var person = success.Object; }
+/// var result = john.Build().Success&lt;Person&gt;();
 /// </code>
 /// <para>Example (failure):</para>
 /// <code>
 /// var builder = new PersonBuilder();
-/// var result = builder.Build();
-/// if (result is FailureBuildResult failure) { var failures = failure.Failures; }
+/// var result = builder.Build().Failures();
 /// </code>
 /// </remarks>
 public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
@@ -148,7 +153,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// <summary>
     /// Stores the list of known persons for the <see cref="Person"/> being built.
     /// </summary>
-    private readonly List<PersonBuilder> _knownPersons = [];
+    private readonly BuilderList<Person, PersonBuilder> _knownPersons = [];
     /// <summary>
     /// Adds a known person to this person.
     /// </summary>
@@ -283,17 +288,17 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
         if (_contact is null) throw new MustHaveContactException();
 
         var contactReference = _contact.Reference();
-        _contact.OnBuilt(contactReference.Resolve);
+        _contact.OnBuilt(x => contactReference.Resolve(x));
 
-        var knownPersonsReferences = new List<Reference<Person>>();
+        var knownPersonsReferences = new ReferenceList<Person>();
         foreach (var person in _knownPersons)
         {
             var personReference = person.Reference();
-            person.OnBuilt(personReference.Resolve);
+            person.OnBuilt(x => personReference.Resolve(x));
             knownPersonsReferences.Add(personReference);
         }
 
-        var addressesReferences = new List<Reference<Address>>();
+        var addressesReferences = new ReferenceList<Address>();
         foreach (var address in _addresses)
         {
             var addressReference = address.Reference();
@@ -371,10 +376,5 @@ public class AddressBuilder : AbstractBuilder<Address, Reference<Address>>
         ArgumentNullException.ThrowIfNull(_street, nameof(_street));
         ArgumentNullException.ThrowIfNull(_city, nameof(_city));
         return new Address(_street, _city);
-    }
-
-    protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
-    {
-        // No nested builders to build
     }
 }

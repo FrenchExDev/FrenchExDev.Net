@@ -7,8 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -33,12 +32,12 @@ namespace FrenchExDev.Net.Packer.Bundle;
 /// </code>
 /// </example>
 /// </remarks>
-public class PackerFileBuilder : AbstractObjectBuilder<PackerFile, PackerFileBuilder>
+public class PackerFileBuilder : AbstractBuilder<PackerFile>
 {
     /// <summary>
     /// List of builder configurations for the Packer file.
     /// </summary>
-    private List<PackerBuilderBuilder>? _builders;
+    private BuilderList<PackerBuilder, PackerBuilderBuilder> _builders = [];
     /// <summary>
     /// Description of the Packer file.
     /// </summary>
@@ -46,11 +45,11 @@ public class PackerFileBuilder : AbstractObjectBuilder<PackerFile, PackerFileBui
     /// <summary>
     /// List of post-processor configurations for the Packer file.
     /// </summary>
-    private List<PostProcessorBuilder>? _postProcessors;
+    private BuilderList<PostProcessor, PostProcessorBuilder> _postProcessors = [];
     /// <summary>
     /// List of provisioner configurations for the Packer file.
     /// </summary>
-    private List<ProvisionerBuilder>? _provisioners;
+    private BuilderList<Provisioner, ProvisionerBuilder> _provisioners = [];
     /// <summary>
     /// Dictionary of variables to be used in the Packer file.
     /// </summary>
@@ -64,7 +63,6 @@ public class PackerFileBuilder : AbstractObjectBuilder<PackerFile, PackerFileBui
     /// <remarks>Example: AddBuilder(new PackerBuilderBuilder().Format("ova"))</remarks>
     public PackerFileBuilder AddBuilder(PackerBuilderBuilder builder)
     {
-        _builders ??= new List<PackerBuilderBuilder>();
         _builders.Add(builder);
         return this;
     }
@@ -113,7 +111,6 @@ public class PackerFileBuilder : AbstractObjectBuilder<PackerFile, PackerFileBui
     /// <remarks>Example: Provisioner(new ProvisionerBuilder().AddScript("setup.sh"))</remarks>
     public PackerFileBuilder Provisioner(ProvisionerBuilder provisioner)
     {
-        _provisioners ??= new List<ProvisionerBuilder>();
         _provisioners.Add(provisioner);
         return this;
     }
@@ -166,7 +163,6 @@ public class PackerFileBuilder : AbstractObjectBuilder<PackerFile, PackerFileBui
     /// <remarks>Example: PostProcessor(new PostProcessorBuilder().Type("vagrant"))</remarks>
     public PackerFileBuilder PostProcessor(PostProcessorBuilder value)
     {
-        _postProcessors ??= new List<PostProcessorBuilder>();
         _postProcessors.Add(value);
         return this;
     }
@@ -239,30 +235,43 @@ public class PackerFileBuilder : AbstractObjectBuilder<PackerFile, PackerFileBui
     }
 
     /// <summary>
-    /// Builds a new instance of <see cref="PackerFile"/> by aggregating the results of configured builders, post-processors, and provisioners, while collecting any build exceptions encountered.
+    /// Performs validation on the internal collections of builders, post-processors, and provisioners, recording any
+    /// validation failures encountered.
     /// </summary>
-    /// <remarks>
-    /// If any exceptions are recorded in <paramref name="exceptions"/>, the method returns a failure result and does not construct a <see cref="PackerFile"/>. The returned result includes all successfully built components and any variables defined for the packer file.
-    /// </remarks>
-    /// <param name="exceptions">A dictionary used to record exceptions that occur during the build process. Must not be null.</param>
-    /// <param name="visited">A list of objects that have already been visited during the build process to prevent redundant processing. Must not be null.</param>
-    /// <returns>An <see cref="IObjectBuildResult{PackerFile}"/> containing the constructed <see cref="PackerFile"/> if the build succeeds; otherwise, a failure result with the collected exceptions.</returns>
-    protected override IObjectBuildResult<PackerFile> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
+    /// and circular references.</param>
+    /// <param name="failures">A dictionary for collecting validation failures, where each entry represents a specific issue found during the
+    /// validation process.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
-        var builders = BuildAndAssertNullOrWithoutFailuresAndReturnSuccesses<PackerBuilder, PackerBuilderBuilder>(_builders, nameof(_builders), exceptions, visited);
-        var postProcessors = BuildAndAssertNullOrWithoutFailuresAndReturnSuccesses<PostProcessor, PostProcessorBuilder>(_postProcessors, nameof(_postProcessors), exceptions, visited);
-        var provisioners = BuildAndAssertNullOrWithoutFailuresAndReturnSuccesses<Provisioner, ProvisionerBuilder>(_provisioners, nameof(_provisioners), exceptions, visited);
+        ValidateListInternal(_builders, nameof(_builders), visitedCollector, failures);
+        ValidateListInternal(_postProcessors, nameof(_postProcessors), visitedCollector, failures);
+        ValidateListInternal(_provisioners, nameof(_provisioners), visitedCollector, failures);
+    }
 
-        if (exceptions.Count > 0)
-            return Failure(exceptions, visited);
+    /// <summary>
+    /// Creates and returns a new instance of the <see cref="PackerFile"/> class using the current configuration.
+    /// </summary>
+    /// <remarks>If no variables are defined, an empty dictionary is used. The returned <see
+    /// cref="PackerFile"/> reflects the current state of the configuration and can be used for further processing or
+    /// serialization.</remarks>
+    /// <returns>A <see cref="PackerFile"/> object initialized with the current builders, description, provisioners,
+    /// post-processors, and variables.</returns>
+    protected override PackerFile Instantiate()
+    {
+        return new(_builders.BuildSuccess(), _description, _provisioners.BuildSuccess(), _postProcessors.BuildSuccess(), _variables ?? new Dictionary<string, string>());
+    }
 
-        return Success(new PackerFile()
-        {
-            Builders = builders?.Select(x => x.Result).ToList() ?? [],
-            Description = _description,
-            PostProcessors = postProcessors?.Select(x => x.Result).ToList() ?? [],
-            Provisioners = provisioners?.Select(x => x.Result).ToList() ?? [],
-            Variables = _variables ?? new Dictionary<string, string>()
-        });
+    /// <summary>
+    /// Builds the internal object graph by processing builders, post-processors, and provisioners using the specified
+    /// visited object dictionary.
+    /// </summary>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during the build process. This prevents
+    /// redundant processing and helps manage object references.</param>
+    protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
+    {
+        BuildList(_builders, visitedCollector);
+        BuildList(_postProcessors, visitedCollector);
+        BuildList(_provisioners, visitedCollector);
     }
 }

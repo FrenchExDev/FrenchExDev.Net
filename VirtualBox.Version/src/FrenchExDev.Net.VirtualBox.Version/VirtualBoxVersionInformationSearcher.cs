@@ -1,4 +1,4 @@
-namespace FrenchexDev.VirtualBox.Net;
+namespace FrenchExDev.Net.VirtualBox.Version;
 
 /// <summary>
 /// Provides functionality to search for VirtualBox version information and retrieve associated checksums from the

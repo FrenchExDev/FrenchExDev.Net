@@ -22,6 +22,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Alpine\src\FrenchExDev.Net.Alpine.Version\FrenchExDev.Net.Alpine.Version.csproj" />
+		<ProjectReference Include="..\..\..\Testing\src\FenchExDev.Net.Testing\FenchExDev.Net.Testing.csproj" />
 		<ProjectReference Include="..\..\src\FrenchExDev.Net.Packer.Bundle.Testing\FrenchExDev.Net.Packer.Bundle.Testing.csproj" />
 	</ItemGroup>
 

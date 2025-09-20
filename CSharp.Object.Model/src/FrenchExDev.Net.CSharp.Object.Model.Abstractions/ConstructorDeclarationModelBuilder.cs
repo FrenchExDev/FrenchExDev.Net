@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
@@ -8,7 +7,7 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// This class provides a fluent API to configure the constructor's name, modifiers, parameters, and body for code generation scenarios.
 /// It validates required properties and produces a build result indicating success or failure.
 /// </summary>
-public class ConstructorDeclarationModelBuilder : AbstractObjectBuilder<ConstructorDeclarationModel, ConstructorDeclarationModelBuilder>
+public class ConstructorDeclarationModelBuilder : AbstractBuilder<ConstructorDeclarationModel>, IDeclarationModelBuilder
 {
     /// <summary>
     /// Stores the name of the constructor, typically matching the class name.
@@ -18,12 +17,12 @@ public class ConstructorDeclarationModelBuilder : AbstractObjectBuilder<Construc
     /// <summary>
     /// The list of modifiers applied to the constructor (e.g., public, private, static).
     /// </summary>
-    public List<string> Modifiers { get; } = new();
+    public List<string> Modifiers { get; } = [];
 
     /// <summary>
     /// The list of parameters for the constructor.
     /// </summary>
-    private readonly List<ParameterDeclarationModelBuilder> _parameters = new();
+    private readonly BuilderList<ParameterDeclarationModel, ParameterDeclarationModelBuilder> _parameters = [];
 
     /// <summary>
     /// The body of the constructor, represented as a string of C# code.
@@ -77,34 +76,45 @@ public class ConstructorDeclarationModelBuilder : AbstractObjectBuilder<Construc
     }
 
     /// <summary>
-    /// Builds the <see cref="ConstructorDeclarationModel"/> instance.
-    /// Validates that the constructor name is provided and collects any build errors.
+    /// Performs the core build operation using the specified collection of visited objects.
     /// </summary>
-    /// <param name="exceptions">A list to collect build exceptions.</param>
-    /// <param name="visited">A list of visited objects for cycle detection.</param>
-    /// <returns>A build result containing either the constructed model or failure details.</returns>
-    protected override IObjectBuildResult<ConstructorDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <param name="visitedCollector">A dictionary that tracks objects already visited during the build process. Used to prevent redundant processing
+    /// and handle object references.</param>
+    protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
     {
-        var parameters = BuildBuildListAndVisitForExceptions<ParameterDeclarationModel, ParameterDeclarationModelBuilder>(_parameters, visited, nameof(_parameters), exceptions);
+        BuildList(_parameters, visitedCollector);
+    }
 
+    /// <summary>
+    /// Performs validation logic specific to the derived constructor, recording any failures encountered.
+    /// </summary>
+    /// <remarks>Override this method in derived classes to implement custom validation rules. Validation
+    /// failures should be added to the <paramref name="failures"/> dictionary to ensure they are reported
+    /// appropriately.</remarks>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
+    /// and circular references.</param>
+    /// <param name="failures">A dictionary for collecting validation failures, where each failure is recorded with its associated context and
+    /// exception.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(nameof(_name), new InvalidOperationException("Constructor name must be provided."));
+            failures.Failure(nameof(_name), new DeclarationHaveNoNameException());
         }
-
-        if (exceptions.Any())
-        {
-            return Failure(exceptions, visited);
-        }
-
-        ArgumentNullException.ThrowIfNull(_name);
-
-        return Success(new ConstructorDeclarationModel
-        {
-            Name = _name,
-            Modifiers = Modifiers,
-            Parameters = parameters.OfType<SuccessObjectBuildResult<ParameterDeclarationModel>>().Select(x => x.Result).ToList(),
-            Body = _body
-        });
     }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="ConstructorDeclarationModel"/> using the current property values.
+    /// </summary>
+    /// <remarks>Throws an <see cref="ArgumentNullException"/> if the name property is null. The returned
+    /// model reflects the current state of the properties at the time of invocation.</remarks>
+    /// <returns>A <see cref="ConstructorDeclarationModel"/> initialized with the specified name, modifiers, parameters, and
+    /// body.</returns>
+    protected override ConstructorDeclarationModel Instantiate() => new()
+    {
+        Name = _name ?? throw new DeclarationHaveNoNameException(),
+        Modifiers = Modifiers,
+        Parameters = _parameters.AsReferenceList(),
+        Body = _body
+    };
 }

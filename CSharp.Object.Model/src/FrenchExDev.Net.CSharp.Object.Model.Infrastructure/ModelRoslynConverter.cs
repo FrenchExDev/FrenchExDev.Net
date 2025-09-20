@@ -35,7 +35,7 @@ public class ModelRoslynConverter : IModelRoselynConverter
             PropertyDeclarationModel prop => ToSyntax(prop),
             EnumDeclarationModel enm => ToSyntax(enm),
             ConstructorDeclarationModel ctor => ToSyntax(ctor),
-            EventModel evt => ToSyntax(evt),
+            EventDeclarationModel evt => ToSyntax(evt),
             StructDeclarationModel strct => ToSyntax(strct),
             FieldDeclarationModel field => ToSyntax(field),
             MethodDeclarationModel method => ToSyntax(method),
@@ -59,7 +59,7 @@ public class ModelRoslynConverter : IModelRoselynConverter
 
         var ns = SyntaxFactory
             .NamespaceDeclaration(SyntaxFactory.ParseName(model.Name))
-            .AddMembers(members.ToArray());
+            .AddMembers([.. members]);
 
         return ns;
     }
@@ -89,26 +89,26 @@ public class ModelRoslynConverter : IModelRoselynConverter
             )
         ));
 
-        var baseType = !string.IsNullOrEmpty(model.BaseType) ? SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(model.BaseType)) : null;
+        var baseType = model.BaseType != null ? SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(model.BaseType.Name)) : null;
         var baseTypes = new List<BaseTypeSyntax>();
-        if (!string.IsNullOrWhiteSpace(model.BaseType))
-            baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(model.BaseType)));
-        baseTypes.AddRange(model.ImplementedInterfaces.Select(i => SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(i))));
+        if (model.BaseType != null)
+            baseTypes.Add(SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(model.BaseType.Name)));
+        baseTypes.AddRange(model.ImplementedInterfaces.Select(i => SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(i.Name))));
 
         var members = new List<MemberDeclarationSyntax>();
-        members.AddRange(model.Fields.Select((x) => ToSyntax(x)));
-        members.AddRange(model.Properties.Select((x) => ToSyntax(x)));
-        members.AddRange(model.Methods.Select((x) => ToSyntax(x)));
-        members.AddRange(model.Constructors.Select((x) => ToSyntax(x)));
-        members.AddRange(model.NestedClasses.Select((x) => ToSyntax(x)));
+        members.AddRange(model.Fields.Select(ToSyntax));
+        members.AddRange(model.Properties.Select(ToSyntax));
+        members.AddRange(model.Methods.Select(ToSyntax));
+        members.AddRange(model.Constructors.Select(ToSyntax));
+        members.AddRange(model.NestedClasses.Select(ToSyntax));
 
         var classDeclaration = SyntaxFactory.ClassDeclaration(model.Name)
             .AddModifiers(modifiers)
-            .AddAttributeLists(attributes.ToArray())
-            .AddMembers(members.ToArray());
+            .AddAttributeLists([.. attributes])
+            .AddMembers([.. members]);
 
-        if (!string.IsNullOrEmpty(model.BaseType) || model.ImplementedInterfaces.Count > 0)
-            classDeclaration = classDeclaration.AddBaseListTypes(baseTypes.ToArray());
+        if (model.BaseType != null || model.ImplementedInterfaces.ToList().Count > 0)
+            classDeclaration = classDeclaration.AddBaseListTypes([.. baseTypes]);
 
         return classDeclaration;
     }
@@ -133,7 +133,7 @@ public class ModelRoslynConverter : IModelRoselynConverter
                 SyntaxFactory.ParseTypeName(prop.Type),
                 SyntaxFactory.Identifier(prop.Name))
             .AddModifiers(modifiers)
-            .AddAccessorListAccessors(accessors.ToArray());
+            .AddAccessorListAccessors([.. accessors]);
 
         if (prop.Initializer != null)
             property = property.WithInitializer(
@@ -160,7 +160,7 @@ public class ModelRoslynConverter : IModelRoselynConverter
         ));
 
         var baseTypes = model.BaseInterfaces
-            .Select(i => SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(i)))
+            .Select(i => SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(i.Name)))
             .ToArray();
 
         var members = new List<MemberDeclarationSyntax>();
@@ -171,17 +171,17 @@ public class ModelRoslynConverter : IModelRoselynConverter
 
         return SyntaxFactory.InterfaceDeclaration(model.Name)
             .AddModifiers(modifiers)
-            .AddAttributeLists(attributes.ToArray())
+            .AddAttributeLists([.. attributes])
             .AddBaseListTypes(baseTypes)
-            .AddMembers(members.ToArray());
+            .AddMembers([.. members]);
     }
 
     /// <summary>
-    /// Converts an <see cref="EventModel"/> to a Roslyn <see cref="EventDeclarationSyntax"/>.
+    /// Converts an <see cref="EventDeclarationModel"/> to a Roslyn <see cref="EventDeclarationSyntax"/>.
     /// </summary>
     /// <param name="evt"></param>
     /// <returns></returns>
-    public EventDeclarationSyntax ToSyntax(EventModel evt)
+    public EventDeclarationSyntax ToSyntax(EventDeclarationModel evt)
     {
         var modifiers = evt.Modifiers.Select(SyntaxFactory.ParseToken).ToArray();
 
@@ -197,7 +197,7 @@ public class ModelRoslynConverter : IModelRoselynConverter
                 SyntaxFactory.ParseTypeName(evt.Type),
                 SyntaxFactory.Identifier(evt.Name))
             .AddModifiers(modifiers)
-            .AddAttributeLists(attributes.ToArray())
+            .AddAttributeLists([.. attributes])
             .AddAccessorListAccessors(
                 SyntaxFactory.AccessorDeclaration(SyntaxKind.AddAccessorDeclaration)
                     .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
@@ -233,7 +233,7 @@ public class ModelRoslynConverter : IModelRoselynConverter
 
         var enumDecl = SyntaxFactory.EnumDeclaration(model.Name)
             .AddModifiers(modifiers)
-            .AddAttributeLists(attributes.ToArray())
+            .AddAttributeLists([.. attributes])
             .AddMembers(members);
 
         if (!string.IsNullOrWhiteSpace(model.UnderlyingType))
@@ -257,7 +257,7 @@ public class ModelRoslynConverter : IModelRoselynConverter
     /// <param name="model">The model representing the structure declaration, including its name, modifiers, and attributes.</param>
     /// <returns>A <see cref="StructDeclarationSyntax"/> object that represents the structure declaration described by the
     /// provided <paramref name="model"/>.</returns>
-    public StructDeclarationSyntax ToSyntax(StructDeclarationModel model)
+    public static StructDeclarationSyntax ToSyntax(StructDeclarationModel model)
     {
         var modifiers = model.Modifiers.Select((x) => SyntaxFactory.ParseToken(x.ToString())).ToArray();
         var attributes = SyntaxFactory.List(model.Attributes.Select(attr =>
@@ -270,7 +270,7 @@ public class ModelRoslynConverter : IModelRoselynConverter
 
         return SyntaxFactory.StructDeclaration(model.Name)
             .AddModifiers(modifiers)
-            .AddAttributeLists(attributes.ToArray());
+            .AddAttributeLists([.. attributes]);
     }
 
 
@@ -318,7 +318,7 @@ public class ModelRoslynConverter : IModelRoselynConverter
     /// <param name="field">The model representing the field declaration, including its name, type, and modifiers.</param>
     /// <returns>A <see cref="FieldDeclarationSyntax"/> object that represents the field declaration described by the
     /// provided <paramref name="field"/>.</returns>
-    public FieldDeclarationSyntax ToSyntax(FieldDeclarationModel field)
+    public static FieldDeclarationSyntax ToSyntax(FieldDeclarationModel field)
     {
         var modifiers = field.Modifiers.Select(SyntaxFactory.ParseToken).ToArray();
 
@@ -348,7 +348,7 @@ public class ModelRoslynConverter : IModelRoselynConverter
     /// declaration.</remarks>
     /// <param name="method">The model representing the method, including its name, return type, modifiers, attributes, parameters, and body.</param>
     /// <returns>A <see cref="MethodDeclarationSyntax"/> object representing the method declaration in Roslyn's syntax tree.</returns>
-    public MethodDeclarationSyntax ToSyntax(MethodDeclarationModel method)
+    public static MethodDeclarationSyntax ToSyntax(MethodDeclarationModel method)
     {
         var modifiers = method.Modifiers.Select(SyntaxFactory.ParseToken).ToArray();
 
@@ -378,7 +378,7 @@ public class ModelRoslynConverter : IModelRoselynConverter
                 SyntaxFactory.ParseTypeName(method.ReturnType),
                 SyntaxFactory.Identifier(method.Name))
             .AddModifiers(modifiers)
-            .AddAttributeLists(attributes.ToArray())
+            .AddAttributeLists([.. attributes])
             .WithParameterList(parameters);
 
         if (!string.IsNullOrWhiteSpace(method.Body))
@@ -404,7 +404,7 @@ public class ModelRoslynConverter : IModelRoselynConverter
     /// <returns>A string representing the specified <see cref="ClassModifier"/>. For example,  <see
     /// cref="ClassModifier.Public"/> is converted to "public".</returns>
     /// <exception cref="NotSupportedException">Thrown if the specified <paramref name="modifier"/> is not a recognized <see cref="ClassModifier"/> value.</exception>
-    public string ToModifierString(ClassModifier modifier)
+    public static string ToModifierString(ClassModifier modifier)
     {
         return modifier switch
         {

@@ -7,8 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -22,7 +21,7 @@ namespace FrenchExDev.Net.Packer.Bundle;
 /// before building the final <see cref="HttpDirectory"/> instance. This builder supports fluent chaining of
 /// configuration methods. The resulting <see cref="HttpDirectory"/> will contain all files added via this builder at
 /// the time of construction.</remarks>
-public class HttpDirectoryBuilder : DeconstructedAbstractObjectBuilder<HttpDirectory, HttpDirectoryBuilder>
+public class HttpDirectoryBuilder : AbstractBuilder<HttpDirectory>
 {
     /// <summary>
     /// Stores the files to be included in the <see cref="HttpDirectory"/> being built.
@@ -65,15 +64,15 @@ public class HttpDirectoryBuilder : DeconstructedAbstractObjectBuilder<HttpDirec
     }
 
     /// <summary>
-    /// Validates the collection of files and adds any detected validation errors to the specified exception dictionary.
+    /// Performs validation on the collection of files, recording any failures for files that have an empty extension.
     /// </summary>
-    /// <param name="exceptions">A dictionary used to collect validation exceptions for files that fail validation. Must not be null.</param>
-    /// <param name="visited">A list of objects that have already been visited during validation to prevent redundant checks. Must not be
-    /// null.</param>
-    protected override void Validate(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
+    /// <param name="failures">A dictionary for collecting validation failures. Any file with an empty extension will result in a failure
+    /// entry.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         foreach (var file in _files)
             if (file.Value.Extension is "")
-                exceptions.Add(file.Key, new InvalidDataException(nameof(file.Key)));
+                failures.Failure(file.Key, new InvalidDataException(nameof(file.Key)));
     }
 }

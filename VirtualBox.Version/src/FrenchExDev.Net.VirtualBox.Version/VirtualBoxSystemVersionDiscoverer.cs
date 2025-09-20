@@ -7,7 +7,7 @@
 
 using System.Diagnostics;
 
-namespace FrenchexDev.VirtualBox.Net;
+namespace FrenchExDev.Net.VirtualBox.Version;
 
 /// <summary>
 /// Provides functionality to discover the installed VirtualBox system version by invoking the VBoxManage command-line

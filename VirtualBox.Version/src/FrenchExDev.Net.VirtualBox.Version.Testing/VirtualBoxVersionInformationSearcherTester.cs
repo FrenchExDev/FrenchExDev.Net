@@ -1,6 +1,4 @@
-﻿using FrenchexDev.VirtualBox.Net;
-
-namespace FrenchExDev.Net.VirtualBox.Version.Testing;
+﻿namespace FrenchExDev.Net.VirtualBox.Version.Testing;
 
 /// <summary>
 /// Provides helper methods for testing VirtualBox version information search functionality.

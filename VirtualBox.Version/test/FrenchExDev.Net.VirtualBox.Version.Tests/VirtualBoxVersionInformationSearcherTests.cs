@@ -1,5 +1,4 @@
-﻿using FrenchexDev.VirtualBox.Net;
-using FrenchExDev.Net.VirtualBox.Version.Testing;
+﻿using FrenchExDev.Net.VirtualBox.Version.Testing;
 using Shouldly;
 
 namespace FrenchExDev.Net.VirtualBox.Version.Tests;

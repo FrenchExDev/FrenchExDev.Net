@@ -1,8 +1,19 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
 namespace FrenchExDev.Net.Dotnet.Project.Abstractions;
+
+/// <summary>
+/// Abstract builder base class for constructing project models implementing <see cref="IProjectModel"/>.
+/// </summary>
+/// <typeparam name="TProjectModel"></typeparam>
+/// <typeparam name="TBuilder"></typeparam>
+public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : AbstractProjectModelBuilder<TProjectModel, TBuilder, Reference<TProjectModel>>
+    where TProjectModel : class, IProjectModel
+    where TBuilder : class, IBuilder<TProjectModel>, new()
+{
+
+}
 
 /// <summary>
 /// Abstract builder base class for constructing project models implementing <see cref="IProjectModel"/>.
@@ -38,9 +49,10 @@ namespace FrenchExDev.Net.Dotnet.Project.Abstractions;
 /// var result = builder.Build();
 /// </code>
 /// </remarks>
-public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : AbstractObjectBuilder<TProjectModel, TBuilder>
-    where TProjectModel : IProjectModel
-    where TBuilder : class, IObjectBuilder<TProjectModel>
+public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder, TReference> : AbstractBuilder<TProjectModel, TReference>
+    where TReference : class, IReference<TProjectModel>, new()
+    where TProjectModel : class, IProjectModel
+    where TBuilder : class, IBuilder<TProjectModel>, new()
 {
     /// <summary>
     /// Error message used when the project name is missing or empty.
@@ -129,7 +141,7 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
     /// Derived builders may inspect <c>_packageVersion</c> when composing the final project model or
     /// when deciding whether to generate a package on build.
     /// </remarks>
-    protected IPackageVersion? _packageVersion;
+    protected Reference<IPackageVersion>? _packageVersion;
 
     /// <summary>
     /// Backing field indicating whether a NuGet package should be generated during build.
@@ -231,7 +243,7 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
     {
         var builder = new PackageVersionBuilder();
         body(builder);
-        _packageVersion = builder.Build().Success();
+        _packageVersion = builder.Reference();
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
 
@@ -348,27 +360,27 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
     /// <summary>
     /// Backing storage for declared project references.
     /// </summary>
-    protected List<ProjectReference> _projectReferences = new();
+    protected BuilderList<ProjectReference, ProjectReferenceBuilder> _projectReferences = new();
 
     /// <summary>
     /// Backing storage for NuGet package references.
     /// </summary>
-    protected List<IPackageReference> _packageReferences = new();
+    protected BuilderList<IPackageReference, PackageReferenceBuilder> _packageReferences = new();
 
     /// <summary>
     /// Backing storage for analyzer package references (Roslyn analyzers, etc.).
     /// </summary>
-    protected List<IPackageReference> _analyzers = new();
+    protected BuilderList<IPackageReference, PackageReferenceBuilder> _analyzers = new();
 
     /// <summary>
     /// Additional arbitrary MSBuild properties to include in the project model.
     /// </summary>
-    protected Dictionary<string, object> _additionalProperties = new();
+    protected Reference<Dictionary<string, object>> _additionalProperties = new();
 
     /// <summary>
     /// Code declaration models (classes, interfaces, enums) that belong to the project.
     /// </summary>
-    protected List<IDeclarationModel> _declarationModels = new();
+    protected BuilderList<IDeclarationModel, DeclarationModelBuilder> _declarationModels = new();
 
     /// <summary>
     /// Set the logical project name.
@@ -411,6 +423,10 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
 
+    /// <summary>
+    /// Gets the identifier of the SDK associated with the current context.
+    /// </summary>
+    /// <returns>A string containing the SDK identifier if available; otherwise, null.</returns>
     public string? GivenSdk() => _sdk;
 
     /// <summary>
@@ -424,6 +440,10 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
 
+    /// <summary>
+    /// Gets the target framework identifier for the current context, if available.
+    /// </summary>
+    /// <returns>A string containing the target framework identifier, or null if no target framework is set.</returns>
     public string? GivenTargetFramework() => _targetFramework;
 
     /// <summary>
@@ -437,6 +457,10 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
 
+    /// <summary>
+    /// Gets the output type associated with the current instance.
+    /// </summary>
+    /// <returns>A string representing the output type, or null if no output type has been set.</returns>
     public string? GivenOutputType() => _outputType;
 
     /// <summary>
@@ -450,6 +474,10 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
 
+    /// <summary>
+    /// Gets the C# language version specified for the current context.
+    /// </summary>
+    /// <returns></returns>
     public string? GivenLangVersion() => _langVersion;
 
     /// <summary>
@@ -475,59 +503,39 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
     }
 
     /// <summary>
-    /// Provide the list of project references (other projects in the solution).
+    /// Adds a project reference to the builder and returns the current builder instance for method chaining.
     /// </summary>
-    /// <param name="projectReferences">A list of <see cref="ProjectReference"/> values.</param>
-    /// <returns>The current builder instance for fluent chaining.</returns>
-    public TBuilder ProjectReferences(List<ProjectReference> projectReferences)
+    /// <remarks>This method enables fluent configuration by returning the builder instance. The added project
+    /// reference will be included in the final build configuration.</remarks>
+    /// <param name="projectReferenceBuilder">The project reference to add to the builder. Cannot be null.</param>
+    /// <returns>The current builder instance, cast to the type parameter <typeparamref name="TBuilder"/>.</returns>
+    /// <exception cref="InvalidCastException">Thrown if the current instance cannot be cast to <typeparamref name="TBuilder"/>.</exception>
+    public TBuilder ProjectReference(ProjectReferenceBuilder projectReferenceBuilder)
     {
-        _projectReferences = projectReferences;
+        _projectReferences.Add(projectReferenceBuilder);
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
 
     /// <summary>
-    /// Provide the list of NuGet package references.
+    /// Adds a package reference to the builder and returns the current builder instance for method chaining.
     /// </summary>
-    /// <param name="packageReferences">A list of <see cref="IPackageReference"/> instances.</param>
-    /// <returns>The current builder instance for fluent chaining.</returns>
-    public TBuilder PackageReferences(List<IPackageReference> packageReferences)
+    /// <param name="packageReference">The package reference to add. Cannot be null.</param>
+    /// <returns>The current builder instance, allowing for fluent configuration.</returns>
+    /// <exception cref="InvalidCastException">Thrown if the current instance cannot be cast to the type specified by <typeparamref name="TBuilder"/>.</exception>
+    public TBuilder PackageReference(PackageReferenceBuilder packageReference)
     {
-        _packageReferences = packageReferences;
+        _packageReferences.Add(packageReference);
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
-
-    /// <summary>
-    /// Configure package references using a <see cref="ListBuilder{TItem,TItemBuilder}"/> action.
-    /// </summary>
-    /// <param name="body">An action that configures a list builder for <see cref="IPackageReference"/>.</param>
-    /// <returns>The current builder instance for fluent chaining.</returns>
-    /// <remarks>
-    /// This overload is convenient for inline construction of multiple package references.
-    /// Example:
-    /// <code>
-    /// builder.PackageReferences(lb => {
-    ///     lb.Add(b => b.Id("Newtonsoft.Json").Version("13.0.1"));
-    ///     lb.Add(b => b.Id("Serilog").Version("2.10.0"));
-    /// });
-    /// </code>
-    /// </remarks>
-    public TBuilder PackageReferences(Action<ListBuilder<IPackageReference, PackageReferenceBuilder>> body)
-    {
-        var listBuilder = new ListBuilder<IPackageReference, PackageReferenceBuilder>();
-        body(listBuilder);
-        _packageReferences = listBuilder.Build();
-        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
-    }
-
 
     /// <summary>
     /// Provide analyzer package references (typically Roslyn analyzers) to include with the project.
     /// </summary>
-    /// <param name="analyzers">A list of analyzer <see cref="IPackageReference"/> instances.</param>
+    /// <param name="analyzer">An analyzer <see cref="IPackageReference"/> instances.</param>
     /// <returns>The current builder instance for fluent chaining.</returns>
-    public TBuilder Analyzers(List<IPackageReference> analyzers)
+    public TBuilder Analyzer(PackageReferenceBuilder analyzer)
     {
-        _analyzers = analyzers;
+        _analyzers.Add(analyzer);
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
 
@@ -539,22 +547,82 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
     /// <remarks>
     /// Values are serialized by the project model consumer; prefer primitive values and strings.
     /// </remarks>
-    public TBuilder AdditionalProperties(Dictionary<string, object> additionalProperties)
+    public TBuilder AdditionalProperties(Reference<Dictionary<string, object>> additionalProperties)
     {
         _additionalProperties = additionalProperties;
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
 
     /// <summary>
-    /// Provide code declaration models (classes, interfaces, enums) that belong to this project.
+    /// Sets the collection of additional properties to be associated with the builder instance.
     /// </summary>
-    /// <param name="declarationModels">List of <see cref="IDeclarationModel"/> instances.</param>
-    /// <returns>The current builder instance for fluent chaining.</returns>
-    public TBuilder DeclarationModels(List<IDeclarationModel> declarationModels)
+    /// <remarks>Use this method to attach custom metadata or configuration options that are not covered by
+    /// standard builder properties. The provided dictionary is stored and may be used during subsequent build
+    /// operations.</remarks>
+    /// <param name="additionalProperties">A dictionary containing key-value pairs representing additional properties to attach. Keys must be non-null and
+    /// unique within the dictionary.</param>
+    /// <returns>The current builder instance with the specified additional properties applied.</returns>
+    /// <exception cref="InvalidCastException">Thrown if the current instance cannot be cast to the generic builder type <typeparamref name="TBuilder"/>.</exception>
+    public TBuilder AdditionalProperties(Dictionary<string, object> additionalProperties)
     {
-        _declarationModels = declarationModels;
+        _additionalProperties = new Reference<Dictionary<string, object>>(additionalProperties);
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
+
+    /// <summary>
+    /// Provide code declaration models (classes, interfaces, enums) that belong to this project.
+    /// </summary>
+    /// <param name="declarationModel">List of <see cref="IDeclarationModel"/> instances.</param>
+    /// <returns>The current builder instance for fluent chaining.</returns>
+    public TBuilder DeclarationModel(DeclarationModelBuilder declarationModel)
+    {
+        _declarationModels.Add(declarationModel);
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
+    /// <summary>
+    /// Adds the specified package references to the builder.
+    /// </summary>
+    /// <param name="packageReferences">An enumerable collection of package references to add. Each reference represents a NuGet package dependency to
+    /// include in the build configuration.</param>
+    /// <returns>The builder instance with the added package references.</returns>
+    /// <exception cref="InvalidCastException">Thrown if the current instance cannot be cast to the type specified by <typeparamref name="TBuilder"/>.</exception>
+    public TBuilder PackageReferences(IEnumerable<IPackageReference> packageReferences)
+    {
+        _packageReferences.AddRange((IEnumerable<PackageReferenceBuilder>)packageReferences.Select(x => new PackageReferenceBuilder().Existing(x)));
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
+    /// <summary>
+    /// Adds a package reference to the builder using the specified configuration action.
+    /// </summary>
+    /// <remarks>Use this method to fluently add and configure package references when building a project or
+    /// component. This method supports method chaining.</remarks>
+    /// <param name="body">An action that configures the <see cref="PackageReferenceBuilder"/> for the new package reference. Cannot be
+    /// null.</param>
+    /// <returns>The current builder instance with the added package reference.</returns>
+    /// <exception cref="InvalidCastException">Thrown if the current instance cannot be cast to <typeparamref name="TBuilder"/>.</exception>
+    public TBuilder PackageReferences(Action<BuilderList<IPackageReference, PackageReferenceBuilder>> body)
+    {
+        var builder = new BuilderList<IPackageReference, PackageReferenceBuilder>();
+        body(builder);
+        _packageReferences.AddRange(builder);
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
+    /// <summary>
+    /// Adds the specified project references to the builder.
+    /// </summary>
+    /// <param name="projectReferences">An enumerable collection of <see cref="ProjectReference"/> instances to be added as references. Each item
+    /// represents a project to reference in the build configuration.</param>
+    /// <returns>The current builder instance with the specified project references added.</returns>
+    /// <exception cref="InvalidCastException">Thrown if the builder instance cannot be cast to <typeparamref name="TBuilder"/>.</exception>
+    public TBuilder ProjectReferences(IEnumerable<ProjectReference> projectReferences)
+    {
+        _projectReferences.AddRange((IEnumerable<ProjectReferenceBuilder>)projectReferences.Select(x => new ProjectReferenceBuilder().Existing(x)));
+        return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
+    }
+
 
     /// <summary>
     /// Validate required project properties and collect exceptions for missing or invalid values.
@@ -573,46 +641,46 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
     /// if (exceptions.Count > 0) return Failure(exceptions, visited);
     /// </code>
     /// </remarks>
-    protected void VisiteObjectAndCollectExceptions(VisitedObjectsList visited, ExceptionBuildDictionary exceptions)
+    protected void VisiteObjectAndCollectExceptions(VisitedObjectDictionary visited, FailuresDictionary exceptions)
     {
         if (string.IsNullOrWhiteSpace(_name))
         {
-            exceptions.Add(nameof(_name), new ArgumentNullException(nameof(_name), ErrorProjectNameCannotBeNullOrEmpty));
+            exceptions.Failure(nameof(_name), new ArgumentNullException(nameof(_name), ErrorProjectNameCannotBeNullOrEmpty));
         }
 
         if (string.IsNullOrWhiteSpace(_directory))
         {
-            exceptions.Add(nameof(_directory), new ArgumentNullException(nameof(_directory), ErrorProjectDirectoryCannotBeNullOrEmpty));
+            exceptions.Failure(nameof(_directory), new ArgumentNullException(nameof(_directory), ErrorProjectDirectoryCannotBeNullOrEmpty));
         }
 
         if (string.IsNullOrWhiteSpace(_sdk))
         {
-            exceptions.Add(nameof(_sdk), new ArgumentNullException(nameof(_sdk), ErrorProjectSdkCannotBeNullOrEmpty));
+            exceptions.Failure(nameof(_sdk), new ArgumentNullException(nameof(_sdk), ErrorProjectSdkCannotBeNullOrEmpty));
         }
 
         if (string.IsNullOrWhiteSpace(_targetFramework))
         {
-            exceptions.Add(nameof(_targetFramework), new ArgumentNullException(nameof(_targetFramework), ErrorProjectTargetFrameworkCannotBeNullOrEmpty));
+            exceptions.Failure(nameof(_targetFramework), new ArgumentNullException(nameof(_targetFramework), ErrorProjectTargetFrameworkCannotBeNullOrEmpty));
         }
 
         if (string.IsNullOrWhiteSpace(_outputType))
         {
-            exceptions.Add(nameof(_outputType), new ArgumentNullException(nameof(_outputType), ErrorProjectOutputTypeCannotBeNullOrEmpty));
+            exceptions.Failure(nameof(_outputType), new ArgumentNullException(nameof(_outputType), ErrorProjectOutputTypeCannotBeNullOrEmpty));
         }
 
         if (string.IsNullOrWhiteSpace(_langVersion))
         {
-            exceptions.Add(nameof(_langVersion), new ArgumentNullException(nameof(_langVersion), ErrorProjectLanguageVersionCannotBeNullOrEmpty));
+            exceptions.Failure(nameof(_langVersion), new ArgumentNullException(nameof(_langVersion), ErrorProjectLanguageVersionCannotBeNullOrEmpty));
         }
 
         if (_nullable == null)
         {
-            exceptions.Add(nameof(_nullable), new ArgumentNullException(nameof(_nullable), ErrorProjectNullableCannotBeNullOrEmpty));
+            exceptions.Failure(nameof(_nullable), new ArgumentNullException(nameof(_nullable), ErrorProjectNullableCannotBeNullOrEmpty));
         }
 
         if (_implicitUsings == null)
         {
-            exceptions.Add(nameof(_implicitUsings), new ArgumentNullException(nameof(_implicitUsings), ErrorPojectImplicitUsingsCannotBeNullOrEmpty));
+            exceptions.Failure(nameof(_implicitUsings), new ArgumentNullException(nameof(_implicitUsings), ErrorPojectImplicitUsingsCannotBeNullOrEmpty));
         }
     }
 }

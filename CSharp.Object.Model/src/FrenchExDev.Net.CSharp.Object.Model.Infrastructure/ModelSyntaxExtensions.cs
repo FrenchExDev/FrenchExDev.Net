@@ -1,6 +1,7 @@
 ﻿using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
-using FrenchExDev.Net.CSharp.Object.Model.Infrastructure;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+namespace FrenchExDev.Net.CSharp.Object.Model.Infrastructure;
 
 /// <summary>
 /// Extensions for converting model objects to Roslyn syntax nodes.

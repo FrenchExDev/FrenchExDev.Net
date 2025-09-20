@@ -1,5 +1,6 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
+using FrenchExDev.Net.CSharp.Object.Model.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
@@ -25,7 +26,7 @@ public static class ModelSyntaxCodeTester
          Action<string> assertGeneratedCode
      )
          where TModel : class, IDeclarationModel
-         where TBuilder : IObjectBuilder<TModel>, new()
+         where TBuilder : IBuilder<TModel>, new()
     {
         // Instantiate the builder and configure it using the provided action
         var builder = new TBuilder();
@@ -33,14 +34,14 @@ public static class ModelSyntaxCodeTester
 
         // Build the model and ensure the result is successful
         var buildResult = builder.Build();
-        buildResult.ShouldBeAssignableTo<SuccessObjectBuildResult<TModel>>();
+        buildResult.ShouldBeAssignableTo<SuccessBuildResult<TModel>>();
         var builtModel = buildResult.Success<TModel>();
 
         // Assert the built model using the provided assertion
         assertBuiltModel(builtModel);
 
         // Convert the built model to a Roslyn syntax node for code generation
-        var builtModelSyntax = builtModel.ToSyntax();
+        var builtModelSyntax = new ModelRoslynConverter().ToSyntax(builtModel);
         builtModelSyntax.ShouldNotBeNull();
 
         // Generate the C# code from the syntax node and normalize whitespace
@@ -71,10 +72,10 @@ public static class ModelSyntaxCodeTester
     /// </remarks>
     public static void Invalid<TModel, TBuilder>(
          Action<TBuilder> body,
-         Action<IObjectBuildResult<TModel>> assertResult
+         Action<FailuresDictionary> assertResult
      )
          where TModel : class, IDeclarationModel
-         where TBuilder : IObjectBuilder<TModel>, new()
+         where TBuilder : class, IBuilder<TModel>, new()
     {
         // Instantiate the builder and configure it using the provided action
         var builder = new TBuilder();
@@ -83,9 +84,9 @@ public static class ModelSyntaxCodeTester
         var buildResult = builder.Build();
 
         // Asserts the type of buildResult as Failure object
-        buildResult.ShouldBeAssignableTo<FailureObjectBuildResult<TModel, TBuilder>>();
+        buildResult.ShouldBeAssignableTo<FailureBuildResult>();
 
         // Assert the build result using the provided assertion (expected to be invalid)
-        assertResult(buildResult);
+        assertResult(buildResult.Failures<TModel>());
     }
 }

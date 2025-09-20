@@ -1,4 +1,5 @@
-﻿using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
+using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
 namespace FrenchExDev.Net.Dotnet.Project.Abstractions;
 
@@ -64,9 +65,16 @@ public abstract class AbstractProjectModel<T> : IProjectModel where T : IProject
     public bool? ImplicitUsings { get; protected set; }
 
     /// <summary>
-    /// Gets or sets the version information for the associated package.
+    /// Holds a reference to the package version information.
     /// </summary>
-    public IPackageVersion? PackageVersion { get; protected set; }
+    private IReference<IPackageVersion>? _packageVersion;
+
+    /// <summary>
+    /// Gets the resolved version information for the associated package.
+    /// </summary>
+    /// <remarks>Accessing this property requires that the package version has been resolved. If the
+    /// underlying package version is not resolved, a <see cref="NotResolvedException"/> is thrown.</remarks>
+    public IPackageVersion PackageVersion => _packageVersion?.Resolved() ?? throw new NotResolvedException(nameof(PackageVersion));
 
     /// <summary>
     /// Gets or sets the descriptive text associated with the object.
@@ -114,15 +122,21 @@ public abstract class AbstractProjectModel<T> : IProjectModel where T : IProject
     public bool? EnforceCodingStyleInBuild { get; protected set; }
 
     /// <summary>
-    /// Gets the list of project references included in this project.
+    /// Holds the list of project references.
     /// </summary>
-    /// <remarks>
-    /// Example: referencing another project in the solution.
-    /// <code>
-    /// ProjectReferences.Add(new ProjectReference("..\\OtherProject\\OtherProject.csproj"));
-    /// </code>
-    /// </remarks>
-    public List<ProjectReference>? ProjectReferences { get; protected set; } = new();
+    private readonly ReferenceList<ProjectReference> _projectReferences = new();
+
+    /// <summary>
+    /// Gets an enumerable collection of project references that have been resolved.
+    /// </summary>
+    /// <remarks>The returned collection contains only references that are currently resolved. If there are no
+    /// resolved project references, the collection will be empty.</remarks>
+    public IEnumerable<ProjectReference> ProjectReferences => _projectReferences.AsEnumerable();
+
+    /// <summary>
+    /// Holds the list of NuGet package references.
+    /// </summary>
+    private readonly ReferenceList<IPackageReference> _packageReferences = new();
 
     /// <summary>
     /// Gets the list of NuGet package references for this project.
@@ -133,7 +147,12 @@ public abstract class AbstractProjectModel<T> : IProjectModel where T : IProject
     /// PackageReferences.Add(new PackageReference("Newtonsoft.Json", "13.0.1"));
     /// </code>
     /// </remarks>
-    public List<IPackageReference>? PackageReferences { get; protected set; } = new();
+    public IEnumerable<IPackageReference> PackageReferences => _packageReferences.AsEnumerable();
+
+    /// <summary>
+    /// Holds the list of analyzer package references.
+    /// </summary>
+    private readonly ReferenceList<IPackageReference> _analyzers = new();
 
     /// <summary>
     /// Gets the list of analyzer package references for this project.
@@ -144,7 +163,12 @@ public abstract class AbstractProjectModel<T> : IProjectModel where T : IProject
     /// Analyzers.Add(new PackageReference("Microsoft.CodeAnalysis.FxCopAnalyzers", "3.3.2"));
     /// </code>
     /// </remarks>
-    public List<IPackageReference>? Analyzers { get; protected set; } = new();
+    public IEnumerable<IPackageReference>? Analyzers => _analyzers.AsEnumerable();
+
+    /// <summary>
+    /// Holds additional custom properties for the project.
+    /// </summary>
+    private Reference<Dictionary<string, object>>? _additionalProperties = new();
 
     /// <summary>
     /// Gets additional custom properties for the project.
@@ -156,7 +180,14 @@ public abstract class AbstractProjectModel<T> : IProjectModel where T : IProject
     /// AdditionalProperties["CustomProperty"] = "Value";
     /// </code>
     /// </remarks>
-    public Dictionary<string, object>? AdditionalProperties { get; protected set; } = new();
+    public Dictionary<string, object> AdditionalProperties => _additionalProperties?.Resolved() ?? throw new NotResolvedException(nameof(AdditionalProperties));
+
+    /// <summary>
+    /// Contains references to declaration models associated with this instance.
+    /// </summary>
+    /// <remarks>The list may be null or empty if no declaration models are present. Modifying the collection
+    /// does not affect the underlying models themselves.</remarks>
+    private readonly ReferenceList<IDeclarationModel> _declarationModels = [];
 
     /// <summary>
     /// Gets the list of declaration models (e.g., classes, interfaces) defined in the project.
@@ -167,7 +198,7 @@ public abstract class AbstractProjectModel<T> : IProjectModel where T : IProject
     /// DeclarationModels.Add(new ClassDeclarationModel("MyClass"));
     /// </code>
     /// </remarks>
-    public List<IDeclarationModel>? DeclarationModels { get; protected set; } = new List<IDeclarationModel>();
+    public IEnumerable<IDeclarationModel>? DeclarationModels => _declarationModels.AsEnumerable();
 
     /// <summary>
     /// Gets the version identifier for the current instance.
@@ -217,11 +248,11 @@ public abstract class AbstractProjectModel<T> : IProjectModel where T : IProject
         string? langVersion,
         bool? nullable,
         bool? implicitUsings,
-        List<ProjectReference>? projectReferences,
-        List<IPackageReference>? packageReferences,
-        List<IPackageReference>? analyzers,
-        Dictionary<string, object>? additionalProperties,
-        List<IDeclarationModel>? declarationModels,
+        ReferenceList<ProjectReference>? projectReferences,
+        ReferenceList<IPackageReference>? packageReferences,
+        ReferenceList<IPackageReference>? analyzers,
+        Reference<Dictionary<string, object>>? additionalProperties,
+        ReferenceList<IDeclarationModel>? declarationModels,
         string? version,
         bool? generatePackageOnBuild,
         string? packageTags,
@@ -236,14 +267,24 @@ public abstract class AbstractProjectModel<T> : IProjectModel where T : IProject
         LangVersion = langVersion;
         Nullable = nullable;
         ImplicitUsings = implicitUsings;
-        ProjectReferences = projectReferences;
-        PackageReferences = packageReferences;
-        Analyzers = analyzers;
-        AdditionalProperties = additionalProperties;
-        DeclarationModels = declarationModels;
+        _projectReferences = projectReferences ?? new();
+        _packageReferences = packageReferences ?? new();
+        _analyzers = analyzers ?? new();
+        _additionalProperties = additionalProperties;
+        _declarationModels = declarationModels ?? new();
         Version = version;
         GeneratePackageOnBuild = generatePackageOnBuild;
-        PackageTags = packageTags.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToList();
+        PackageTags = packageTags?.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries).Select(t => t.Trim()).ToList();
         Authors = authors;
     }
+
+    /// <summary>
+    /// Sets the package version to be used for subsequent operations.
+    /// </summary>
+    /// <param name="packageVersion">The package version to associate with the current context. Cannot be null.</param>
+    public void WithPackageVersion(IPackageVersion packageVersion)
+    {
+        _packageVersion = new Reference<IPackageVersion>().Resolve(packageVersion);
+    }
+
 }

@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
-using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 using FrenchExDev.Net.CSharp.Object.Model.Testing;
 using Shouldly;
 
@@ -24,9 +23,7 @@ public class NamespaceDeclarationModelSyntaxCodeTests
             },
             assertResult: (result) =>
             {
-                result.ShouldBeAssignableTo<FailureObjectBuildResult<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>>();
-                var failedResult = result.Failure<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>();
-                failedResult.Exceptions.Count().ShouldBe(1);
+                result.Count().ShouldBe(1);
             });
     }
 
@@ -41,15 +38,15 @@ public class NamespaceDeclarationModelSyntaxCodeTests
             body: (builder) =>
             {
                 builder
-                .Name("FrenchExDev.MyDev.Lib")
-                .Class((b) =>
+                .WithName("FrenchExDev.MyDev.Lib")
+                .WithClass((b) =>
                 {
-                    b.Name("MyFoo")
-                    .Modifier(ClassModifier.Public)
-                    .Field(f => f
-                        .Modifier("private")
-                        .Type("int")
-                        .Name("_myField")
+                    b.WithName("MyFoo")
+                    .WithModifier(ClassModifier.Public)
+                    .WithField(f => f
+                        .WithModifier("private")
+                        .WithType("int")
+                        .WithName("_myField")
                         .Initializer("0"));
                 });
             }, assertBuiltModel: (@namespace) =>
@@ -59,10 +56,10 @@ public class NamespaceDeclarationModelSyntaxCodeTests
                 @namespace.Classes.Count.ShouldBe(1);
                 @namespace.Classes[0].Name.ShouldBe("MyFoo");
                 @namespace.Classes[0].Modifiers.ShouldContain(ClassModifier.Public);
-                @namespace.Classes[0].Fields.Count.ShouldBe(1);
-                @namespace.Classes[0].Fields[0].Name.ShouldBe("_myField");
-                @namespace.Classes[0].Fields[0].Type.ShouldBe("int");
-                @namespace.Classes[0].Fields[0].Modifiers.ShouldContain("private");
+                @namespace.Classes[0].Fields.Count().ShouldBe(1);
+                @namespace.Classes[0].Fields.ElementAt(0).Name.ShouldBe("_myField");
+                @namespace.Classes[0].Fields.ElementAt(0).Type.ShouldBe("int");
+                @namespace.Classes[0].Fields.ElementAt(0).Modifiers.ShouldContain("private");
 
             }, assertGeneratedCode: (namespaceGeneratedCode) =>
             {

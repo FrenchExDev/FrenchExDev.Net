@@ -5,7 +5,7 @@
 
 #endregion
 
-namespace FrenchexDev.VirtualBox.Net;
+namespace FrenchExDev.Net.VirtualBox.Version;
 
 /// <summary>
 /// Represents filters used to search for VirtualBox version information, specifying criteria such as an exact version

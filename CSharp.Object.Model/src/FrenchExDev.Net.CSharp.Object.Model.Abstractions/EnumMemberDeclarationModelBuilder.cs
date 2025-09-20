@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
@@ -8,20 +7,22 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// Provides a fluent interface to set the name, value, and attributes of an enum member.
 /// Ensures that the enum member name is provided before building the model.
 /// </summary>
-public class EnumMemberDeclarationModelBuilder : DeconstructedAbstractObjectBuilder<EnumMemberDeclarationModel, EnumMemberDeclarationModelBuilder>
+public class EnumMemberDeclarationModelBuilder : AbstractBuilder<EnumMemberDeclarationModel>, IDeclarationModelBuilder
 {
     /// <summary>
     /// Stores the name of the enum member to be created.
     /// </summary>
     private string? _name;
+
     /// <summary>
     /// Stores the value assigned to the enum member, or null if not set.
     /// </summary>
     private string? _value;
+
     /// <summary>
     /// Stores the list of attributes applied to the enum member.
     /// </summary>
-    private readonly List<AttributeDeclarationModel> _attributes = new();
+    private readonly List<AttributeDeclarationModel> _attributes = [];
 
     /// <summary>
     /// Sets the name of the enum member.
@@ -67,25 +68,21 @@ public class EnumMemberDeclarationModelBuilder : DeconstructedAbstractObjectBuil
     {
         ArgumentNullException.ThrowIfNull(_name);
 
-        return new EnumMemberDeclarationModel
-        {
-            Name = _name,
-            Value = _value,
-            Attributes = _attributes
-        };
+        return new(_name, _value, _attributes);
     }
 
     /// <summary>
-    /// Validates the current enum member and adds any validation errors to the specified exception dictionary.
+    /// Performs validation on the current enum member and records any validation failures encountered.
     /// </summary>
-    /// <param name="exceptions">A dictionary to which validation exceptions are added if the enum member is invalid.</param>
-    /// <param name="visited">A list of objects that have already been visited during validation to prevent redundant checks or circular
-    /// references.</param>
-    protected override void Validate(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
+    /// and circular references.</param>
+    /// <param name="failures">A dictionary for collecting validation failures. Any issues found during validation are added to this
+    /// collection.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(nameof(_name), new InvalidOperationException("Enum member name must be provided."));
+            failures.Failure(nameof(_name), new InvalidOperationException("Enum member name must be provided."));
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
+using FrenchExDev.Net.Dotnet.Project.Abstractions;
 using FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions;
 
 namespace FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType;
@@ -29,7 +30,7 @@ public class ClassProjectType
         .Name("Dummy")
         .Directory("/tmp")
         .Build()
-        .Success();
+        .Success<ClassProjectModel>();
 
     /// <summary>
     /// Configures the <see cref="ClassProjectModelBuilder"/> instance with default settings.
@@ -47,7 +48,7 @@ public class ClassProjectType
         .Sdk(Defaults.Sdk)
         .TargetFramework(Defaults.TargetFramework)
         .GeneratePackageOnBuild(Defaults.GeneratePackageOnBuild)
-        .PackageReferences(Defaults.PackageReferences ?? [])
+        .PackageReferences(Defaults.PackageReferences)
         .ProjectReferences(Defaults.ProjectReferences ?? [])
         .AdditionalProperties(Defaults.AdditionalProperties ?? [])
         ;

@@ -21,4 +21,8 @@
 		<Content Include="LICENSE" Link="LICENSE" Pack="true" PackagePath="LICENSE" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\HttpClient\src\FrenchExDev.Net.HttpClient\FrenchExDev.Net.HttpClient.csproj" />
+	</ItemGroup>
+
 </Project>

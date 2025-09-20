@@ -20,5 +20,9 @@
 		<Content Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="README.md" />
 		<Content Include="..\..\LICENSE" Link="LICENSE" Pack="true" PackagePath="LICENSE" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\CSharp.Object.Builder2\src\FrenchExDev.Net.CSharp.Object.Builder2\FrenchExDev.Net.CSharp.Object.Builder2.csproj" />
+	</ItemGroup>
 	
 </Project>

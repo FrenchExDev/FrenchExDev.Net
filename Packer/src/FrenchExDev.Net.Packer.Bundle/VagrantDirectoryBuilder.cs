@@ -7,9 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
-
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -31,7 +29,7 @@ namespace FrenchExDev.Net.Packer.Bundle;
 /// </code>
 /// </example>
 /// </remarks>
-public class VagrantDirectoryBuilder : DeconstructedAbstractObjectBuilder<VagrantDirectory, VagrantDirectoryBuilder>
+public class VagrantDirectoryBuilder : AbstractBuilder<VagrantDirectory>
 {
     /// <summary>
     /// Dictionary of files to include in the Vagrant directory, keyed by file name.
@@ -76,26 +74,25 @@ public class VagrantDirectoryBuilder : DeconstructedAbstractObjectBuilder<Vagran
     }
 
     /// <summary>
-    /// Validates the file entries and adds any detected validation errors to the specified exception dictionary.
+    /// Performs validation on the collection of files, recording any detected failures related to file properties.
     /// </summary>
-    /// <remarks>Validation errors are added for file properties that are empty, including extension, path,
-    /// and new line. This method does not throw exceptions directly; instead, it aggregates them in the provided
-    /// dictionary for later inspection.</remarks>
-    /// <param name="exceptions">A dictionary used to collect validation exceptions for each file property that fails validation.</param>
-    /// <param name="visited">A list of objects that have already been visited during validation to prevent redundant checks or circular
-    /// references.</param>
-    protected override void Validate(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <remarks>Validation checks include ensuring that each file's extension, path, and new line properties
+    /// are not empty. Any violations are reported through the failures dictionary.</remarks>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
+    /// <param name="failures">A dictionary for collecting validation failures. Any issues found during validation are added to this
+    /// collection.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         foreach (var file in _files)
         {
             if (file.Value.Extension is "")
-                exceptions.Add(nameof(file.Value.Extension), new ArgumentException("File extension cannot be empty.", nameof(file.Value.Extension)));
+                failures.Failure(nameof(file.Value.Extension), new ArgumentException("File extension cannot be empty.", nameof(file.Value.Extension)));
 
             if (file.Value.Path is "")
-                exceptions.Add(nameof(file.Value.Path), new ArgumentException("File path cannot be empty.", nameof(file.Value.Path)));
+                failures.Failure(nameof(file.Value.Path), new ArgumentException("File path cannot be empty.", nameof(file.Value.Path)));
 
             if (file.Value.NewLine is "")
-                exceptions.Add(nameof(file.Value.NewLine), new ArgumentException("File new line cannot be empty.", nameof(file.Value.NewLine)));
+                failures.Failure(nameof(file.Value.NewLine), new ArgumentException("File new line cannot be empty.", nameof(file.Value.NewLine)));
         }
     }
 }

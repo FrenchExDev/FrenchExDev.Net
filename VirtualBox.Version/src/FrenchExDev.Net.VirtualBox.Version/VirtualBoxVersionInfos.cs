@@ -5,7 +5,7 @@
 
 #endregion
 
-namespace FrenchexDev.VirtualBox.Net;
+namespace FrenchExDev.Net.VirtualBox.Version;
 
 /// <summary>
 /// Represents VirtualBox version information, including the version string and the SHA-256 hash of the associated Guest

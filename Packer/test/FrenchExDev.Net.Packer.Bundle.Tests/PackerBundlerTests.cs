@@ -8,20 +8,21 @@
 #region Usings
 
 using ByteSizeLib;
+using FenchExDev.Net.Testing;
 using Figgle;
 using FrenchExDev.Net.Alpine.Version;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
 using FrenchExDev.Net.Packer.Bundle;
 using FrenchExDev.Net.Packer.Bundle.Testing;
 using Shouldly;
 using System.Globalization;
-using File = FrenchExDev.Net.Packer.Bundle.File;
 
 #endregion
 
 namespace FrenchexDev.Packer.Net.PackerBundler.Tests;
 
-[Trait("test", "unit")]
+[Feature(nameof(PackerBundle), TestKind.Unit)]
+[Trait(Internet.Test, Internet.Offline)]
+[Trait(Kind.Test, Kind.Unit)]
 public class PackerBundlerTests : PackerBundlerTests<PackerBundlerTester>
 {
     [Fact]
@@ -52,8 +53,8 @@ public class PackerBundlerTests : PackerBundlerTests<PackerBundlerTester>
                 var @override = new ProvisionerOverrideBuilder()
                     .VirtualBoxIso(new VirtualBoxIsoProvisionerOverrideBuilder()
                         .ExecuteCommand("{{.Vars}} /bin/sh {{.Path}}")
-                        .Build().Success())
-                    .Build();
+                        .BuildSuccess())
+                    .BuildSuccess();
 
                 builder
                     .PackerFile(packerFileBuilder =>
@@ -146,7 +147,7 @@ public class PackerBundlerTests : PackerBundlerTests<PackerBundlerTester>
                                     .AddScript("scripts/04sudoers.sh")
                                     .AddScript("scripts/05cron.sh")
                                     .AddScript("scripts/99reboot.sh")
-                                    .Override(@override.Success());
+                                    .Override(@override);
                             })
                             .Provisioner(provisionerBuilder =>
                             {
@@ -155,7 +156,7 @@ public class PackerBundlerTests : PackerBundlerTests<PackerBundlerTester>
                                     .PauseBefore("20s")
                                     .AddScript("scripts/99minimize.sh")
                                     .AddScript("scripts/99disable-ssh-root.sh")
-                                    .Override(@override.Success());
+                                    .Override(@override);
                             })
                             .PostProcessor(postProcessorBuilder =>
                             {
@@ -195,7 +196,7 @@ public class PackerBundlerTests : PackerBundlerTests<PackerBundlerTester>
                     .HttpDirectory(httpDirectoryBuilder =>
                     {
                         httpDirectoryBuilder
-                            .AddFile("answers", new File()
+                            .AddFile("answers", new FileBuilder()
                                 .AddLine("""
                                          KEYMAPOPTS="us us"
                                          """)
@@ -216,16 +217,17 @@ public class PackerBundlerTests : PackerBundlerTests<PackerBundlerTester>
                                 .AddLine(@"DISKOPTS=""-m sys /dev/sda""")
                                 .AddLine("LBUOPTS=none")
                                 .AddLine("APKCACHEOPTS=none")
-                                .AddLine("export ERASE_DISKS=/dev/sda"))
-                            .AddFile("ssh.keys", new File()
+                                .AddLine("export ERASE_DISKS=/dev/sda")
+                                .BuildSuccess())
+                            .AddFile("ssh.keys", new FileBuilder()
                                 .AddLine(
-                                    "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key"))
+                                    "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key").BuildSuccess())
                             ;
                     })
                     .VagrantDirectory(vagrantDirectoryBuilder =>
                     {
                         vagrantDirectoryBuilder
-                            .AddFile("info.json", new File().AddLines("""
+                            .AddFile("info.json", new FileBuilder().AddLines("""
                                                                       {
                                                                           "Author": "Stéphane Erard",
                                                                           "Website": "",
@@ -233,15 +235,15 @@ public class PackerBundlerTests : PackerBundlerTests<PackerBundlerTester>
                                                                           "Repository": "",
                                                                           "Description": "Alpine image for development"
                                                                       }
-                                                                      """, eol))
-                            .AddFile("Vagrantfile", new File().AddLines("""
+                                                                      """, eol).BuildSuccess())
+                            .AddFile("Vagrantfile", new FileBuilder().AddLines("""
                                                                         Vagrant.configure('2') do |config|
                                                                           config.vm.provider 'virtualbox' do |v|
                                                                             v.cpus = 1
                                                                             v.memory = "128"
                                                                           end
                                                                         end
-                                                                        """, eol));
+                                                                        """, eol).BuildSuccess());
                     })
                     .Directory("output-vagrant")
                     .Script("scripts/00base.sh", scriptBuilder =>

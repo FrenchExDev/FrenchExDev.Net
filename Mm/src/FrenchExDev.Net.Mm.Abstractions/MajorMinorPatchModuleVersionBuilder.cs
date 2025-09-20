@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.Mm.Abstractions;
 
@@ -10,7 +9,7 @@ namespace FrenchExDev.Net.Mm.Abstractions;
 /// <remarks>This class follows the builder pattern, allowing the caller to configure version components  (major,
 /// minor, and patch) incrementally using method chaining. Once all desired components  are set, the <see cref="Build"/>
 /// method can be called to produce a new  <see cref="MajorMinorPatchModuleVersion"/> instance.</remarks>
-public class MajorMinorPatchModuleVersionBuilder : AbstractObjectBuilder<MajorMinorPatchModuleVersion, MajorMinorPatchModuleVersionBuilder>
+public class MajorMinorPatchModuleVersionBuilder : AbstractBuilder<MajorMinorPatchModuleVersion>
 {
     /// <summary>
     /// Holds the major, minor, and patch version components.
@@ -50,43 +49,46 @@ public class MajorMinorPatchModuleVersionBuilder : AbstractObjectBuilder<MajorMi
         return this;
     }
 
+
     /// <summary>
-    /// Builds an object representing a major, minor, and patch version, validating the required components.
+    /// Creates a new instance of the module version using the specified major, minor, and patch values.
     /// </summary>
-    /// <remarks>This method ensures that the major, minor, and patch components are provided and have valid
-    /// values. If any of these components are missing, corresponding exceptions are added to the <paramref
-    /// name="exceptions"/> list.</remarks>
-    /// <param name="exceptions">A collection to which any validation exceptions encountered during the build process are added.</param>
-    /// <param name="visited">A list of objects that have already been visited during the build process to prevent circular references.</param>
-    /// <returns>An <see cref="IObjectBuildResult{MajorMinorPatchModuleVersion}"/> representing the result of the build
-    /// operation. If validation fails, the result contains the collected exceptions; otherwise, it contains the
-    /// successfully built version object.</returns>
-    protected override IObjectBuildResult<MajorMinorPatchModuleVersion> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <remarks>Throws an <see cref="ArgumentNullException"/> if any of the major, minor, or patch values are
+    /// not set. This method is typically called by derived classes to construct a version object based on validated
+    /// input.</remarks>
+    /// <returns>A <see cref="MajorMinorPatchModuleVersion"/> object initialized with the current major, minor, and patch values.</returns>
+    protected override MajorMinorPatchModuleVersion Instantiate()
     {
-        if (_major == null || !_major.HasValue)
-        {
-            exceptions.Add(nameof(_major), new ArgumentNullException(nameof(_major), "Major version is required."));
-        }
-
-        if (_minor == null || !_minor.HasValue)
-        {
-            exceptions.Add(nameof(_minor), new ArgumentNullException(nameof(_minor), "Minor version is required."));
-        }
-
-        if (_patch == null || !_patch.HasValue)
-        {
-            exceptions.Add(nameof(_patch), new ArgumentNullException(nameof(_patch), "Patch version is required."));
-        }
-
-        if (exceptions.Any())
-        {
-            return Failure(exceptions, visited);
-        }
-
         ArgumentNullException.ThrowIfNull(_major);
         ArgumentNullException.ThrowIfNull(_minor);
         ArgumentNullException.ThrowIfNull(_patch);
 
-        return Success(new MajorMinorPatchModuleVersion(_major.Value, _minor.Value, _patch.Value));
+        return new(_major.Value, _minor.Value, _patch.Value);
+    }
+
+    /// <summary>
+    /// Performs validation of the version components and records any validation failures encountered.
+    /// </summary>
+    /// <remarks>This method checks that the major, minor, and patch version fields are present and valid. If
+    /// any required component is missing, an appropriate failure is recorded in the provided failures
+    /// dictionary.</remarks>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
+    /// <param name="failures">A dictionary for collecting validation failures. Any missing or invalid version components are reported here.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
+        if (_major == null || !_major.HasValue)
+        {
+            failures.Failure(nameof(_major), new ArgumentNullException(nameof(_major), "Major version is required."));
+        }
+
+        if (_minor == null || !_minor.HasValue)
+        {
+            failures.Failure(nameof(_minor), new ArgumentNullException(nameof(_minor), "Minor version is required."));
+        }
+
+        if (_patch == null || !_patch.HasValue)
+        {
+            failures.Failure(nameof(_patch), new ArgumentNullException(nameof(_patch), "Patch version is required."));
+        }
     }
 }

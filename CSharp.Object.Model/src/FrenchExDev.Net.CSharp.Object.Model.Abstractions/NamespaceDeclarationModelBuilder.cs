@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
@@ -18,7 +17,7 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// var result = builder.Build();
 /// </code>
 /// </remarks>
-public class NamespaceDeclarationModelBuilder : AbstractObjectBuilder<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>
+public class NamespaceDeclarationModelBuilder : AbstractBuilder<NamespaceDeclarationModel>, IDeclarationModelBuilder
 {
     /// <summary>
     /// Stores the name of the namespace to be built.
@@ -35,27 +34,27 @@ public class NamespaceDeclarationModelBuilder : AbstractObjectBuilder<NamespaceD
     /// <summary>
     /// Stores the list of interface builders for the namespace.
     /// </summary>
-    private readonly List<InterfaceDeclarationModelBuilder> _interfaces = new();
+    private readonly BuilderList<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder> _interfaces = [];
 
     /// <summary>
     /// Stores the list of class builders for the namespace.
     /// </summary>
-    private readonly List<ClassDeclarationModelBuilder> _classes = new();
+    private readonly BuilderList<ClassDeclarationModel, ClassDeclarationModelBuilder> _classes = [];
 
     /// <summary>
     /// Stores the list of enum builders for the namespace.
     /// </summary>
-    private readonly List<EnumDeclarationModelBuilder> _enums = new();
+    private readonly BuilderList<EnumDeclarationModel, EnumDeclarationModelBuilder> _enums = [];
 
     /// <summary>
     /// Stores the list of struct builders for the namespace.
     /// </summary>
-    private readonly List<StructDeclarationModelBuilder> _structs = new();
+    private readonly BuilderList<StructDeclarationModel, StructDeclarationModelBuilder> _structs = [];
 
     /// <summary>
     /// Stores the list of nested namespace builders for the namespace.
     /// </summary>
-    private readonly List<NamespaceDeclarationModelBuilder> _nestedNamespaces = new();
+    private readonly BuilderList<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder> _nestedNamespaces = [];
 
     /// <summary>
     /// Sets the name of the namespace.
@@ -65,7 +64,7 @@ public class NamespaceDeclarationModelBuilder : AbstractObjectBuilder<NamespaceD
     /// <example>
     /// builder.Name("MyCompany.MyProduct.Core");
     /// </example>
-    public NamespaceDeclarationModelBuilder Name(string name)
+    public NamespaceDeclarationModelBuilder WithName(string name)
     {
         _name = name;
         return this;
@@ -115,7 +114,7 @@ public class NamespaceDeclarationModelBuilder : AbstractObjectBuilder<NamespaceD
     /// <example>
     /// builder.Class(c => c.Name("MyClass"));
     /// </example>
-    public NamespaceDeclarationModelBuilder Class(Action<ClassDeclarationModelBuilder> classBuilder)
+    public NamespaceDeclarationModelBuilder WithClass(Action<ClassDeclarationModelBuilder> classBuilder)
     {
         var builder = new ClassDeclarationModelBuilder();
         classBuilder(builder);
@@ -172,56 +171,55 @@ public class NamespaceDeclarationModelBuilder : AbstractObjectBuilder<NamespaceD
     }
 
     /// <summary>
-    /// Builds the <see cref="NamespaceDeclarationModel"/> instance, validating required properties and collecting build errors from nested builders.
+    /// Builds the internal representation of the namespace by processing its contained interfaces, classes, enums,
+    /// structs, and nested namespaces.
     /// </summary>
-    /// <param name="exceptions">A list to collect build exceptions.</param>
-    /// <param name="visited">A list of visited objects for cycle detection.</param>
-    /// <returns>A build result containing either the constructed model or failure details.</returns>
-    /// <remarks>
-    /// This method builds all nested elements (interfaces, classes, enums, structs, and nested namespaces) and aggregates any exceptions.
-    /// If the namespace name is not provided or any nested builder fails, a failure result is returned.
-    /// </remarks>
-    protected override IObjectBuildResult<NamespaceDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <remarks>This method is typically called as part of a recursive traversal when constructing a model of
+    /// the namespace and its members. The provided collector should be reused across recursive calls to ensure
+    /// consistency.</remarks>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during the build process. This helps prevent
+    /// redundant processing and circular references.</param>
+    protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
+    {
+        BuildList(_interfaces, visitedCollector);
+        BuildList(_classes, visitedCollector);
+        BuildList(_enums, visitedCollector);
+        BuildList(_structs, visitedCollector);
+        BuildList(_nestedNamespaces, visitedCollector);
+    }
+
+    /// <summary>
+    /// Performs validation logic specific to the current object and records any validation failures encountered.
+    /// </summary>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
+    /// and circular references.</param>
+    /// <param name="failures">A dictionary for collecting validation failures, where each failure is recorded with its associated property
+    /// name and exception details.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(nameof(_name), new InvalidOperationException("Namespace name must be provided."));
+            failures.Failure(nameof(_name), new InvalidOperationException("Namespace name must be provided."));
         }
+    }
 
-        var interfaces = BuildBuildList<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(_interfaces, visited);
-        AddExceptions<InterfaceDeclarationModel, InterfaceDeclarationModelBuilder>(nameof(_interfaces), interfaces, exceptions);
-
-        var enums = BuildBuildList<EnumDeclarationModel, EnumDeclarationModelBuilder>(_enums, visited);
-        AddExceptions<EnumDeclarationModel, EnumDeclarationModelBuilder>(nameof(_enums), enums, exceptions);
-
-        var classes = BuildBuildList<ClassDeclarationModel, ClassDeclarationModelBuilder>(_classes, visited);
-        AddExceptions<ClassDeclarationModel, ClassDeclarationModelBuilder>(nameof(_classes), classes, exceptions);
-
-        var structs = BuildBuildList<StructDeclarationModel, StructDeclarationModelBuilder>(_structs, visited);
-        AddExceptions<StructDeclarationModel, StructDeclarationModelBuilder>(nameof(_structs), structs, exceptions);
-
-        var nestedNamespaces = BuildBuildList<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>(_nestedNamespaces, visited);
-        AddExceptions<NamespaceDeclarationModel, NamespaceDeclarationModelBuilder>(nameof(_nestedNamespaces), nestedNamespaces, exceptions);
-
-        // Return failure if any exceptions were collected
-        if (exceptions.Any())
-        {
-            return Failure(exceptions, visited);
-        }
-
-        // Ensure the namespace name is not null before proceeding
-        ArgumentNullException.ThrowIfNull(_name);
-
-        // Return a successful build result with the constructed NamespaceDeclarationModel
-        return Success(new NamespaceDeclarationModel
-        {
-            Name = _name,
-            Scoping = _scoping,
-            Interfaces = interfaces.ToResultList(),
-            Classes = classes.ToResultList(),
-            Enums = enums.ToResultList(),
-            Structs = structs.ToResultList(),
-            NestedNamespaces = nestedNamespaces.ToResultList()
-        });
+    /// <summary>
+    /// Creates a new instance of the namespace declaration model using the configured name, scoping, and member
+    /// collections.
+    /// </summary>
+    /// <returns>A <see cref="NamespaceDeclarationModel"/> representing the namespace with its associated scoping, interfaces,
+    /// classes, enums, structs, and nested namespaces.</returns>
+    /// <exception cref="MissingMemberException">Thrown if the scoping information has not been set prior to instantiation.</exception>
+    protected override NamespaceDeclarationModel Instantiate()
+    {
+        return new(
+            name: _name!,
+            scoping: _scoping ?? throw new MissingMemberException(),
+            interfaces: _interfaces.AsReferenceList(),
+            classes: _classes.AsReferenceList(),
+            enums: _enums.AsReferenceList(),
+            structs: _structs.AsReferenceList(),
+            nestedNamespaces: _nestedNamespaces.AsReferenceList()
+        );
     }
 }

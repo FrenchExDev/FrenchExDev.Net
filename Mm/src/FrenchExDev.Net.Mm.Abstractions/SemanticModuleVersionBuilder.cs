@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.Mm.Abstractions;
 
@@ -10,15 +9,31 @@ namespace FrenchExDev.Net.Mm.Abstractions;
 /// cref="SemanticModuleVersion"/> components such as major, minor, patch, pre-release,  and build metadata. Once all
 /// desired components are set, the <see cref="Build"/> method  can be called to produce a fully constructed <see
 /// cref="SemanticModuleVersion"/> instance.</remarks>
-public class SemanticModuleVersionBuilder : AbstractObjectBuilder<SemanticModuleVersion, SemanticModuleVersionBuilder>
+public class SemanticModuleVersionBuilder : AbstractBuilder<SemanticModuleVersion>
 {
     /// <summary>
     /// Holds the components of the semantic version being built.
     /// </summary>
     private int _major;
+
+    /// <summary>
+    /// Holds the components of the semantic version being built.
+    /// </summary>
     private int _minor;
+
+    /// <summary>
+    /// Holds the components of the semantic version being built.
+    /// </summary>
     private int _patch;
+
+    /// <summary>
+    /// Holds the components of the semantic version being built.
+    /// </summary>
     private string _preRelease = string.Empty;
+
+    /// <summary>
+    /// Holds the components of the semantic version being built.
+    /// </summary>
     private string _buildMetadata = string.Empty;
 
     /// <summary>
@@ -77,34 +92,38 @@ public class SemanticModuleVersionBuilder : AbstractObjectBuilder<SemanticModule
     }
 
     /// <summary>
-    /// Builds an instance of <see cref="SemanticModuleVersion"/>, validating the required components.
+    /// Validates the version components and records any failures for negative values.
     /// </summary>
-    /// <param name="exceptions"></param>
-    /// <param name="visited"></param>
-    /// <returns></returns>
-    protected override IObjectBuildResult<SemanticModuleVersion> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <remarks>This method checks that the major, minor, and patch version components are non-negative. Any
+    /// violations are added to the failures dictionary for further processing.</remarks>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
+    /// <param name="failures">A dictionary for collecting validation failures, where any detected errors are recorded.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
-
         if (_major < 0)
         {
-            exceptions.Add(nameof(_major), new InvalidDataException($"The {nameof(Major)} version component cannot be negative."));
+            failures.Failure(nameof(_major), new InvalidDataException($"The {nameof(Major)} version component cannot be negative."));
         }
 
         if (_minor < 0)
         {
-            exceptions.Add(nameof(_minor), new InvalidDataException($"The {nameof(Minor)} version component cannot be negative."));
+            failures.Failure(nameof(_minor), new InvalidDataException($"The {nameof(Minor)} version component cannot be negative."));
         }
 
         if (_patch < 0)
         {
-            exceptions.Add(nameof(_patch), new InvalidDataException($"The {nameof(Patch)} version component cannot be negative."));
+            failures.Failure(nameof(_patch), new InvalidDataException($"The {nameof(Patch)} version component cannot be negative."));
         }
+    }
 
-        if (exceptions.Count > 0)
-        {
-            return new FailureObjectBuildResult<SemanticModuleVersion, SemanticModuleVersionBuilder>(this, exceptions, visited);
-        }
-
-        return new SuccessObjectBuildResult<SemanticModuleVersion>(new SemanticModuleVersion(_major, _minor, _patch, _preRelease, _buildMetadata));
+    /// <summary>
+    /// Creates a new instance of the semantic module version using the current major, minor, patch, pre-release, and
+    /// build metadata values.
+    /// </summary>
+    /// <returns>A <see cref="SemanticModuleVersion"/> object representing the semantic version constructed from the current
+    /// state.</returns>
+    protected override SemanticModuleVersion Instantiate()
+    {
+        return new SemanticModuleVersion(_major, _minor, _patch, _preRelease, _buildMetadata);
     }
 }

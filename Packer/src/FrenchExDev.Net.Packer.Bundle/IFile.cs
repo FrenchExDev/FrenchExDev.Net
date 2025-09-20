@@ -9,11 +9,8 @@ namespace FrenchExDev.Net.Packer.Bundle;
 
 public interface IFile
 {
-    string Name { get; init; }
-    string Extension { get; init; }
-    string Path { get; init; }
+    string Name { get; }
+    string Extension { get; }
+    string Path { get; }
     string NewLine { get; }
-    File SetNewLine(string newLine);
-    File AddLine(string value);
-    File AddLines(string[] value);
 }

@@ -1,4 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 using FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions;
 
 namespace FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing;
@@ -37,7 +37,7 @@ public class ClassProjectTypeTester
     {
         var builder = new ClassProjectModelBuilder();
         body(builder);
-        var result = builder.Build().Success();
+        var result = builder.Build().Success<ClassProjectModel>();
         assertBuiltModel(result);
     }
 
@@ -51,12 +51,12 @@ public class ClassProjectTypeTester
     /// </remarks>
     public static void Invalid(
         Action<ClassProjectModelBuilder> body,
-        Action<IObjectBuildResult<ClassProjectModel>> assertBuildResult
+        Action<FailuresDictionary> assertBuildResult
         )
     {
         var builder = new ClassProjectModelBuilder();
         body(builder);
-        var result = builder.Build().Failure<ClassProjectModel, ClassProjectModelBuilder>();
+        var result = builder.Build().Failures<ClassProjectModel>();
         assertBuildResult(result);
     }
 }

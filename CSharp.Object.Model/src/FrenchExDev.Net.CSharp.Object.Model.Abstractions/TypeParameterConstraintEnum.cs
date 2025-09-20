@@ -27,5 +27,12 @@ public enum TypeParameterConstraintEnum
     /// <summary>
     /// The type parameter must be non-nullable (notnull constraint).
     /// </summary>
-    NotNull
+    NotNull,
+    /// <summary>
+    /// Represents an enumeration type, providing a set of named constants.
+    /// </summary>
+    /// <remarks>Use enumeration types to define a group of related named values that can be assigned to
+    /// variables. Enumerations improve code readability and maintainability by replacing numeric constants with
+    /// descriptive names.</remarks>
+    Enum
 }

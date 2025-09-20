@@ -1,4 +1,4 @@
-namespace FrenchexDev.VirtualBox.Net;
+namespace FrenchExDev.Net.VirtualBox.Version;
 
 /// <summary>
 /// Represents a version identifier for VirtualBox, including major, minor, patch, and release number components.

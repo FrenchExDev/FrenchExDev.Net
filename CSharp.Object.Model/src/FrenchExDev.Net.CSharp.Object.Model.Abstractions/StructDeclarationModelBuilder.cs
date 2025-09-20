@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
@@ -18,7 +17,7 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// var result = builder.Build();
 /// </code>
 /// </remarks>
-public class StructDeclarationModelBuilder : AbstractObjectBuilder<StructDeclarationModel, StructDeclarationModelBuilder>
+public class StructDeclarationModelBuilder : AbstractBuilder<StructDeclarationModel>, IDeclarationModelBuilder
 {
     /// <summary>
     /// Stores the name of the struct to be built.
@@ -27,11 +26,11 @@ public class StructDeclarationModelBuilder : AbstractObjectBuilder<StructDeclara
     /// <summary>
     /// Gets the list of modifiers applied to the struct (e.g., public, readonly).
     /// </summary>
-    public List<StructModifier> Modifiers { get; } = new();
+    public List<StructModifier> Modifiers { get; } = [];
     /// <summary>
     /// Stores the list of attributes applied to the struct.
     /// </summary>
-    private readonly List<AttributeDeclarationModel> _attributes = new();
+    private readonly List<AttributeDeclarationModel> _attributes = [];
 
     /// <summary>
     /// Sets the name of the struct.
@@ -76,37 +75,30 @@ public class StructDeclarationModelBuilder : AbstractObjectBuilder<StructDeclara
     }
 
     /// <summary>
-    /// Builds the <see cref="StructDeclarationModel"/> instance, validating required properties.
+    /// Performs validation logic for the current object, recording any validation failures encountered.
     /// </summary>
-    /// <param name="exceptions">A list to collect build exceptions.</param>
-    /// <param name="visited">A list of visited objects for cycle detection.</param>
-    /// <returns>A build result containing either the constructed model or failure details.</returns>
-    /// <remarks>
-    /// This method ensures that the struct name is provided. If not, a failure result is returned.
-    /// </remarks>
-    protected override IObjectBuildResult<StructDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
+    /// and circular references.</param>
+    /// <param name="failures">A dictionary for collecting validation failures. Any issues found during validation are added to this
+    /// collection.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
-        // Validate that the struct name is provided
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(nameof(_name), new InvalidOperationException("Struct name must be provided."));
+            failures.Failure(nameof(_name), new InvalidOperationException("Struct name must be provided."));
         }
+    }
 
-        // Return failure if any exceptions were collected
-        if (exceptions.Any())
-        {
-            return Failure(exceptions, visited);
-        }
+    /// <summary>
+    /// Creates a new instance of <see cref="StructDeclarationModel"/> using the current attributes, modifiers, and
+    /// name.
+    /// </summary>
+    /// <returns>A <see cref="StructDeclarationModel"/> initialized with the configured attributes, modifiers, and name.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the struct name has not been set.</exception>
+    protected override StructDeclarationModel Instantiate()
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(_name);
 
-        // Ensure the struct name is not null before proceeding
-        ArgumentNullException.ThrowIfNull(_name);
-
-        // Return a successful build result with the constructed StructDeclarationModel
-        return Success(new StructDeclarationModel
-        {
-            Name = _name,
-            Modifiers = Modifiers,
-            Attributes = _attributes
-        });
+        return new StructDeclarationModel(_name, Modifiers, _attributes);
     }
 }

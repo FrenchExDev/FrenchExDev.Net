@@ -7,9 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
-
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -35,7 +33,7 @@ namespace FrenchExDev.Net.Packer.Bundle;
 /// </code>
 /// </example>
 /// </remarks>
-public class PackerBundleBuilder : AbstractObjectBuilder<PackerBundle, PackerBundleBuilder>
+public class PackerBundleBuilder : AbstractBuilder<PackerBundle>
 {
     /// <summary>
     /// List of directories to include in the bundle.
@@ -150,57 +148,35 @@ public class PackerBundleBuilder : AbstractObjectBuilder<PackerBundle, PackerBun
     }
 
     /// <summary>
-    /// Builds a new instance of a <see cref="PackerBundle"/> by aggregating results from its component builders and
-    /// directories.
+    /// Performs validation logic for the current object, recording visited objects and any validation failures
+    /// encountered.
     /// </summary>
-    /// <remarks>If any component builder fails, its exceptions are added to the <paramref name="exceptions"/>
-    /// dictionary, and the method returns a failure result. The <paramref name="visited"/> list helps avoid processing
-    /// the same object multiple times, which is useful in scenarios with cyclic references.</remarks>
-    /// <param name="exceptions">A dictionary used to collect exceptions encountered during the build process. Exceptions from failed component
-    /// builds are added to this dictionary.</param>
-    /// <param name="visited">A list of objects that have already been visited during the build process. Used to prevent redundant processing
-    /// and handle cyclic dependencies.</param>
-    /// <returns>An <see cref="IObjectBuildResult{PackerBundle}"/> representing the outcome of the build operation. Returns a
-    /// successful result containing the constructed <see cref="PackerBundle"/> if all components build successfully;
-    /// otherwise, returns a failure result with collected exceptions.</returns>
-    protected override IObjectBuildResult<PackerBundle> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
+    /// or circular references.</param>
+    /// <param name="failures">A dictionary for collecting validation failures, where each entry represents a specific validation error found
+    /// during processing.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
-        var packerFileBuildResult = _packerFileBuilder.Build();
-        if (packerFileBuildResult is FailureObjectBuildResult<PackerFile, PackerFileBuilder> failure)
-            exceptions.Add(nameof(_packerFileBuilder), failure.Exceptions);
+    }
 
-        var httpDirectoryBuildResult = _httpDirectory.Build(visited);
-        if (httpDirectoryBuildResult is FailureObjectBuildResult<HttpDirectory, HttpDirectoryBuilder> httpFailure)
-            exceptions.Add(nameof(_httpDirectory), httpFailure.Exceptions);
-
-        var vagrantDirectoryBuildResult = _vagrantDirectory.Build(visited);
-        if (vagrantDirectoryBuildResult is FailureObjectBuildResult<VagrantDirectory, VagrantDirectoryBuilder> vagrantFailure)
-            exceptions.Add(nameof(_vagrantDirectory), vagrantFailure.Exceptions);
-
-        var scripts = new Dictionary<string, IScript>();
-        foreach (var k in _scriptsBuilders)
+    /// <summary>
+    /// Creates and returns a new instance of the <see cref="PackerBundle"/> class populated with the current
+    /// configuration and built components.
+    /// </summary>
+    /// <remarks>The returned <see cref="PackerBundle"/> reflects the current state of the builder and its
+    /// associated components. Subsequent changes to the builder will not affect the previously instantiated
+    /// bundle.</remarks>
+    /// <returns>A <see cref="PackerBundle"/> instance containing the configured packer file, directories, scripts, and plugins.</returns>
+    protected override PackerBundle Instantiate()
+    {
+        return new PackerBundle()
         {
-            var list = k.Value.Build(visited);
-            if (list is FailureObjectBuildResult<ShellScript, ShellScriptBuilder> failureList)
-            {
-                exceptions.Add(nameof(_scriptsBuilders), failureList.Exceptions);
-                continue;
-            }
-
-            scripts[k.Key] = list.Success();
-        }
-
-        if (exceptions.Count > 0)
-            return Failure(exceptions, visited);
-
-        return Success(new PackerBundle()
-        {
-            PackerFile = packerFileBuildResult.Success(),
-            HttpDirectory = httpDirectoryBuildResult.Success(),
-            VagrantDirectory = vagrantDirectoryBuildResult.Success(),
+            PackerFile = _packerFileBuilder.Build().Success<PackerFile>(),
+            HttpDirectory = _httpDirectory.Build().Success<HttpDirectory>(),
+            VagrantDirectory = _vagrantDirectory.Build().Success<VagrantDirectory>(),
             Directories = _directories,
-            Scripts = scripts,
+            Scripts = _scriptsBuilders.Build(),
             Plugins = _plugins
-        });
+        };
     }
 }

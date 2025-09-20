@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
@@ -8,7 +7,7 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// Provides a fluent interface to set the main constraint and additional constraints for a type parameter.
 /// Ensures that at least one constraint is provided before building the model.
 /// </summary>
-public class FreeTypeParameterConstraintDeclarationModelBuilder : AbstractObjectBuilder<FreeTypeParameterConstraintDeclarationModel, FreeTypeParameterConstraintDeclarationModelBuilder>
+public class FreeTypeParameterConstraintDeclarationModelBuilder : AbstractBuilder<FreeTypeParameterConstraintDeclarationModel>, IDeclarationModelBuilder
 {
     /// <summary>
     /// Stores the main type parameter constraint (e.g., class, struct, new, notnull).
@@ -17,7 +16,7 @@ public class FreeTypeParameterConstraintDeclarationModelBuilder : AbstractObject
     /// <summary>
     /// Stores the list of additional constraints as strings (e.g., interface names, base types).
     /// </summary>
-    private readonly List<string> _constraints = new();
+    private readonly List<string> _constraints = [];
 
     /// <summary>
     /// Sets the main type parameter constraint.
@@ -42,29 +41,27 @@ public class FreeTypeParameterConstraintDeclarationModelBuilder : AbstractObject
     }
 
     /// <summary>
-    /// Builds the <see cref="FreeTypeParameterConstraintDeclarationModel"/> instance, validating that at least one constraint is provided.
+    /// Performs validation on the current object and records any validation failures encountered.
     /// </summary>
-    /// <param name="exceptions">A list to collect build exceptions.</param>
-    /// <param name="visited">A list of visited objects for cycle detection.</param>
-    /// <returns>A build result containing either the constructed model or failure details.</returns>
-    protected override IObjectBuildResult<FreeTypeParameterConstraintDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
+    /// and circular references.</param>
+    /// <param name="failures">A dictionary for collecting validation failures. Any detected issues are added to this collection.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
-        // Validate that at least one constraint is provided
-        if (_constraint == null && !_constraints.Any())
+        if (_constraint == null && _constraints.Count == 0)
         {
-            exceptions.Add(nameof(_constraint), new InvalidOperationException("At least one constraint must be provided."));
+            failures.Failure(nameof(_constraint), new InvalidOperationException("At least one constraint must be provided."));
         }
+    }
 
-        // If there are any exceptions, return a failure result
-        if (exceptions.Any())
-        {
-            return Failure(exceptions, visited);
-        }
-
-        return Success(new FreeTypeParameterConstraintDeclarationModel
-        {
-            Constraint = _constraint,
-            Constraints = _constraints
-        });
+    /// <summary>
+    /// Creates a new instance of the <see cref="FreeTypeParameterConstraintDeclarationModel"/> initialized with the
+    /// current constraint values.
+    /// </summary>
+    /// <returns>A <see cref="FreeTypeParameterConstraintDeclarationModel"/> containing the constraint and constraints associated
+    /// with this declaration.</returns>
+    protected override FreeTypeParameterConstraintDeclarationModel Instantiate()
+    {
+        return new(_constraint, _constraints);
     }
 }

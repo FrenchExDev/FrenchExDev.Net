@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11012.119 d18.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1FD2B7D0-C7A9-403E-A493-410CD283A465}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0BECAEEF-C9D0-4A4C-9B63-8163FF3B21BD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Builder2", "src\FrenchExDev.Net.CSharp.Object.Builder2\FrenchExDev.Net.CSharp.Object.Builder2.csproj", "{D14939BA-F396-8FEF-9BE6-4B07A1F7CC17}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Builder2.Testing", "src\FrenchExDev.Net.CSharp.Object.Builder2.Testing\FrenchExDev.Net.CSharp.Object.Builder2.Testing.csproj", "{FB96287D-9671-638E-B73D-D63EA5A9F798}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Builder2.Tests", "test\FrenchExDev.Net.CSharp.Object.Builder2.Tests\FrenchExDev.Net.CSharp.Object.Builder2.Tests.csproj", "{3CBC26E5-D585-2130-C5CE-9FFDBEE28361}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Éléments de solution", "Éléments de solution", "{87330C58-756D-4D8F-A044-AE2D9E5D8187}"
+	ProjectSection(SolutionItems) = preProject
+		.projects.yaml = .projects.yaml
+		LICENSE = LICENSE
+		NuGet.config = NuGet.config
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D14939BA-F396-8FEF-9BE6-4B07A1F7CC17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D14939BA-F396-8FEF-9BE6-4B07A1F7CC17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D14939BA-F396-8FEF-9BE6-4B07A1F7CC17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D14939BA-F396-8FEF-9BE6-4B07A1F7CC17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB96287D-9671-638E-B73D-D63EA5A9F798}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB96287D-9671-638E-B73D-D63EA5A9F798}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB96287D-9671-638E-B73D-D63EA5A9F798}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB96287D-9671-638E-B73D-D63EA5A9F798}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CBC26E5-D585-2130-C5CE-9FFDBEE28361}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CBC26E5-D585-2130-C5CE-9FFDBEE28361}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CBC26E5-D585-2130-C5CE-9FFDBEE28361}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CBC26E5-D585-2130-C5CE-9FFDBEE28361}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D14939BA-F396-8FEF-9BE6-4B07A1F7CC17} = {1FD2B7D0-C7A9-403E-A493-410CD283A465}
+		{FB96287D-9671-638E-B73D-D63EA5A9F798} = {1FD2B7D0-C7A9-403E-A493-410CD283A465}
+		{3CBC26E5-D585-2130-C5CE-9FFDBEE28361} = {0BECAEEF-C9D0-4A4C-9B63-8163FF3B21BD}
+	EndGlobalSection
+EndGlobal

@@ -1,6 +1,4 @@
-﻿using FrenchexDev.VirtualBox.Net;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
-using FrenchExDev.Net.Mm.Abstractions;
+﻿using FrenchExDev.Net.Mm.Abstractions;
 using FrenchExDev.Net.Mm.Module.Library;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,8 +28,7 @@ public class VirtualBoxVersionModule : LibraryModule
     /// returned object indicates a successful information retrieval.</returns>
     protected override IModuleInformation GetModuleInformation() => new BasicModuleInformationBuilder()
         .DisplayName("VirtualBox Version Module")
-        .Build()
-        .Success()
+        .BuildSuccess()
         ;
 
     /// <summary>

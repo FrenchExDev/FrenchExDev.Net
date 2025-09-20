@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
-using FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions;
+﻿using FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions;
 
 namespace FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType;
 
@@ -37,8 +36,7 @@ public class DesktopProjectTypeBuilder
         .OutputType("WinExe")
         .Sdk("Microsoft.NET.Sdk.WindowsDesktop")
         .TargetFramework("net9.0-windows")
-        .Build()
-        .Success();
+        .BuildSuccess();
 
     /// <summary>
     /// Creates a <see cref="DesktopProjectModelBuilder"/> pre-configured with the default settings from <see cref="Defaults"/>.

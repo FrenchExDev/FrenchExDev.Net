@@ -1,4 +1,4 @@
-namespace FrenchexDev.VirtualBox.Net;
+namespace FrenchExDev.Net.VirtualBox.Version;
 
 /// <summary>
 /// Defines a contract for searching VirtualBox version information based on specified filters.

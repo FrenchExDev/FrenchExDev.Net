@@ -1,4 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.Ssh.Config.Testing;
 
@@ -35,7 +35,7 @@ public static class SshConfigTesting
             var builder = new SshConfigFileBuilder();
             body(builder);
             var file = builder.Build();
-            assert(file.Success());
+            assert(file.Success<SshConfigFile>());
         }
 
         /// <summary>
@@ -49,13 +49,13 @@ public static class SshConfigTesting
         /// <param name="assert">A delegate that performs assertions on the failure result produced by the builder.</param>
         public static void Invalid(
             Action<SshConfigFileBuilder> body,
-            Action<FailureObjectBuildResult<SshConfigFile, SshConfigFileBuilder>> assert
+            Action<FailuresDictionary> assert
         )
         {
             var builder = new SshConfigFileBuilder();
             body(builder);
             var file = builder.Build();
-            assert(file.Failure<SshConfigFile, SshConfigFileBuilder>());
+            assert(file.Failures<SshConfigFile>());
         }
     }
 
@@ -85,7 +85,7 @@ public static class SshConfigTesting
             var builder = new SshConfigHostBuilder();
             body(builder);
             var host = builder.Build();
-            assert(host.Success());
+            assert(host.Success<SshConfigHost>());
         }
 
         /// <summary>
@@ -100,13 +100,13 @@ public static class SshConfigTesting
         /// SshConfigHostBuilder}"/> produced by the failed build.</param>
         public static void Invalid(
             Action<SshConfigHostBuilder> body,
-            Action<FailureObjectBuildResult<SshConfigHost, SshConfigHostBuilder>> assert
+            Action<FailuresDictionary> assert
         )
         {
             var builder = new SshConfigHostBuilder();
             body(builder);
             var host = builder.Build();
-            assert(host.Failure<SshConfigHost, SshConfigHostBuilder>());
+            assert(host.Failures<SshConfigHost>());
         }
     }
 }

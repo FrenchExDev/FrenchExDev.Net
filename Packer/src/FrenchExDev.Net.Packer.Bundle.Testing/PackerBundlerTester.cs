@@ -9,8 +9,6 @@
 
 #endregion
 
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
-
 namespace FrenchExDev.Net.Packer.Bundle.Testing;
 
 public class PackerBundlerTester
@@ -24,7 +22,7 @@ public class PackerBundlerTester
         var packerBundleBuilder = new PackerBundleBuilder();
         builderBody(packerBundleBuilder);
 
-        var packerBundle = packerBundleBuilder.Build().Success();
+        var packerBundle = packerBundleBuilder.BuildSuccess();
 
         assertBuiltBody(packerBundle);
 

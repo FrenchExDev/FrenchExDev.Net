@@ -1,14 +1,14 @@
-﻿using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
+using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 using FrenchExDev.Net.Dotnet.Project.Abstractions;
-using System;
 
 namespace FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions;
 
 /// <summary>
-/// Represents a CLI (Command-Line Interface) project model, providing metadata and configuration details for a CLI application within a solution.
+/// Represents a Desktop project model, providing metadata and configuration details for a CLI application within a solution.
 /// </summary>
 /// <remarks>
-/// This class encapsulates information about a CLI project, including its name, directory, SDK, target framework, output type, language version, nullability, implicit usings, references, packages, analyzers, additional properties, and code declarations.
+/// This class encapsulates information about a Desktop project, including its name, directory, SDK, target framework, output type, language version, nullability, implicit usings, references, packages, analyzers, additional properties, and code declarations.
 /// Example usage:
 /// <code>
 /// var cliProject = new CliProjectModel(
@@ -58,11 +58,11 @@ public class DesktopProjectModel : AbstractProjectModel<DesktopProjectModel>
     ///     "13.0",
     ///     true,
     ///     true,
-    ///     new List<ProjectReference>(),
-    ///     new List<IPackageReference>(),
-    ///     new List<IPackageReference>(),
-    ///     new Dictionary<string, object>(),
-    ///     new List<IDeclarationModel>()
+    ///     new ReferenceList<ProjectReference>(),
+    ///     new ReferenceList<IPackageReference>(),
+    ///     new ReferenceList<IPackageReference>(),
+    ///     new Reference<Dictionary<string, object>>(new()),
+    ///     new ReferenceList<IDeclarationModel>>()
     /// );
     /// </code>
     /// </remarks>
@@ -75,11 +75,11 @@ public class DesktopProjectModel : AbstractProjectModel<DesktopProjectModel>
         string langVersion,
         bool nullable,
         bool implicitUsings,
-        List<ProjectReference> projectReferences,
-        List<IPackageReference> packageReferences,
-        List<IPackageReference> analyzers,
-        Dictionary<string, object> additionalProperties,
-        List<IDeclarationModel> declarationModels,
+        ReferenceList<ProjectReference> projectReferences,
+        ReferenceList<IPackageReference> packageReferences,
+        ReferenceList<IPackageReference> analyzers,
+        Reference<Dictionary<string, object>> additionalProperties,
+        ReferenceList<IDeclarationModel> declarationModels,
         string version,
         bool generatePackageOnBuild,
         string packageTags,

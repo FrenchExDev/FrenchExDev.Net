@@ -5,7 +5,7 @@
 
 #endregion
 
-namespace FrenchexDev.VirtualBox.Net;
+namespace FrenchExDev.Net.VirtualBox.Version;
 
 /// <summary>
 /// Defines a mechanism for asynchronously discovering the installed VirtualBox system version.

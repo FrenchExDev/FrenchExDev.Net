@@ -7,8 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -32,7 +31,7 @@ namespace FrenchExDev.Net.Packer.Bundle;
 /// </code>
 /// </example>
 /// </remarks>
-public class ShellScriptBuilder : AbstractObjectBuilder<ShellScript, ShellScriptBuilder>
+public class ShellScriptBuilder : AbstractBuilder<ShellScript>
 {
     /// <summary>
     /// List of lines to include in the shell script.
@@ -140,15 +139,24 @@ public class ShellScriptBuilder : AbstractObjectBuilder<ShellScript, ShellScript
     }
 
     /// <summary>
-    /// Builds the <see cref="ShellScript"/> instance using the configured properties.
+    /// Performs validation logic using the specified collection of visited objects and records any validation failures
+    /// encountered.
     /// </summary>
-    /// <param name="exceptions">Dictionary to collect build exceptions.</param>
-    /// <param name="visited">List of visited objects for cyclic dependency detection.</param>
-    /// <returns>The build result containing the constructed <see cref="ShellScript"/> or failure details.</returns>
-    /// <remarks>
-    /// All required properties are validated before building. If any required property is missing or invalid, the build will fail and exceptions will be collected.
-    /// </remarks>
-    protected override IObjectBuildResult<ShellScript> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <param name="visitedCollector">A dictionary that tracks objects already visited during validation to prevent redundant checks and circular
+    /// references.</param>
+    /// <param name="failures">A dictionary used to record validation failures detected during the validation process.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
+
+    }
+
+    /// <summary>
+    /// Creates and initializes a new instance of the <see cref="ShellScript"/> class using the configured name, lines,
+    /// and newline settings.
+    /// </summary>
+    /// <returns>A <see cref="ShellScript"/> object populated with the specified name, script lines, and newline character.</returns>
+    /// <exception cref="InvalidDataException">Thrown if the configured name is null when instantiating the <see cref="ShellScript"/>.</exception>
+    protected override ShellScript Instantiate()
     {
         var shellScript = new ShellScript() { Name = _name ?? throw new InvalidDataException(nameof(_name)) };
 
@@ -157,6 +165,6 @@ public class ShellScriptBuilder : AbstractObjectBuilder<ShellScript, ShellScript
         shellScript.Lines.AddRange(_lines);
         shellScript.NewLine = _newLine;
 
-        return Success(shellScript);
+        return shellScript;
     }
 }

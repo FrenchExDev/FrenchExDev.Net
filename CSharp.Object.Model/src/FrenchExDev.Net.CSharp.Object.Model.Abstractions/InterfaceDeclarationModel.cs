@@ -1,57 +1,76 @@
-﻿namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
+
+namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
+
+public class DeclarationHaveNoNameException : Exception
+{
+    public DeclarationHaveNoNameException() : base("The declaration have no name.")
+    {
+    }
+}
 
 /// <summary>
 /// Represents an interface declaration, including its name, modifiers, attributes, base interfaces, type parameters, constraints, properties, methods, events, and nested interfaces.
 /// </summary>
 public class InterfaceDeclarationModel : IDeclarationModel
 {
-    /// <summary>
-    /// Gets or sets the name of the interface.
-    /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public InterfaceDeclarationModel(
+        string name,
+        IEnumerable<InterfaceModifier> modifiers,
+        ReferenceList<AttributeDeclarationModel> attributes,
+        ReferenceList<InterfaceDeclarationModel> baseInterfaces,
+        ReferenceList<TypeParameterDeclarationModel> typeParameters,
+        ReferenceList<TypeParameterConstraintModel> typeParameterConstraints,
+        ReferenceList<PropertyDeclarationModel> properties,
+        ReferenceList<MethodDeclarationModel> methods,
+        ReferenceList<EventDeclarationModel> events,
+        ReferenceList<InterfaceDeclarationModel> nestedInterfaces
+        )
+    {
+        _name = name;
+        _modifiers = [.. modifiers];
+        _attributes = attributes;
+        _baseInterfaces = baseInterfaces;
+        _typeParameters = typeParameters;
+        _typeParameterConstraints = typeParameterConstraints;
+        _properties = properties;
+        _methods = methods;
+        _events = events;
+        _nestedInterfaces = nestedInterfaces;
+    }
 
-    /// <summary>
-    /// Gets or sets the list of access modifiers applied to the interface (e.g., public, internal).
-    /// </summary>
-    public List<InterfaceModifier> Modifiers { get; set; } = new();
+    private string? _name;
 
-    /// <summary>
-    /// Gets or sets the list of attributes applied to the interface.
-    /// </summary>
-    public List<AttributeDeclarationModel> Attributes { get; set; } = new();
+    public string Name => _name ?? throw new DeclarationHaveNoNameException();
 
-    /// <summary>
-    /// Gets or sets the list of base interfaces that this interface inherits from.
-    /// </summary>
-    public List<string> BaseInterfaces { get; set; } = new();
+    private List<InterfaceModifier> _modifiers;
 
-    /// <summary>
-    /// Gets or sets the list of type parameters declared by the interface.
-    /// </summary>
-    public List<TypeParameterDeclarationModel> TypeParameters { get; set; } = new();
+    public IEnumerable<InterfaceModifier> Modifiers => _modifiers;
 
-    /// <summary>
-    /// Gets or sets the list of type parameter constraints for the interface's type parameters.
-    /// </summary>
-    public List<TypeParameterConstraintModel> TypeParameterConstraints { get; set; } = new();
+    private ReferenceList<AttributeDeclarationModel> _attributes;
 
-    /// <summary>
-    /// Gets or sets the list of properties declared in the interface.
-    /// </summary>
-    public List<PropertyDeclarationModel> Properties { get; set; } = new();
+    public IEnumerable<AttributeDeclarationModel> Attributes => _attributes;
 
-    /// <summary>
-    /// Gets or sets the list of methods declared in the interface.
-    /// </summary>
-    public List<MethodDeclarationModel> Methods { get; set; } = new();
+    private ReferenceList<InterfaceDeclarationModel> _baseInterfaces;
 
-    /// <summary>
-    /// Gets or sets the list of events declared in the interface.
-    /// </summary>
-    public List<EventModel> Events { get; set; } = new();
+    public IEnumerable<InterfaceDeclarationModel> BaseInterfaces => _baseInterfaces;
 
-    /// <summary>
-    /// Gets or sets the list of nested interfaces declared within this interface.
-    /// </summary>
-    public List<InterfaceDeclarationModel> NestedInterfaces { get; set; } = new();
+    private ReferenceList<TypeParameterDeclarationModel> _typeParameters;
+
+    public IEnumerable<TypeParameterDeclarationModel> TypeParameters => _typeParameters;
+
+    private ReferenceList<TypeParameterConstraintModel> _typeParameterConstraints;
+    public IEnumerable<TypeParameterConstraintModel> TypeParameterConstraints => _typeParameterConstraints;
+
+    private ReferenceList<PropertyDeclarationModel> _properties;
+    public IEnumerable<PropertyDeclarationModel> Properties => _properties;
+
+    private ReferenceList<MethodDeclarationModel> _methods;
+    public IEnumerable<MethodDeclarationModel> Methods => _methods;
+
+    private ReferenceList<EventDeclarationModel> _events;
+    public IEnumerable<EventDeclarationModel> Events => _events;
+
+    private ReferenceList<InterfaceDeclarationModel> _nestedInterfaces;
+    public IEnumerable<InterfaceDeclarationModel> NestedInterfaces => _nestedInterfaces;
 }

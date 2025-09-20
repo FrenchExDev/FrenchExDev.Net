@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
@@ -8,23 +7,23 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// Provides a fluent API to configure enum name, modifiers, attributes, underlying type, and members.
 /// Validates required properties and produces a build result indicating success or failure.
 /// </summary>
-public class EnumDeclarationModelBuilder : DeconstructedAbstractObjectBuilder<EnumDeclarationModel, EnumDeclarationModelBuilder>
+public class EnumDeclarationModelBuilder : AbstractBuilder<EnumDeclarationModel>, IDeclarationModelBuilder
 {
     // Stores the enum name.
     private string? _name;
     /// <summary>
     /// List of modifiers applied to the enum (e.g., public, internal).
     /// </summary>
-    public List<EnumModifier> Modifiers { get; } = new();
+    public List<EnumModifier> Modifiers { get; } = [];
 
     // List of attributes decorating the enum.
-    private readonly List<AttributeDeclarationModel> _attributes = new();
+    private readonly BuilderList<AttributeDeclarationModel, AttributeDeclarationModelBuilder> _attributes = [];
 
     // Stores the underlying type of the enum (e.g., byte, int).
     private string? _underlyingType;
 
     // List of members (fields) defined in the enum.
-    private readonly List<EnumMemberDeclarationModel> _members = new();
+    private readonly BuilderList<EnumMemberDeclarationModel, EnumMemberDeclarationModelBuilder> _members = [];
 
     /// <summary>
     /// Sets the enum name.
@@ -53,7 +52,7 @@ public class EnumDeclarationModelBuilder : DeconstructedAbstractObjectBuilder<En
     /// </summary>
     /// <param name="attribute">The attribute to add.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public EnumDeclarationModelBuilder Attribute(AttributeDeclarationModel attribute)
+    public EnumDeclarationModelBuilder Attribute(AttributeDeclarationModelBuilder attribute)
     {
         _attributes.Add(attribute);
         return this;
@@ -75,7 +74,7 @@ public class EnumDeclarationModelBuilder : DeconstructedAbstractObjectBuilder<En
     /// </summary>
     /// <param name="member">The enum member to add.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public EnumDeclarationModelBuilder Member(EnumMemberDeclarationModel member)
+    public EnumDeclarationModelBuilder Member(EnumMemberDeclarationModelBuilder member)
     {
         _members.Add(member);
         return this;
@@ -93,28 +92,33 @@ public class EnumDeclarationModelBuilder : DeconstructedAbstractObjectBuilder<En
     {
         ArgumentNullException.ThrowIfNull(_name);
 
-        return new EnumDeclarationModel
-        {
-            Name = _name,
-            Modifiers = Modifiers,
-            Attributes = _attributes,
-            UnderlyingType = _underlyingType,
-            Members = _members
-        };
+        return new(_name, Modifiers, _attributes.AsReferenceList(), _underlyingType, _members.AsReferenceList());
     }
 
     /// <summary>
-    /// Validates the current enum definition and adds any validation errors to the specified exception dictionary.
+    /// Builds the internal representation of the object by processing its attributes and members, tracking visited
+    /// objects to prevent redundant processing.
     /// </summary>
-    /// <param name="exceptions">A dictionary to which any validation exceptions encountered during the process are added. Must not be null.</param>
-    /// <param name="visited">A list of objects that have already been visited during validation to prevent redundant checks. Must not be
-    /// null.</param>
-    protected override void Validate(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
-    {   // Validate required enum name
+    /// <param name="visitedCollector">A dictionary used to record objects that have already been visited during the build process. This helps avoid
+    /// processing the same object multiple times and prevents circular references.</param>
+    protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
+    {
+        BuildList(_attributes, visitedCollector);
+        BuildList(_members, visitedCollector);
+    }
+
+    /// <summary>
+    /// Performs validation on the current enum object and records any validation failures encountered.
+    /// </summary>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
+    /// and circular references.</param>
+    /// <param name="failures">A dictionary for collecting validation failures. Any issues found during validation are added to this
+    /// collection.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(nameof(_name), new InvalidOperationException("Enum name must be provided."));
+            failures.Failure(nameof(_name), new InvalidOperationException("Enum name must be provided."));
         }
-
     }
 }

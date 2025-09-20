@@ -1,4 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 using FrenchExDev.Net.Dotnet.Project.Abstractions;
 
 namespace FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions;
@@ -24,49 +24,33 @@ namespace FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions;
 /// var result = builder.Build();
 /// </code>
 /// </remarks>
-public class CliProjectModelBuilder : AbstractProjectModelBuilder<CliProjectModel, CliProjectModelBuilder>
+public class CliProjectModelBuilder : AbstractProjectModelBuilder<CliProjectModel, CliProjectModelBuilder>, IBuilder<CliProjectModel>
 {
-    /// <summary>
-    /// Builds the <see cref="CliProjectModel"/> instance, validating required properties and collecting exceptions.
-    /// </summary>
-    /// <param name="exceptions">A list to collect build exceptions.</param>
-    /// <param name="visited">A list of visited objects for cycle detection.</param>
-    /// <returns>A build result containing either the constructed model or failure details.</returns>
-    /// <remarks>
-    /// This method ensures that all required project metadata is set. If any required property is missing, a failure result is returned.
-    /// Example:
-    /// <code>
-    /// var result = builder.Build();
-    /// if (result.IsSuccess) { /* use result.Success<CliProjectModel>() */ }
-    /// </code>
-    /// </remarks>
-    protected override IObjectBuildResult<CliProjectModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    protected override CliProjectModel Instantiate()
     {
-        VisiteObjectAndCollectExceptions(visited, exceptions);
+        return new CliProjectModel(
+             _name,
+             _directory,
+             _sdk,
+             _targetFramework,
+             _outputType,
+             _langVersion,
+             _nullable,
+             _implicitUsings,
+             _projectReferences.AsReferenceList(),
+             _packageReferences.AsReferenceList(),
+             _analyzers.AsReferenceList(),
+             _additionalProperties,
+             _declarationModels.AsReferenceList(),
+             _version,
+             _generatePackageOnBuild,
+             _packageTags,
+             _authors
+         );
+    }
 
-        if (exceptions.Any())
-        {
-            return Failure(exceptions, visited);
-        }
-
-        return Success(new CliProjectModel(
-            _name,
-            _directory,
-            _sdk,
-            _targetFramework,
-            _outputType,
-            _langVersion,
-            _nullable,
-            _implicitUsings,
-            _projectReferences,
-            _packageReferences,
-            _analyzers,
-            _additionalProperties,
-            _declarationModels,
-            _version,
-            _generatePackageOnBuild,
-            _packageTags,
-            _authors
-        ));
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
+        VisiteObjectAndCollectExceptions(visitedCollector, failures);
     }
 }

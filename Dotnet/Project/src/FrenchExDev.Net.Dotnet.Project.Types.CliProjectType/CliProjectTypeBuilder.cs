@@ -1,4 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 using FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions;
 
 namespace FrenchExDev.Net.Dotnet.Project.Types.CliProjectType;
@@ -21,9 +21,9 @@ public class CliProjectTypeBuilder
         .OutputType("Exe")
         .Sdk("Microsoft.NET.Sdk")
         .TargetFramework("net9.0")
-        .PackageReferences(body: (listBuild) => listBuild.Add((builder) => builder.Name("FrenchExDev.Net.Dotnet.Project.Types.CliProjectType")).Build())
+        .PackageReferences(body: (listBuild) => listBuild.New((builder) => builder.Name("FrenchExDev.Net.Dotnet.Project.Types.CliProjectType")))
         .Build()
-        .Success();
+        .Success<CliProjectModel>();
 
     /// <summary>
     /// Creates a new instance of <see cref="CliProjectModelBuilder"/> initialized with default settings.

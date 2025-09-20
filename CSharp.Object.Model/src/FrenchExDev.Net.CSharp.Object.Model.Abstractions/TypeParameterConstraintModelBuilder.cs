@@ -1,5 +1,5 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
+
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
 /// <summary>
@@ -9,10 +9,10 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// Use <see cref="TypeParameter"/> to set the type parameter name and <see cref="Constraint"/> to add constraints.
 /// Call <see cref="Build"/> to create a validated <see cref="TypeParameterConstraintModel"/> instance.
 /// </remarks>
-public class TypeParameterConstraintModelBuilder : AbstractObjectBuilder<TypeParameterConstraintModel, TypeParameterConstraintModelBuilder>
+public class TypeParameterConstraintModelBuilder : AbstractBuilder<TypeParameterConstraintModel>
 {
     private string? _typeParameter;
-    private readonly List<FreeTypeParameterConstraintDeclarationModel> _constraints = new();
+    private readonly List<FreeTypeParameterConstraintDeclarationModel> _constraints = [];
     /// <summary>
     /// Sets the type parameter name for the constraint model.
     /// </summary>
@@ -33,30 +33,29 @@ public class TypeParameterConstraintModelBuilder : AbstractObjectBuilder<TypePar
         _constraints.Add(constraint);
         return this;
     }
+
     /// <summary>
-    /// Builds the <see cref="TypeParameterConstraintModel"/> instance, validating required fields.
+    /// Validate the builder's state, ensuring required properties are set.
     /// </summary>
-    /// <param name="exceptions">A list to collect validation exceptions.</param>
-    /// <param name="visited">A list of visited objects for circular reference detection.</param>
-    /// <returns>The build result containing the model or validation errors.</returns>
-    protected override IObjectBuildResult<TypeParameterConstraintModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <param name="visitedCollector"></param>
+    /// <param name="failures"></param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrEmpty(_typeParameter))
         {
-            exceptions.Add(nameof(_typeParameter), new InvalidOperationException("Type parameter name must be provided."));
+            failures.Failure(nameof(_typeParameter), new InvalidOperationException("Type parameter name must be provided."));
         }
+    }
 
-        if (exceptions.Any())           
-        {
-            return Failure(exceptions, visited);
-        }
-
+    /// <summary>
+    /// Creates a new instance of the type parameter constraint model using the current type parameter and its
+    /// associated constraints.
+    /// </summary>
+    /// <returns>A <see cref="TypeParameterConstraintModel"/> containing the type parameter and its constraints.</returns>
+    protected override TypeParameterConstraintModel Instantiate()
+    {
         ArgumentNullException.ThrowIfNull(_typeParameter);
 
-        return Success(new TypeParameterConstraintModel
-        {
-            TypeParameter = _typeParameter,
-            Constraints = _constraints
-        });
+        return new(_typeParameter, _constraints);
     }
 }

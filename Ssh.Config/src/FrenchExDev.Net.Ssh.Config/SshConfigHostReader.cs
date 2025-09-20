@@ -7,7 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 
@@ -531,7 +531,7 @@ public class SshConfigHostReader : IReader<SshConfigHost>
     /// does not yield a valid host configuration.</returns>
     public SshConfigHost Read(IEnumerable<string> lines)
     {
-        return BuildFromLines(lines).Build().Success();
+        return BuildFromLines(lines).Build().Success<SshConfigHost>();
     }
 
     /// <summary>

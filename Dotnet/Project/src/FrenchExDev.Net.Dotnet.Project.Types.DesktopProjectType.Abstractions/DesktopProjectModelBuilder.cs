@@ -1,7 +1,7 @@
-﻿
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 using FrenchExDev.Net.Dotnet.Project.Abstractions;
-using FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions;
+
+namespace FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions;
 
 /// <summary>
 /// Builder class for constructing <see cref="DesktopProjectModel"/> instances.
@@ -24,49 +24,46 @@ using FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions;
 /// var result = builder.Build();
 /// </code>
 /// </remarks>
-public class DesktopProjectModelBuilder : AbstractProjectModelBuilder<DesktopProjectModel, DesktopProjectModelBuilder>
+public class DesktopProjectModelBuilder : AbstractProjectModelBuilder<DesktopProjectModel, DesktopProjectModelBuilder>, IBuilder<DesktopProjectModel>
 {
     /// <summary>
-    /// Builds the <see cref="DesktopProjectModel"/> instance, validating required properties and collecting exceptions.
+    /// Creates and returns a new instance of the desktop project model using the current configuration values.
     /// </summary>
-    /// <param name="exceptions">A list to collect build exceptions.</param>
-    /// <param name="visited">A list of visited objects for cycle detection.</param>
-    /// <returns>A build result containing either the constructed model or failure details.</returns>
-    /// <remarks>
-    /// This method ensures that all required project metadata is set. If any required property is missing, a failure result is returned.
-    /// Example:
-    /// <code>
-    /// var result = builder.Build();
-    /// if (result.IsSuccess) { /* use result.Success<CliProjectModel>() */ }
-    /// </code>
-    /// </remarks>
-    protected override IObjectBuildResult<DesktopProjectModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <remarks>All configuration fields must be set before calling this method. If any field is null or
+    /// invalid, an <see cref="InvalidDataException"/> is thrown to indicate incomplete or incorrect project
+    /// setup.</remarks>
+    /// <returns>A <see cref="DesktopProjectModel"/> initialized with the configured project settings.</returns>
+    /// <exception cref="InvalidDataException">Thrown if any required configuration value is missing or invalid.</exception>
+    protected override DesktopProjectModel Instantiate()
     {
-        VisiteObjectAndCollectExceptions(visited, exceptions);
+        return new DesktopProjectModel(
+             _name ?? throw new InvalidDataException(nameof(_name)),
+             _directory ?? throw new InvalidDataException(nameof(_directory)),
+             _sdk ?? throw new InvalidDataException(nameof(_sdk)),
+             _targetFramework ?? throw new InvalidDataException(nameof(_targetFramework)),
+             _outputType ?? throw new InvalidDataException(nameof(_outputType)),
+             _langVersion ?? throw new InvalidDataException(nameof(_langVersion)),
+             _nullable ?? throw new InvalidDataException(nameof(_nullable)),
+             _implicitUsings ?? throw new InvalidDataException(nameof(_implicitUsings)),
+             _projectReferences.AsReferenceList() ?? throw new InvalidDataException(nameof(_projectReferences)),
+             _packageReferences.AsReferenceList() ?? throw new InvalidDataException(nameof(_packageReferences)),
+             _analyzers.AsReferenceList() ?? throw new InvalidDataException(nameof(_analyzers)),
+             _additionalProperties ?? throw new InvalidDataException(nameof(_additionalProperties)),
+             _declarationModels.AsReferenceList() ?? throw new InvalidDataException(nameof(_declarationModels)),
+             _version ?? throw new InvalidDataException(nameof(_version)),
+             _generatePackageOnBuild ?? throw new InvalidDataException(nameof(_generatePackageOnBuild)),
+             _packageTags ?? throw new InvalidDataException(nameof(_packageTags)),
+             _authors ?? throw new InvalidDataException(nameof(_authors))
+         );
+    }
 
-        if (exceptions.Any())
-        {
-            return Failure(exceptions, visited);
-        }
-
-        return Success(new DesktopProjectModel(
-            _name ?? throw new InvalidDataException(nameof(_name)),
-            _directory ?? throw new InvalidDataException(nameof(_directory)),
-            _sdk ?? throw new InvalidDataException(nameof(_sdk)),
-            _targetFramework ?? throw new InvalidDataException(nameof(_targetFramework)),
-            _outputType ?? throw new InvalidDataException(nameof(_outputType)),
-            _langVersion ?? throw new InvalidDataException(nameof(_langVersion)),
-            _nullable ?? throw new InvalidDataException(nameof(_nullable)),
-            _implicitUsings ?? throw new InvalidDataException(nameof(_implicitUsings)),
-            _projectReferences ?? throw new InvalidDataException(nameof(_projectReferences)),
-            _packageReferences ?? throw new InvalidDataException(nameof(_packageReferences)),
-            _analyzers ?? throw new InvalidDataException(nameof(_analyzers)),
-            _additionalProperties ?? throw new InvalidDataException(nameof(_additionalProperties)),
-            _declarationModels ?? throw new InvalidDataException(nameof(_declarationModels)),
-            _version ?? throw new InvalidDataException(nameof(_version)),
-            _generatePackageOnBuild ?? throw new InvalidDataException(nameof(_generatePackageOnBuild)),
-            _packageTags ?? throw new InvalidDataException(nameof(_packageTags)),
-            _authors ?? throw new InvalidDataException(nameof(_authors))
-        ));
+    /// <summary>
+    /// Validates the current object and collects any validation failures.
+    /// </summary>
+    /// <param name="visitedCollector"></param>
+    /// <param name="failures"></param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
+        VisiteObjectAndCollectExceptions(visitedCollector, failures);
     }
 }

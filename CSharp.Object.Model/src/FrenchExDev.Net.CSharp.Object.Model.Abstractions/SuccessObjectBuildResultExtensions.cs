@@ -1,4 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
@@ -16,11 +16,9 @@ public static class SuccessObjectBuildResultExtensions
     /// <param name="results">The collection of object build results to process.</param>
     /// <returns>A list of objects of type <typeparamref name="TClass"/> that were successfully built. The list will be empty if
     /// no successful results are found.</returns>
-    public static List<TClass> ToResultList<TClass>(this IEnumerable<IObjectBuildResult<TClass>> results)
-    {
-        return results
-            .OfType<SuccessObjectBuildResult<TClass>>()
-            .Select(x => x.Result)
-            .ToList();
-    }
+    public static List<TClass> ToResultList<TClass>(this IEnumerable<IBuildResult> results)
+        where TClass : class
+        => [.. results
+            .OfType<SuccessBuildResult<TClass>>()
+            .Select(x => x.Object)];
 }

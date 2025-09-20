@@ -11,6 +11,14 @@
 
 namespace FrenchExDev.Net.Alpine.Version;
 
+/// <summary>
+/// Represents a set of filters for searching Alpine Linux versions, allowing selection by version range, flavor,
+/// architecture, and release candidate status.
+/// </summary>
+/// <remarks>Use this class to specify criteria when querying for Alpine Linux versions. Filters can be combined
+/// to narrow search results to specific version ranges, flavors, architectures, or to include release candidate
+/// versions. Setting <see cref="ExactVersion"/> overrides the minimum and maximum version filters, returning only
+/// results that match the specified version exactly.</remarks>
 [Serializable]
 public class AlpineVersionSearchingFilters
 {

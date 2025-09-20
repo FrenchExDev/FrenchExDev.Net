@@ -7,8 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 
 #endregion
@@ -41,7 +40,7 @@ namespace FrenchExDev.Net.Ssh.Config;
 /// - Optional fields can be omitted; only set what is needed for your SSH scenario.
 /// - Use <c>Build()</c> to produce the final <see cref="SshConfigHost"/> or inspect errors.
 /// </remarks>
-public class SshConfigHostBuilder : AbstractObjectBuilder<SshConfigHost, SshConfigHostBuilder>
+public class SshConfigHostBuilder : AbstractBuilder<SshConfigHost>
 {
     /// <summary>Stores the logical SSH host name.</summary>
     private string? _name;
@@ -1168,136 +1167,130 @@ public class SshConfigHostBuilder : AbstractObjectBuilder<SshConfigHost, SshConf
     }
 
     /// <summary>
-    /// Validates the SSH configuration host properties and adds any detected errors to the specified exception dictionary.
+    /// Validates the SSH configuration host properties and records any validation failures.
     /// </summary>
-    /// <param name="list">Dictionary to collect validation errors.</param>
-    /// <remarks>
-    /// This method checks for missing or invalid values and aggregates errors. It does not throw; errors are added to <paramref name="list"/>.
-    /// Callers should inspect the build result for errors after calling <c>Build()</c>.
-    /// </remarks>
-    protected void Assert(ExceptionBuildDictionary list)
+    /// <remarks>This method checks that required SSH configuration properties are not null, empty, or consist
+    /// solely of whitespace. Any validation errors encountered are added to the failures dictionary for further
+    /// processing. This method is intended to be called as part of a larger validation workflow and does not throw
+    /// exceptions directly for validation errors.</remarks>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
+    /// and circular references.</param>
+    /// <param name="failures">A dictionary that collects validation failures, mapping property names to the corresponding exception describing
+    /// the failure.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
-        AssertNotNullOrEmptyOrWhitespace(_name, nameof(SshConfigHost.Name), list);
-        AssertNotEmptyOrWhitespace(_batchMode, nameof(SshConfigHost.BatchMode), list);
-        AssertNotEmptyOrWhitespace(_bindAddress, nameof(SshConfigHost.BindAddress), list);
-        AssertNotEmptyOrWhitespace(_challengeResponseAuthentication, nameof(SshConfigHost.ChallengeResponseAuthentication), list);
-        AssertNotEmptyOrWhitespace(_checkHostIp, nameof(SshConfigHost.CheckHostIp), list);
-        AssertNotEmptyOrWhitespace(_cipher, nameof(SshConfigHost.Cipher), list);
-        AssertNotEmptyOrWhitespace(_ciphers ?? [], nameof(SshConfigHost.Ciphers), list);
-        AssertNotEmptyOrWhitespace(_controlPath, nameof(SshConfigHost.ControlPath), list);
-        AssertNotEmptyOrWhitespace(_dynamicForward, nameof(SshConfigHost.DynamicForward), list);
-        AssertNotEmptyOrWhitespace(_escapeChar, nameof(SshConfigHost.EscapeChar), list);
-        AssertNotEmptyOrWhitespace(_gatewayPorts, nameof(SshConfigHost.GatewayPorts), list);
-        AssertNotEmptyOrWhitespace(_globalKnownHostsFile, nameof(SshConfigHost.GlobalKnownHostsFile), list);
-        AssertNotEmptyOrWhitespace(_gssApiClientIdentity, nameof(SshConfigHost.GssApiClientIdentity), list);
-        AssertNotEmptyOrWhitespace(_hostKeyAlgorithms, nameof(SshConfigHost.HostKeyAlgorithms), list);
-        AssertNotEmptyOrWhitespace(_hostKeyAlgorithms, nameof(SshConfigHost.HostKeyAlias), list);
-        AssertNotEmptyOrWhitespace(_hostName, nameof(SshConfigHost.HostName), list);
-        AssertNotEmptyOrWhitespace(_identityFile, nameof(SshConfigHost.IdentityFile), list);
-        AssertNotEmptyOrWhitespace(_kbdInteractiveDevices, nameof(SshConfigHost.KbdInteractiveDevices), list);
-        AssertNotEmptyOrWhitespace(_localCommand, nameof(SshConfigHost.LocalCommand), list);
-        AssertNotEmptyOrWhitespace(_localForward, nameof(SshConfigHost.LocalForward), list);
-        AssertNotEmptyOrWhitespace(_logLevel, nameof(SshConfigHost.LogLevel), list);
-        AssertNotEmptyOrWhitespace(_macs, nameof(SshConfigHost.Macs), list);
-        AssertNotEmptyOrWhitespace(_preferredAuthentication ?? [], nameof(SshConfigHost.PreferredAuthentications), list);
-        AssertNotEmptyOrWhitespace(_proxyCommand, nameof(SshConfigHost.ProxyCommand), list);
-        AssertNotEmptyOrWhitespace(_rekeyLimit, nameof(SshConfigHost.RekeyLimit), list);
-        AssertNotEmptyOrWhitespace(_removeForward, nameof(SshConfigHost.RemoveForward), list);
-        AssertNotEmptyOrWhitespace(_smartcardDevice, nameof(SshConfigHost.SmartcardDevice), list);
-        AssertNotEmptyOrWhitespace(_tunnelDevice, nameof(SshConfigHost.TunnelDevice), list);
-        AssertNotEmptyOrWhitespace(_user, nameof(SshConfigHost.User), list);
-        AssertNotEmptyOrWhitespace(_userKnownHostsFile, nameof(SshConfigHost.UserKnownHostsFile), list);
-        AssertNotEmptyOrWhitespace(_xAuthLocation, nameof(SshConfigHost.XAuthLocation), list);
+        AssertNotNullOrEmptyOrWhitespace(_name, nameof(SshConfigHost.Name), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_batchMode, nameof(SshConfigHost.BatchMode), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_bindAddress, nameof(SshConfigHost.BindAddress), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_challengeResponseAuthentication, nameof(SshConfigHost.ChallengeResponseAuthentication), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_checkHostIp, nameof(SshConfigHost.CheckHostIp), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_cipher, nameof(SshConfigHost.Cipher), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_ciphers ?? [], nameof(SshConfigHost.Ciphers), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_controlPath, nameof(SshConfigHost.ControlPath), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_dynamicForward, nameof(SshConfigHost.DynamicForward), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_escapeChar, nameof(SshConfigHost.EscapeChar), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_gatewayPorts, nameof(SshConfigHost.GatewayPorts), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_globalKnownHostsFile, nameof(SshConfigHost.GlobalKnownHostsFile), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_gssApiClientIdentity, nameof(SshConfigHost.GssApiClientIdentity), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_hostKeyAlgorithms, nameof(SshConfigHost.HostKeyAlgorithms), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_hostKeyAlgorithms, nameof(SshConfigHost.HostKeyAlias), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_hostName, nameof(SshConfigHost.HostName), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_identityFile, nameof(SshConfigHost.IdentityFile), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_kbdInteractiveDevices, nameof(SshConfigHost.KbdInteractiveDevices), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_localCommand, nameof(SshConfigHost.LocalCommand), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_localForward, nameof(SshConfigHost.LocalForward), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_logLevel, nameof(SshConfigHost.LogLevel), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_macs, nameof(SshConfigHost.Macs), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_preferredAuthentication ?? [], nameof(SshConfigHost.PreferredAuthentications), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_proxyCommand, nameof(SshConfigHost.ProxyCommand), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_rekeyLimit, nameof(SshConfigHost.RekeyLimit), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_removeForward, nameof(SshConfigHost.RemoveForward), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_smartcardDevice, nameof(SshConfigHost.SmartcardDevice), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_tunnelDevice, nameof(SshConfigHost.TunnelDevice), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_user, nameof(SshConfigHost.User), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_userKnownHostsFile, nameof(SshConfigHost.UserKnownHostsFile), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_xAuthLocation, nameof(SshConfigHost.XAuthLocation), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
     }
 
     /// <summary>
-    /// Builds an <see cref="SshConfigHost"/> instance from the current configuration state, collecting any validation errors.
+    /// Creates a new instance of <see cref="SshConfigHost"/> populated with the current configuration values.
     /// </summary>
-    /// <param name="exceptions">Dictionary to collect build errors.</param>
-    /// <param name="visited">List of visited objects for cycle detection.</param>
-    /// <returns>A build result containing the constructed <see cref="SshConfigHost"/> or errors.</returns>
-    /// <remarks>
-    /// If required fields are missing, returns a failure result. Otherwise, returns a success result with the host configuration.
-    /// </remarks>
-    protected override IObjectBuildResult<SshConfigHost> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <remarks>All properties of the returned <see cref="SshConfigHost"/> are set based on the corresponding
+    /// values in this instance. This method is typically used to materialize a configuration object for use in SSH
+    /// connection scenarios.</remarks>
+    /// <returns>A <see cref="SshConfigHost"/> object containing the SSH configuration settings specified by this instance.</returns>
+    /// <exception cref="MissingMemberException">Thrown if the host name is not specified.</exception>
+    protected override SshConfigHost Instantiate() => new SshConfigHost
     {
-        Assert(exceptions);
-
-        if (exceptions.Count > 0)
-            return Failure(exceptions, visited);
-
-        return Success(new SshConfigHost
-        {
-            Name = _name ?? throw new MissingMemberException(nameof(_name)),
-            AddressFamily = _addressFamily,
-            BatchMode = _batchMode,
-            BindAddress = _bindAddress,
-            ChallengeResponseAuthentication = _challengeResponseAuthentication,
-            CheckHostIp = _checkHostIp,
-            Cipher = _cipher,
-            Ciphers = _ciphers,
-            ClearAllForwardings = _clearAllForwardings,
-            Compression = _compression,
-            CompressionLevel = _compressionLevel,
-            ConnectionAttempts = _connectionAttempts,
-            ConnectTimeout = _connectionTimeout,
-            ControlMaster = _controlMaster,
-            ControlPath = _controlPath,
-            DynamicForward = _dynamicForward,
-            EnableSshKeysign = _enableSshKeysign,
-            EscapeChar = _escapeChar,
-            ExitOnForwardFailure = _exitOnForwardFailure,
-            ForwardAgent = _forwardAgent,
-            ForwardX11 = _forwardX11,
-            ForwardX11Trusted = _forwardX11Trusted,
-            GatewayPorts = _gatewayPorts,
-            GlobalKnownHostsFile = _globalKnownHostsFile,
-            GssApiAuthentication = _gssApiAuthentication,
-            GssApiKeyExchange = _gssApiKeyExchange,
-            GssApiClientIdentity = _gssApiClientIdentity,
-            GssApiDelegateCredentials = _gssApiDelegateCredentials,
-            GssApiRenewalForcesRekey = _gssApiRenewalForcesRekey,
-            GssApiTrustDns = _gssApiTrustDns,
-            HashKnownHosts = _hashKnownHosts,
-            HostbasedAuthentication = _hostbasedAuthentication,
-            HostKeyAlgorithms = _hostKeyAlgorithms,
-            HostKeyAlias = _hostKeyAlias,
-            HostName = _hostName,
-            IdentitiesOnly = _identitiesOnly,
-            IdentityFile = _identityFile,
-            KbdInteractiveAuthentication = _kbdInteractiveAuthentication,
-            KbdInteractiveDevices = _kbdInteractiveDevices,
-            LocalCommand = _localCommand,
-            LocalForward = _localForward,
-            LogLevel = _logLevel,
-            Macs = _macs,
-            NoHostAuthenticationForLocalhost = _noHostAuthenticationForLocalhost,
-            NumberOfPasswordPrompts = _numberOfPasswordPrompts,
-            PasswordAuthentication = _passwordAuthentication,
-            PermitLocalCommand = _permitLocalCommand,
-            Port = _port,
-            PreferredAuthentications = _preferredAuthentication,
-            Protocol = _protocol,
-            ProxyCommand = _proxyCommand,
-            PubkeyAuthentication = _pubkeyAuthentication,
-            RekeyLimit = _rekeyLimit,
-            RemoveForward = _removeForward,
-            RhostsRsaAuthentication = _rHostsRsaAuthentication,
-            RsaAuthentication = _rsaAuthentication,
-            SendEnv = _sendEnv,
-            ServerAliveCountMax = _serverAliveCountMax,
-            ServerAliveInterval = _serverAliveInterval,
-            SmartcardDevice = _smartcardDevice,
-            StrictHostKeyChecking = _strictHostKeyChecking,
-            TcpKeeAlive = _tcpKeepAlive,
-            Tunnel = _tunnel,
-            TunnelDevice = _tunnelDevice,
-            UsePrivilegedPort = _usePrivilegedPort,
-            User = _user,
-            UserKnownHostsFile = _userKnownHostsFile,
-            VerifyHostKeyDns = _verifyHostKeyDns,
-            VisualHostKey = _visualHostKey,
-            XAuthLocation = _xAuthLocation
-        });
-    }
+        Name = _name ?? throw new MissingMemberException(nameof(_name)),
+        AddressFamily = _addressFamily,
+        BatchMode = _batchMode,
+        BindAddress = _bindAddress,
+        ChallengeResponseAuthentication = _challengeResponseAuthentication,
+        CheckHostIp = _checkHostIp,
+        Cipher = _cipher,
+        Ciphers = _ciphers,
+        ClearAllForwardings = _clearAllForwardings,
+        Compression = _compression,
+        CompressionLevel = _compressionLevel,
+        ConnectionAttempts = _connectionAttempts,
+        ConnectTimeout = _connectionTimeout,
+        ControlMaster = _controlMaster,
+        ControlPath = _controlPath,
+        DynamicForward = _dynamicForward,
+        EnableSshKeysign = _enableSshKeysign,
+        EscapeChar = _escapeChar,
+        ExitOnForwardFailure = _exitOnForwardFailure,
+        ForwardAgent = _forwardAgent,
+        ForwardX11 = _forwardX11,
+        ForwardX11Trusted = _forwardX11Trusted,
+        GatewayPorts = _gatewayPorts,
+        GlobalKnownHostsFile = _globalKnownHostsFile,
+        GssApiAuthentication = _gssApiAuthentication,
+        GssApiKeyExchange = _gssApiKeyExchange,
+        GssApiClientIdentity = _gssApiClientIdentity,
+        GssApiDelegateCredentials = _gssApiDelegateCredentials,
+        GssApiRenewalForcesRekey = _gssApiRenewalForcesRekey,
+        GssApiTrustDns = _gssApiTrustDns,
+        HashKnownHosts = _hashKnownHosts,
+        HostbasedAuthentication = _hostbasedAuthentication,
+        HostKeyAlgorithms = _hostKeyAlgorithms,
+        HostKeyAlias = _hostKeyAlias,
+        HostName = _hostName,
+        IdentitiesOnly = _identitiesOnly,
+        IdentityFile = _identityFile,
+        KbdInteractiveAuthentication = _kbdInteractiveAuthentication,
+        KbdInteractiveDevices = _kbdInteractiveDevices,
+        LocalCommand = _localCommand,
+        LocalForward = _localForward,
+        LogLevel = _logLevel,
+        Macs = _macs,
+        NoHostAuthenticationForLocalhost = _noHostAuthenticationForLocalhost,
+        NumberOfPasswordPrompts = _numberOfPasswordPrompts,
+        PasswordAuthentication = _passwordAuthentication,
+        PermitLocalCommand = _permitLocalCommand,
+        Port = _port,
+        PreferredAuthentications = _preferredAuthentication,
+        Protocol = _protocol,
+        ProxyCommand = _proxyCommand,
+        PubkeyAuthentication = _pubkeyAuthentication,
+        RekeyLimit = _rekeyLimit,
+        RemoveForward = _removeForward,
+        RhostsRsaAuthentication = _rHostsRsaAuthentication,
+        RsaAuthentication = _rsaAuthentication,
+        SendEnv = _sendEnv,
+        ServerAliveCountMax = _serverAliveCountMax,
+        ServerAliveInterval = _serverAliveInterval,
+        SmartcardDevice = _smartcardDevice,
+        StrictHostKeyChecking = _strictHostKeyChecking,
+        TcpKeeAlive = _tcpKeepAlive,
+        Tunnel = _tunnel,
+        TunnelDevice = _tunnelDevice,
+        UsePrivilegedPort = _usePrivilegedPort,
+        User = _user,
+        UserKnownHostsFile = _userKnownHostsFile,
+        VerifyHostKeyDns = _verifyHostKeyDns,
+        VisualHostKey = _visualHostKey,
+        XAuthLocation = _xAuthLocation
+    };
 }

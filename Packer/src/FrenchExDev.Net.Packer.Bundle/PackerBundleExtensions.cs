@@ -5,7 +5,7 @@
 
 #endregion
 
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.Packer.Bundle;
 
@@ -17,9 +17,9 @@ public static class PackerBundleExtensions
         provision(pB, packerBundle.Scripts);
 
         packerBundle.PackerFile.Provisioners ??= new List<Provisioner>();
-        var built = pB.Build();
+        var built = pB.Build().Success<Provisioner>();
 
-        packerBundle.PackerFile.Provisioners.Add(built.Success());
+        packerBundle.PackerFile.Provisioners.Add(built);
 
         return packerBundle;
     }

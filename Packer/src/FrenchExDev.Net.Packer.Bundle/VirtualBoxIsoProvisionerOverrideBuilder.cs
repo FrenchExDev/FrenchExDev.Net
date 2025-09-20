@@ -7,8 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -30,7 +29,7 @@ namespace FrenchExDev.Net.Packer.Bundle;
 /// </code>
 /// </example>
 /// </remarks>
-public class VirtualBoxIsoProvisionerOverrideBuilder : AbstractObjectBuilder<VirtualBoxIsoProvisionerOverride, VirtualBoxIsoProvisionerOverrideBuilder>
+public class VirtualBoxIsoProvisionerOverrideBuilder : AbstractBuilder<VirtualBoxIsoProvisionerOverride>
 {
     /// <summary>
     /// The command to execute during the provisioner override step.
@@ -51,24 +50,17 @@ public class VirtualBoxIsoProvisionerOverrideBuilder : AbstractObjectBuilder<Vir
     }
 
     /// <summary>
-    /// Builds the <see cref="VirtualBoxIsoProvisionerOverride"/> instance using the configured properties.
+    /// Creates a new instance of the derived VirtualBoxIsoProvisionerOverride class.
     /// </summary>
-    /// <param name="exceptions">Dictionary to collect build exceptions.</param>
-    /// <param name="visited">List of visited objects for cyclic dependency detection.</param>
-    /// <returns>The build result containing the constructed <see cref="VirtualBoxIsoProvisionerOverride"/> or failure details.</returns>
-    /// <remarks>
-    /// All required properties are validated before building. If any required property is missing or invalid, the build will fail and exceptions will be collected.
-    /// </remarks>
-    protected override IObjectBuildResult<VirtualBoxIsoProvisionerOverride> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <returns>A new instance of VirtualBoxIsoProvisionerOverride.</returns>
+    /// <exception cref="NotImplementedException">Always thrown, as this method is not implemented.</exception>
+    protected override VirtualBoxIsoProvisionerOverride Instantiate()
     {
-        AssertNotEmptyOrWhitespace(_executeCommand, nameof(VirtualBoxIsoProvisionerOverride.ExecuteCommand), exceptions);
+        return new(_executeCommand);
+    }
 
-        if (exceptions.Count > 0)
-            return Failure(exceptions, visited);
-
-        return Success(new VirtualBoxIsoProvisionerOverride
-        {
-            ExecuteCommand = _executeCommand
-        });
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
+        AssertNotEmptyOrWhitespace(_executeCommand, nameof(VirtualBoxIsoProvisionerOverride.ExecuteCommand), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
     }
 }

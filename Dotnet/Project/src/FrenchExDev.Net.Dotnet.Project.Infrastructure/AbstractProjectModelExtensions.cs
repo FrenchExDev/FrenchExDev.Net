@@ -3,6 +3,14 @@ using Microsoft.Build.Construction;
 
 namespace FrenchExDev.Net.Dotnet.Project.Infrastructure;
 
+/// <summary>
+/// Provides extension methods and constant property names for working with project model representations and MSBuild
+/// project files.
+/// </summary>
+/// <remarks>This class defines a set of string constants representing common MSBuild property names used in .NET
+/// project files, as well as extension methods for converting project model instances to MSBuild project root elements.
+/// The constants can be used to ensure consistency when reading or writing project properties programmatically. This
+/// class is intended for use with project model abstractions and MSBuild integration scenarios.</remarks>
 public static class AbstractProjectModelExtensions
 {
     public static readonly string TargetFramework = "TargetFramework";
@@ -23,6 +31,17 @@ public static class AbstractProjectModelExtensions
     public static readonly string Enable = "enable";
     public static readonly string Disable = "disable";
 
+    /// <summary>
+    /// Creates a new <see cref="ProjectRootElement"/> instance representing the MSBuild project file for the specified
+    /// project model.
+    /// </summary>
+    /// <remarks>The returned project file includes common properties such as target framework, nullable
+    /// settings, version, description, and package metadata, based on the values present in <paramref
+    /// name="projectModel"/>. Only non-null and non-empty properties are included. This method does not persist the
+    /// project file to disk; it returns an in-memory representation.</remarks>
+    /// <typeparam name="T">The type of project model to convert. Must implement <see cref="IProjectModel"/>.</typeparam>
+    /// <param name="projectModel">The project model containing metadata and configuration to be converted into a project file. Cannot be null.</param>
+    /// <returns>A <see cref="ProjectRootElement"/> populated with properties from the provided project model.</returns>
     public static ProjectRootElement ToProjectRootElement<T>(this IProjectModel projectModel) where T : IProjectModel
     {
         ProjectRootElement root = ProjectRootElement.Create();

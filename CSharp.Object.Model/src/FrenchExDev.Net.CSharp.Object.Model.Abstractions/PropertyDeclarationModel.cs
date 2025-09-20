@@ -7,26 +7,42 @@
 /// This model is used for code generation and analysis scenarios where property metadata is required.
 /// Example usage:
 /// <code>
-/// var property = new PropertyDeclarationModel
-/// {
-///     Modifiers = new List<string> { "public" },
-///     Type = "int",
-///     Name = "Id",
-///     HasGetter = true,
-///     HasSetter = false,
-///     Initializer = "0"
-/// };
+/// var property = new PropertyDeclarationModel(new List<string> { "public" }, "int", "Id", true, false, "0");
 /// </code>
 /// </remarks>
 public class PropertyDeclarationModel : IDeclarationModel
 {
+    /// <summary>
+    /// Initializes a new instance of the PropertyDeclarationModel class with the specified property modifiers, type,
+    /// name, accessors, and optional initializer.
+    /// </summary>
+    /// <param name="modifiers">A list of strings representing the modifiers applied to the property, such as "public", "static", or "virtual".
+    /// Cannot be null.</param>
+    /// <param name="type">The data type of the property, specified as a string. Cannot be null or empty.</param>
+    /// <param name="name">The name of the property. Cannot be null or empty.</param>
+    /// <param name="hasGetter">A value indicating whether the property includes a getter accessor. Set to <see langword="true"/> if the
+    /// property has a getter; otherwise, <see langword="false"/>.</param>
+    /// <param name="hasSetter">A value indicating whether the property includes a setter accessor. Set to <see langword="true"/> if the
+    /// property has a setter; otherwise, <see langword="false"/>.</param>
+    /// <param name="initializer">An optional string representing the property's initializer value, or null if the property does not have an
+    /// initializer.</param>
+    public PropertyDeclarationModel(List<string> modifiers, string type, string name, bool hasGetter, bool hasSetter, string? initializer)
+    {
+        Modifiers = modifiers;
+        Type = type;
+        Name = name;
+        HasGetter = hasGetter;
+        HasSetter = hasSetter;
+        Initializer = initializer;
+    }
+
     /// <summary>
     /// Gets or sets the list of modifiers applied to the property (e.g., "public", "static").
     /// </summary>
     /// <remarks>
     /// Example: <c>Modifiers = new List&lt;string&gt; { "public", "static" }</c>
     /// </remarks>
-    public List<string> Modifiers { get; set; } = new();
+    public List<string> Modifiers { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the type of the property (e.g., "int", "string").

@@ -1,4 +1,6 @@
-﻿namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
+
+namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
 /// <summary>
 /// Represents a model for an enum declaration in C# code.
@@ -7,6 +9,15 @@
 /// </summary>
 public class EnumDeclarationModel : IDeclarationModel
 {
+    public EnumDeclarationModel(string name, List<EnumModifier> modifiers, ReferenceList<AttributeDeclarationModel> attributes, string? underlyingType, ReferenceList<EnumMemberDeclarationModel> members)
+    {
+        Name = name;
+        Modifiers = modifiers;
+        Attributes = attributes;
+        UnderlyingType = underlyingType;
+        Members = members;
+    }
+
     /// <summary>
     /// The name of the enum (e.g., "DayOfWeek").
     /// </summary>
@@ -15,12 +26,12 @@ public class EnumDeclarationModel : IDeclarationModel
     /// <summary>
     /// The list of modifiers applied to the enum (e.g., public, internal).
     /// </summary>
-    public List<EnumModifier> Modifiers { get; set; } = new();
+    public List<EnumModifier> Modifiers { get; set; } = [];
 
     /// <summary>
     /// The list of attributes decorating the enum.
     /// </summary>
-    public List<AttributeDeclarationModel> Attributes { get; set; } = new();
+    public ReferenceList<AttributeDeclarationModel> Attributes { get; set; } = [];
 
     /// <summary>
     /// The underlying type of the enum (e.g., "byte", "int"), or null for default.
@@ -30,5 +41,5 @@ public class EnumDeclarationModel : IDeclarationModel
     /// <summary>
     /// The list of members (fields) defined in the enum.
     /// </summary>
-    public List<EnumMemberDeclarationModel> Members { get; set; } = new();
+    public ReferenceList<EnumMemberDeclarationModel> Members { get; set; } = [];
 }

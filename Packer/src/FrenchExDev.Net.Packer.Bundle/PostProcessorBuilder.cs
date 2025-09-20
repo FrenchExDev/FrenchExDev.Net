@@ -7,8 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 
 #endregion
@@ -30,11 +29,11 @@ namespace FrenchExDev.Net.Packer.Bundle;
 ///     .KeepInputArtefact(true)
 ///     .Output("output.box")
 ///     .VagrantfileTemplate("template.tpl");
-/// var result = builder.Build();
+/// var result = builder.Build().Success&lt;PostProcessor&gt;();
 /// </code>
 /// </example>
 /// </remarks>
-public class PostProcessorBuilder : DeconstructedAbstractObjectBuilder<PostProcessor, PostProcessorBuilder>
+public class PostProcessorBuilder : AbstractBuilder<PostProcessor>
 {
     /// <summary>
     /// Compression level for the post-processed artifact (e.g., 1-9 for gzip).
@@ -139,18 +138,19 @@ public class PostProcessorBuilder : DeconstructedAbstractObjectBuilder<PostProce
     }
 
     /// <summary>
-    /// Validates the builder configuration and adds any validation errors to the exception dictionary.
+    /// Performs validation of the post-processor's configuration and records any validation failures.
     /// </summary>
-    /// <param name="exceptions">Dictionary to collect validation exceptions.</param>
-    /// <param name="visited">List of visited objects for cyclic dependency detection.</param>
-    /// <remarks>
-    /// All required properties are validated before building. If any required property is missing or invalid, the build will fail and exceptions will be collected.
-    /// </remarks>
-    protected override void Validate(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <remarks>This method checks required properties for valid values and adds corresponding failures to
+    /// the provided dictionary. It is intended to be called as part of the validation workflow and does not throw
+    /// exceptions for validation errors directly.</remarks>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
+    /// <param name="failures">A dictionary for collecting validation failures encountered during the validation process. Entries are added for
+    /// each invalid configuration detected.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
-        AssertNotEmptyOrWhitespace(_output, nameof(PostProcessor.Output), exceptions);
-        AssertNotEmptyOrWhitespace(_vagrantfileTemplate, nameof(PostProcessor.VagrantfileTemplate), exceptions);
-        AssertNotEmptyOrWhitespace(_type, nameof(PostProcessor.Type), exceptions);
-        AssertNotNull(_compressionLevel, nameof(PostProcessor.CompressionLevel), exceptions);
+        AssertNotEmptyOrWhitespace(_output, nameof(PostProcessor.Output), failures, (s) => new InvalidDataException(s));
+        AssertNotEmptyOrWhitespace(_vagrantfileTemplate, nameof(PostProcessor.VagrantfileTemplate), failures, (s) => new InvalidDataException(s));
+        AssertNotEmptyOrWhitespace(_type, nameof(PostProcessor.Type), failures, (s) => new InvalidDataException(s));
+        AssertNotNull(_compressionLevel, nameof(PostProcessor.CompressionLevel), failures, (s) => new InvalidDataException(s));
     }
 }

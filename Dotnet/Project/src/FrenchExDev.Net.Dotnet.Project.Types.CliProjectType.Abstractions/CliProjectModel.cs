@@ -1,4 +1,5 @@
-﻿using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
+using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 using FrenchExDev.Net.Dotnet.Project.Abstractions;
 
 namespace FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions;
@@ -74,11 +75,11 @@ public class CliProjectModel : AbstractProjectModel<CliProjectModel>
         string? langVersion,
         bool? nullable,
         bool? implicitUsings,
-        List<ProjectReference>? projectReferences,
-        List<IPackageReference>? packageReferences,
-        List<IPackageReference>? analyzers,
-        Dictionary<string, object>? additionalProperties,
-        List<IDeclarationModel>? declarationModels,
+        ReferenceList<ProjectReference>? projectReferences,
+        ReferenceList<IPackageReference>? packageReferences,
+        ReferenceList<IPackageReference>? analyzers,
+        Reference<Dictionary<string, object>>? additionalProperties,
+        ReferenceList<IDeclarationModel>? declarationModels,
         string? version,
         bool? generatePackageOnBuild,
         string? packageTags,

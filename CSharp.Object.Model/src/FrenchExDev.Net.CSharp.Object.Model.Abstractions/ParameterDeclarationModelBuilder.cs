@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
-using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
@@ -18,7 +17,7 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 /// var result = builder.Build();
 /// </code>
 /// </remarks>
-public class ParameterDeclarationModelBuilder : AbstractObjectBuilder<ParameterDeclarationModel, ParameterDeclarationModelBuilder>
+public class ParameterDeclarationModelBuilder : AbstractBuilder<ParameterDeclarationModel>
 {
     /// <summary>
     /// Stores the type of the parameter to be built (e.g., "int", "string").
@@ -76,44 +75,44 @@ public class ParameterDeclarationModelBuilder : AbstractObjectBuilder<ParameterD
     }
 
     /// <summary>
-    /// Builds the <see cref="ParameterDeclarationModel"/> instance, validating required properties.
+    /// Validates the parameter's configuration and records any detected validation failures.
     /// </summary>
-    /// <param name="exceptions">A list to collect build exceptions.</param>
-    /// <param name="visited">A list of visited objects for cycle detection.</param>
-    /// <returns>A build result containing either the constructed model or failure details.</returns>
-    /// <remarks>
-    /// This method ensures that both the type and name are provided. If either is missing, a failure result is returned.
-    /// </remarks>
-    protected override IObjectBuildResult<ParameterDeclarationModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    /// <remarks>Validation ensures that required properties such as parameter name and type are set. If a
+    /// default value is specified, a parameter name must also be provided. Any validation errors are added to the
+    /// failures dictionary for further inspection.</remarks>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
+    /// and circular references.</param>
+    /// <param name="failures">A dictionary for collecting validation failures encountered during the validation process. Each failure is
+    /// recorded with its associated parameter name and exception.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
-        // Validate that the parameter type is provided
+        if (_defaultValue is not null && string.IsNullOrEmpty(_name))
+        {
+            failures.Failure(nameof(_defaultValue), new InvalidOperationException("Parameter name must be provided when a default value is set."));
+        }
+
         if (string.IsNullOrEmpty(_type))
         {
-            exceptions.Add(nameof(_type), new InvalidOperationException("Parameter type must be provided."));
+            failures.Failure(nameof(_type), new InvalidOperationException("Parameter type must be provided."));
         }
 
-        // Validate that the parameter name is provided
         if (string.IsNullOrEmpty(_name))
         {
-            exceptions.Add(nameof(_name), new InvalidOperationException("Parameter name must be provided."));
+            failures.Failure(nameof(_name), new InvalidOperationException("Parameter name must be provided."));
         }
+    }
 
-        // Return failure if any exceptions were collected
-        if (exceptions.Any())
-        {
-            return Failure(exceptions, visited);
-        }
-
-        // Ensure required fields are not null before proceeding
-        ArgumentNullException.ThrowIfNull(_type);
-        ArgumentNullException.ThrowIfNull(_name);
-
-        // Return a successful build result with the constructed ParameterDeclarationModel
-        return Success(new ParameterDeclarationModel
-        {
-            Type = _type,
-            Name = _name,
-            DefaultValue = _defaultValue
-        });
+    /// <summary>
+    /// Creates a new instance of <see cref="ParameterDeclarationModel"/> using the configured type, name, and default
+    /// value.
+    /// </summary>
+    /// <returns>A <see cref="ParameterDeclarationModel"/> initialized with the specified type, name, and default value.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the parameter type or name has not been provided.</exception>
+    protected override ParameterDeclarationModel Instantiate()
+    {
+        return new(
+            _type ?? throw new InvalidOperationException("Parameter type must be provided."),
+            _name ?? throw new InvalidOperationException("Parameter name must be provided."),
+            _defaultValue);
     }
 }

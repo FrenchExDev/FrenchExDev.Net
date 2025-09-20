@@ -1,9 +1,11 @@
-﻿namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
+
+namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 
 /// <summary>
 /// Represents an event declaration, including its modifiers, type, name, and attributes.
 /// </summary>
-public class EventModel : IDeclarationModel
+public class EventDeclarationModel : IDeclarationModel
 {
     /// <summary>
     /// Gets or sets the list of modifiers applied to the event (e.g., public, static).
@@ -23,5 +25,15 @@ public class EventModel : IDeclarationModel
     /// <summary>
     /// Gets or sets the list of attributes applied to the event.
     /// </summary>
-    public List<AttributeDeclarationModel> Attributes { get; set; } = new();
+    private readonly ReferenceList<AttributeDeclarationModel> _attributes = new();
+
+    public EventDeclarationModel(List<string> modifiers, string type, string name, ReferenceList<AttributeDeclarationModel> attributes)
+    {
+        Modifiers = modifiers;
+        Type = type;
+        Name = name;
+        _attributes = attributes;
+    }
+
+    public IEnumerable<AttributeDeclarationModel> Attributes => _attributes.AsEnumerable();
 }

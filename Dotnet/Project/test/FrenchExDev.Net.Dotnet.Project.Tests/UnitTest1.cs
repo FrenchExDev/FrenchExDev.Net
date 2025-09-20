@@ -1,5 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
-using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 using FrenchExDev.Net.CSharp.Object.Model.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -14,16 +13,16 @@ public class UnitTest1
         var compilationUnit = SyntaxFactory.CompilationUnit();
 
         NamespaceDeclarationModel myModel = new NamespaceDeclarationModelBuilder()
-            .Name("MyNamespace")
+            .WithName("MyNamespace")
             .Interface(b => b
-                .Name("IMyInterface")
-                .Modifier(InterfaceModifier.Public)
-                .Method(m => m
-                    .Name("MyMethod")
-                    .ReturnType("string")
-                    .Parameter((b) => b.Name("MyParameter").Type("string").Build())
+                .WithName("IMyInterface")
+                .WithModifier(InterfaceModifier.Public)
+                .WithMethod(m => m
+                    .WithName("MyMethod")
+                    .WithReturnType("string")
+                    .WithParameter((b) => b.Name("MyParameter").Type("string").Build())
                 ))
-                .Build().Success();
+                .BuildSuccess();
 
         var converter = new ModelRoslynConverter();
 

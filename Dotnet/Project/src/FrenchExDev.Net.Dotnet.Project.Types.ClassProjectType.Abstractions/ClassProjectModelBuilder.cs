@@ -1,4 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 using FrenchExDev.Net.Dotnet.Project.Abstractions;
 
 namespace FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions;
@@ -9,45 +9,41 @@ namespace FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions;
 /// <remarks>This class extends <see cref="AbstractProjectModelBuilder{TModel, TBuilder}"/> to provide a fluent
 /// API  for building <see cref="ClassProjectModel"/> objects. Use this builder to configure and validate  the model
 /// before creating an instance.</remarks>
-public class ClassProjectModelBuilder : AbstractProjectModelBuilder<ClassProjectModel, ClassProjectModelBuilder>
+public class ClassProjectModelBuilder : AbstractProjectModelBuilder<ClassProjectModel, ClassProjectModelBuilder>, IBuilder<ClassProjectModel>
 {
-
-
-    /// <summary>
-    /// Constructs an object of type <see cref="ClassProjectModel"/> based on the provided context.
-    /// </summary>
-    /// <param name="exceptions">A collection to which any exceptions encountered during the build process are added. Cannot be null.</param>
-    /// <param name="visited">A list of objects that have already been visited during the build process to prevent circular references. Cannot
-    /// be null.</param>
-    /// <returns>An <see cref="IObjectBuildResult{T}"/> containing the result of the build operation for <see
-    /// cref="ClassProjectModel"/>.</returns>
-    protected override IObjectBuildResult<ClassProjectModel> BuildInternal(ExceptionBuildDictionary exceptions, VisitedObjectsList visited)
+    protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
     {
-        VisiteObjectAndCollectExceptions(visited, exceptions);
+        BuildList(_projectReferences, visitedCollector);
+        BuildList(_packageReferences, visitedCollector);
+        BuildList(_analyzers, visitedCollector);
+        BuildList(_declarationModels, visitedCollector);
+    }
 
-        if (exceptions.Count > 0)
-        {
-            return Failure(exceptions, visited);
-        }
+    protected override ClassProjectModel Instantiate()
+    {
+        return new ClassProjectModel(
+               _name,
+               _directory,
+               _sdk,
+               _targetFramework,
+               _outputType,
+               _langVersion,
+               _nullable,
+               _implicitUsings,
+               _projectReferences.AsReferenceList(),
+               _packageReferences.AsReferenceList(),
+               _analyzers.AsReferenceList(),
+               _additionalProperties,
+               _declarationModels.AsReferenceList(),
+               _version,
+               _generatePackageOnBuild,
+               _packageTags,
+               _authors
+           );
+    }
 
-        return Success(new ClassProjectModel(
-            _name,
-            _directory,
-            _sdk,
-            _targetFramework,
-            _outputType,
-            _langVersion,
-            _nullable,
-            _implicitUsings,
-            _projectReferences,
-            _packageReferences,
-            _analyzers,
-            _additionalProperties,
-            _declarationModels,
-            _version,
-            _generatePackageOnBuild,
-            _packageTags,
-            _authors
-        ));
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
+        VisiteObjectAndCollectExceptions(visitedCollector, failures);
     }
 }

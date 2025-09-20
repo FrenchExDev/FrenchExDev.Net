@@ -23,6 +23,19 @@
 /// </remarks>
 public class NamespaceDeclarationModel : IDeclarationModel
 {
+    public NamespaceDeclarationModel(
+        string name,
+        NamespaceScoping scoping,
+        Builder2.ReferenceList<InterfaceDeclarationModel> interfaces,
+        Builder2.ReferenceList<ClassDeclarationModel> classes,
+        Builder2.ReferenceList<EnumDeclarationModel> enums,
+        Builder2.ReferenceList<StructDeclarationModel> structs,
+        Builder2.ReferenceList<NamespaceDeclarationModel> nestedNamespaces
+    )
+    {
+    }
+
+
     /// <summary>
     /// Gets or sets the name of the namespace (e.g., "System.Collections.Generic").
     /// </summary>

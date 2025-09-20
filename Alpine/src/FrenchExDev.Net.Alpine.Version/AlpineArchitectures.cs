@@ -7,6 +7,12 @@
 
 namespace FrenchExDev.Net.Alpine.Version;
 
+/// <summary>
+/// Specifies the supported CPU architectures for Alpine Linux distributions.
+/// </summary>
+/// <remarks>Use this enumeration to identify or select the target architecture when working with Alpine Linux
+/// images or packages. The values correspond to common architecture identifiers used in Alpine repositories and
+/// tooling.</remarks>
 public enum AlpineArchitectures
 {
     aarch64,
