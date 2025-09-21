@@ -15,6 +15,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\..\Packer\src\FrenchExDev.Net.Packer.Bundle.Testing\FrenchExDev.Net.Packer.Bundle.Testing.csproj" />
+	  <ProjectReference Include="..\..\..\Packer\src\FrenchExDev.Net.Packer.Bundle\FrenchExDev.Net.Packer.Bundle.csproj" />
+	  <ProjectReference Include="..\..\src\FrenchExDev.Net.Packer.Alpine.Abstractions\FrenchExDev.Net.Packer.Alpine.Abstractions.csproj" />
 	  <ProjectReference Include="..\..\src\FrenchExDev.Net.Packer.Alpine.Testing\FrenchExDev.Net.Packer.Alpine.Testing.csproj" />
 	</ItemGroup>
 

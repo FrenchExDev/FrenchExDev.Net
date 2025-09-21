@@ -15,9 +15,9 @@ namespace FrenchExDev.Net.Packer.Bundle;
 
 public class ShellScriptBuildersDictionary : Dictionary<string, ShellScriptBuilder>
 {
-    public Dictionary<string, IScript> Build()
+    public ScriptDictionary Build()
     {
-        var result = new Dictionary<string, IScript>();
+        var result = new ScriptDictionary();
         foreach (var k in this)
         {
             var buildResult = k.Value.Build();

@@ -38,27 +38,27 @@ public class PackerBundleBuilder : AbstractBuilder<PackerBundle>
     /// <summary>
     /// List of directories to include in the bundle.
     /// </summary>
-    private readonly List<string> _directories = new();
+    private readonly List<string> _directories = [];
     /// <summary>
     /// Dictionary of named scripts to include in the bundle.
     /// </summary>
-    private readonly ShellScriptBuildersDictionary _scriptsBuilders = new();
+    private readonly ShellScriptBuildersDictionary _scriptsBuilders = [];
     /// <summary>
     /// List of plugins to include in the bundle.
     /// </summary>
-    private readonly List<string> _plugins = new();
+    private readonly List<string> _plugins = [];
     /// <summary>
     /// Builder for the Packer file configuration.
     /// </summary>
-    private PackerFileBuilder _packerFileBuilder { get; } = new();
+    private readonly PackerFileBuilder _packerFileBuilder = new();
     /// <summary>
     /// Builder for the HTTP directory configuration.
     /// </summary>
-    private HttpDirectoryBuilder _httpDirectory { get; } = new();
+    private readonly HttpDirectoryBuilder _httpDirectory = new();
     /// <summary>
     /// Builder for the Vagrant directory configuration.
     /// </summary>
-    private VagrantDirectoryBuilder _vagrantDirectory { get; } = new();
+    private readonly VagrantDirectoryBuilder _vagrantDirectory = new();
 
     /// <summary>
     /// Adds a directory to the bundle.
@@ -157,6 +157,14 @@ public class PackerBundleBuilder : AbstractBuilder<PackerBundle>
     /// during processing.</param>
     protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
+        _packerFileBuilder.Validate(visitedCollector, failures);
+        _httpDirectory.Validate(visitedCollector, failures);
+        _vagrantDirectory.Validate(visitedCollector, failures);
+
+        foreach (var scriptBuilder in _scriptsBuilders.Values)
+        {
+            scriptBuilder.Validate(visitedCollector, failures);
+        }
     }
 
     /// <summary>
@@ -174,9 +182,9 @@ public class PackerBundleBuilder : AbstractBuilder<PackerBundle>
             PackerFile = _packerFileBuilder.Build().Success<PackerFile>(),
             HttpDirectory = _httpDirectory.Build().Success<HttpDirectory>(),
             VagrantDirectory = _vagrantDirectory.Build().Success<VagrantDirectory>(),
-            Directories = _directories,
+            Directories = [.. _directories],
             Scripts = _scriptsBuilders.Build(),
-            Plugins = _plugins
+            Plugins = [.. _plugins]
         };
     }
 }

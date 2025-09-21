@@ -418,15 +418,12 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     public TClass BuildSuccess(VisitedObjectDictionary? visitedCollector = null)
     {
         var result = Build(visitedCollector);
-        switch (result)
+        return result switch
         {
-            case SuccessBuildResult<TClass> success:
-                return success.Object;
-            case FailureBuildResult failure:
-                throw new AggregateException("Build failed with the following errors:", failure.Failures.SelectMany(f => f.Value).OfType<Exception>());
-            default:
-                throw new InvalidOperationException("Build resulted in an unknown state.");
-        }
+            SuccessBuildResult<TClass> success => success.Object,
+            FailureBuildResult failure => throw new AggregateException("Build failed with the following errors:", failure.Failures.SelectMany(f => f.Value).OfType<Exception>()),
+            _ => throw new InvalidOperationException("Build resulted in an unknown state."),
+        };
     }
 
     /// <summary>

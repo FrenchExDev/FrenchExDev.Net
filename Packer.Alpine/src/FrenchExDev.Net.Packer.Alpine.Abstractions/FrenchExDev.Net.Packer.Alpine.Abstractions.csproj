@@ -1,9 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Alpine\src\FrenchExDev.Net.Alpine.Version\FrenchExDev.Net.Alpine.Version.csproj" />
+		<ProjectReference Include="..\..\..\Packer\src\FrenchExDev.Net.Packer.Bundle\FrenchExDev.Net.Packer.Bundle.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="ByteSize" />
+		<PackageReference Include="Figgle" />
+	</ItemGroup>
 </Project>

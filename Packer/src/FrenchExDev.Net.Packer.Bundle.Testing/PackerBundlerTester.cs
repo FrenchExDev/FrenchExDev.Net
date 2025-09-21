@@ -9,17 +9,23 @@
 
 #endregion
 
+using FenchExDev.Net.Testing;
+
 namespace FrenchExDev.Net.Packer.Bundle.Testing;
 
+[Feature(nameof(PackerBundle), TestKind.Unit)]
+[Feature(nameof(PackerBundleBuilder), TestKind.Unit)]
 public class PackerBundlerTester
 {
+    protected static PackerBundleBuilder Builder() => new();
+
     public void TestValid(
         Action<PackerBundleBuilder> builderBody,
         Action<PackerBundle> assertBuiltBody,
         Action<string> assertSerializedBody
     )
     {
-        var packerBundleBuilder = new PackerBundleBuilder();
+        var packerBundleBuilder = Builder();
         builderBody(packerBundleBuilder);
 
         var packerBundle = packerBundleBuilder.BuildSuccess();
