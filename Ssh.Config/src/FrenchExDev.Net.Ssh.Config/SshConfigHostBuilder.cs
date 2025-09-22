@@ -1177,7 +1177,7 @@ public class SshConfigHostBuilder : AbstractBuilder<SshConfigHost>
     /// and circular references.</param>
     /// <param name="failures">A dictionary that collects validation failures, mapping property names to the corresponding exception describing
     /// the failure.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         AssertNotNullOrEmptyOrWhitespace(_name, nameof(SshConfigHost.Name), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
         AssertNotEmptyOrWhitespace(_batchMode, nameof(SshConfigHost.BatchMode), failures, (s) => new StringIsEmptyOrWhitespaceException(s));

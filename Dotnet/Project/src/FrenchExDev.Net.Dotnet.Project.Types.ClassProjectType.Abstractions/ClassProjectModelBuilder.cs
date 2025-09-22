@@ -42,7 +42,7 @@ public class ClassProjectModelBuilder : AbstractProjectModelBuilder<ClassProject
            );
     }
 
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         VisiteObjectAndCollectExceptions(visitedCollector, failures);
     }

@@ -98,7 +98,7 @@ public class SemanticModuleVersionBuilder : AbstractBuilder<SemanticModuleVersio
     /// violations are added to the failures dictionary for further processing.</remarks>
     /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where any detected errors are recorded.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (_major < 0)
         {

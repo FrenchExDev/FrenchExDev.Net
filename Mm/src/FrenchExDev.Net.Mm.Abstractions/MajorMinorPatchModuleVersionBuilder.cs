@@ -74,7 +74,7 @@ public class MajorMinorPatchModuleVersionBuilder : AbstractBuilder<MajorMinorPat
     /// dictionary.</remarks>
     /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
     /// <param name="failures">A dictionary for collecting validation failures. Any missing or invalid version components are reported here.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (_major == null || !_major.HasValue)
         {

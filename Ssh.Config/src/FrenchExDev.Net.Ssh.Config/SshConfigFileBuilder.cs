@@ -64,7 +64,7 @@ public class SshConfigFileBuilder : AbstractBuilder<SshConfigFile>
     /// and circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where each entry represents a specific validation error found
     /// during the process.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         ValidateListInternal(_hostBuilders, nameof(_hostBuilders), visitedCollector, failures);
     }

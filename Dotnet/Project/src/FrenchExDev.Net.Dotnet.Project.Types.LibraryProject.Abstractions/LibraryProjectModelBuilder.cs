@@ -63,7 +63,7 @@ public class LibraryProjectModelBuilder : AbstractProjectModelBuilder<LibraryPro
     /// and handle circular references.</param>
     /// <param name="failures">A dictionary that accumulates validation failures found during the validation process. Each entry represents a
     /// specific failure associated with an object.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         VisiteObjectAndCollectExceptions(visitedCollector, failures);
     }
