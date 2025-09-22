@@ -34,7 +34,7 @@ public static class ModelSyntaxCodeTester
 
         // Build the model and ensure the result is successful
         var buildResult = builder.Build();
-        buildResult.ShouldBeAssignableTo<SuccessBuildResult<TModel>>();
+        buildResult.ShouldBeAssignableTo<SuccessResult<TModel>>();
         var builtModel = buildResult.Success<TModel>();
 
         // Assert the built model using the provided assertion
@@ -84,7 +84,7 @@ public static class ModelSyntaxCodeTester
         var buildResult = builder.Build();
 
         // Asserts the type of buildResult as Failure object
-        buildResult.ShouldBeAssignableTo<FailureBuildResult>();
+        buildResult.ShouldBeAssignableTo<FailureResult>();
 
         // Assert the build result using the provided assertion (expected to be invalid)
         assertResult(buildResult.Failures<TModel>());

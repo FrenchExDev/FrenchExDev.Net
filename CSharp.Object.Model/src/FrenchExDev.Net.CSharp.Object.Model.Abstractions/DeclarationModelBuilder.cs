@@ -18,7 +18,7 @@ public class DeclarationModelBuilder : IBuilder<IDeclarationModel>
     /// Holds the result of the build operation, if any.
     /// <remarks>Null until build is performed.</remarks>
     /// </summary>
-    private IBuildResult? _result;
+    private IResult? _result;
 
     /// <summary>
     /// The underlying builder for the specific declaration type being constructed.
@@ -31,7 +31,7 @@ public class DeclarationModelBuilder : IBuilder<IDeclarationModel>
     /// <summary>
     /// Gets the result of the build operation, if available.
     /// </summary>
-    public IBuildResult? Result => _result;
+    public IResult? Result => _result;
 
     /// <summary>
     /// List of hooks to execute after the declaration model is built.
@@ -75,15 +75,15 @@ public class DeclarationModelBuilder : IBuilder<IDeclarationModel>
     /// </summary>
     /// <param name="visitedCollector">An optional dictionary used to track objects that have already been visited during the build process. If
     /// provided, it helps avoid processing the same object multiple times.</param>
-    /// <returns>An object implementing <see cref="IBuildResult"/> that represents the outcome of the build operation. The result
+    /// <returns>An object implementing <see cref="IResult"/> that represents the outcome of the build operation. The result
     /// may indicate success or failure depending on the state of the declaration model.</returns>
-    public IBuildResult Build(VisitedObjectDictionary? visitedCollector = null)
+    public IResult Build(VisitedObjectDictionary? visitedCollector = null)
     {
         if (_result is not null) return _result;
         _result = BuildInternal(visitedCollector);
         foreach (var hook in _onBuiltHooks)
         {
-            if (_result is SuccessBuildResult<IDeclarationModel> success)
+            if (_result is SuccessResult<IDeclarationModel> success)
             {
                 hook(success.Object);
             }
@@ -97,9 +97,9 @@ public class DeclarationModelBuilder : IBuilder<IDeclarationModel>
     /// </summary>
     /// <param name="visitedCollector">Optional dictionary for tracking visited objects to prevent cycles.</param>
     /// <returns>The build result, or null if not built.</returns>
-    protected IBuildResult BuildInternal(VisitedObjectDictionary? visitedCollector = null)
+    protected IResult BuildInternal(VisitedObjectDictionary? visitedCollector = null)
     {
-        if (_existing is not null) return new SuccessBuildResult<IDeclarationModel>(_existing);
+        if (_existing is not null) return new SuccessResult<IDeclarationModel>(_existing);
 
         ArgumentNullException.ThrowIfNull(_builder, "No declaration type has been configured. Call a method like Class(), Enum(), etc. to set the builder.");
 

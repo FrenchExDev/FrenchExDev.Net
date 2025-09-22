@@ -52,7 +52,7 @@ public class Cyclic_Complex_Graph_Tests
 
         var result = johnDoeBuilder.Build();
 
-        result.ShouldBeAssignableTo<SuccessBuildResult<Person>>();
+        result.ShouldBeAssignableTo<SuccessResult<Person>>();
          var johnDoe = result.Success<Person>();
         johnDoe.ShouldBeAssignableTo<Person>();
         johnDoe.Contact.ShouldBeAssignableTo<Person>();

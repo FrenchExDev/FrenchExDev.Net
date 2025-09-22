@@ -14,7 +14,7 @@ public class HttpResponseMessageBuilder : IBuilder<HttpResponseMessage>
 {
     public Guid Id => throw new NotImplementedException();
 
-    public IBuildResult? Result => throw new NotImplementedException();
+    public IResult? Result => throw new NotImplementedException();
     private HttpStatusCode _httpStatusCode;
 
     public HttpResponseMessageBuilder StatusCode(HttpStatusCode httpStatusCode)
@@ -34,14 +34,14 @@ public class HttpResponseMessageBuilder : IBuilder<HttpResponseMessage>
         _content = content;
         return this;
     }
-    public IBuildResult Build(VisitedObjectDictionary? visitedCollector = null)
+    public IResult Build(VisitedObjectDictionary? visitedCollector = null)
     {
         var r = new HttpResponseMessage(_httpStatusCode)
         {
             Content = new StringContent(_content ?? throw new InvalidOperationException(nameof(_content)))
         };
 
-        return new SuccessBuildResult<HttpResponseMessage>(r);
+        return new SuccessResult<HttpResponseMessage>(r);
     }
 
     public void OnBuilt(Action<HttpResponseMessage> hook)

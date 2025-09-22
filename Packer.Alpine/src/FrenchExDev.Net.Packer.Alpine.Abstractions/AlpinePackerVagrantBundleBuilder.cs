@@ -431,7 +431,7 @@ public class AlpinePackerVagrantBundleBuilder : AbstractBuilder<PackerBundle>
     /// </summary>
     /// <returns>An object that represents the result of the build process.</returns>
     /// <exception cref="InvalidOperationException">Thrown if PreBuild() has not been called prior to invoking this method.</exception>
-    protected IBuildResult BuildInternal()
+    protected IResult BuildInternal()
     {
         if (!_hasBeenPreBuilt)
         {

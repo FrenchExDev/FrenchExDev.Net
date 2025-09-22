@@ -82,14 +82,14 @@ public class FakeHttpClientBuilder : IBuilder<IHttpClient>
     /// <summary>
     /// Stores the build result once the object has been constructed.
     /// </summary>
-    private IBuildResult? _result;
+    private IResult? _result;
     /// <summary>
     /// Gets the result of the build operation.
     /// </summary>
     /// <remarks>Accessing this property before the build process has completed will throw an exception. The
     /// returned result provides details about the outcome of the build, including success status and any associated
     /// errors.</remarks>
-    public IBuildResult Result => _result ?? throw new InvalidOperationException(nameof(_result));
+    public IResult Result => _result ?? throw new InvalidOperationException(nameof(_result));
 
     /// <summary>
     /// Stores the list of HTTP response builders to configure the fake HTTP client.
@@ -118,9 +118,9 @@ public class FakeHttpClientBuilder : IBuilder<IHttpClient>
     /// <param name="visitedCollector">An optional dictionary used to track visited objects during the build process. If provided, it helps prevent
     /// redundant processing of objects that have already been handled.</param>
     /// <returns>An object that represents the result of the build operation, containing the constructed HTTP client instance.</returns>
-    public IBuildResult Build(VisitedObjectDictionary? visitedCollector = null)
+    public IResult Build(VisitedObjectDictionary? visitedCollector = null)
     {
-        _result = new SuccessBuildResult<IHttpClient>(new FakeHttpClient(_builders.BuildSuccess()));
+        _result = new SuccessResult<IHttpClient>(new FakeHttpClient(_builders.BuildSuccess()));
         return Result;
     }
 

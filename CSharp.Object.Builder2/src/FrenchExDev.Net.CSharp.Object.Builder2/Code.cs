@@ -4,52 +4,11 @@ using System.Diagnostics;
 namespace FrenchExDev.Net.CSharp.Object.Builder2;
 
 /// <summary>
-/// Represents an exception that is thrown when a member cannot be resolved from a specified source.
-/// </summary>
-/// <remarks>Use this exception to indicate that a requested member was not found or could not be resolved during
-/// an operation, such as dependency resolution or mapping. The <see cref="MemberOwner"/> and <see
-/// cref="MemberSource"/> properties provide details about the unresolved member and its source, which can assist in
-/// diagnosing the cause of the failure.</remarks>
-public class NotResolvedException : Exception
-{
-    /// <summary>
-    /// Gets the name of the owner associated with the member.
-    /// </summary>
-    public string MemberOwner { get; init; }
-
-    /// <summary>
-    /// Gets the source code or textual representation associated with the member.
-    /// </summary>
-    public string MemberSource { get; init; }
-
-    /// <summary>
-    /// Initializes a new instance of the NotResolvedException class with the specified target and source member names.
-    /// </summary>
-    /// <param name="target">The name of the member that could not be resolved.</param>
-    /// <param name="source">The name of the source from which the member resolution was attempted.</param>
-    public NotResolvedException(string target, string source)
-    {
-        MemberOwner = target;
-        MemberSource = source;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the NotResolvedException class for the specified target member.
-    /// </summary>
-    /// <param name="target">The name of the member that could not be resolved. Cannot be null.</param>
-    public NotResolvedException(string target)
-    {
-        MemberOwner = target;
-        MemberSource = target;
-    }
-}
-
-/// <summary>
 /// Represents the result of a build operation, providing information about the outcome and any associated data.
 /// </summary>
 /// <remarks>Implementations of this interface typically expose properties or methods to access build status,
 /// errors, and output artifacts. The specific details available depend on the concrete implementation.</remarks>
-public interface IBuildResult
+public interface IResult
 {
 
 }
@@ -60,7 +19,7 @@ public interface IBuildResult
 /// <typeparam name="TClass">The type of the object produced by the build operation. Must be a reference type.</typeparam>
 /// <param name="instance">The object instance that was successfully built. Cannot be null.</param>
 [DebuggerDisplay("Object = {Object}")]
-public class SuccessBuildResult<TClass>(TClass instance) : IBuildResult where TClass : class
+public class SuccessResult<TClass>(TClass instance) : IResult where TClass : class
 {
     public TClass Object { get; } = instance;
 }
@@ -99,7 +58,7 @@ public class FailuresDictionary : Dictionary<string, List<object>>
 /// Represents the result of a build operation that has failed, including details about the failures encountered.
 /// </summary>
 /// <param name="failures">A dictionary containing information about each failure that occurred during the build process. Cannot be null.</param>
-public class FailureBuildResult(FailuresDictionary failures) : IBuildResult
+public class FailureResult(FailuresDictionary failures) : IResult
 {
     public FailuresDictionary Failures { get; } = failures;
 }
@@ -162,9 +121,9 @@ public interface IBuilder<TClass, TReference> where TClass : class where TRefere
     /// Gets the result of the build operation, if available.
     /// </summary>
     /// <remarks>If the build has not completed or failed to produce a result, this property returns <see
-    /// langword="null"/>. The returned <see cref="IBuildResult"/> provides details about the outcome of the build
+    /// langword="null"/>. The returned <see cref="IResult"/> provides details about the outcome of the build
     /// process.</remarks>
-    IBuildResult? Result { get; }
+    IResult? Result { get; }
 
     /// <summary>
     /// Builds the result object by traversing the current structure, optionally tracking visited objects to prevent
@@ -176,8 +135,8 @@ public interface IBuilder<TClass, TReference> where TClass : class where TRefere
     /// <param name="visitedCollector">An optional dictionary used to record objects that have already been visited during the build process. If
     /// provided, it helps avoid processing the same object multiple times and can prevent infinite loops in structures
     /// with cycles. If null, no tracking is performed.</param>
-    /// <returns>An object implementing <see cref="IBuildResult"/> that represents the outcome of the build operation.</returns>
-    IBuildResult Build(VisitedObjectDictionary? visitedCollector = null);
+    /// <returns>An object implementing <see cref="IResult"/> that represents the outcome of the build operation.</returns>
+    IResult Build(VisitedObjectDictionary? visitedCollector = null);
 
     /// <summary>
     /// Registers a callback to be invoked when the object has been fully constructed.
@@ -196,7 +155,7 @@ public interface IBuilder<TClass, TReference> where TClass : class where TRefere
 /// method, after which the Instance property provides access to the resolved object. The IsResolved property indicates
 /// whether the reference has been successfully resolved.</remarks>
 /// <typeparam name="TClass">The type of the class instance referenced by this interface. Must be a reference type.</typeparam>
-public interface IReference<TClass> : IBuildResult where TClass : class
+public interface IReference<TClass> : IResult where TClass : class
 {
     /// <summary>
     /// Gets the current instance of type <typeparamref name="TClass"/> if available.
@@ -225,6 +184,47 @@ public interface IReference<TClass> : IBuildResult where TClass : class
 }
 
 /// <summary>
+/// Represents an exception that is thrown when a member cannot be resolved from a specified source.
+/// </summary>
+/// <remarks>Use this exception to indicate that a requested member was not found or could not be resolved during
+/// an operation, such as dependency resolution or mapping. The <see cref="MemberOwner"/> and <see
+/// cref="MemberSource"/> properties provide details about the unresolved member and its source, which can assist in
+/// diagnosing the cause of the failure.</remarks>
+public class NotResolvedException : Exception
+{
+    /// <summary>
+    /// Gets the name of the owner associated with the member.
+    /// </summary>
+    public string MemberOwner { get; init; }
+
+    /// <summary>
+    /// Gets the source code or textual representation associated with the member.
+    /// </summary>
+    public string MemberSource { get; init; }
+
+    /// <summary>
+    /// Initializes a new instance of the NotResolvedException class with the specified target and source member names.
+    /// </summary>
+    /// <param name="target">The name of the member that could not be resolved.</param>
+    /// <param name="source">The name of the source from which the member resolution was attempted.</param>
+    public NotResolvedException(string target, string source)
+    {
+        MemberOwner = target;
+        MemberSource = source;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the NotResolvedException class for the specified target member.
+    /// </summary>
+    /// <param name="target">The name of the member that could not be resolved. Cannot be null.</param>
+    public NotResolvedException(string target)
+    {
+        MemberOwner = target;
+        MemberSource = target;
+    }
+}
+
+/// <summary>
 /// Represents an abstract reference to an instance of a specified class type, providing mechanisms to resolve and
 /// access the referenced object.
 /// </summary>
@@ -236,14 +236,19 @@ public interface IReference<TClass> : IBuildResult where TClass : class
 public class Reference<TClass> : IReference<TClass> where TClass : class
 {
     /// <summary>
+    /// Stores the instance of type <typeparamref name="TClass"/> that this reference points to.
+    /// </summary>
+    private TClass? _instance;
+
+    /// <summary>
     /// Gets the current instance of type <typeparamref name="TClass"/> associated with this object.
     /// </summary>
-    public TClass? Instance { get; protected set; }
+    public TClass? Instance => _instance;
 
     /// <summary>
     /// Gets a value indicating whether the instance has been resolved and is available for use.
     /// </summary>
-    public bool IsResolved => Instance is not null;
+    public bool IsResolved => _instance is not null;
 
     /// <summary>
     /// Associates the specified instance with this reference and returns the updated reference.
@@ -252,7 +257,7 @@ public class Reference<TClass> : IReference<TClass> where TClass : class
     /// <returns>The current reference object with its instance set to the specified value.</returns>
     public IReference<TClass> Resolve(TClass instance)
     {
-        Instance = instance;
+        _instance = instance;
         return this;
     }
 
@@ -262,7 +267,7 @@ public class Reference<TClass> : IReference<TClass> where TClass : class
     /// </summary>
     /// <returns>The resolved instance of type <typeparamref name="TClass"/>.</returns>
     /// <exception cref="NotResolvedException">Thrown if the reference has not been resolved.</exception>
-    public TClass Resolved() => Instance ?? throw new NotResolvedException("Reference is not resolved yet.");
+    public TClass Resolved() => _instance ?? throw new NotResolvedException("Reference is not resolved yet.");
 
     /// <summary>
     /// Returns the resolved instance of type <typeparamref name="TClass"/> if available; otherwise, returns <see
@@ -282,7 +287,7 @@ public class Reference<TClass> : IReference<TClass> where TClass : class
     /// <param name="existing">The object to be referenced. Can be null to indicate that no object is currently referenced.</param>
     public Reference(TClass? existing)
     {
-        Instance = existing;
+        _instance = existing;
     }
 }
 
@@ -351,7 +356,7 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     /// </summary>
     /// <remarks>The value is <c>null</c> if the build has not completed or if no result is available. Access
     /// to this property may be restricted depending on the context in which it is used.</remarks>
-    public IBuildResult? Result { get; protected set; }
+    public IResult? Result { get; protected set; }
 
     /// <summary>
     /// Retrieves the result of the build operation.
@@ -359,7 +364,7 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     /// <returns>An object that represents the result of the build. The result is available only after a successful call to
     /// Build().</returns>
     /// <exception cref="InvalidOperationException">Thrown if Build() has not been called prior to accessing the result.</exception>
-    public IBuildResult GetResult() => Result ?? throw new InvalidOperationException("You must call Build() before accessing the Result.");
+    public IResult GetResult() => Result ?? throw new InvalidOperationException("You must call Build() before accessing the Result.");
 
     /// <summary>
     /// Builds the object and returns the result, performing validation and instantiation as needed.
@@ -371,7 +376,7 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     /// circular references by recording objects that have already been processed.</param>
     /// <returns>An object that represents the result of the build operation. The result indicates success or failure and may
     /// contain validation errors or the instantiated object.</returns>
-    public IBuildResult Build(VisitedObjectDictionary? visitedCollector = null)
+    public IResult Build(VisitedObjectDictionary? visitedCollector = null)
     {
         if (visitedCollector is not null && visitedCollector.ContainsKey(Id))
         {
@@ -382,10 +387,7 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
         {
             _reference.Resolve(_existing);
             Result = Success(_existing);
-            foreach (var hook in _hooks)
-            {
-                hook(_existing);
-            }
+            ExecuteHooks(_existing);
             return Result;
         }
 
@@ -402,18 +404,31 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
         }
 
         BuildInternal(visitedCollector);
+
         Result = Success(Instantiate());
 
-        if (Result is SuccessBuildResult<TClass> success)
+        if (Result is SuccessResult<TClass> success)
         {
             _reference.Resolve(success.Object);
-            foreach (var hook in _hooks)
-            {
-                hook(success.Object);
-            }
+            ExecuteHooks(success.Object);
         }
 
         return Result;
+    }
+
+    /// <summary>
+    /// Invokes all registered hook delegates for the specified instance of <typeparamref name="TClass"/>.
+    /// </summary>
+    /// <remarks>Hooks are executed in the order in which they were registered. This method does not handle
+    /// exceptions thrown by individual hooks; callers should ensure that hooks are robust or handle exceptions as
+    /// needed.</remarks>
+    /// <param name="instance">The instance of <typeparamref name="TClass"/> to pass to each hook delegate.</param>
+    private void ExecuteHooks(TClass instance)
+    {
+        foreach (var hook in _hooks)
+        {
+            hook(instance);
+        }
     }
 
     /// <summary>
@@ -430,8 +445,8 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
         var result = Build(visitedCollector);
         return result switch
         {
-            SuccessBuildResult<TClass> success => success.Object,
-            FailureBuildResult failure => throw new AggregateException("Build failed with the following errors:", failure.Failures.SelectMany(f => f.Value).OfType<Exception>()),
+            SuccessResult<TClass> success => success.Object,
+            FailureResult failure => throw new AggregateException("Build failed with the following errors:", failure.Failures.SelectMany(f => f.Value).OfType<Exception>()),
             _ => throw new InvalidOperationException("Build resulted in an unknown state."),
         };
     }
@@ -481,24 +496,24 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     protected abstract TClass Instantiate();
 
     /// <summary>
-    /// Creates a new <see cref="SuccessBuildResult{TClass}"/> representing a successful build operation for the
+    /// Creates a new <see cref="SuccessResult{TClass}"/> representing a successful build operation for the
     /// specified instance.
     /// </summary>
     /// <param name="instance">The instance of <typeparamref name="TClass"/> that was successfully built. Cannot be null.</param>
-    /// <returns>A <see cref="SuccessBuildResult{TClass}"/> containing the provided instance.</returns>
-    protected static SuccessBuildResult<TClass> Success(TClass instance)
+    /// <returns>A <see cref="SuccessResult{TClass}"/> containing the provided instance.</returns>
+    protected static SuccessResult<TClass> Success(TClass instance)
     {
-        return new SuccessBuildResult<TClass>(instance);
+        return new SuccessResult<TClass>(instance);
     }
 
     /// <summary>
-    /// Creates a new <see cref="FailureBuildResult"/> instance representing the specified failures.
+    /// Creates a new <see cref="FailureResult"/> instance representing the specified failures.
     /// </summary>
     /// <param name="failures">A dictionary containing failure details to be included in the result. Cannot be null.</param>
-    /// <returns>A <see cref="FailureBuildResult"/> that encapsulates the provided failures.</returns>
-    protected static FailureBuildResult Failure(FailuresDictionary failures)
+    /// <returns>A <see cref="FailureResult"/> that encapsulates the provided failures.</returns>
+    protected static FailureResult Failure(FailuresDictionary failures)
     {
-        return new FailureBuildResult(failures);
+        return new FailureResult(failures);
     }
 
     /// <summary>
@@ -723,7 +738,7 @@ public class BuildSucceededException(object instance) : BuildException("Build su
 /// Provides extension methods for extracting success objects and failure details from build result instances.
 /// </summary>
 /// <remarks>These methods simplify access to the underlying result data when working with types implementing <see
-/// cref="IBuildResult"/>. They throw exceptions if the result does not match the expected success or failure state, so
+/// cref="IResult"/>. They throw exceptions if the result does not match the expected success or failure state, so
 /// callers should ensure the result type before invoking these methods.</remarks>
 public static class Extensions
 {
@@ -737,12 +752,12 @@ public static class Extensions
     /// <returns>The object of type <typeparamref name="TClass"/> if the build result indicates success.</returns>
     /// <exception cref="BuildFailedException">Thrown if the build result indicates failure.</exception>
     /// <exception cref="NotSupportedException">Thrown if the build result type is not supported by this method.</exception>
-    public static TClass Success<TClass>(this IBuildResult result) where TClass : class
+    public static TClass Success<TClass>(this IResult result) where TClass : class
     {
         return result switch
         {
-            SuccessBuildResult<TClass> success => success.Object,
-            FailureBuildResult failures => throw new BuildFailedException(failures.Failures),
+            SuccessResult<TClass> success => success.Object,
+            FailureResult failures => throw new BuildFailedException(failures.Failures),
             _ => throw new NotSupportedException(result.GetType().FullName),
         };
     }
@@ -758,12 +773,12 @@ public static class Extensions
     /// <returns>A FailuresDictionary containing details about the failures associated with the build result.</returns>
     /// <exception cref="BuildSucceededException">Thrown if the build result represents a successful build. The exception contains the successfully built object.</exception>
     /// <exception cref="NotSupportedException">Thrown if the build result is of an unsupported type.</exception>
-    public static FailuresDictionary Failures<TClass>(this IBuildResult result) where TClass : class
+    public static FailuresDictionary Failures<TClass>(this IResult result) where TClass : class
     {
         return result switch
         {
-            FailureBuildResult failure => failure.Failures,
-            SuccessBuildResult<TClass> success => throw new BuildSucceededException(success.Object),
+            FailureResult failure => failure.Failures,
+            SuccessResult<TClass> success => throw new BuildSucceededException(success.Object),
             _ => throw new NotSupportedException(result.GetType().FullName),
         };
     }
@@ -774,14 +789,29 @@ public static class Extensions
     /// <typeparam name="T">The type of the value produced by a successful build result.</typeparam>
     /// <param name="result">The build result to evaluate for success.</param>
     /// <returns>true if the build result is a SuccessBuildResult<T>; otherwise, false.</returns>
-    public static bool IsSuccess<T>(this IBuildResult result) where T : class => result is SuccessBuildResult<T>;
+    public static bool IsSuccess<T>(this IResult result) where T : class => result is SuccessResult<T>;
 
     /// <summary>
     /// Determines whether the specified build result represents a failure.
     /// </summary>
     /// <param name="result">The build result to evaluate for failure status. Cannot be null.</param>
     /// <returns>true if the build result is a failure; otherwise, false.</returns>
-    public static bool IsFailure(this IBuildResult result) => result is FailureBuildResult;
+    public static bool IsFailure(this IResult result) => result is FailureResult;
+}
+
+/// <summary>
+/// Represents a collection that manages references to objects of type TClass, providing methods to add, query, and resolve referenced instances.
+/// </summary>
+/// <typeparam name="TClass"></typeparam>
+public interface IReferenceList<TClass> : IList<TClass> where TClass : class
+{
+    IEnumerable<TClass> AsEnumerable();
+    IQueryable<TClass> Queryable { get; }
+    TClass ElementAt(int index);
+    bool Any(Func<TClass, bool> value);
+    bool Any();
+    void Add(IReference<TClass> reference);
+    bool Contains(IReference<TClass> reference);
 }
 
 /// <summary>
@@ -793,7 +823,7 @@ public static class Extensions
 /// allows indexed access with automatic resolution. All references must implement IReference<TClass>. Thread safety is
 /// not guaranteed; external synchronization is required for concurrent access.</remarks>
 /// <typeparam name="TClass">The type of object referenced and managed by the collection. Must be a reference type.</typeparam>
-public class ReferenceList<TClass> : IList<TClass> where TClass : class
+public class ReferenceList<TClass> : IReferenceList<TClass> where TClass : class
 {
     /// <summary>
     /// Holds the list of references to objects of type <typeparamref name="TClass"/>.
@@ -1019,7 +1049,7 @@ public class ReferenceList<TClass> : IList<TClass> where TClass : class
     /// <summary>
     /// Gets a value indicating whether the collection is read-only.
     /// </summary>
-    public bool IsReadOnly => throw new NotImplementedException();
+    public bool IsReadOnly => false;
 
     /// <summary>
     /// Gets or sets the element at the specified index in the collection, resolving references as needed.

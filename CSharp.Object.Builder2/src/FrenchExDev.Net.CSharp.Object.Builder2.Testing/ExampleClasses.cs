@@ -21,7 +21,7 @@ public class Person
     /// <summary>
     /// Reference to the contact person, resolved via <see cref="PersonReference"/>.
     /// </summary>
-    protected Reference<Person> _contact;
+    protected IReference<Person> _contact;
 
     /// <summary>
     /// List of address references associated with this person.
@@ -183,7 +183,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// <summary>
     /// Exception thrown when the name is null, empty, or whitespace.
     /// </summary>
-    internal class NameCannotBeNullOrEmptyOrWhitespaceException : Exception
+    public class NameCannotBeNullOrEmptyOrWhitespaceException : Exception
     {
         public NameCannotBeNullOrEmptyOrWhitespaceException() : base("Name cannot be null or empty or whitespace") { }
     }
@@ -191,7 +191,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// <summary>
     /// Exception thrown when the age is null or negative.
     /// </summary>
-    internal class AgeMustBeNonNegativeException : Exception
+    public class AgeMustBeNonNegativeException : Exception
     {
         public AgeMustBeNonNegativeException() : base("Age must be a non-negative integer") { }
     }
@@ -199,7 +199,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// <summary>
     /// Exception thrown when no address is provided.
     /// </summary>
-    internal class AtLeastOneAddressMustBeProvidedException : Exception
+    public class AtLeastOneAddressMustBeProvidedException : Exception
     {
         public AtLeastOneAddressMustBeProvidedException() : base("At least one address must be provided") { }
     }
@@ -207,7 +207,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// <summary>
     /// Exception thrown when no contact is provided.
     /// </summary>
-    internal class MustHaveContactException : Exception
+    public class MustHaveContactException : Exception
     {
         public MustHaveContactException() : base("Person must have a contact") { }
     }
@@ -215,7 +215,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// <summary>
     /// Exception thrown when no known person is provided.
     /// </summary>
-    internal class MustKnowAtLeastOnePersonException : Exception
+    public class MustKnowAtLeastOnePersonException : Exception
     {
         public MustKnowAtLeastOnePersonException() : base("Person must know at least one other person") { }
     }
@@ -373,8 +373,9 @@ public class AddressBuilder : AbstractBuilder<Address, Reference<Address>>
 
     protected override Address Instantiate()
     {
-        ArgumentNullException.ThrowIfNull(_street, nameof(_street));
-        ArgumentNullException.ThrowIfNull(_city, nameof(_city));
+        if (_street is null) throw new StreetCannotBeNullOrEmptyException();
+        if (_city is null) throw new CityCannotBeNullOrEmptyException();
+
         return new Address(_street, _city);
     }
 }
