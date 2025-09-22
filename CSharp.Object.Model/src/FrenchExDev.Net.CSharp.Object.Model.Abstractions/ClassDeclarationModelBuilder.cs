@@ -178,7 +178,7 @@ public class ClassDeclarationModelBuilder : AbstractBuilder<ClassDeclarationMode
         BuildList(_nestedClasses, visitedCollector);
     }
 
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrEmpty(_name))
         {

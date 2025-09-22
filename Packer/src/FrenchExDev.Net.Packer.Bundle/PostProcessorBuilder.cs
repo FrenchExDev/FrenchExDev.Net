@@ -146,7 +146,7 @@ public class PostProcessorBuilder : AbstractBuilder<PostProcessor>
     /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
     /// <param name="failures">A dictionary for collecting validation failures encountered during the validation process. Entries are added for
     /// each invalid configuration detected.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         AssertNotEmptyOrWhitespace(_output, nameof(PostProcessor.Output), failures, (s) => new InvalidDataException(s));
         AssertNotEmptyOrWhitespace(_vagrantfileTemplate, nameof(PostProcessor.VagrantfileTemplate), failures, (s) => new InvalidDataException(s));

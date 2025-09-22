@@ -225,7 +225,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// </summary>
     /// <param name="visitedCollector">Dictionary for tracking visited objects to prevent cycles.</param>
     /// <param name="failures">Dictionary for collecting validation failures.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrWhiteSpace(_name))
         {
@@ -358,7 +358,7 @@ public class AddressBuilder : AbstractBuilder<Address, Reference<Address>>
         public CityCannotBeNullOrEmptyException() : base("City cannot be null or empty") { }
     }
 
-    protected override void ValidateInternal(VisitedObjectDictionary visited, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visited, FailuresDictionary failures)
     {
         if (string.IsNullOrWhiteSpace(_street))
         {

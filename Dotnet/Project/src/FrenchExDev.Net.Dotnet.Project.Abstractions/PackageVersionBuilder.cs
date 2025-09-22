@@ -56,7 +56,7 @@ public class PackageVersionBuilder : AbstractBuilder<IPackageVersion>
     /// </summary>
     /// <param name="visitedCollector"></param>
     /// <param name="failures"></param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (_version is null) failures.Failure(nameof(_version), new MissingVersionException());
     }

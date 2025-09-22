@@ -381,14 +381,14 @@ public class PackerBundlerTests : PackerBundlerTests<PackerBundlerTester>
                     .Name("disable-ssh-root")
                     .Set("-ux")
                     .AddLine(@"sed '/PermitRootLogin yes/d' -i /etc/ssh/sshd_config"))
-                .Build();
+                ;
         },
-            assertBuiltBody: bundle =>
-            {
-                bundle.ShouldNotBeNull();
-                bundle.ShouldBeAssignableTo<PackerBundle>();
-            }, serialized =>
-            {
-                serialized.ShouldNotBeEmpty();
-            });
+        assertBuiltBody: bundle =>
+        {
+            bundle.ShouldNotBeNull();
+            bundle.ShouldBeAssignableTo<PackerBundle>();
+        }, serialized =>
+        {
+            serialized.ShouldNotBeEmpty();
+        });
 }

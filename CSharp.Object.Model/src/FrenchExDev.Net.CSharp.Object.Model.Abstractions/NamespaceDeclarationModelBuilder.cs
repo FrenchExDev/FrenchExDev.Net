@@ -195,7 +195,7 @@ public class NamespaceDeclarationModelBuilder : AbstractBuilder<NamespaceDeclara
     /// and circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where each failure is recorded with its associated property
     /// name and exception details.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrEmpty(_name))
         {
@@ -212,8 +212,10 @@ public class NamespaceDeclarationModelBuilder : AbstractBuilder<NamespaceDeclara
     /// <exception cref="MissingMemberException">Thrown if the scoping information has not been set prior to instantiation.</exception>
     protected override NamespaceDeclarationModel Instantiate()
     {
+        ArgumentNullException.ThrowIfNull(_name);
+
         return new(
-            name: _name!,
+            name: _name,
             scoping: _scoping ?? throw new MissingMemberException(),
             interfaces: _interfaces.AsReferenceList(),
             classes: _classes.AsReferenceList(),

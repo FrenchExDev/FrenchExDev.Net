@@ -84,7 +84,7 @@ public class ParameterDeclarationModelBuilder : AbstractBuilder<ParameterDeclara
     /// and circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures encountered during the validation process. Each failure is
     /// recorded with its associated parameter name and exception.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (_defaultValue is not null && string.IsNullOrEmpty(_name))
         {

@@ -91,7 +91,7 @@ public class PackageReferenceBuilder : AbstractBuilder<IPackageReference>
     /// and handle circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where each failure is associated with a specific property or
     /// field.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrEmpty(_name)) failures.Failure(nameof(_name), new ArgumentException("Name is required"));
     }

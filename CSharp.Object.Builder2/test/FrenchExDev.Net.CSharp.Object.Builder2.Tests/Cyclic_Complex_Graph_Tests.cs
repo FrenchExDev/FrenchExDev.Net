@@ -40,6 +40,7 @@ public class Cyclic_Complex_Graph_Tests
             .KnownPerson(new PersonBuilder()
                 .Name("Alice Johnson")
                 .Age(35)
+                .KnownPerson(janeSmithBuilder)
                 .Contact(janeSmithBuilder)
                 .Address(new AddressBuilder()
                     .Street("789 Oak St")
@@ -47,11 +48,12 @@ public class Cyclic_Complex_Graph_Tests
             .KnownPerson(janeSmithBuilder);
 
         janeSmithBuilder.Contact(johnDoeBuilder);
+        janeSmithBuilder.KnownPerson(johnDoeBuilder);
 
         var result = johnDoeBuilder.Build();
 
         result.ShouldBeAssignableTo<SuccessBuildResult<Person>>();
-        var johnDoe = result.Success<Person>();
+         var johnDoe = result.Success<Person>();
         johnDoe.ShouldBeAssignableTo<Person>();
         johnDoe.Contact.ShouldBeAssignableTo<Person>();
 

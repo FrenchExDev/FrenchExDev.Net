@@ -39,6 +39,7 @@ public class NamespaceDeclarationModelSyntaxCodeTests
             {
                 builder
                 .WithName("FrenchExDev.MyDev.Lib")
+                .FileScoped()
                 .WithClass((b) =>
                 {
                     b.WithName("MyFoo")
@@ -53,13 +54,13 @@ public class NamespaceDeclarationModelSyntaxCodeTests
             {
                 // Assert the namespace and class structure
                 @namespace.Name.ShouldBe("FrenchExDev.MyDev.Lib");
-                @namespace.Classes.Count.ShouldBe(1);
-                @namespace.Classes[0].Name.ShouldBe("MyFoo");
-                @namespace.Classes[0].Modifiers.ShouldContain(ClassModifier.Public);
-                @namespace.Classes[0].Fields.Count().ShouldBe(1);
-                @namespace.Classes[0].Fields.ElementAt(0).Name.ShouldBe("_myField");
-                @namespace.Classes[0].Fields.ElementAt(0).Type.ShouldBe("int");
-                @namespace.Classes[0].Fields.ElementAt(0).Modifiers.ShouldContain("private");
+                @namespace.Classes.Count().ShouldBe(1);
+                @namespace.Classes.ElementAt(0).Name.ShouldBe("MyFoo");
+                @namespace.Classes.ElementAt(0).Modifiers.ShouldContain(ClassModifier.Public);
+                @namespace.Classes.ElementAt(0).Fields.Count().ShouldBe(1);
+                @namespace.Classes.ElementAt(0).Fields.ElementAt(0).Name.ShouldBe("_myField");
+                @namespace.Classes.ElementAt(0).Fields.ElementAt(0).Type.ShouldBe("int");
+                @namespace.Classes.ElementAt(0).Fields.ElementAt(0).Modifiers.ShouldContain("private");
 
             }, assertGeneratedCode: (namespaceGeneratedCode) =>
             {

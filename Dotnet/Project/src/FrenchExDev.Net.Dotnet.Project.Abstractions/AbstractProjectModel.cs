@@ -180,7 +180,7 @@ public abstract class AbstractProjectModel<T> : IProjectModel where T : IProject
     /// AdditionalProperties["CustomProperty"] = "Value";
     /// </code>
     /// </remarks>
-    public Dictionary<string, object> AdditionalProperties => _additionalProperties?.Resolved() ?? throw new NotResolvedException(nameof(AdditionalProperties));
+    public Dictionary<string, object>? AdditionalProperties => _additionalProperties?.ResolvedOrNull();
 
     /// <summary>
     /// Contains references to declaration models associated with this instance.

@@ -57,11 +57,6 @@ public class FileBuilder : AbstractBuilder<File>
     {
         return new File(_lines, _newLine ?? "\n", _name ?? string.Empty, _extension ?? string.Empty, _path ?? string.Empty);
     }
-
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
-    {
-
-    }
 }
 
 public class File : IFile

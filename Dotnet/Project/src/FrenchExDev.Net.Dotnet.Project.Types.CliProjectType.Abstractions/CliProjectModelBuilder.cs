@@ -49,7 +49,7 @@ public class CliProjectModelBuilder : AbstractProjectModelBuilder<CliProjectMode
          );
     }
 
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         VisiteObjectAndCollectExceptions(visitedCollector, failures);
     }

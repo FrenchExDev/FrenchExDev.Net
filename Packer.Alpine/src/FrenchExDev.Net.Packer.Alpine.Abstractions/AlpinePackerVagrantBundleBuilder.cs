@@ -457,7 +457,7 @@ public class AlpinePackerVagrantBundleBuilder : AbstractBuilder<PackerBundle>
     /// <param name="visitedCollector">A dictionary that tracks objects already visited during validation to prevent redundant checks and handle
     /// circular references.</param>
     /// <param name="failures">A dictionary used to collect and record validation failures encountered during the validation process.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         _builder.Validate(visitedCollector, failures);
     }

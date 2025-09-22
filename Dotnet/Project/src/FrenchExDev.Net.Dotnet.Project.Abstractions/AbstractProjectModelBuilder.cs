@@ -563,7 +563,7 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder, TRefe
     /// unique within the dictionary.</param>
     /// <returns>The current builder instance with the specified additional properties applied.</returns>
     /// <exception cref="InvalidCastException">Thrown if the current instance cannot be cast to the generic builder type <typeparamref name="TBuilder"/>.</exception>
-    public TBuilder AdditionalProperties(Dictionary<string, object> additionalProperties)
+    public TBuilder AdditionalProperties(Dictionary<string, object>? additionalProperties)
     {
         _additionalProperties = new Reference<Dictionary<string, object>>(additionalProperties);
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
@@ -589,7 +589,14 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder, TRefe
     /// <exception cref="InvalidCastException">Thrown if the current instance cannot be cast to the type specified by <typeparamref name="TBuilder"/>.</exception>
     public TBuilder PackageReferences(IEnumerable<IPackageReference> packageReferences)
     {
-        _packageReferences.AddRange((IEnumerable<PackageReferenceBuilder>)packageReferences.Select(x => new PackageReferenceBuilder().Existing(x)));
+        var builder = new BuilderList<IPackageReference, PackageReferenceBuilder>();
+        foreach (var packageReference in packageReferences)
+        {
+            var itemBuilder = new PackageReferenceBuilder();
+            itemBuilder.Existing(packageReference);
+            builder.Add(itemBuilder);
+        }
+        _packageReferences.AddRange(builder);
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
 
@@ -619,10 +626,16 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder, TRefe
     /// <exception cref="InvalidCastException">Thrown if the builder instance cannot be cast to <typeparamref name="TBuilder"/>.</exception>
     public TBuilder ProjectReferences(IEnumerable<ProjectReference> projectReferences)
     {
-        _projectReferences.AddRange((IEnumerable<ProjectReferenceBuilder>)projectReferences.Select(x => new ProjectReferenceBuilder().Existing(x)));
+        var builder = new BuilderList<ProjectReference, ProjectReferenceBuilder>();
+        foreach (var projectReference in projectReferences)
+        {
+            var itemBuilder = new ProjectReferenceBuilder();
+            itemBuilder.Existing(projectReference);
+            builder.Add(itemBuilder);
+        }
+        _projectReferences.AddRange(builder);
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
-
 
     /// <summary>
     /// Validate required project properties and collect exceptions for missing or invalid values.

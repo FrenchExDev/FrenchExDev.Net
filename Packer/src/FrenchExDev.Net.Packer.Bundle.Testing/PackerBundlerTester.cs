@@ -26,6 +26,7 @@ public class PackerBundlerTester
     )
     {
         var packerBundleBuilder = Builder();
+
         builderBody(packerBundleBuilder);
 
         var packerBundle = packerBundleBuilder.BuildSuccess();

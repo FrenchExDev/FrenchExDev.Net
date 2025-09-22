@@ -46,7 +46,7 @@ public class PackageNameBuilder : AbstractBuilder<PackageName>
     /// or circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where each failure is recorded with its associated property
     /// name and exception details.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrWhiteSpace(_name)) failures.Failure(nameof(_name), new ArgumentException("Name cannot be empty"));
     }

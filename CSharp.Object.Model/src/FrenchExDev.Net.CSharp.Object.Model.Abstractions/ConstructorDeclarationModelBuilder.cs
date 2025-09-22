@@ -95,7 +95,7 @@ public class ConstructorDeclarationModelBuilder : AbstractBuilder<ConstructorDec
     /// and circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where each failure is recorded with its associated context and
     /// exception.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrEmpty(_name))
         {

@@ -59,7 +59,7 @@ public class VirtualBoxIsoProvisionerOverrideBuilder : AbstractBuilder<VirtualBo
         return new(_executeCommand);
     }
 
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         AssertNotEmptyOrWhitespace(_executeCommand, nameof(VirtualBoxIsoProvisionerOverride.ExecuteCommand), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
     }

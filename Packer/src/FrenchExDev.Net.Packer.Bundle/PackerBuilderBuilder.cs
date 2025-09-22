@@ -556,7 +556,7 @@ public class PackerBuilderBuilder : AbstractBuilder<PackerBuilder>
     }
 
    
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         AssertNotNullNotEmptyCollection(_bootCommand, nameof(PackerBuilder.BootCommand), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
         AssertNotEmptyOrWhitespace(_bootWait, nameof(PackerBuilder.BootWait), failures, (name) => new StringIsEmptyOrWhitespaceException(name));

@@ -62,17 +62,4 @@ public class HttpDirectoryBuilder : AbstractBuilder<HttpDirectory>
             Files = _files
         };
     }
-
-    /// <summary>
-    /// Performs validation on the collection of files, recording any failures for files that have an empty extension.
-    /// </summary>
-    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
-    /// <param name="failures">A dictionary for collecting validation failures. Any file with an empty extension will result in a failure
-    /// entry.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
-    {
-        foreach (var file in _files)
-            if (file.Value.Extension is "")
-                failures.Failure(file.Key, new InvalidDataException(nameof(file.Key)));
-    }
 }

@@ -14,6 +14,7 @@ public class UnitTest1
 
         NamespaceDeclarationModel myModel = new NamespaceDeclarationModelBuilder()
             .WithName("MyNamespace")
+            .FileScoped()
             .Interface(b => b
                 .WithName("IMyInterface")
                 .WithModifier(InterfaceModifier.Public)

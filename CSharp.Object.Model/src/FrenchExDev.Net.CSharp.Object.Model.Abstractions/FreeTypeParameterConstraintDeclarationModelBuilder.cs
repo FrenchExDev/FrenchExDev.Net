@@ -46,7 +46,7 @@ public class FreeTypeParameterConstraintDeclarationModelBuilder : AbstractBuilde
     /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks
     /// and circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures. Any detected issues are added to this collection.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (_constraint == null && _constraints.Count == 0)
         {

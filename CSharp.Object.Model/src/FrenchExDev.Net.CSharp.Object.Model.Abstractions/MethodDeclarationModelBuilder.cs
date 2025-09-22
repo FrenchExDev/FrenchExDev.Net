@@ -127,7 +127,7 @@ public class MethodDeclarationModelBuilder : AbstractBuilder<MethodDeclarationMo
     /// and circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures. Any issues found during validation are added to this
     /// collection.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrEmpty(_name))
         {

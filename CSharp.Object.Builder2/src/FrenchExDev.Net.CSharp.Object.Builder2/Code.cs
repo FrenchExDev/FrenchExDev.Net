@@ -265,6 +265,13 @@ public class Reference<TClass> : IReference<TClass> where TClass : class
     public TClass Resolved() => Instance ?? throw new NotResolvedException("Reference is not resolved yet.");
 
     /// <summary>
+    /// Returns the resolved instance of type <typeparamref name="TClass"/> if available; otherwise, returns <see
+    /// langword="null"/>.
+    /// </summary>
+    /// <returns>The resolved <typeparamref name="TClass"/> instance, or <see langword="null"/> if no instance is available.</returns>
+    public TClass? ResolvedOrNull() => Instance ?? null;
+
+    /// <summary>
     /// Initializes a new instance of the Reference class.
     /// </summary>
     public Reference() { }
@@ -384,15 +391,18 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
 
         visitedCollector ??= [];
 
-        visitedCollector.Add(Id, this);
-
         var failuresCollector = new FailuresDictionary();
 
         Validate(visitedCollector, failuresCollector);
 
-        BuildInternal(visitedCollector);
+        if (failuresCollector.Count > 0)
+        {
+            Result = Failure(failuresCollector);
+            return Result;
+        }
 
-        Result = failuresCollector.Count > 0 ? Failure(failuresCollector) : Success(Instantiate());
+        BuildInternal(visitedCollector);
+        Result = Success(Instantiate());
 
         if (Result is SuccessBuildResult<TClass> success)
         {
@@ -459,7 +469,10 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     /// and handle circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where each entry represents a specific validation error found
     /// during the process.</param>
-    protected abstract void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures);
+    protected void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
+
+    }
 
     /// <summary>
     /// Creates a new instance of the type specified by the generic parameter.

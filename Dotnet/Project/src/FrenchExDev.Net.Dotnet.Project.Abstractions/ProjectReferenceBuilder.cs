@@ -54,7 +54,7 @@ public class ProjectReferenceBuilder : AbstractBuilder<ProjectReference>
     /// and circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures. Any issues detected during validation should be added to this
     /// collection.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (_referencedProject is null)
         {

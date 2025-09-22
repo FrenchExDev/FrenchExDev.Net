@@ -96,7 +96,7 @@ public class EventDeclarationModelBuilder : AbstractBuilder<EventDeclarationMode
     /// and circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures found during the validation process. Failures are added to this
     /// dictionary if required event properties are missing or if attribute validation fails.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         // Validate that the event name is provided
         if (string.IsNullOrEmpty(_name))

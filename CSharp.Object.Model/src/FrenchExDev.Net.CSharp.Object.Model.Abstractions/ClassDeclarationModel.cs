@@ -90,7 +90,7 @@ public class ClassDeclarationModel : IDeclarationModel
     /// Gets the resolved base type for this class declaration.
     /// <remarks>Throws <see cref="InvalidOperationException"/> if the base type reference is not resolved. Ensure type resolution before accessing.</remarks>
     /// </summary>
-    public ClassDeclarationModel BaseType => _baseType?.Resolved() ?? throw new InvalidOperationException("Base type reference is not set.");
+    public ClassDeclarationModel? BaseType => _baseType?.Resolved() ?? null;
 
     /// <summary>
     /// The collection of interfaces implemented by this class.

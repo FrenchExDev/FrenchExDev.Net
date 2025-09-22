@@ -219,7 +219,7 @@ public class InterfaceDeclarationModelBuilder : AbstractBuilder<InterfaceDeclara
     /// </summary>
     /// <param name="visitedCollector">Dictionary to track visited objects and prevent cycles.</param>
     /// <param name="failures">Dictionary to collect validation failures.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrEmpty(_name))
         {

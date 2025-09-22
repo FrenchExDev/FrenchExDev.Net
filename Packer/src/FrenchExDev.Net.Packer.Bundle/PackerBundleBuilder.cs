@@ -155,7 +155,7 @@ public class PackerBundleBuilder : AbstractBuilder<PackerBundle>
     /// or circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where each entry represents a specific validation error found
     /// during processing.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         _packerFileBuilder.Validate(visitedCollector, failures);
         _httpDirectory.Validate(visitedCollector, failures);

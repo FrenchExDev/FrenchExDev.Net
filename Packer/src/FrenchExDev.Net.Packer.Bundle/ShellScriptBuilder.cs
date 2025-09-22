@@ -139,18 +139,6 @@ public class ShellScriptBuilder : AbstractBuilder<ShellScript>
     }
 
     /// <summary>
-    /// Performs validation logic using the specified collection of visited objects and records any validation failures
-    /// encountered.
-    /// </summary>
-    /// <param name="visitedCollector">A dictionary that tracks objects already visited during validation to prevent redundant checks and circular
-    /// references.</param>
-    /// <param name="failures">A dictionary used to record validation failures detected during the validation process.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
-    {
-
-    }
-
-    /// <summary>
     /// Creates and initializes a new instance of the <see cref="ShellScript"/> class using the configured name, lines,
     /// and newline settings.
     /// </summary>

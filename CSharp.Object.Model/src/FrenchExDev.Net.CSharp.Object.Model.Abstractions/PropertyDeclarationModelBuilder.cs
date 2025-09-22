@@ -131,12 +131,7 @@ public class PropertyDeclarationModelBuilder : AbstractBuilder<PropertyDeclarati
         return this;
     }
 
-    protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
-    {
-        // No additional build steps required for this builder.
-    }
-
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrEmpty(_name))
         {
