@@ -67,7 +67,7 @@ public abstract class AbstractProjectModel<T> : IProjectModel where T : IProject
     /// <summary>
     /// Holds a reference to the package version information.
     /// </summary>
-    private IReference<IPackageVersion>? _packageVersion;
+    private Reference<IPackageVersion>? _packageVersion;
 
     /// <summary>
     /// Gets the resolved version information for the associated package.

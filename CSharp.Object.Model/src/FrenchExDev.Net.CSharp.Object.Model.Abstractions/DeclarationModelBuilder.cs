@@ -9,10 +9,15 @@ namespace FrenchExDev.Net.CSharp.Object.Model.Abstractions;
 public class DeclarationModelBuilder : IBuilder<IDeclarationModel>
 {
     /// <summary>
+    /// Holds the Id
+    /// </summary>
+    private Guid _id = Guid.NewGuid();
+
+    /// <summary>
     /// Gets a new unique identifier for this builder instance.
     /// <remarks>Each access returns a new Guid; not stable for tracking.</remarks>
     /// </summary>
-    public Guid Id => Guid.NewGuid();
+    public Guid Id => _id;
 
     /// <summary>
     /// Holds the result of the build operation, if any.
@@ -26,12 +31,68 @@ public class DeclarationModelBuilder : IBuilder<IDeclarationModel>
     /// </summary>
     private IDeclarationModelBuilder? _builder;
 
+    /// <summary>
+    /// Gets the current declaration model builder used to configure the type definition.
+    /// </summary>
+    /// <remarks>Accessing this property before configuring a declaration type, such as by calling Class(),
+    /// Enum(), or a similar method, will result in an exception. This property is typically used to further customize
+    /// the declaration after its type has been set.</remarks>
     public IDeclarationModelBuilder Builder => _builder ?? throw new InvalidOperationException("No declaration type has been configured. Call a method like Class(), Enum(), etc. to set the builder.");
 
     /// <summary>
     /// Gets the result of the build operation, if available.
     /// </summary>
     public IResult? Result => _result;
+
+    /// <summary>
+    /// Gets the current status of the build process.
+    /// </summary>
+    public BuildStatus BuildStatus
+    {
+        get
+        {
+            return _builder switch
+            {
+                AttributeDeclarationModelBuilder n => n.BuildStatus,
+                ClassDeclarationModelBuilder n => n.BuildStatus,
+                ConstructorDeclarationModelBuilder n => n.BuildStatus,
+                EnumDeclarationModelBuilder n => n.BuildStatus,
+                EnumMemberDeclarationModelBuilder n => n.BuildStatus,
+                EventDeclarationModelBuilder n => n.BuildStatus,
+                FieldDeclarationModelBuilder n => n.BuildStatus,
+                FreeTypeParameterConstraintDeclarationModelBuilder n => n.BuildStatus,
+                InterfaceDeclarationModelBuilder n => n.BuildStatus,
+                NamespaceDeclarationModelBuilder n => n.BuildStatus,
+                StructDeclarationModelBuilder n => n.BuildStatus,
+                _ => throw new NotSupportedException(_builder?.GetType().FullName)
+            };
+        }
+    }
+
+    /// <summary>
+    /// Gets the current validation status for the associated object or operation.
+    /// </summary>
+    public ValidationStatus ValidationStatus
+    {
+        get
+        {
+            return _builder switch
+            {
+                AttributeDeclarationModelBuilder n => n.ValidationStatus,
+                ClassDeclarationModelBuilder n => n.ValidationStatus,
+                ConstructorDeclarationModelBuilder n => n.ValidationStatus,
+                EnumDeclarationModelBuilder n => n.ValidationStatus,
+                EnumMemberDeclarationModelBuilder n => n.ValidationStatus,
+                EventDeclarationModelBuilder n => n.ValidationStatus,
+                FieldDeclarationModelBuilder n => n.ValidationStatus,
+                FreeTypeParameterConstraintDeclarationModelBuilder n => n.ValidationStatus,
+                InterfaceDeclarationModelBuilder n => n.ValidationStatus,
+                NamespaceDeclarationModelBuilder n => n.ValidationStatus,
+                StructDeclarationModelBuilder n => n.ValidationStatus,
+                _ => throw new NotSupportedException(_builder?.GetType().FullName)
+            };
+        }
+    }
 
     /// <summary>
     /// List of hooks to execute after the declaration model is built.
@@ -198,15 +259,6 @@ public class DeclarationModelBuilder : IBuilder<IDeclarationModel>
     }
 
     /// <summary>
-    /// Sets the current declaration model instance to be used by the class.
-    /// </summary>
-    /// <param name="instance">The declaration model instance to assign. Cannot be null.</param>
-    public void Existing(IDeclarationModel instance)
-    {
-        _existing = instance;
-    }
-
-    /// <summary>
     /// Validates the current declaration model using the configured builder and records any validation failures
     /// encountered.
     /// </summary>
@@ -262,8 +314,12 @@ public class DeclarationModelBuilder : IBuilder<IDeclarationModel>
         }
     }
 
-    /// </<inheritdoc/>
-    IBuilder<IDeclarationModel, Reference<IDeclarationModel>> IBuilder<IDeclarationModel, Reference<IDeclarationModel>>.Existing(IDeclarationModel instance)
+    /// <summary>
+    /// Configures the builder to use an existing declaration model instance.
+    /// </summary>
+    /// <param name="instance">The existing <see cref="IDeclarationModel"/> instance to be used by the builder. Cannot be null.</param>
+    /// <returns>The current builder instance configured to use the specified declaration model.</returns>
+    IBuilder<IDeclarationModel> IBuilder<IDeclarationModel>.Existing(IDeclarationModel instance)
     {
         _existing = instance;
         return this;

@@ -29,6 +29,7 @@ public class ClassProjectType
         .Version("0.0.1")
         .Name("Dummy")
         .Directory("/tmp")
+        .Authors("non empty for defaults")
         .Build()
         .Success<ClassProjectModel>();
 

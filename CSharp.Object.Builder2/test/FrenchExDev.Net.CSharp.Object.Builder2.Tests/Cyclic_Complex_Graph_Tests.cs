@@ -13,6 +13,20 @@ namespace FrenchExDev.Net.CSharp.Object.Builder2.Tests;
 public class Cyclic_Complex_Graph_Tests
 {
     /// <summary>
+    /// Verifies that a Reference<string> instance can resolve and return a specified value.
+    /// </summary>
+    /// <remarks>This test ensures that the Resolve method correctly sets the value and that the Resolved
+    /// method retrieves the expected result. Use this test to confirm the basic value resolution functionality of the
+    /// Reference<T> class.</remarks>
+    [Fact]
+    public void Reference_Can_Resolve_Value()
+    {
+        var sut = new Reference<string>();
+        sut.Resolve("Hello");
+        sut.Resolved().ShouldBe("Hello");
+    }
+
+    /// <summary>
     /// Verifies that the object builder can construct a cyclic object graph, where objects reference each other in a
     /// loop, without errors or loss of data integrity.
     /// </summary>
@@ -53,7 +67,7 @@ public class Cyclic_Complex_Graph_Tests
         var result = johnDoeBuilder.Build();
 
         result.ShouldBeAssignableTo<SuccessResult<Person>>();
-         var johnDoe = result.Success<Person>();
+        var johnDoe = result.Success<Person>();
         johnDoe.ShouldBeAssignableTo<Person>();
         johnDoe.Contact.ShouldBeAssignableTo<Person>();
 

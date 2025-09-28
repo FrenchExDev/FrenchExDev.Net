@@ -76,23 +76,24 @@ public class VisitedObjectDictionary : Dictionary<Guid, object>
 }
 
 /// <summary>
-/// Defines a builder interface for constructing instances of a specified reference type.
-/// </summary>
-/// <typeparam name="TClass">The type of class to be constructed by the builder. Must be a reference type.</typeparam>
-public interface IBuilder<TClass> : IBuilder<TClass, Reference<TClass>> where TClass : class
-{
-}
-
-/// <summary>
 /// Defines a contract for building objects and managing their references within a construction workflow.
 /// </summary>
 /// <remarks>Implementations of this interface facilitate object construction, reference management, and
 /// post-build actions. The interface supports tracking build results and provides hooks for custom logic after an
 /// object is built.</remarks>
 /// <typeparam name="TClass">The type of object being constructed. Must be a reference type.</typeparam>
-/// <typeparam name="TReference">The type representing a reference to the constructed object. Must implement <see cref="IReference{TClass}"/>.</typeparam>
-public interface IBuilder<TClass, TReference> where TClass : class where TReference : class, IReference<TClass>
+public interface IBuilder<TClass> where TClass : class
 {
+    /// <summary>
+    /// Gets the current status of the build process.
+    /// </summary>
+    BuildStatus BuildStatus { get; }
+
+    /// <summary>
+    /// Gets the current validation status of the object.
+    /// </summary>
+    ValidationStatus ValidationStatus { get; }
+
     /// <summary>
     /// Validates the current object and records any validation failures encountered.
     /// </summary>
@@ -105,13 +106,13 @@ public interface IBuilder<TClass, TReference> where TClass : class where TRefere
     /// Returns a reference to the underlying value of type <typeparamref name="TReference"/>.
     /// </summary>
     /// <returns>A reference to the value of type <typeparamref name="TReference"/>.</returns>
-    TReference Reference();
+    Reference<TClass> Reference();
 
     /// <summary>
     /// Performs an operation on the specified instance of <typeparamref name="TClass"/>.
     /// </summary>
     /// <param name="instance">The instance of <typeparamref name="TClass"/> to operate on. Cannot be null.</param>
-    IBuilder<TClass, TReference> Existing(TClass instance);
+    IBuilder<TClass> Existing(TClass instance);
 
     /// <summary>
     /// Gets the unique identifier for the instance.
@@ -144,43 +145,6 @@ public interface IBuilder<TClass, TReference> where TClass : class where TRefere
     /// <param name="hook">The action to execute after the object is built. The callback receives the constructed instance as its
     /// parameter.</param>
     void OnBuilt(Action<TClass> hook);
-}
-
-/// <summary>
-/// Represents a reference to an instance of a specified class type, providing mechanisms to resolve and access the
-/// referenced object.
-/// </summary>
-/// <remarks>This interface allows deferred resolution of an object instance, enabling scenarios where the
-/// referenced object may not be available at construction time. The reference can be resolved later using the Resolve
-/// method, after which the Instance property provides access to the resolved object. The IsResolved property indicates
-/// whether the reference has been successfully resolved.</remarks>
-/// <typeparam name="TClass">The type of the class instance referenced by this interface. Must be a reference type.</typeparam>
-public interface IReference<TClass> : IResult where TClass : class
-{
-    /// <summary>
-    /// Gets the current instance of type <typeparamref name="TClass"/> if available.
-    /// </summary>
-    TClass? Instance { get; }
-
-    /// <summary>
-    /// Gets a value indicating whether the instance has been successfully resolved.
-    /// </summary>
-    bool IsResolved => Instance is not null;
-
-    /// <summary>
-    /// Resolves a reference to the specified instance of type TClass.
-    /// </summary>
-    /// <param name="instance">The object instance for which to resolve a reference. Cannot be null.</param>
-    /// <returns>An IReference<TClass> representing a reference to the specified instance.</returns>
-    IReference<TClass> Resolve(TClass instance);
-
-    /// <summary>
-    /// Returns the resolved instance of type <typeparamref name="TClass"/> if the reference has been resolved.
-    /// </summary>
-    /// <returns>The resolved instance of type <typeparamref name="TClass"/>. Throws a <see cref="NotResolvedException"/> if the
-    /// reference is not resolved.</returns>
-    /// <exception cref="NotResolvedException">Thrown if the reference has not been resolved.</exception>
-    TClass Resolved();
 }
 
 /// <summary>
@@ -232,9 +196,18 @@ public class NotResolvedException : Exception
 /// methods to set and retrieve the referenced instance, and indicates whether the reference has been resolved. Derived
 /// types can extend this functionality to implement custom resolution strategies.</remarks>
 /// <typeparam name="TClass">The type of the class instance referenced by this object. Must be a reference type.</typeparam>
-[Serializable]
-public class Reference<TClass> : IReference<TClass> where TClass : class
+public record Reference<TClass> : IResult where TClass : class
 {
+    /// <summary>
+    /// Gets the object that owns or is associated with this instance.
+    /// </summary>
+    public object? Owner { get; private set; }
+
+    /// <summary>
+    /// Holds a unique Guid for the reference.
+    /// </summary>
+    private Guid Id = Guid.NewGuid();
+
     /// <summary>
     /// Stores the instance of type <typeparamref name="TClass"/> that this reference points to.
     /// </summary>
@@ -255,8 +228,11 @@ public class Reference<TClass> : IReference<TClass> where TClass : class
     /// </summary>
     /// <param name="instance">The instance of type TClass to associate with this reference. Cannot be null.</param>
     /// <returns>The current reference object with its instance set to the specified value.</returns>
-    public IReference<TClass> Resolve(TClass instance)
+    public Reference<TClass> Resolve(TClass instance)
     {
+        if (IsResolved)
+            return this;
+
         _instance = instance;
         return this;
     }
@@ -276,29 +252,54 @@ public class Reference<TClass> : IReference<TClass> where TClass : class
     /// <returns>The resolved <typeparamref name="TClass"/> instance, or <see langword="null"/> if no instance is available.</returns>
     public TClass? ResolvedOrNull() => Instance ?? null;
 
+
     /// <summary>
     /// Initializes a new instance of the Reference class.
     /// </summary>
-    public Reference() { }
+    public Reference()
+    {
+
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the Reference class.
+    /// </summary>
+    public Reference(object owner)
+    {
+        Owner = owner;
+    }
 
     /// <summary>
     /// Initializes a new instance of the Reference class that wraps the specified object.
     /// </summary>
     /// <param name="existing">The object to be referenced. Can be null to indicate that no object is currently referenced.</param>
-    public Reference(TClass? existing)
+    public Reference(object owner, TClass? existing)
     {
+        Owner = owner;
         _instance = existing;
     }
 }
 
 /// <summary>
-/// Provides a base class for building objects of type <typeparamref name="TClass"/> using a reference-based builder
-/// pattern.
+/// Specifies the status of a validation process.
 /// </summary>
-/// <typeparam name="TClass">The type of object to be constructed by the builder. Must be a reference type.</typeparam>
-public abstract class AbstractBuilder<TClass> : AbstractBuilder<TClass, Reference<TClass>>, IBuilder<TClass> where TClass : class
+/// <remarks>Use this enumeration to represent the current state of validation in workflows or data processing.
+/// The values indicate whether validation has not started, is in progress, or has completed.</remarks>
+public enum ValidationStatus
 {
+    NotValidated,
+    Validating,
+    Validated
+}
 
+/// <summary>
+/// Specifies the status of a build process.
+/// </summary>
+public enum BuildStatus
+{
+    NotBuilding,
+    Building,
+    Built
 }
 
 /// <summary>
@@ -312,8 +313,13 @@ public abstract class AbstractBuilder<TClass> : AbstractBuilder<TClass, Referenc
 /// <typeparam name="TClass">The type of object to be constructed by the builder. Must be a reference type.</typeparam>
 /// <typeparam name="TReference">The reference type used to track and resolve the built object. Must implement <see cref="IReference{TClass}"/> and
 /// have a parameterless constructor.</typeparam>
-public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TReference> where TClass : class where TReference : class, IReference<TClass>, new()
+public abstract class AbstractBuilder<TClass> : IBuilder<TClass> where TClass : class
 {
+    public AbstractBuilder()
+    {
+        _reference = new(this);
+    }
+
     /// <summary>
     /// Holds actions to be executed after the object of type <typeparamref name="TClass"/> is successfully built.
     /// </summary>
@@ -322,7 +328,7 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     /// <summary>
     /// Holds an instance of the reference type used by the containing class.
     /// </summary>
-    protected TReference _reference = new();
+    protected Reference<TClass> _reference;
 
     /// <summary>
     /// Holds an existing instance of the type being built, if one has been provided.
@@ -333,7 +339,7 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     /// Sets the current instance of type TClass to be used by the class.
     /// </summary>
     /// <param name="instance">The instance of type TClass to assign. Cannot be null.</param>
-    public IBuilder<TClass, TReference> Existing(TClass instance)
+    public IBuilder<TClass> Existing(TClass instance)
     {
         _existing = instance;
         return this;
@@ -345,11 +351,11 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     public Guid Id { get; } = Guid.NewGuid();
 
     /// <summary>
-    /// Returns the current reference of type <typeparamref name="TReference"/> associated with this instance.
+    /// Returns a reference to the underlying object of type <typeparamref name="TClass"/>.
     /// </summary>
-    /// <returns>The reference object of type <typeparamref name="TReference"/>. The returned value may be <see langword="null"/>
-    /// if no reference has been set.</returns>
-    public TReference Reference() => _reference;
+    /// <returns>A <see cref="Reference{TClass}"/> representing the referenced object. The returned reference may be used to
+    /// access or manipulate the underlying object.</returns>
+    public Reference<TClass> Reference() => _reference;
 
     /// <summary>
     /// Gets the result of the build operation, if available.
@@ -357,6 +363,16 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     /// <remarks>The value is <c>null</c> if the build has not completed or if no result is available. Access
     /// to this property may be restricted depending on the context in which it is used.</remarks>
     public IResult? Result { get; protected set; }
+
+    /// <summary>
+    /// Gets the current validation status of the object.
+    /// </summary>
+    public ValidationStatus ValidationStatus { get; private set; }
+
+    /// <summary>
+    /// Gets the current build status of the object.
+    /// </summary>
+    public BuildStatus BuildStatus { get; private set; }
 
     /// <summary>
     /// Retrieves the result of the build operation.
@@ -372,30 +388,45 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     /// <remarks>If the object has already been visited, the method returns a reference result to avoid
     /// processing it again. Validation is performed before instantiation, and any failures are collected and returned
     /// in the result. This method supports scenarios with complex object graphs and circular references.</remarks>
-    /// <param name="visitedCollector">An optional dictionary used to track visited objects during the build process. If provided, it helps prevent
+    /// <param name="visited">An optional dictionary used to track visited objects during the build process. If provided, it helps prevent
     /// circular references by recording objects that have already been processed.</param>
     /// <returns>An object that represents the result of the build operation. The result indicates success or failure and may
     /// contain validation errors or the instantiated object.</returns>
-    public IResult Build(VisitedObjectDictionary? visitedCollector = null)
+    public virtual IResult Build(VisitedObjectDictionary? visited = null)
     {
-        if (visitedCollector is not null && visitedCollector.ContainsKey(Id))
+        if (visited is not null && visited.TryGetValue(Id, out var v) && v is IBuilder<TClass> builder)
         {
-            return Reference();
+            switch (builder.ValidationStatus)
+            {
+                case ValidationStatus.NotValidated:
+                case ValidationStatus.Validating:
+                    return _reference;
+            }
+
+            switch (builder.BuildStatus)
+            {
+                case BuildStatus.Built:
+                case BuildStatus.Building:
+                    return _reference;
+            }
         }
+
+        BuildStatus = BuildStatus.Building;
 
         if (_existing is not null)
         {
+            BuildStatus = BuildStatus.Built;
             _reference.Resolve(_existing);
             Result = Success(_existing);
             ExecuteHooks(_existing);
             return Result;
         }
 
-        visitedCollector ??= [];
+        visited ??= [];
 
         var failuresCollector = new FailuresDictionary();
 
-        Validate(visitedCollector, failuresCollector);
+        Validate(visited, failuresCollector);
 
         if (failuresCollector.Count > 0)
         {
@@ -403,15 +434,20 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
             return Result;
         }
 
-        BuildInternal(visitedCollector);
+        BuildInternal(visited);
 
         Result = Success(Instantiate());
 
-        if (Result is SuccessResult<TClass> success)
+        BuildStatus = BuildStatus.Built;
+
+        if (Result is not SuccessResult<TClass> success)
         {
-            _reference.Resolve(success.Object);
-            ExecuteHooks(success.Object);
+            throw new InvalidOperationException();
         }
+
+        _reference.Resolve(success.Object);
+
+        ExecuteHooks(success.Object);
 
         return Result;
     }
@@ -467,14 +503,18 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     /// <param name="failures"></param>
     public void Validate(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
-        if (visitedCollector.ContainsKey(Id))
+        switch (ValidationStatus)
         {
-            return;
+            case ValidationStatus.NotValidated:
+                visitedCollector[this.Id] = this;
+                ValidationStatus = ValidationStatus.Validating;
+                ValidateInternal(visitedCollector, failures);
+                ValidationStatus = ValidationStatus.Validated;
+                break;
+            case ValidationStatus.Validated:
+            case ValidationStatus.Validating:
+                return;
         }
-
-        visitedCollector[this.Id] = this;
-
-        ValidateInternal(visitedCollector, failures);
     }
 
     /// <summary>
@@ -484,7 +524,7 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     /// and handle circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where each entry represents a specific validation error found
     /// during the process.</param>
-    protected void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected virtual void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
 
     }
@@ -518,6 +558,7 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
 
     /// <summary>
     /// Registers a callback to be invoked when the object has completed its build process.
+    /// If the object has already been built, the callback is invoked immediately with the existing instance.
     /// </summary>
     /// <remarks>Use this method to attach custom logic that should run after the build is finalized. Multiple
     /// hooks may be registered; they will be invoked in the order added.</remarks>
@@ -525,6 +566,16 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
     public void OnBuilt(Action<TClass> hook)
     {
         _hooks.Add(hook);
+
+        if (_existing is not null)
+        {
+            hook(_existing);
+        }
+
+        if (_reference.IsResolved)
+        {
+            hook(_reference.Resolved());
+        }
     }
 
     /// <summary>
@@ -574,8 +625,6 @@ public abstract class AbstractBuilder<TClass, TReference> : IBuilder<TClass, TRe
             }
         }
     }
-
-    public class StringIsEmptyOrWhitespaceException(string member) : Exception($"The member {member} is empty or contains only whitespaces") { }
 
     /// <summary>
     /// Asserts that the specified string value is not empty, or consists only of white-space characters. If the
@@ -707,6 +756,13 @@ public class BuildException(string message) : Exception(message)
 {
 }
 
+
+/// <summary>
+/// String is empty or whitespace exception.
+/// </summary>
+/// <param name="member"></param>
+public class StringIsEmptyOrWhitespaceException(string member) : BuildException($"The member {member} is empty or contains only whitespaces") { }
+
 /// <summary>
 /// Represents an exception that is thrown when a build process fails due to one or more errors.
 /// </summary>
@@ -810,8 +866,8 @@ public interface IReferenceList<TClass> : IList<TClass> where TClass : class
     TClass ElementAt(int index);
     bool Any(Func<TClass, bool> value);
     bool Any();
-    void Add(IReference<TClass> reference);
-    bool Contains(IReference<TClass> reference);
+    void Add(Reference<TClass> reference);
+    bool Contains(Reference<TClass> reference);
 }
 
 /// <summary>
@@ -828,14 +884,14 @@ public class ReferenceList<TClass> : IReferenceList<TClass> where TClass : class
     /// <summary>
     /// Holds the list of references to objects of type <typeparamref name="TClass"/>.
     /// </summary>
-    private readonly List<IReference<TClass>> _references;
+    private readonly List<Reference<TClass>> _references;
 
     /// <summary>
     /// Initializes a new instance of the ReferenceList class with the specified collection of references.
     /// </summary>
     /// <param name="references">The list of references to be managed by the ReferenceList. Cannot be null.</param>
     /// <exception cref="ArgumentNullException">Thrown if the references parameter is null.</exception>
-    public ReferenceList(IEnumerable<IReference<TClass>> references)
+    public ReferenceList(IEnumerable<Reference<TClass>> references)
     {
         _references = references.ToList() ?? throw new ArgumentNullException(nameof(references));
     }
@@ -861,7 +917,7 @@ public class ReferenceList<TClass> : IReferenceList<TClass> where TClass : class
     /// Adds the specified reference to the collection.
     /// </summary>
     /// <param name="reference">The reference to add. Cannot be null.</param>
-    public void Add(IReference<TClass> reference) => _references.Add(reference);
+    public void Add(Reference<TClass> reference) => _references.Add(reference);
 
     /// <summary>
     /// Adds a reference to the specified instance of type TClass.
@@ -874,7 +930,7 @@ public class ReferenceList<TClass> : IReferenceList<TClass> where TClass : class
     /// </summary>
     /// <param name="reference">The reference to locate in the collection. Cannot be null.</param>
     /// <returns>true if the specified reference is found in the collection; otherwise, false.</returns>
-    public bool Contains(IReference<TClass> reference) => _references.Contains(reference);
+    public bool Contains(Reference<TClass> reference) => _references.Contains(reference);
 
     /// <summary>
     /// Determines whether the specified instance is present among the resolved references.
@@ -1067,20 +1123,6 @@ public class ReferenceList<TClass> : IReferenceList<TClass> where TClass : class
 }
 
 /// <summary>
-/// Provides a generic collection for managing builder instances and their associated objects, enabling fluent
-/// construction and manipulation of a list of items using builder patterns.
-/// </summary>
-/// <typeparam name="TClass">The type of object to be constructed and managed by the builders. Must be a reference type.</typeparam>
-/// <typeparam name="TBuilder">The type of builder used to construct instances of <typeparamref name="TClass"/>. Must implement <see
-/// cref="IBuilder{TClass, Reference{TClass}}"/> and have a parameterless constructor.</typeparam>
-public class BuilderList<TClass, TBuilder> : BuilderList<TClass, TBuilder, Reference<TClass>>
-    where TClass : class
-    where TBuilder : IBuilder<TClass, Reference<TClass>>, new()
-{
-
-}
-
-/// <summary>
 /// Represents a collection of builder objects that can construct and resolve references to instances of a specified
 /// class type.
 /// </summary>
@@ -1089,11 +1131,9 @@ public class BuilderList<TClass, TBuilder> : BuilderList<TClass, TBuilder, Refer
 /// contained builders.</remarks>
 /// <typeparam name="TClass">The type of object to be constructed by the builders.</typeparam>
 /// <typeparam name="TBuilder">The type of builder that creates instances of <typeparamref name="TClass"/> and provides references.</typeparam>
-/// <typeparam name="TReference">The type of reference associated with <typeparamref name="TClass"/>.</typeparam>
-public class BuilderList<TClass, TBuilder, TReference> : List<TBuilder>
+public class BuilderList<TClass, TBuilder> : List<TBuilder>
 where TClass : class
-where TBuilder : IBuilder<TClass, TReference>, new()
-where TReference : class, IReference<TClass>, new()
+where TBuilder : IBuilder<TClass>, new()
 {
     /// <summary>
     /// Creates a new reference list containing references to each item in the current collection.
@@ -1114,7 +1154,7 @@ where TReference : class, IReference<TClass>, new()
     /// This method enables fluent configuration of multiple builders in sequence.</remarks>
     /// <param name="body">An action that receives the new builder instance to configure its properties before it is added to the list.</param>
     /// <returns>The current instance of <see cref="BuilderList{TClass, TBuilder}"/> to allow for method chaining.</returns>
-    public BuilderList<TClass, TBuilder, TReference> New(Action<TBuilder> body)
+    public BuilderList<TClass, TBuilder> New(Action<TBuilder> body)
     {
         var builder = new TBuilder();
         body(builder);
@@ -1135,4 +1175,20 @@ where TReference : class, IReference<TClass>, new()
     /// <returns>A list of <see cref="FailuresDictionary"/> instances representing the failures associated with each built item.
     /// The list will be empty if there are no items or no failures.</returns>
     public List<FailuresDictionary> BuildFailures() => [.. this.Select(x => x.Build().Failures<TClass>())];
+
+    /// <summary>
+    /// Validates each builder in the collection and returns a list of failure dictionaries for those that fail validation.
+    /// </summary>
+    /// <returns>A list of <see cref="FailuresDictionary"/> instances representing the validation failures for each builder that did not pass
+    /// validation. The list will be empty if all builders validate successfully or if there are no builders.</returns>
+    public List<FailuresDictionary> ValidateFailures()
+    {
+        var visited = new VisitedObjectDictionary();
+        return [.. this.Select(x =>
+        {
+            var failures = new FailuresDictionary();
+            x.Validate(visited, failures);
+            return failures;
+        }).Where(f => f.Count > 0)];
+    }
 }

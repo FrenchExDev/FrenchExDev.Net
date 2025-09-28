@@ -11,6 +11,12 @@ namespace FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions;
 /// before creating an instance.</remarks>
 public class ClassProjectModelBuilder : AbstractProjectModelBuilder<ClassProjectModel, ClassProjectModelBuilder>, IBuilder<ClassProjectModel>
 {
+    /// <summary>
+    /// Builds internal collections of project references, package references, analyzers, and declaration models for the
+    /// current object.
+    /// </summary>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during the build process. This helps prevent
+    /// redundant processing and circular references.</param>
     protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
     {
         BuildList(_projectReferences, visitedCollector);
@@ -19,6 +25,28 @@ public class ClassProjectModelBuilder : AbstractProjectModelBuilder<ClassProject
         BuildList(_declarationModels, visitedCollector);
     }
 
+    /// <summary>
+    /// Performs validation of the object's required properties and records any validation failures encountered.
+    /// </summary>
+    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
+    /// <param name="failures">A dictionary for collecting validation failures, where each entry represents a property that failed validation
+    /// and the associated error information.</param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
+        AssertNotNullOrEmptyOrWhitespace(_name, nameof(Name), failures, (s) => new InvalidDataException(s));
+        AssertNotNullOrEmptyOrWhitespace(_directory, nameof(Directory), failures, (s) => new InvalidDataException(s));
+        AssertNotNullOrEmptyOrWhitespace(_sdk, nameof(Sdk), failures, (s) => new InvalidDataException(s));
+        AssertNotNullOrEmptyOrWhitespace(_targetFramework, nameof(TargetFramework), failures, (s) => new InvalidDataException(s));
+        AssertNotNullOrEmptyOrWhitespace(_outputType, nameof(OutputType), failures, (s) => new InvalidDataException(s));
+        AssertNotNullOrEmptyOrWhitespace(_langVersion, nameof(LangVersion), failures, (s) => new InvalidDataException(s));
+        AssertNotNullOrEmptyOrWhitespace(_version, nameof(Version), failures, (s) => new InvalidDataException(s));
+        AssertNotNullOrEmptyOrWhitespace(_authors, nameof(Authors), failures, (s) => new InvalidDataException(s));
+    }
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="ClassProjectModel"/> class using the current configuration settings.
+    /// </summary>
+    /// <returns>A <see cref="ClassProjectModel"/> object initialized with the configured project properties.</returns>
     protected override ClassProjectModel Instantiate()
     {
         return new ClassProjectModel(
@@ -40,10 +68,5 @@ public class ClassProjectModelBuilder : AbstractProjectModelBuilder<ClassProject
                _packageTags,
                _authors
            );
-    }
-
-    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
-    {
-        VisiteObjectAndCollectExceptions(visitedCollector, failures);
     }
 }

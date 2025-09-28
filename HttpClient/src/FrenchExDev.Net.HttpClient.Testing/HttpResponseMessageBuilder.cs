@@ -15,6 +15,11 @@ public class HttpResponseMessageBuilder : IBuilder<HttpResponseMessage>
     public Guid Id => throw new NotImplementedException();
 
     public IResult? Result => throw new NotImplementedException();
+
+    public BuildStatus BuildStatus => throw new NotImplementedException();
+
+    public ValidationStatus ValidationStatus => throw new NotImplementedException();
+
     private HttpStatusCode _httpStatusCode;
 
     public HttpResponseMessageBuilder StatusCode(HttpStatusCode httpStatusCode)
@@ -59,13 +64,13 @@ public class HttpResponseMessageBuilder : IBuilder<HttpResponseMessage>
         throw new NotImplementedException();
     }
 
-    public void Existing(HttpResponseMessage instance)
+    public HttpResponseMessageBuilder Existing(HttpResponseMessage instance)
     {
         throw new NotImplementedException();
     }
 
-    IBuilder<HttpResponseMessage, Reference<HttpResponseMessage>> IBuilder<HttpResponseMessage, Reference<HttpResponseMessage>>.Existing(HttpResponseMessage instance)
+    IBuilder<HttpResponseMessage> IBuilder<HttpResponseMessage>.Existing(HttpResponseMessage instance)
     {
-        throw new NotImplementedException();
+        return Existing(instance);
     }
 }

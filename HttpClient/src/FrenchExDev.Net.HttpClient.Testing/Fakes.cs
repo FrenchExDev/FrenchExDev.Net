@@ -91,6 +91,10 @@ public class FakeHttpClientBuilder : IBuilder<IHttpClient>
     /// errors.</remarks>
     public IResult Result => _result ?? throw new InvalidOperationException(nameof(_result));
 
+    public BuildStatus BuildStatus => throw new NotImplementedException();
+
+    public ValidationStatus ValidationStatus => throw new NotImplementedException();
+
     /// <summary>
     /// Stores the list of HTTP response builders to configure the fake HTTP client.
     /// </summary>
@@ -146,7 +150,7 @@ public class FakeHttpClientBuilder : IBuilder<IHttpClient>
         throw new NotImplementedException();
     }
 
-    IBuilder<IHttpClient, Reference<IHttpClient>> IBuilder<IHttpClient, Reference<IHttpClient>>.Existing(IHttpClient instance)
+    IBuilder<IHttpClient> IBuilder<IHttpClient>.Existing(IHttpClient instance)
     {
         throw new NotImplementedException();
     }

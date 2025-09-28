@@ -23,7 +23,7 @@ public class NamespaceDeclarationModelSyntaxCodeTests
             },
             assertResult: (result) =>
             {
-                result.Count().ShouldBe(1);
+                result.Count().ShouldBe(2);
             });
     }
 

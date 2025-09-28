@@ -195,11 +195,16 @@ public class NamespaceDeclarationModelBuilder : AbstractBuilder<NamespaceDeclara
     /// and circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where each failure is recorded with its associated property
     /// name and exception details.</param>
-    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         if (string.IsNullOrEmpty(_name))
         {
             failures.Failure(nameof(_name), new InvalidOperationException("Namespace name must be provided."));
+        }
+
+        if (_scoping is null)
+        {
+            failures.Failure(nameof(_scoping), new InvalidOperationException("Namespace scoping must be specified (file-scoped or name-scoped)."));
         }
     }
 

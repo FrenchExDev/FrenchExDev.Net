@@ -6,18 +6,6 @@ namespace FrenchExDev.Net.Dotnet.Project.Abstractions;
 /// <summary>
 /// Abstract builder base class for constructing project models implementing <see cref="IProjectModel"/>.
 /// </summary>
-/// <typeparam name="TProjectModel"></typeparam>
-/// <typeparam name="TBuilder"></typeparam>
-public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : AbstractProjectModelBuilder<TProjectModel, TBuilder, Reference<TProjectModel>>
-    where TProjectModel : class, IProjectModel
-    where TBuilder : class, IBuilder<TProjectModel>, new()
-{
-
-}
-
-/// <summary>
-/// Abstract builder base class for constructing project models implementing <see cref="IProjectModel"/>.
-/// </summary>
 /// <typeparam name="TProjectModel">The concrete project model type produced by the builder.</typeparam>
 /// <typeparam name="TBuilder">The concrete builder type (fluent API return type).</typeparam>
 /// <remarks>
@@ -49,8 +37,7 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
 /// var result = builder.Build();
 /// </code>
 /// </remarks>
-public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder, TReference> : AbstractBuilder<TProjectModel, TReference>
-    where TReference : class, IReference<TProjectModel>, new()
+public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : AbstractBuilder<TProjectModel>
     where TProjectModel : class, IProjectModel
     where TBuilder : class, IBuilder<TProjectModel>, new()
 {
@@ -565,7 +552,7 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder, TRefe
     /// <exception cref="InvalidCastException">Thrown if the current instance cannot be cast to the generic builder type <typeparamref name="TBuilder"/>.</exception>
     public TBuilder AdditionalProperties(Dictionary<string, object>? additionalProperties)
     {
-        _additionalProperties = new Reference<Dictionary<string, object>>(additionalProperties);
+        _additionalProperties = new Reference<Dictionary<string, object>>(this, additionalProperties);
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
 

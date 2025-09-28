@@ -48,7 +48,7 @@ public class DesktopProjectModelBuilder : AbstractProjectModelBuilder<DesktopPro
              _projectReferences.AsReferenceList() ?? throw new InvalidDataException(nameof(_projectReferences)),
              _packageReferences.AsReferenceList() ?? throw new InvalidDataException(nameof(_packageReferences)),
              _analyzers.AsReferenceList() ?? throw new InvalidDataException(nameof(_analyzers)),
-             _additionalProperties ?? throw new InvalidDataException(nameof(_additionalProperties)),
+             _additionalProperties,
              _declarationModels.AsReferenceList() ?? throw new InvalidDataException(nameof(_declarationModels)),
              _version ?? throw new InvalidDataException(nameof(_version)),
              _generatePackageOnBuild ?? throw new InvalidDataException(nameof(_generatePackageOnBuild)),

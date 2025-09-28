@@ -21,7 +21,7 @@ public class Person
     /// <summary>
     /// Reference to the contact person, resolved via <see cref="PersonReference"/>.
     /// </summary>
-    protected IReference<Person> _contact;
+    protected Reference<Person> _contact;
 
     /// <summary>
     /// List of address references associated with this person.
@@ -103,7 +103,7 @@ public class Address(string street, string city)
 /// var result = builder.Build().Failures();
 /// </code>
 /// </remarks>
-public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
+public class PersonBuilder : AbstractBuilder<Person>
 {
     /// <summary>
     /// Stores the name for the <see cref="Person"/> being built.
@@ -168,7 +168,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// <summary>
     /// Stores the list of addresses for the <see cref="Person"/> being built.
     /// </summary>
-    private readonly List<AddressBuilder> _addresses = [];
+    private readonly BuilderList<Address, AddressBuilder> _addresses = [];
     /// <summary>
     /// Adds an address to this person.
     /// </summary>
@@ -180,10 +180,21 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
         return this;
     }
 
+    public class PersonBuilderException : Exception
+    {
+        public PersonBuilderException()
+        {
+        }
+
+        public PersonBuilderException(string? message) : base(message)
+        {
+        }
+    }
+
     /// <summary>
     /// Exception thrown when the name is null, empty, or whitespace.
     /// </summary>
-    public class NameCannotBeNullOrEmptyOrWhitespaceException : Exception
+    public class NameCannotBeNullOrEmptyOrWhitespaceException : PersonBuilderException
     {
         public NameCannotBeNullOrEmptyOrWhitespaceException() : base("Name cannot be null or empty or whitespace") { }
     }
@@ -191,7 +202,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// <summary>
     /// Exception thrown when the age is null or negative.
     /// </summary>
-    public class AgeMustBeNonNegativeException : Exception
+    public class AgeMustBeNonNegativeException : PersonBuilderException
     {
         public AgeMustBeNonNegativeException() : base("Age must be a non-negative integer") { }
     }
@@ -199,7 +210,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// <summary>
     /// Exception thrown when no address is provided.
     /// </summary>
-    public class AtLeastOneAddressMustBeProvidedException : Exception
+    public class AtLeastOneAddressMustBeProvidedException : PersonBuilderException
     {
         public AtLeastOneAddressMustBeProvidedException() : base("At least one address must be provided") { }
     }
@@ -207,7 +218,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// <summary>
     /// Exception thrown when no contact is provided.
     /// </summary>
-    public class MustHaveContactException : Exception
+    public class MustHaveContactException : PersonBuilderException
     {
         public MustHaveContactException() : base("Person must have a contact") { }
     }
@@ -215,7 +226,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// <summary>
     /// Exception thrown when no known person is provided.
     /// </summary>
-    public class MustKnowAtLeastOnePersonException : Exception
+    public class MustKnowAtLeastOnePersonException : PersonBuilderException
     {
         public MustKnowAtLeastOnePersonException() : base("Person must know at least one other person") { }
     }
@@ -225,12 +236,9 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     /// </summary>
     /// <param name="visitedCollector">Dictionary for tracking visited objects to prevent cycles.</param>
     /// <param name="failures">Dictionary for collecting validation failures.</param>
-    protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
-        if (string.IsNullOrWhiteSpace(_name))
-        {
-            failures.Failure(nameof(_name), new NameCannotBeNullOrEmptyOrWhitespaceException());
-        }
+        AssertNotNullOrEmptyOrWhitespace(_name, nameof(_name), failures, (s) => new NameCannotBeNullOrEmptyOrWhitespaceException());
 
         if (_addresses.Count == 0)
         {
@@ -287,31 +295,12 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
         if (_age is null) throw new AgeMustBeNonNegativeException();
         if (_contact is null) throw new MustHaveContactException();
 
-        var contactReference = _contact.Reference();
-        _contact.OnBuilt(x => contactReference.Resolve(x));
-
-        var knownPersonsReferences = new ReferenceList<Person>();
-        foreach (var person in _knownPersons)
-        {
-            var personReference = person.Reference();
-            person.OnBuilt(x => personReference.Resolve(x));
-            knownPersonsReferences.Add(personReference);
-        }
-
-        var addressesReferences = new ReferenceList<Address>();
-        foreach (var address in _addresses)
-        {
-            var addressReference = address.Reference();
-            address.OnBuilt(x => addressReference.Resolve(x));
-            addressesReferences.Add(addressReference);
-        }
-
         return new Person(
             _name,
             _age.Value,
-            addressesReferences,
-            knownPersonsReferences,
-            contactReference);
+            _addresses.AsReferenceList(),
+            _knownPersons.AsReferenceList(),
+            _contact.Reference());
     }
 
     /// <summary>
@@ -332,7 +321,7 @@ public class PersonBuilder : AbstractBuilder<Person, Reference<Person>>
     }
 }
 
-public class AddressBuilder : AbstractBuilder<Address, Reference<Address>>
+public class AddressBuilder : AbstractBuilder<Address>
 {
     private string? _street;
     public AddressBuilder Street(string? street)
@@ -360,15 +349,8 @@ public class AddressBuilder : AbstractBuilder<Address, Reference<Address>>
 
     protected new void ValidateInternal(VisitedObjectDictionary visited, FailuresDictionary failures)
     {
-        if (string.IsNullOrWhiteSpace(_street))
-        {
-            failures.Failure(nameof(_street), new StreetCannotBeNullOrEmptyException());
-        }
-
-        if (string.IsNullOrWhiteSpace(_city))
-        {
-            failures.Failure(nameof(_city), new CityCannotBeNullOrEmptyException());
-        }
+        AssertNotNullOrEmptyOrWhitespace(_street, nameof(_street), failures, (s) => new StreetCannotBeNullOrEmptyException());
+        AssertNotNullOrEmptyOrWhitespace(_city, nameof(_city), failures, (s) => new CityCannotBeNullOrEmptyException());
     }
 
     protected override Address Instantiate()
