@@ -552,7 +552,7 @@ public abstract class AbstractProjectModelBuilder<TProjectModel, TBuilder> : Abs
     /// <exception cref="InvalidCastException">Thrown if the current instance cannot be cast to the generic builder type <typeparamref name="TBuilder"/>.</exception>
     public TBuilder AdditionalProperties(Dictionary<string, object>? additionalProperties)
     {
-        _additionalProperties = new Reference<Dictionary<string, object>>(this, additionalProperties);
+        _additionalProperties = new Reference<Dictionary<string, object>>(additionalProperties);
         return this as TBuilder ?? throw new InvalidCastException(nameof(TBuilder));
     }
 

@@ -118,6 +118,7 @@ public interface IBuilder<TClass> where TClass : class
     /// Gets the unique identifier for the instance.
     /// </summary>
     Guid Id { get; }
+
     /// <summary>
     /// Gets the result of the build operation, if available.
     /// </summary>
@@ -199,16 +200,6 @@ public class NotResolvedException : Exception
 public record Reference<TClass> : IResult where TClass : class
 {
     /// <summary>
-    /// Gets the object that owns or is associated with this instance.
-    /// </summary>
-    public object? Owner { get; private set; }
-
-    /// <summary>
-    /// Holds a unique Guid for the reference.
-    /// </summary>
-    private Guid Id = Guid.NewGuid();
-
-    /// <summary>
     /// Stores the instance of type <typeparamref name="TClass"/> that this reference points to.
     /// </summary>
     private TClass? _instance;
@@ -262,20 +253,11 @@ public record Reference<TClass> : IResult where TClass : class
     }
 
     /// <summary>
-    /// Initializes a new instance of the Reference class.
-    /// </summary>
-    public Reference(object owner)
-    {
-        Owner = owner;
-    }
-
-    /// <summary>
     /// Initializes a new instance of the Reference class that wraps the specified object.
     /// </summary>
     /// <param name="existing">The object to be referenced. Can be null to indicate that no object is currently referenced.</param>
-    public Reference(object owner, TClass? existing)
+    public Reference(TClass? existing)
     {
-        Owner = owner;
         _instance = existing;
     }
 }
@@ -317,7 +299,7 @@ public abstract class AbstractBuilder<TClass> : IBuilder<TClass> where TClass : 
 {
     public AbstractBuilder()
     {
-        _reference = new(this);
+        _reference = new();
     }
 
     /// <summary>
