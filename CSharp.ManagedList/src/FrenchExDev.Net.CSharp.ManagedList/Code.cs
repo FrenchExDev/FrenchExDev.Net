@@ -104,7 +104,7 @@ public class OnRemoveList<T> : List<Action<T>> { }
 /// <summary>
 /// Internal list of Clear callbacks (named with lowercase leading 'o' to preserve legacy usage).
 /// </summary>
-public class onClearList<t> : List<Action<t>> { }
+public class onClearList<T> : List<Action<T>> { }
 
 /// <summary>
 /// Managed list variant that permits adding more callbacks after construction.

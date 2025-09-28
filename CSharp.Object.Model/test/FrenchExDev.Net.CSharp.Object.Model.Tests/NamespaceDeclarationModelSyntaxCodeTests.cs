@@ -43,7 +43,7 @@ public class NamespaceDeclarationModelSyntaxCodeTests
                 .WithClass((b) =>
                 {
                     b.WithName("MyFoo")
-                    .WithModifier(ClassModifier.Public)
+                    .WithPublicModifier()
                     .WithField(f => f
                         .WithModifier("private")
                         .WithType("int")

@@ -65,6 +65,55 @@ public class ClassDeclarationModelBuilder : AbstractBuilder<ClassDeclarationMode
     }
 
     /// <summary>
+    /// Adds the public access modifier to the class declaration being built.
+    /// </summary>
+    /// <remarks>This method enables the class to be declared as public when the model is built. Multiple
+    /// modifier methods can be chained to configure the class declaration as needed.</remarks>
+    /// <returns>The current <see cref="ClassDeclarationModelBuilder"/> instance with the public modifier applied.</returns>
+    public ClassDeclarationModelBuilder WithPublicModifier()
+    {
+        _modifiers.Add(ClassModifier.Public);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds the internal access modifier to the class declaration being built.
+    /// </summary>
+    /// <remarks>Use this method to specify that the generated class should have internal accessibility. This
+    /// method can be chained with other modifier methods to configure the class declaration as needed.</remarks>
+    /// <returns>The current <see cref="ClassDeclarationModelBuilder"/> instance with the internal modifier applied.</returns>
+    public ClassDeclarationModelBuilder WithInternalModifier()
+    {
+        _modifiers.Add(ClassModifier.Internal);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds the abstract modifier to the class declaration being built.
+    /// </summary>
+    /// <remarks>Use this method to specify that the generated class should be abstract. This enables the
+    /// class to contain abstract members and prevents direct instantiation.</remarks>
+    /// <returns>The current <see cref="ClassDeclarationModelBuilder"/> instance with the abstract modifier applied.</returns>
+    public ClassDeclarationModelBuilder WithAbstractModifier()
+    {
+        _modifiers.Add(ClassModifier.Abstract);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds the sealed modifier to the class declaration being built.
+    /// </summary>
+    /// <remarks>Use this method to indicate that the generated class should be sealed, preventing further
+    /// inheritance. This method can be chained with other modifier methods to configure the class
+    /// declaration.</remarks>
+    /// <returns>The current <see cref="ClassDeclarationModelBuilder"/> instance with the sealed modifier applied.</returns>
+    public ClassDeclarationModelBuilder WithSealedModifier()
+    {
+        _modifiers.Add(ClassModifier.Sealed);
+        return this;
+    }
+
+    /// <summary>
     /// Adds an attribute to the class using a builder action.
     /// </summary>
     public ClassDeclarationModelBuilder WithAttribute(Action<AttributeDeclarationModelBuilder> attribute)
