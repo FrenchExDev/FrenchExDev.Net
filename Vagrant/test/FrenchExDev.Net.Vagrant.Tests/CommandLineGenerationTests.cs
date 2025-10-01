@@ -5,7 +5,14 @@ using FrenchExDev.Net.Vagrant.Testing;
 namespace FrenchExDev.Net.Vagrant.Tests;
 
 [Feature(feature: "vagrant", TestKind.Unit)]
-public class AllLeafCommandsTests
+public class CommandBuilderTests
+{
+
+}
+
+
+    [Feature(feature: "vagrant", TestKind.Unit)]
+public class CommandLineGenerationTests
 {
     private static Invocation Build(string command, string paramSpec, string optionSpec)
         => CommandTestHelper.BuildInvocation(command, paramSpec, optionSpec);
