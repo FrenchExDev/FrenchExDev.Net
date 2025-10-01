@@ -5,6 +5,9 @@ namespace FrenchExDev.Net.Vagrant.Testing;
 
 public static class CommandTestHelper
 {
+    public static Invocation Build(string command, string paramSpec, string optionSpec)
+       => CommandTestHelper.BuildInvocation(command, paramSpec, optionSpec);
+
     public static LeafCommandNode GetLeaf(string commandPath)
     {
         var tree = VagrantCommandTree.Build();
