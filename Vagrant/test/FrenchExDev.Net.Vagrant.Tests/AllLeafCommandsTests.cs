@@ -117,6 +117,28 @@ public class AllLeafCommandsTests
         yield return [SuccessCase.Create(id: "reload", command: "reload", paramSpec: "", optionSpec: "", equalsExpectation: "reload")];
         yield return [SuccessCase.Create(id: "reload_provider", command: "reload", paramSpec: "", optionSpec: "provider=virtualbox", containsCsv: "--provider virtualbox")];
         yield return [SuccessCase.Create(id: "validate", command: "validate", paramSpec: "", optionSpec: "", equalsExpectation: "validate")];
+        yield return [SuccessCase.Create(id: "global_status", command: "global-status", paramSpec: "", optionSpec: "", equalsExpectation: "global-status")];
+        yield return [SuccessCase.Create(id: "global_status_prune", command: "global-status", paramSpec: "", optionSpec: "prune", containsCsv: "--prune")];
+        yield return [SuccessCase.Create(id: "package_basic", command: "package", paramSpec: "", optionSpec: "output=package.box", containsCsv: "--output package.box")];
+        yield return [SuccessCase.Create(id: "port_basic", command: "port", paramSpec: "machine=default", optionSpec: "", containsCsv: "port;default")];
+        yield return [SuccessCase.Create(id: "suspend_basic", command: "suspend", paramSpec: "machine=default", optionSpec: "", containsCsv: "suspend;default")];
+        yield return [SuccessCase.Create(id: "resume_basic", command: "resume", paramSpec: "machine=default", optionSpec: "", containsCsv: "resume;default")];
+        yield return [SuccessCase.Create(id: "snapshot_save", command: "save", paramSpec: "name=snap1", optionSpec: "", containsCsv: "save;snap1")];
+        yield return [SuccessCase.Create(id: "snapshot_restore", command: "restore", paramSpec: "name=snap1", optionSpec: "", containsCsv: "restore;snap1")];
+        yield return [SuccessCase.Create(id: "snapshot_list", command: "snapshot list", paramSpec: "", optionSpec: "", equalsExpectation: "snapshot list")];
+        yield return [SuccessCase.Create(id: "snapshot_delete", command: "delete", paramSpec: "name=snap1", optionSpec: "", containsCsv: "delete;snap1")];
+        yield return [SuccessCase.Create(id: "snapshot_push", command: "push", paramSpec: "", optionSpec: "", equalsExpectation: "snapshot push")];
+        yield return [SuccessCase.Create(id: "snapshot_pop", command: "pop", paramSpec: "", optionSpec: "", equalsExpectation: "snapshot pop")];
+        yield return [SuccessCase.Create(id: "plugin_install", command: "install", paramSpec: "name=myplugin", optionSpec: "", containsCsv: "install;myplugin")];
+        yield return [SuccessCase.Create(id: "plugin_uninstall", command: "uninstall", paramSpec: "name=myplugin", optionSpec: "", containsCsv: "uninstall;myplugin")];
+        yield return [SuccessCase.Create(id: "plugin_update_all", command: "plugin update", paramSpec: "", optionSpec: "", equalsExpectation: "plugin update")];
+        yield return [SuccessCase.Create(id: "plugin_list", command: "plugin list", paramSpec: "", optionSpec: "", equalsExpectation: "plugin list")];
+        yield return [SuccessCase.Create(id: "plugin_expunge_force", command: "expunge", paramSpec: "", optionSpec: "force", containsCsv: "--force")];
+        yield return [SuccessCase.Create(id: "login", command: "login", paramSpec: "", optionSpec: "", equalsExpectation: "login")];
+        yield return [SuccessCase.Create(id: "logout", command: "logout", paramSpec: "", optionSpec: "", equalsExpectation: "logout")];
+        yield return [SuccessCase.Create(id: "rsync_basic", command: "rsync", paramSpec: "machine=default", optionSpec: "", containsCsv: "rsync;default")];
+        yield return [SuccessCase.Create(id: "rsync_auto", command: "rsync-auto", paramSpec: "machine=default", optionSpec: "", containsCsv: "rsync-auto;default")];
+        yield return [SuccessCase.Create(id: "box_update", command: "update", paramSpec: "", optionSpec: "box=alpine", containsCsv: "--box alpine")];
     }
 
     public static IEnumerable<object[]> FailureCases()
@@ -139,6 +161,11 @@ public class AllLeafCommandsTests
         yield return [FailureCase.Create(id: "repackage_only_version", command: "repackage", paramSpec: "version=1.0.0", optionSpec: "")];
         yield return [FailureCase.Create(id: "repackage_name_empty_value", command: "repackage", paramSpec: "name=;provider=virtualbox;version=1.0.0", optionSpec: "")];
         yield return [FailureCase.Create(id: "repackage_version_empty_value", command: "repackage", paramSpec: "name=mybox;provider=virtualbox;version=", optionSpec: "")];
+        yield return [FailureCase.Create(id: "snapshot_save_missing_name", command: "save", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "snapshot_restore_missing_name", command: "restore", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "snapshot_delete_missing_name", command: "delete", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "plugin_install_missing_name", command: "install", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "plugin_uninstall_missing_name", command: "uninstall", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
     }
 
     /// <summary>

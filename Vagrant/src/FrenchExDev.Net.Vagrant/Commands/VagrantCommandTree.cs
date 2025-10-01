@@ -75,6 +75,12 @@ public static class VagrantCommandTree
             .ToCommandLine(BuildInline)
             .WithHandler(_ => Task.FromResult(0))
         );
+        box.AddChild(new LeafCommandNode("update", "Update a box", box)
+            .WithOption(new CommandOption("box", "Box name to update", true, ValueName: "name"))
+            .WithOption(new CommandOption("provider", "Provider filter", true, ValueName: "name"))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0))
+        );
 
         // init (leaf at root)
         root.AddChild(new LeafCommandNode("init", "Initialize a Vagrant environment", root)
@@ -136,6 +142,14 @@ public static class VagrantCommandTree
             .WithHandler(_ => Task.FromResult(0))
         );
 
+        // ssh-config
+        root.AddChild(new LeafCommandNode("ssh-config", "Output OpenSSH configuration", root)
+            .WithParameter(new CommandParameter("machine", "Machine name", Required: false))
+            .WithOption(new CommandOption("host", "Override Host header name", true, ValueName: "name"))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0))
+        );
+
         // provision
         root.AddChild(new LeafCommandNode("provision", "Run provisioners", root)
             .WithParameter(new CommandParameter("machine", "Specific machine(s)", Required: false))
@@ -159,6 +173,107 @@ public static class VagrantCommandTree
             .ToCommandLine(BuildInline)
             .WithHandler(_ => Task.FromResult(0))
         );
+
+        // Additional common commands
+        root.AddChild(new LeafCommandNode("global-status", "List all active Vagrant environments", root)
+            .WithOption(new CommandOption("prune", "Prune invalid entries"))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0))
+        );
+        root.AddChild(new LeafCommandNode("package", "Package environment into a box", root)
+            .WithOption(new CommandOption("output", "Output .box file", true, ValueName: "file"))
+            .WithOption(new CommandOption("base", "Base VM name", true, ValueName: "name"))
+            .WithOption(new CommandOption("include", "Additional files", true, ValueName: "file"))
+            .WithOption(new CommandOption("vagrantfile", "Custom Vagrantfile", true, ValueName: "file"))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0))
+        );
+        root.AddChild(new LeafCommandNode("port", "Display network port mappings", root)
+            .WithParameter(new CommandParameter("machine", "Machine name", Required: false))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0))
+        );
+        root.AddChild(new LeafCommandNode("suspend", "Suspend the machine", root)
+            .WithParameter(new CommandParameter("machine", "Machine name", Required: false))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0))
+        );
+        root.AddChild(new LeafCommandNode("resume", "Resume a suspended machine", root)
+            .WithParameter(new CommandParameter("machine", "Machine name", Required: false))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0))
+        );
+
+        // snapshot group
+        var snapshot = root.AddChild(new CommandGroupNode("snapshot", "Snapshot management", root));
+        snapshot.AddChild(new LeafCommandNode("save", "Save a snapshot", snapshot)
+            .WithParameter(new CommandParameter("machine", "Machine name", Required: false))
+            .WithParameter(new CommandParameter("name", "Snapshot name", Required: true))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+        snapshot.AddChild(new LeafCommandNode("restore", "Restore snapshot", snapshot)
+            .WithParameter(new CommandParameter("machine", "Machine name", Required: false))
+            .WithParameter(new CommandParameter("name", "Snapshot name", Required: true))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+        snapshot.AddChild(new LeafCommandNode("list", "List snapshots", snapshot)
+            .WithParameter(new CommandParameter("machine", "Machine name", Required: false))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+        snapshot.AddChild(new LeafCommandNode("delete", "Delete snapshot", snapshot)
+            .WithParameter(new CommandParameter("machine", "Machine name", Required: false))
+            .WithParameter(new CommandParameter("name", "Snapshot name", Required: true))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+        snapshot.AddChild(new LeafCommandNode("push", "Push current state onto stack", snapshot)
+            .WithParameter(new CommandParameter("machine", "Machine name", Required: false))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+        snapshot.AddChild(new LeafCommandNode("pop", "Pop state from stack", snapshot)
+            .WithParameter(new CommandParameter("machine", "Machine name", Required: false))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+
+        // plugin group
+        var plugin = root.AddChild(new CommandGroupNode("plugin", "Plugin management", root));
+        plugin.AddChild(new LeafCommandNode("install", "Install a plugin", plugin)
+            .WithParameter(new CommandParameter("name", "Plugin name", Required: true))
+            .WithOption(new CommandOption("plugin-version", "Specific version", true, ValueName: "semver"))
+            .WithOption(new CommandOption("local", "Local file install"))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+        plugin.AddChild(new LeafCommandNode("uninstall", "Uninstall a plugin", plugin)
+            .WithParameter(new CommandParameter("name", "Plugin name", Required: true))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+        plugin.AddChild(new LeafCommandNode("update", "Update plugins", plugin)
+            .WithParameter(new CommandParameter("name", "Plugin name", Required: false))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+        plugin.AddChild(new LeafCommandNode("list", "List plugins", plugin)
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+        plugin.AddChild(new LeafCommandNode("expunge", "Remove all plugins", plugin)
+            .WithOption(new CommandOption("force", "Force removal"))
+            .WithOption(new CommandOption("reinstall", "Reinstall after cleanup"))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+
+        root.AddChild(new LeafCommandNode("login", "Log in to Vagrant Cloud", root)
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+        root.AddChild(new LeafCommandNode("logout", "Log out of Vagrant Cloud", root)
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+
+        root.AddChild(new LeafCommandNode("rsync", "Rsync files to guest", root)
+            .WithParameter(new CommandParameter("machine", "Machine name", Required: false))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
+        root.AddChild(new LeafCommandNode("rsync-auto", "Continually sync changes", root)
+            .WithParameter(new CommandParameter("machine", "Machine name", Required: false))
+            .ToCommandLine(BuildInline)
+            .WithHandler(_ => Task.FromResult(0)));
 
         return root;
     }

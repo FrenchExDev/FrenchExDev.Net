@@ -52,4 +52,4 @@ public static class VagrantExecutionExtensions
     }
 }
 
-public record InvocationResult(int ExitCode, string StdOut, string StdErr);;
+public record InvocationResult(int ExitCode, string StdOut, string StdErr);
