@@ -29,6 +29,9 @@ public class AllLeafCommandsTests
         yield return [SuccessCase.Create(id: "up_multi_machines_provider_color_auto", command: "up", paramSpec: "machine=default,db", optionSpec: "provider=virtualbox;color=auto", containsCsv: "--provider virtualbox;--color auto;default;db")];
         yield return [SuccessCase.Create(id: "up_multi_machines_destroy_on_error", command: "up", paramSpec: "machine=default,db", optionSpec: "destroy-on-error", containsCsv: "default;db;--destroy-on-error")];
         yield return [SuccessCase.Create(id: "up_provider_destroy_on_error", command: "up", paramSpec: "", optionSpec: "provider=virtualbox;destroy-on-error", containsCsv: "--provider virtualbox;--destroy-on-error")];
+        // newly added focused combos
+        yield return [SuccessCase.Create(id: "up_machine_provider_only", command: "up", paramSpec: "machine=default", optionSpec: "provider=virtualbox", containsCsv: "--provider virtualbox;default")];
+        yield return [SuccessCase.Create(id: "up_machine_provider_parallel", command: "up", paramSpec: "machine=default", optionSpec: "provider=virtualbox;parallel", containsCsv: "--provider virtualbox;--parallel;default")];
 
         // box group
         yield return [SuccessCase.Create(id: "box_add_min", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "", containsCsv: "hashicorp/bionic64")];
@@ -48,6 +51,9 @@ public class AllLeafCommandsTests
         yield return [SuccessCase.Create(id: "box_remove_force_only", command: "box remove", paramSpec: "name=mybox", optionSpec: "force", containsCsv: "--force")];
         yield return [SuccessCase.Create(id: "box_remove_all", command: "box remove", paramSpec: "name=mybox", optionSpec: "all", containsCsv: "--all")];
         yield return [SuccessCase.Create(id: "box_remove_provider_all", command: "box remove", paramSpec: "name=mybox", optionSpec: "provider=virtualbox;all", containsCsv: "--provider virtualbox;--all")];
+        // added remove combos
+        yield return [SuccessCase.Create(id: "box_remove_provider_force", command: "box remove", paramSpec: "name=mybox", optionSpec: "provider=virtualbox;force", containsCsv: "--provider virtualbox;--force")];
+        yield return [SuccessCase.Create(id: "box_remove_provider_box_version_force", command: "box remove", paramSpec: "name=mybox", optionSpec: "provider=virtualbox;box-version=2.0.0;force", containsCsv: "--provider virtualbox;--box-version 2.0.0;--force")];
         yield return [SuccessCase.Create(id: "box_list", command: "box list", paramSpec: "", optionSpec: "", equalsExpectation: "box list")];
         yield return [SuccessCase.Create(id: "box_list_provider", command: "box list", paramSpec: "", optionSpec: "provider=virtualbox", containsCsv: "--provider virtualbox")];
         yield return [SuccessCase.Create(id: "box_list_force", command: "box list", paramSpec: "", optionSpec: "force", containsCsv: "--force")];
@@ -69,6 +75,7 @@ public class AllLeafCommandsTests
         // added prune combos
         yield return [SuccessCase.Create(id: "box_prune_dry_run_only", command: "box prune", paramSpec: "", optionSpec: "dry-run", containsCsv: "--dry-run")];
         yield return [SuccessCase.Create(id: "box_prune_dry_run_keep_active", command: "box prune", paramSpec: "", optionSpec: "dry-run;keep-active-provider", containsCsv: "--dry-run;--keep-active-provider")];
+        yield return [SuccessCase.Create(id: "box_prune_keep_active_force", command: "box prune", paramSpec: "", optionSpec: "keep-active-provider;force", containsCsv: "--keep-active-provider;--force")];
         yield return [SuccessCase.Create(id: "box_repackage", command: "box repackage", paramSpec: "name=mybox;provider=virtualbox;version=1.0.0", optionSpec: "", equalsExpectation: "box repackage mybox virtualbox 1.0.0")];
         yield return [SuccessCase.Create(id: "box_repackage_output", command: "box repackage", paramSpec: "name=mybox;provider=virtualbox;version=1.0.0", optionSpec: "output=out.box", containsCsv: "--output out.box")];
         yield return [SuccessCase.Create(id: "box_update", command: "box update", paramSpec: "", optionSpec: "box=alpine", containsCsv: "--box alpine")];
@@ -111,6 +118,8 @@ public class AllLeafCommandsTests
         yield return [SuccessCase.Create(id: "ssh_plain", command: "ssh", paramSpec: "machine=default", optionSpec: "plain", containsCsv: "--plain")];
         // added ssh param + plain
         yield return [SuccessCase.Create(id: "ssh_command_param_plain", command: "ssh", paramSpec: "machine=default;command=whoami", optionSpec: "plain", containsCsv: "whoami;--plain")];
+        // new success: ssh command via option without machine (default target)
+        yield return [SuccessCase.Create(id: "ssh_command_option_no_machine", command: "ssh", paramSpec: "", optionSpec: "command=whoami", containsCsv: "--command whoami")];
         yield return [SuccessCase.Create(id: "ssh_config_basic", command: "ssh-config", paramSpec: "", optionSpec: "", equalsExpectation: "ssh-config")];
         yield return [SuccessCase.Create(id: "ssh_config_machine", command: "ssh-config", paramSpec: "machine=default", optionSpec: "", containsCsv: "default")];
         yield return [SuccessCase.Create(id: "ssh_config_host", command: "ssh-config", paramSpec: "", optionSpec: "host=myhost", containsCsv: "--host myhost")];
@@ -132,6 +141,8 @@ public class AllLeafCommandsTests
         yield return [SuccessCase.Create(id: "reload_provider_no_provision", command: "reload", paramSpec: "", optionSpec: "provider=virtualbox;no-provision", containsCsv: "--provider virtualbox;--no-provision")];
         yield return [SuccessCase.Create(id: "reload_multi_machines_provision", command: "reload", paramSpec: "machine=default,db", optionSpec: "provision", containsCsv: "default;db;--provision")];
         yield return [SuccessCase.Create(id: "reload_multi_machines_no_provision", command: "reload", paramSpec: "machine=default,db", optionSpec: "no-provision", containsCsv: "default;db;--no-provision")];
+        // new reload multi machines provider + provision
+        yield return [SuccessCase.Create(id: "reload_multi_machines_provider_provision", command: "reload", paramSpec: "machine=default,db", optionSpec: "provider=virtualbox;provision", containsCsv: "default;db;--provider virtualbox;--provision")];
         yield return [SuccessCase.Create(id: "validate", command: "validate", paramSpec: "", optionSpec: "", equalsExpectation: "validate")];
         yield return [SuccessCase.Create(id: "global_status", command: "global-status", paramSpec: "", optionSpec: "", equalsExpectation: "global-status")];
         yield return [SuccessCase.Create(id: "global_status_prune", command: "global-status", paramSpec: "", optionSpec: "prune", containsCsv: "--prune")];
@@ -146,6 +157,9 @@ public class AllLeafCommandsTests
         yield return [SuccessCase.Create(id: "port_no_machine", command: "port", paramSpec: "", optionSpec: "", equalsExpectation: "port")];
         yield return [SuccessCase.Create(id: "suspend_basic", command: "suspend", paramSpec: "machine=default", optionSpec: "", containsCsv: "suspend;default")];
         yield return [SuccessCase.Create(id: "resume_basic", command: "resume", paramSpec: "machine=default", optionSpec: "", containsCsv: "resume;default")];
+        // new root variants without machine
+        yield return [SuccessCase.Create(id: "suspend_root", command: "suspend", paramSpec: "", optionSpec: "", equalsExpectation: "suspend")];
+        yield return [SuccessCase.Create(id: "resume_root", command: "resume", paramSpec: "", optionSpec: "", equalsExpectation: "resume")];
 
         // snapshot group
         yield return [SuccessCase.Create(id: "snapshot_save", command: "snapshot save", paramSpec: "name=snap1", optionSpec: "", containsCsv: "save;snap1")];
@@ -202,6 +216,7 @@ public class AllLeafCommandsTests
         yield return [FailureCase.Create(id: "box_add_empty_source_with_flags", command: "box add", paramSpec: "source", optionSpec: "force;clean")];
         yield return [FailureCase.Create(id: "box_add_checksum_type_without_checksum", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum-type=sha256")];
         yield return [FailureCase.Create(id: "box_add_checksum_empty", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=")];
+        yield return [FailureCase.Create(id: "box_add_checksum_placeholder", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum")];
         yield return [FailureCase.Create(id: "box_add_checksum_type_empty", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum-type=")];
         yield return [FailureCase.Create(id: "box_add_checksum_type_unsupported", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=abc;checksum-type=crc32")];
         yield return [FailureCase.Create(id: "box_add_box_version_empty", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "box-version=")];
@@ -214,6 +229,7 @@ public class AllLeafCommandsTests
         yield return [FailureCase.Create(id: "box_remove_name_empty_value", command: "box remove", paramSpec: "name=", optionSpec: "")];
         yield return [FailureCase.Create(id: "box_remove_all_with_box_version", command: "box remove", paramSpec: "name=mybox", optionSpec: "all;box-version=1.0.0")];
         yield return [FailureCase.Create(id: "box_remove_provider_empty", command: "box remove", paramSpec: "name=mybox", optionSpec: "provider=")];
+        yield return [FailureCase.Create(id: "box_remove_provider_placeholder", command: "box remove", paramSpec: "name=mybox", optionSpec: "provider")];
         yield return [FailureCase.Create(id: "box_remove_box_version_empty", command: "box remove", paramSpec: "name=mybox", optionSpec: "box-version=")];
         yield return [FailureCase.Create(id: "box_repackage_none", command: "box repackage", paramSpec: "", optionSpec: "")];
         yield return [FailureCase.Create(id: "box_repackage_missing_provider_version", command: "box repackage", paramSpec: "name=mybox", optionSpec: "")];
@@ -227,16 +243,22 @@ public class AllLeafCommandsTests
         yield return [FailureCase.Create(id: "box_repackage_provider_placeholder", command: "box repackage", paramSpec: "name=mybox;provider;version=1.0.0", optionSpec: "")];
         yield return [FailureCase.Create(id: "box_repackage_name_placeholder", command: "box repackage", paramSpec: "name;provider=virtualbox;version=1.0.0", optionSpec: "")];
         yield return [FailureCase.Create(id: "box_repackage_output_empty", command: "box repackage", paramSpec: "name=mybox;provider=virtualbox;version=1.0.0", optionSpec: "output=")];
+        yield return [FailureCase.Create(id: "box_repackage_output_placeholder", command: "box repackage", paramSpec: "name=mybox;provider=virtualbox;version=1.0.0", optionSpec: "output")];
         yield return [FailureCase.Create(id: "box_update_box_empty", command: "box update", paramSpec: "", optionSpec: "box=")];
+        yield return [FailureCase.Create(id: "box_update_box_placeholder", command: "box update", paramSpec: "", optionSpec: "box")];
         yield return [FailureCase.Create(id: "box_update_provider_empty", command: "box update", paramSpec: "", optionSpec: "provider=")];
+        yield return [FailureCase.Create(id: "box_update_provider_placeholder", command: "box update", paramSpec: "", optionSpec: "provider")];
 
         // init failures
         yield return [FailureCase.Create(id: "init_box_empty", command: "init", paramSpec: "", optionSpec: "box=")];
+        yield return [FailureCase.Create(id: "init_box_placeholder", command: "init", paramSpec: "", optionSpec: "box")];
         yield return [FailureCase.Create(id: "init_output_empty", command: "init", paramSpec: "", optionSpec: "output=")];
+        yield return [FailureCase.Create(id: "init_output_placeholder", command: "init", paramSpec: "", optionSpec: "output")];
 
         // ssh failures
         yield return [FailureCase.Create(id: "ssh_command_both_forms", command: "ssh", paramSpec: "machine=default;command=whoami", optionSpec: "command=whoami")];
         yield return [FailureCase.Create(id: "ssh_command_option_empty", command: "ssh", paramSpec: "machine=default", optionSpec: "command=")];
+        yield return [FailureCase.Create(id: "ssh_command_option_placeholder", command: "ssh", paramSpec: "machine=default", optionSpec: "command")];
         yield return [FailureCase.Create(id: "ssh_command_param_empty", command: "ssh", paramSpec: "machine=default;command=", optionSpec: "")];
         yield return [FailureCase.Create(id: "ssh_config_host_empty", command: "ssh-config", paramSpec: "", optionSpec: "host=")];
         // new placeholder failures
@@ -250,12 +272,17 @@ public class AllLeafCommandsTests
         // reload failures
         yield return [FailureCase.Create(id: "reload_provision_conflict", command: "reload", paramSpec: "", optionSpec: "provision;no-provision")];
         yield return [FailureCase.Create(id: "reload_provider_empty", command: "reload", paramSpec: "", optionSpec: "provider=")];
+        yield return [FailureCase.Create(id: "reload_provider_placeholder", command: "reload", paramSpec: "", optionSpec: "provider")];
 
         // package failures
         yield return [FailureCase.Create(id: "package_output_empty", command: "package", paramSpec: "", optionSpec: "output=")];
+        yield return [FailureCase.Create(id: "package_output_placeholder", command: "package", paramSpec: "", optionSpec: "output")];
         yield return [FailureCase.Create(id: "package_base_empty", command: "package", paramSpec: "", optionSpec: "base=")];
+        yield return [FailureCase.Create(id: "package_base_placeholder", command: "package", paramSpec: "", optionSpec: "base")];
         yield return [FailureCase.Create(id: "package_include_empty", command: "package", paramSpec: "", optionSpec: "include=")];
+        yield return [FailureCase.Create(id: "package_include_placeholder", command: "package", paramSpec: "", optionSpec: "include")];
         yield return [FailureCase.Create(id: "package_vagrantfile_empty", command: "package", paramSpec: "", optionSpec: "vagrantfile=")];
+        yield return [FailureCase.Create(id: "package_vagrantfile_placeholder", command: "package", paramSpec: "", optionSpec: "vagrantfile")];
 
         // snapshot group failures
         yield return [FailureCase.Create(id: "snapshot_save_missing_name", command: "snapshot save", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
@@ -273,6 +300,7 @@ public class AllLeafCommandsTests
         yield return [FailureCase.Create(id: "plugin_install_empty_name", command: "plugin install", paramSpec: "name=", optionSpec: "", expected: "Missing required parameter")];
         yield return [FailureCase.Create(id: "plugin_install_name_placeholder", command: "plugin install", paramSpec: "name", optionSpec: "", expected: "Missing required parameter")];
         yield return [FailureCase.Create(id: "plugin_install_version_empty", command: "plugin install", paramSpec: "name=myplugin", optionSpec: "plugin-version=")];
+        yield return [FailureCase.Create(id: "plugin_install_version_placeholder", command: "plugin install", paramSpec: "name=myplugin", optionSpec: "plugin-version")];
         yield return [FailureCase.Create(id: "plugin_install_version_no_name", command: "plugin install", paramSpec: "", optionSpec: "plugin-version=1.2.3")];
         yield return [FailureCase.Create(id: "plugin_uninstall_missing_name", command: "plugin uninstall", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
         yield return [FailureCase.Create(id: "plugin_uninstall_empty_name", command: "plugin uninstall", paramSpec: "name=", optionSpec: "", expected: "Missing required parameter")];
