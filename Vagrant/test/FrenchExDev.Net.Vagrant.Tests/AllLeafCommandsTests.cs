@@ -20,6 +20,7 @@ public class AllLeafCommandsTests
         yield return [SuccessCase.Create(id: "up_color_only", command: "up", paramSpec: "", optionSpec: "color=true", containsCsv: "--color true")];
         yield return [SuccessCase.Create(id: "up_color_flag_only", command: "up", paramSpec: "", optionSpec: "color", containsCsv: "--color")];
         yield return [SuccessCase.Create(id: "up_color_false", command: "up", paramSpec: "", optionSpec: "color=false", containsCsv: "--color false")];
+        yield return [SuccessCase.Create(id: "up_color_auto", command: "up", paramSpec: "", optionSpec: "color=auto", containsCsv: "--color auto")];
         yield return [SuccessCase.Create(id: "up_destroy_on_error", command: "up", paramSpec: "", optionSpec: "destroy-on-error", containsCsv: "--destroy-on-error")];
         yield return [SuccessCase.Create(id: "up_with_provision", command: "up", paramSpec: "", optionSpec: "provision", containsCsv: "--provision")];
         yield return [SuccessCase.Create(id: "up_with_no_provision", command: "up", paramSpec: "", optionSpec: "no-provision", containsCsv: "--no-provision")];
@@ -31,15 +32,21 @@ public class AllLeafCommandsTests
         yield return [SuccessCase.Create(id: "box_add_checksum_only", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=abc123", containsCsv: "--checksum abc123")];
         yield return [SuccessCase.Create(id: "box_add_checksum_sha1", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=aa11;checksum-type=sha1", containsCsv: "--checksum aa11;--checksum-type sha1")];
         yield return [SuccessCase.Create(id: "box_add_checksum_md5", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=bb22;checksum-type=md5", containsCsv: "--checksum bb22;--checksum-type md5")];
+        yield return [SuccessCase.Create(id: "box_add_checksum_min", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=xyz;checksum-type=sha256", containsCsv: "--checksum xyz;--checksum-type sha256")];
         yield return [SuccessCase.Create(id: "box_add_full", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=123;checksum-type=sha256;box-version=1.0.0;name=bionic;clean;force", containsCsv: "--checksum 123;--checksum-type sha256;--box-version 1.0.0;--name bionic;--clean;--force;hashicorp/bionic64")];
         yield return [SuccessCase.Create(id: "box_remove_basic", command: "box remove", paramSpec: "name=mybox", optionSpec: "", containsCsv: "remove;mybox")];
         yield return [SuccessCase.Create(id: "box_remove_with_provider", command: "box remove", paramSpec: "name=mybox", optionSpec: "provider=virtualbox", containsCsv: "--provider virtualbox")];
         yield return [SuccessCase.Create(id: "box_remove_with_box_version", command: "box remove", paramSpec: "name=mybox", optionSpec: "box-version=2.0.0", containsCsv: "--box-version 2.0.0")];
         yield return [SuccessCase.Create(id: "box_remove_force_only", command: "box remove", paramSpec: "name=mybox", optionSpec: "force", containsCsv: "--force")];
         yield return [SuccessCase.Create(id: "box_remove_all", command: "box remove", paramSpec: "name=mybox", optionSpec: "all", containsCsv: "--all")];
-        yield return [SuccessCase.Create(id: "box_remove_full", command: "box remove", paramSpec: "name=mybox", optionSpec: "provider=virtualbox;box-version=1.2.3;force;all", containsCsv: "--provider virtualbox;--box-version 1.2.3;--force;--all;mybox")];
+        // removed full success case since --all + --box-version invalid per validation
+        // yield return [SuccessCase.Create(id: "box_remove_full", command: "box remove", paramSpec: "name=mybox", optionSpec: "provider=virtualbox;box-version=1.2.3;force;all", containsCsv: "--provider virtualbox;--box-version 1.2.3;--force;--all;mybox")];
         yield return [SuccessCase.Create(id: "box_list", command: "box list", paramSpec: "", optionSpec: "", equalsExpectation: "box list")];
+        yield return [SuccessCase.Create(id: "box_list_provider", command: "box list", paramSpec: "", optionSpec: "provider=virtualbox", containsCsv: "--provider virtualbox")];
+        yield return [SuccessCase.Create(id: "box_list_force", command: "box list", paramSpec: "", optionSpec: "force", containsCsv: "--force")];
+        yield return [SuccessCase.Create(id: "box_list_provider_force", command: "box list", paramSpec: "", optionSpec: "provider=virtualbox;force", containsCsv: "--provider virtualbox;--force")];
         yield return [SuccessCase.Create(id: "box_outdated", command: "box outdated", paramSpec: "", optionSpec: "", equalsExpectation: "box outdated")];
+        yield return [SuccessCase.Create(id: "box_outdated_provider", command: "box outdated", paramSpec: "", optionSpec: "provider=virtualbox", containsCsv: "--provider virtualbox")];
         yield return [SuccessCase.Create(id: "box_outdated_global", command: "box outdated", paramSpec: "", optionSpec: "global", containsCsv: "--global")];
         yield return [SuccessCase.Create(id: "box_outdated_insecure", command: "box outdated", paramSpec: "", optionSpec: "insecure", containsCsv: "--insecure")];
         yield return [SuccessCase.Create(id: "box_outdated_both", command: "box outdated", paramSpec: "", optionSpec: "global;insecure", containsCsv: "--global;--insecure")];
@@ -47,6 +54,7 @@ public class AllLeafCommandsTests
         yield return [SuccessCase.Create(id: "box_prune_force", command: "box prune", paramSpec: "", optionSpec: "force", containsCsv: "--force")];
         yield return [SuccessCase.Create(id: "box_prune_force_dry", command: "box prune", paramSpec: "", optionSpec: "dry-run;force", containsCsv: "--dry-run;--force")];
         yield return [SuccessCase.Create(id: "box_prune_keep_active_provider", command: "box prune", paramSpec: "", optionSpec: "keep-active-provider", containsCsv: "--keep-active-provider")];
+        yield return [SuccessCase.Create(id: "box_prune_full", command: "box prune", paramSpec: "", optionSpec: "dry-run;keep-active-provider;force", containsCsv: "--dry-run;--keep-active-provider;--force")];
         yield return [SuccessCase.Create(id: "box_repackage", command: "box repackage", paramSpec: "name=mybox;provider=virtualbox;version=1.0.0", optionSpec: "", equalsExpectation: "box repackage mybox virtualbox 1.0.0")];
         yield return [SuccessCase.Create(id: "box_repackage_output", command: "box repackage", paramSpec: "name=mybox;provider=virtualbox;version=1.0.0", optionSpec: "output=out.box", containsCsv: "--output out.box")];
         yield return [SuccessCase.Create(id: "box_update", command: "box update", paramSpec: "", optionSpec: "box=alpine", containsCsv: "--box alpine")];
@@ -64,26 +72,34 @@ public class AllLeafCommandsTests
         // other root commands
         yield return [SuccessCase.Create(id: "halt", command: "halt", paramSpec: "", optionSpec: "", equalsExpectation: "halt")];
         yield return [SuccessCase.Create(id: "halt_force", command: "halt", paramSpec: "", optionSpec: "force", containsCsv: "--force")];
+        yield return [SuccessCase.Create(id: "halt_multi_machines", command: "halt", paramSpec: "machine=default,db", optionSpec: "force", containsCsv: "default;db")];
         yield return [SuccessCase.Create(id: "destroy", command: "destroy", paramSpec: "", optionSpec: "", equalsExpectation: "destroy")];
         yield return [SuccessCase.Create(id: "destroy_force", command: "destroy", paramSpec: "", optionSpec: "force", containsCsv: "--force")];
         yield return [SuccessCase.Create(id: "destroy_graceful", command: "destroy", paramSpec: "", optionSpec: "graceful", containsCsv: "--graceful")];
+        yield return [SuccessCase.Create(id: "destroy_multi_machines", command: "destroy", paramSpec: "machine=default,db", optionSpec: "force", containsCsv: "default;db")];
         yield return [SuccessCase.Create(id: "status", command: "status", paramSpec: "", optionSpec: "", equalsExpectation: "status")];
         yield return [SuccessCase.Create(id: "status_machine_readable", command: "status", paramSpec: "", optionSpec: "machine-readable", containsCsv: "--machine-readable")];
         yield return [SuccessCase.Create(id: "status_machine_param", command: "status", paramSpec: "machine=default", optionSpec: "", containsCsv: "default")];
+        yield return [SuccessCase.Create(id: "status_multi_machines", command: "status", paramSpec: "machine=default,db", optionSpec: "", containsCsv: "default;db")];
         yield return [SuccessCase.Create(id: "ssh_machine", command: "ssh", paramSpec: "machine=default", optionSpec: "", containsCsv: "ssh;default")];
         yield return [SuccessCase.Create(id: "ssh_command_param_form", command: "ssh", paramSpec: "machine=default;command=whoami", optionSpec: "", containsCsv: "whoami")];
         yield return [SuccessCase.Create(id: "ssh_command_option_form", command: "ssh", paramSpec: "machine=default", optionSpec: "command=whoami", containsCsv: "--command whoami")];
+        yield return [SuccessCase.Create(id: "ssh_command_option_plain", command: "ssh", paramSpec: "machine=default", optionSpec: "command=whoami;plain", containsCsv: "--command whoami;--plain")];
         yield return [SuccessCase.Create(id: "ssh_plain", command: "ssh", paramSpec: "machine=default", optionSpec: "plain", containsCsv: "--plain")];
         yield return [SuccessCase.Create(id: "ssh_config_basic", command: "ssh-config", paramSpec: "", optionSpec: "", equalsExpectation: "ssh-config")];
         yield return [SuccessCase.Create(id: "ssh_config_machine", command: "ssh-config", paramSpec: "machine=default", optionSpec: "", containsCsv: "default")];
         yield return [SuccessCase.Create(id: "ssh_config_host", command: "ssh-config", paramSpec: "", optionSpec: "host=myhost", containsCsv: "--host myhost")];
+        yield return [SuccessCase.Create(id: "ssh_config_machine_host", command: "ssh-config", paramSpec: "machine=default", optionSpec: "host=myhost", containsCsv: "default;--host myhost")];
         yield return [SuccessCase.Create(id: "provision", command: "provision", paramSpec: "", optionSpec: "", equalsExpectation: "provision")];
         yield return [SuccessCase.Create(id: "provision_with", command: "provision", paramSpec: "", optionSpec: "provision-with=shell", containsCsv: "--provision-with shell")];
         yield return [SuccessCase.Create(id: "provision_machine", command: "provision", paramSpec: "machine=default", optionSpec: "", containsCsv: "default")];
+        yield return [SuccessCase.Create(id: "provision_machine_with", command: "provision", paramSpec: "machine=default", optionSpec: "provision-with=shell", containsCsv: "default;--provision-with shell")];
         yield return [SuccessCase.Create(id: "reload", command: "reload", paramSpec: "", optionSpec: "", equalsExpectation: "reload")];
         yield return [SuccessCase.Create(id: "reload_provider", command: "reload", paramSpec: "", optionSpec: "provider=virtualbox", containsCsv: "--provider virtualbox")];
         yield return [SuccessCase.Create(id: "reload_provision", command: "reload", paramSpec: "", optionSpec: "provision", containsCsv: "--provision")];
         yield return [SuccessCase.Create(id: "reload_no_provision", command: "reload", paramSpec: "", optionSpec: "no-provision", containsCsv: "--no-provision")];
+        yield return [SuccessCase.Create(id: "reload_provider_provision", command: "reload", paramSpec: "", optionSpec: "provider=virtualbox;provision", containsCsv: "--provider virtualbox;--provision")];
+        yield return [SuccessCase.Create(id: "reload_multi_machines_provider", command: "reload", paramSpec: "machine=default,db", optionSpec: "provider=virtualbox", containsCsv: "default;db;--provider virtualbox")];
         yield return [SuccessCase.Create(id: "validate", command: "validate", paramSpec: "", optionSpec: "", equalsExpectation: "validate")];
         yield return [SuccessCase.Create(id: "global_status", command: "global-status", paramSpec: "", optionSpec: "", equalsExpectation: "global-status")];
         yield return [SuccessCase.Create(id: "global_status_prune", command: "global-status", paramSpec: "", optionSpec: "prune", containsCsv: "--prune")];
@@ -139,6 +155,7 @@ public class AllLeafCommandsTests
         yield return [FailureCase.Create(id: "up_provision_conflict", command: "up", paramSpec: "", optionSpec: "provision;no-provision")];
         yield return [FailureCase.Create(id: "up_provider_empty", command: "up", paramSpec: "", optionSpec: "provider=")];
         yield return [FailureCase.Create(id: "up_color_invalid", command: "up", paramSpec: "", optionSpec: "color=purple")];
+        yield return [FailureCase.Create(id: "up_color_empty", command: "up", paramSpec: "", optionSpec: "color=")];
         yield return [FailureCase.Create(id: "up_machine_empty_value", command: "up", paramSpec: "machine=", optionSpec: "")];
         yield return [FailureCase.Create(id: "up_machine_placeholder", command: "up", paramSpec: "machine", optionSpec: "")];
 
@@ -152,6 +169,7 @@ public class AllLeafCommandsTests
         yield return [FailureCase.Create(id: "box_add_checksum_type_without_checksum", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum-type=sha256")];
         yield return [FailureCase.Create(id: "box_add_checksum_empty", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=")];
         yield return [FailureCase.Create(id: "box_add_checksum_type_empty", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum-type=")];
+        yield return [FailureCase.Create(id: "box_add_checksum_type_unsupported", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=abc;checksum-type=crc32")];
         yield return [FailureCase.Create(id: "box_add_box_version_empty", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "box-version=")];
         yield return [FailureCase.Create(id: "box_remove_missing_name", command: "box remove", paramSpec: "", optionSpec: "")];
         yield return [FailureCase.Create(id: "box_remove_missing_name_with_provider", command: "box remove", paramSpec: "", optionSpec: "provider=virtualbox")];
@@ -172,6 +190,7 @@ public class AllLeafCommandsTests
         yield return [FailureCase.Create(id: "box_repackage_provider_empty_value", command: "box repackage", paramSpec: "name=mybox;provider=;version=1.0.0", optionSpec: "")];
         yield return [FailureCase.Create(id: "box_repackage_provider_placeholder", command: "box repackage", paramSpec: "name=mybox;provider;version=1.0.0", optionSpec: "")];
         yield return [FailureCase.Create(id: "box_repackage_name_placeholder", command: "box repackage", paramSpec: "name;provider=virtualbox;version=1.0.0", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_repackage_output_empty", command: "box repackage", paramSpec: "name=mybox;provider=virtualbox;version=1.0.0", optionSpec: "output=")];
         yield return [FailureCase.Create(id: "box_update_box_empty", command: "box update", paramSpec: "", optionSpec: "box=")];
         yield return [FailureCase.Create(id: "box_update_provider_empty", command: "box update", paramSpec: "", optionSpec: "provider=")];
 
@@ -198,7 +217,7 @@ public class AllLeafCommandsTests
         yield return [FailureCase.Create(id: "package_include_empty", command: "package", paramSpec: "", optionSpec: "include=")];
         yield return [FailureCase.Create(id: "package_vagrantfile_empty", command: "package", paramSpec: "", optionSpec: "vagrantfile=")];
 
-        // snapshot group failures (existing)
+        // snapshot group failures
         yield return [FailureCase.Create(id: "snapshot_save_missing_name", command: "snapshot save", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
         yield return [FailureCase.Create(id: "snapshot_save_empty_name", command: "snapshot save", paramSpec: "name=", optionSpec: "", expected: "Missing required parameter")];
         yield return [FailureCase.Create(id: "snapshot_save_name_placeholder", command: "snapshot save", paramSpec: "name", optionSpec: "", expected: "Missing required parameter")];
@@ -209,7 +228,7 @@ public class AllLeafCommandsTests
         yield return [FailureCase.Create(id: "snapshot_delete_empty_name", command: "snapshot delete", paramSpec: "name=", optionSpec: "", expected: "Missing required parameter")];
         yield return [FailureCase.Create(id: "snapshot_delete_name_placeholder", command: "snapshot delete", paramSpec: "name", optionSpec: "", expected: "Missing required parameter")];
 
-        // plugin group failures (existing + new)
+        // plugin group failures
         yield return [FailureCase.Create(id: "plugin_install_missing_name", command: "plugin install", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
         yield return [FailureCase.Create(id: "plugin_install_empty_name", command: "plugin install", paramSpec: "name=", optionSpec: "", expected: "Missing required parameter")];
         yield return [FailureCase.Create(id: "plugin_install_name_placeholder", command: "plugin install", paramSpec: "name", optionSpec: "", expected: "Missing required parameter")];
@@ -218,6 +237,7 @@ public class AllLeafCommandsTests
         yield return [FailureCase.Create(id: "plugin_uninstall_missing_name", command: "plugin uninstall", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
         yield return [FailureCase.Create(id: "plugin_uninstall_empty_name", command: "plugin uninstall", paramSpec: "name=", optionSpec: "", expected: "Missing required parameter")];
         yield return [FailureCase.Create(id: "plugin_uninstall_name_placeholder", command: "plugin uninstall", paramSpec: "name", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "box_remove_full_invalid_combo", command: "box remove", paramSpec: "name=mybox", optionSpec: "provider=virtualbox;box-version=1.2.3;force;all")];
     }
 
     [Theory]

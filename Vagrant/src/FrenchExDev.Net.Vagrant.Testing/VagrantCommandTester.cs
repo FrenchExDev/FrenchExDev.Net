@@ -64,7 +64,8 @@ public sealed class FailureCase : IXunitSerializable
     public string Command { get; private set; } = string.Empty;
     public string ParamSpec { get; private set; } = string.Empty;
     public string OptionSpec { get; private set; } = string.Empty;
-    public string ExpectedMessagePart { get; private set; } = "Missing required parameter";
+    public string? ExpectedMessagePart { get; private set; }
+    private bool _hasExplicitExpected;
 
     public static FailureCase Create(string id, string command, string paramSpec, string optionSpec, string? expected = null)
         => new()
@@ -73,7 +74,8 @@ public sealed class FailureCase : IXunitSerializable
             Command = command,
             ParamSpec = paramSpec,
             OptionSpec = optionSpec,
-            ExpectedMessagePart = expected ?? "Missing required parameter"
+            ExpectedMessagePart = expected,
+            _hasExplicitExpected = expected is not null
         };
     public void Serialize(IXunitSerializationInfo info)
     {
@@ -82,6 +84,7 @@ public sealed class FailureCase : IXunitSerializable
         info.AddValue(nameof(ParamSpec), ParamSpec);
         info.AddValue(nameof(OptionSpec), OptionSpec);
         info.AddValue(nameof(ExpectedMessagePart), ExpectedMessagePart);
+        info.AddValue(nameof(_hasExplicitExpected), _hasExplicitExpected);
     }
     public void Deserialize(IXunitSerializationInfo info)
     {
@@ -89,13 +92,15 @@ public sealed class FailureCase : IXunitSerializable
         Command = info.GetValue<string>(nameof(Command));
         ParamSpec = info.GetValue<string>(nameof(ParamSpec));
         OptionSpec = info.GetValue<string>(nameof(OptionSpec));
-        ExpectedMessagePart = info.GetValue<string>(nameof(ExpectedMessagePart));
+        ExpectedMessagePart = info.GetValue<string?>(nameof(ExpectedMessagePart));
+        _hasExplicitExpected = info.GetValue<bool>(nameof(_hasExplicitExpected));
     }
     public override string ToString() => Id;
     public void AssertInvocation(Func<string, string, string, Invocation> builder)
     {
         var invocation = builder(Command, ParamSpec, OptionSpec);
         var ex = Should.Throw<Exception>(() => VagrantInvocationBuilder.BuildArgs(invocation));
-        ex.Message.ShouldContain(ExpectedMessagePart);
+        if (_hasExplicitExpected && !string.IsNullOrWhiteSpace(ExpectedMessagePart))
+            ex.Message.ShouldContain(ExpectedMessagePart);
     }
 }

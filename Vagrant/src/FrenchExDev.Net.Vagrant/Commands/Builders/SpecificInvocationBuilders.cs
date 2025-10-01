@@ -23,10 +23,15 @@ public sealed class UpInvocationBuilder : VagrantInvocationBuilderBase<UpInvocat
             failures.Failure("Options", new InvalidDataException("Options --provision and --no-provision are mutually exclusive."));
         if (_options.TryGetValue("provider", out var prov) && string.IsNullOrWhiteSpace(prov))
             failures.Failure("Options", new InvalidDataException("--provider cannot be empty"));
-        if (_options.TryGetValue("color", out var colorVal) && colorVal is not null &&
-            !(string.Equals(colorVal, "true", StringComparison.OrdinalIgnoreCase) || string.Equals(colorVal, "false", StringComparison.OrdinalIgnoreCase)))
-            failures.Failure("Options", new InvalidDataException("--color value must be 'true' or 'false' when specified"));
-        if (_parameters.TryGetValue("machine", out var mvals) && mvals.Any(v => string.IsNullOrWhiteSpace(v)))
+        if (_options.TryGetValue("color", out var colorVal) && colorVal is not null)
+        {
+            var allowed = new[] {"true","false","auto"};
+            if (!allowed.Contains(colorVal, StringComparer.OrdinalIgnoreCase))
+                failures.Failure("Options", new InvalidDataException("--color value must be 'true', 'false' or 'auto' when specified"));
+            if (string.IsNullOrWhiteSpace(colorVal))
+                failures.Failure("Options", new InvalidDataException("--color cannot be empty"));
+        }
+        if (_parameters.TryGetValue("machine", out var mvals) && (mvals.Length == 0 || mvals.Any(v => string.IsNullOrWhiteSpace(v))))
             failures.Failure("Parameters", new InvalidDataException("Machine names cannot be empty"));
     }
 }
