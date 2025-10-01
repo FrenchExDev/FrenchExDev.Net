@@ -6,165 +6,6 @@ using System.Globalization;
 
 namespace FrenchExDev.Net.Packer.Alpine.Abstractions;
 
-public interface IPipeline<T> where T : class
-{
-    void Execute(T target);
-}
-
-public class Pipeline<T> : IPipeline<T> where T : class
-{
-    private readonly List<IAspect<T>> _aspects = new();
-    public Pipeline<T> AddAspect(IAspect<T> aspect)
-    {
-        _aspects.Add(aspect);
-        return this;
-    }
-    protected void ApplyAspects(T target)
-    {
-        foreach (var aspect in _aspects)
-        {
-            aspect.Apply(target);
-        }
-    }
-    public void Execute(T target)
-    {
-        ApplyAspects(target);
-    }
-}
-
-public interface IAspect<T> where T : class
-{
-    void Apply(T target);
-}
-
-public class ProvisioningAspect : IAspect<PackerBundleBuilder>
-{
-    public void Apply(PackerBundleBuilder target)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public class BootCommandList : List<string> { }
-
-public static class AlpineSettings
-{
-    public static BootCommandList DefaultBootCommands { get; } = new()
-    {
-        "root<enter><wait>",
-        "ifconfig eth0 up && udhcpc -i eth0<enter><wait5>",
-        "wget -O $PWD/answers http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers<enter><wait>",
-        "export USEROPTS='-a -u -g audio,video,netdev {{user `ssh_username`}}'<enter>",
-        "export USERSSHKEY='http://{{ .HTTPIP }}:{{ .HTTPPort }}/ssh.keys'<enter>",
-        "setup-alpine -f $PWD/answers<enter><wait5>",
-        "{{user `root_password`}}<enter><wait>",
-        "{{user `root_password`}}<enter><wait10>",
-        "mount /dev/sda3 /mnt<enter>",
-        "echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config<enter>",
-        "umount /mnt; reboot<enter>"
-    };
-
-    public static VirtualBoxModifyVmList DefaultVirtualBoxModifyVmList { get; } = new()
-    {
-        { "--memory", "{{user `memory`}}" } ,
-        { "--cpus", "{{user `cpus`}}" },
-        { "--nat-localhostreachable1", "on" },
-        { "--vram", "{{user `vmemory`}}" },
-        { "--natdnshostresolver1", "on" },
-        { "--ioapic", "on" },
-        { "--hwvirtex", "on"} ,
-        { "--hpet", "off" },
-        { "--largepages", "on" },
-        { "--vtxvpid", "on" },
-        { "--vtxux", "on" },
-        { "--pae", "on" },
-        { "--acpi", "on"} ,
-        { "--pagefusion", "on" },
-        { "--chipset", "ich9" },
-        { "--vrde", "off" },
-        { "--usb", "off" },
-        { "--nested-hw-virt", "on" },
-        { "--nestedpaging", "on"},
-        { "--ostype", "Linux_x64" },
-        { "--graphicscontroller", "vmsvga" }
-    };
-}
-
-public class VirtualBoxModifyVmList : Dictionary<string, string> { }
-
-public class IsoUrlList : List<string> { }
-
-public class VirtualBoxIsoBuilderAspect : IAspect<PackerBuilderBuilder>
-{
-    public class Setting
-    {
-        public required BootCommandList BootCommand { get; init; }
-        public required VirtualBoxModifyVmList ModifyVmList { get; init; }
-        public required IsoUrlList IsoUrlList { get; init; }
-        public string DiskSize = "";
-    }
-
-    public void Apply(PackerBuilderBuilder target)
-    {
-        target.Type("virtualbox-iso");
-
-        foreach (var bootCommand in AlpineSettings.DefaultBootCommands)
-        {
-            target.AddBootCommand(bootCommand);
-        }
-
-        foreach (var modifyVm in AlpineSettings.DefaultVirtualBoxModifyVmList)
-        {
-            target.ModifyVm(modifyVm.Key, modifyVm.Value);
-        }
-
-        target
-            .BootWait("10s")
-            .Communicator("ssh")
-            .DiskSize("{{ user `disk_size` }}")
-            .Format("ova")
-            .GuestOsType("Linux_64")
-            .Headless(false)
-            .HttpDirectory("http")
-            .IsoChecksum("{{user `iso_checksum_type`}}:{{user `iso_checksum`}}")
-            .AddIsoUrl("{{user `iso_local_url`}}")
-            .AddIsoUrl("{{user `iso_download_url`}}")
-            .GuestAdditionUrl("https://download.virtualbox.org/virtualbox/{{user `vbox_version`}}/VBoxGuestAdditions_{{user `vbox_version`}}.iso")
-            .GuestAdditionSha256("{{user `vbox_guest_additions_iso_sha256`}}")
-            .GuestAdditionPath("VBoxGuestAdditions.iso")
-            .GuestAdditionMode("upload")
-            .VirtualBoxVersionFile("VBoxVersion.txt")
-            .KeepRegistered("false")
-            .ShutdownCommand("/sbin/poweroff")
-            .SshPassword("{{user `root_password` }}")
-            .SshTimeout("10m")
-            .SshUsername("root")
-            .KeepRegistered("true")
-            .ModifyProperty("hwvirtexclusive", "on")
-            .ModifyVmIf(() => !OperatingSystem.IsWindows(), "--biosapic", "x2apic")
-            .ModifyVmIf(OperatingSystem.IsLinux, "--biosapic", "x2apic")
-            .ModifyVmIf(OperatingSystem.IsLinux, "--paravirtprovider", "kvm")
-            .ModifyVmIf(OperatingSystem.IsWindows, "--paravirtprovider", "kvm")
-            .ModifyVmIf(OperatingSystem.IsMacOS, "--paravirtprovider", "minimum")
-            .ModifyStorageController("SATA Controller", "--hostiocache", "off")
-            .ModifyStorageAttach("SATA Controller", 0, "--nonrotational", "on")
-            .ModifyStorageAttach("SATA Controller", 0, "--discard", "on")
-            .SetExtraData("VBoxInternal/Devices/ahci/0/Config/Port0/NonRotational", "1")
-            .VmName("{{user `vm_name`}}")
-            .HardDriveDiscard()
-            .HardDriveInterface("sata");
-    }
-}
-public class VagrantOutputAspect : IAspect<PackerBuilderBuilder>
-{
-    public void Apply(PackerBuilderBuilder target)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-
-
 /// <summary>
 /// Provides a builder for creating Packer bundles that generate Alpine Linux Vagrant boxes using VirtualBox. This class
 /// enables configuration of build parameters and scripts for automated image provisioning.
@@ -173,22 +14,21 @@ public class VagrantOutputAspect : IAspect<PackerBuilderBuilder>
 /// provisioning scripts, VM settings, and output options. The builder supports chaining configuration methods and
 /// requires a valid command object to specify build details. Thread safety is not guaranteed; use separate instances
 /// for concurrent builds.</remarks>
-public class AlpinePackerVirtualBoxVagrantBundleBuilder : AbstractBuilder<PackerBundle>
+public class PackerAlpineVirtualBoxVagrantBundleBuilder : AbstractBuilder<PackerBundle>
 {
     /// <summary>
     /// Initializes a new instance of the AlpinePackerVagrantBundleBuilder class and performs required pre-build setup.
     /// </summary>
     /// <remarks>The constructor automatically invokes pre-build logic to ensure the builder is ready for use
     /// immediately after instantiation. This setup is performed only once per instance.</remarks>
-    public AlpinePackerVirtualBoxVagrantBundleBuilder()
+    public PackerAlpineVirtualBoxVagrantBundleBuilder()
     {
-        PreBuild();
     }
 
     /// <summary>
     /// Holds the internal Packer bundle builder instance used to construct the final Packer bundle.
     /// </summary>
-    private readonly PackerBundleBuilder _builder = new();
+    private PackerBundleBuilder _builder = new();
 
     /// <summary>
     /// Holds the command object containing configuration parameters for the build process.
@@ -201,10 +41,17 @@ public class AlpinePackerVirtualBoxVagrantBundleBuilder : AbstractBuilder<Packer
     /// <remarks>This method enables fluent configuration of the bundle builder by allowing multiple setup
     /// calls in a single statement.</remarks>
     /// <param name="command">The command to configure for execution. Cannot be null.</param>
-    /// <returns>The current instance of <see cref="AlpinePackerVirtualBoxVagrantBundleBuilder"/> to allow method chaining.</returns>
-    public AlpinePackerVirtualBoxVagrantBundleBuilder Command(AlpinePackerVagrantBundleCommand command)
+    /// <returns>The current instance of <see cref="PackerAlpineVirtualBoxVagrantBundleBuilder"/> to allow method chaining.</returns>
+    public PackerAlpineVirtualBoxVagrantBundleBuilder Command(AlpinePackerVagrantBundleCommand command)
     {
         _command = command;
+        return this;
+    }
+
+    public PackerAlpineVirtualBoxVagrantBundleBuilder Compose(PackerBundleBuilder builder)
+    {
+        _builder = builder;
+        PreBuild();
         return this;
     }
 
@@ -216,8 +63,8 @@ public class AlpinePackerVirtualBoxVagrantBundleBuilder : AbstractBuilder<Packer
     /// the Alpine Vagrant image. It must be called before initiating the build to ensure the resulting bundle is
     /// correctly configured. The method will throw an <see cref="ArgumentNullException"/> if the command configuration
     /// is not initialized.</remarks>
-    /// <returns>The current instance of <see cref="AlpinePackerVirtualBoxVagrantBundleBuilder"/> with all pre-build configuration applied.</returns>
-    protected AlpinePackerVirtualBoxVagrantBundleBuilder PreBuild()
+    /// <returns>The current instance of <see cref="PackerAlpineVirtualBoxVagrantBundleBuilder"/> with all pre-build configuration applied.</returns>
+    protected PackerAlpineVirtualBoxVagrantBundleBuilder PreBuild()
     {
         ArgumentNullException.ThrowIfNull(_command);
 
@@ -236,77 +83,76 @@ public class AlpinePackerVirtualBoxVagrantBundleBuilder : AbstractBuilder<Packer
                     .Builder(builderBuilder =>
                     {
                         builderBuilder
-                                .Type("virtualbox-iso")
-                                .AddBootCommand("root<enter><wait>")
-                                .AddBootCommand("ifconfig eth0 up && udhcpc -i eth0<enter><wait5>")
-                                .AddBootCommand(
-                                    "wget -O $PWD/answers http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers<enter><wait>")
-                                .AddBootCommand(
-                                    "export USEROPTS='-a -u -g audio,video,netdev {{user `ssh_username`}}'<enter>")
-                                .AddBootCommand(
-                                    "export USERSSHKEY='http://{{ .HTTPIP }}:{{ .HTTPPort }}/ssh.keys'<enter>")
-                                .AddBootCommand("setup-alpine -f $PWD/answers<enter><wait5>")
-                                .AddBootCommand("{{user `root_password`}}<enter><wait>")
-                                .AddBootCommand("{{user `root_password`}}<enter><wait10>")
-                                .AddBootCommand("mount /dev/sda3 /mnt<enter>")
-                                .AddBootCommand("echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config<enter>")
-                                .AddBootCommand("umount /mnt; reboot<enter>")
-                                .BootWait("10s")
-                                .Communicator("ssh")
-                                .DiskSize("{{ user `disk_size` }}")
-                                .Format("ova")
-                                .GuestOsType("Linux_64")
-                                .Headless(false)
-                                .HttpDirectory("http")
-                                .IsoChecksum("{{user `iso_checksum_type`}}:{{user `iso_checksum`}}")
-                                .AddIsoUrl("{{user `iso_local_url`}}")
-                                .AddIsoUrl("{{user `iso_download_url`}}")
-                                .GuestAdditionUrl(
-                                    "https://download.virtualbox.org/virtualbox/{{user `vbox_version`}}/VBoxGuestAdditions_{{user `vbox_version`}}.iso")
-                                .GuestAdditionSha256("{{user `vbox_guest_additions_iso_sha256`}}")
-                                .GuestAdditionPath("VBoxGuestAdditions.iso")
-                                .GuestAdditionMode("upload")
-                                .VirtualBoxVersionFile("VBoxVersion.txt")
-                                .KeepRegistered("false")
-                                .ShutdownCommand("/sbin/poweroff")
-                                .SshPassword("{{user `root_password` }}")
-                                .SshTimeout("10m")
-                                .SshUsername("root")
-                                .KeepRegistered("true")
-                                .ModifyVm("--memory", "{{user `memory`}}")
-                                .ModifyVm("--cpus", "{{user `cpus`}}")
-                                .ModifyVm("--nat-localhostreachable1", "on")
-                                .ModifyVm("--vram", "{{user `vmemory`}}")
-                                .ModifyVm("--natdnshostresolver1", "on")
-                                .ModifyVm("--ioapic", "on")
-                                .ModifyVm("--hwvirtex", "on")
-                                .ModifyVm("--hpet", "off")
-                                .ModifyVm("--largepages", "on")
-                                .ModifyVm("--vtxvpid", "on")
-                                .ModifyVm("--vtxux", "on")
-                                .ModifyVm("--pae", "on")
-                                .ModifyVm("--acpi", "on")
-                                .ModifyVm("--pagefusion", "on")
-                                .ModifyVm("--chipset", "ich9")
-                                .ModifyVm("--vrde", "off")
-                                .ModifyVm("--usb", "off")
-                                .ModifyVm("--nested-hw-virt", "on")
-                                .ModifyVm("--nestedpaging", "on")
-                                .ModifyVm("--ostype", "Linux_x64")
-                                .ModifyVm("--graphicscontroller", "vmsvga")
-                                .ModifyProperty("hwvirtexclusive", "on")
-                                .ModifyVmIf(() => !OperatingSystem.IsWindows(), "--biosapic", "x2apic")
-                                .ModifyVmIf(OperatingSystem.IsLinux, "--biosapic", "x2apic")
-                                .ModifyVmIf(OperatingSystem.IsLinux, "--paravirtprovider", "kvm")
-                                .ModifyVmIf(OperatingSystem.IsWindows, "--paravirtprovider", "kvm")
-                                .ModifyVmIf(OperatingSystem.IsMacOS, "--paravirtprovider", "minimum")
-                                .ModifyStorageController("SATA Controller", "--hostiocache", "off")
-                                .ModifyStorageAttach("SATA Controller", 0, "--nonrotational", "on")
-                                .ModifyStorageAttach("SATA Controller", 0, "--discard", "on")
-                                .SetExtraData("VBoxInternal/Devices/ahci/0/Config/Port0/NonRotational", "1")
-                                .VmName("{{user `vm_name`}}")
-                                .HardDriveDiscard()
-                                .HardDriveInterface("sata");
+                            .AddBootCommand("root<enter><wait>")
+                            .AddBootCommand("ifconfig eth0 up && udhcpc -i eth0<enter><wait5>")
+                            .AddBootCommand(
+                                "wget -O $PWD/answers http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers<enter><wait>")
+                            .AddBootCommand(
+                                "export USEROPTS='-a -u -g audio,video,netdev {{user `ssh_username`}}'<enter>")
+                            .AddBootCommand("export USERSSHKEY='http://{{ .HTTPIP }}:{{ .HTTPPort }}/ssh.keys'<enter>")
+                            .AddBootCommand("setup-alpine -f $PWD/answers<enter><wait5>")
+                            .AddBootCommand("{{user `root_password`}}<enter><wait>")
+                            .AddBootCommand("{{user `root_password`}}<enter><wait10>")
+                            .AddBootCommand("mount /dev/sda3 /mnt<enter>")
+                            .AddBootCommand("echo 'PermitRootLogin yes' >> /mnt/etc/ssh/sshd_config<enter>")
+                            .AddBootCommand("umount /mnt; reboot<enter>")
+                            .BootWait("10s")
+                            .Communicator("ssh")
+                            .DiskSize("{{ user `disk_size` }}")
+                            .Format("ova")
+                            .GuestOsType("Linux_64")
+                            .Headless(false)
+                            .HttpDirectory("http")
+                            .IsoChecksum("{{user `iso_checksum_type`}}:{{user `iso_checksum`}}")
+                            .AddIsoUrl("{{user `iso_local_url`}}")
+                            .AddIsoUrl("{{user `iso_download_url`}}")
+                            .GuestAdditionUrl(
+                                "https://download.virtualbox.org/virtualbox/{{user `vbox_version`}}/VBoxGuestAdditions_{{user `vbox_version`}}.iso")
+                            .GuestAdditionSha256("{{user `vbox_guest_additions_iso_sha256`}}")
+                            .GuestAdditionPath("VBoxGuestAdditions.iso")
+                            .GuestAdditionMode("upload")
+                            .VirtualBoxVersionFile("VBoxVersion.txt")
+                            .KeepRegistered(false)
+                            .ShutdownCommand("/sbin/poweroff")
+                            .SshPassword("{{user `root_password` }}")
+                            .SshTimeout("10m")
+                            .SshUsername("root")
+                            .Type("virtualbox-iso")
+                            .ModifyVm("--memory", "{{user `memory`}}")
+                            .ModifyVm("--cpus", "{{user `cpus`}}")
+                            .ModifyVm("--nat-localhostreachable1", "on")
+                            .ModifyVm("--vram", "{{user `vmemory`}}")
+                            .ModifyVm("--natdnshostresolver1", "on")
+                            .ModifyVm("--ioapic", "on")
+                            .ModifyVm("--hwvirtex", "on")
+                            .ModifyVm("--hpet", "off")
+                            .ModifyVm("--largepages", "on")
+                            .ModifyVm("--vtxvpid", "on")
+                            .ModifyVm("--vtxux", "on")
+                            .ModifyVm("--pae", "on")
+                            .ModifyVm("--acpi", "on")
+                            .ModifyVm("--pagefusion", "on")
+                            .ModifyVm("--chipset", "ich9")
+                            .ModifyVm("--vrde", "off")
+                            .ModifyVm("--usb", "off")
+                            .ModifyVm("--nested-hw-virt", "on")
+                            .ModifyVm("--nestedpaging", "on")
+                            .ModifyVm("--ostype", "Linux_x64")
+                            .ModifyVm("--graphicscontroller", "vmsvga")
+                            .ModifyProperty("hwvirtexclusive", "on")
+                            .ModifyVmIf(() => !OperatingSystem.IsWindows(), "--biosapic", "x2apic")
+                            .ModifyVmIf(OperatingSystem.IsLinux, "--biosapic", "x2apic")
+                            .ModifyVmIf(OperatingSystem.IsLinux, "--paravirtprovider", "kvm")
+                            .ModifyVmIf(OperatingSystem.IsWindows, "--paravirtprovider", "kvm")
+                            .ModifyVmIf(OperatingSystem.IsMacOS, "--paravirtprovider", "minimum")
+                            .ModifyStorageController("SATA Controller", "--hostiocache", "off")
+                            .ModifyStorageAttach("SATA Controller", 0, "--nonrotational", "on")
+                            .ModifyStorageAttach("SATA Controller", 0, "--discard", "on")
+                            .SetExtraData("VBoxInternal/Devices/ahci/0/Config/Port0/NonRotational", "1")
+                            .VmName("{{user `vm_name`}}")
+                            .HardDriveDiscard()
+                            .HardDriveInterface("sata");
+
                     })
                     .Description("Alpine Linux")
                     .Provisioner(provisionerBuilder =>
@@ -574,22 +420,10 @@ public class AlpinePackerVirtualBoxVagrantBundleBuilder : AbstractBuilder<Packer
     /// </summary>
     /// <param name="mutation"></param>
     /// <returns></returns>
-    public AlpinePackerVirtualBoxVagrantBundleBuilder Mutate(Action<PackerBundleBuilder> mutation)
+    public PackerAlpineVirtualBoxVagrantBundleBuilder Mutate(Action<PackerBundleBuilder> mutation)
     {
         mutation(_builder);
         return this;
-    }
-
-    /// <summary>
-    /// Builds the result using the configured builder after a successful pre-build operation.
-    /// </summary>
-    /// <returns>An object that represents the result of the build process.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if PreBuild() has not been called prior to invoking this method.</exception>
-    protected IResult BuildInternal()
-    {
-        var result = _builder.Build();
-
-        return result;
     }
 
     /// <summary>

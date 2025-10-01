@@ -1,6 +1,7 @@
 ﻿namespace FrenchExDev.Net.CSharp.Object.Result.Tests;
 
-public class Class1
+
+public class ResultTests
 {
 
 }

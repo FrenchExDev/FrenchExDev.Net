@@ -131,3 +131,16 @@ public class FeatureAttribute : Attribute
         IntegrationKind = integrationKind;
     }
 }
+
+/// <summary>
+/// Provides a test fixture for creating instances of a command tester type used in packer bundler tests.
+/// </summary>
+/// <typeparam name="TCommandTester">The type of the command tester to instantiate. Must be a reference type with a public parameterless constructor.</typeparam>
+public class TestsUsing<TCommandTester>
+    where TCommandTester : class, new()
+{
+    public TCommandTester NewTester()
+    {
+        return new TCommandTester();
+    }
+}

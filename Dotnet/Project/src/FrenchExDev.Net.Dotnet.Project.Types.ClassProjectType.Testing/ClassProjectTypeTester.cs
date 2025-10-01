@@ -56,7 +56,7 @@ public class ClassProjectTypeTester
     {
         var builder = new ClassProjectModelBuilder();
         body(builder);
-        var result = builder.Build().Failures<ClassProjectModel>();
+        var result = builder.Build().Failures();
         assertBuildResult(result);
     }
 }

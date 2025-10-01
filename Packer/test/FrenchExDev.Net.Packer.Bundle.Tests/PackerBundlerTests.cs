@@ -22,7 +22,7 @@ public class PackerBundlerTests : PackerBundlerTests<PackerBundlerTester>
 {
     [Fact]
     public void Can_Build_And_Serialize_Alpine_PackerFile_Successfully() =>
-        NewTester().TestValid(builder =>
+        Tester().Valid(builder =>
             {
                 
             },

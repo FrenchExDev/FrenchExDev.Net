@@ -85,6 +85,27 @@ public class PackerBundleBuilder : AbstractBuilder<PackerBundle>
     }
 
     /// <summary>
+    /// Adds multiple shell script builders to the bundle using the specified mapping of script names to builder
+    /// actions.
+    /// </summary>
+    /// <remarks>Each entry in <paramref name="builderBody"/> results in a new shell script builder being
+    /// created and configured. This method enables fluent configuration of multiple scripts within the
+    /// bundle.</remarks>
+    /// <param name="builderBody">A dictionary that maps script names to actions which configure a <see cref="ShellScriptBuilder"/> instance for
+    /// each script. Each action is invoked with a new builder for its corresponding script name.</param>
+    /// <returns>The current <see cref="PackerBundleBuilder"/> instance to allow method chaining.</returns>
+    public PackerBundleBuilder Script(Dictionary<string, Action<ShellScriptBuilder>> builderBody)
+    {
+        foreach (var kvp in builderBody)
+        {
+            var builder = new ShellScriptBuilder();
+            kvp.Value(builder);
+            _scriptsBuilders.Add(kvp.Key, builder);
+        }
+        return this;
+    }
+
+    /// <summary>
     /// Adds a named script to the bundle using a builder action.
     /// </summary>
     /// <param name="name">Script name.</param>

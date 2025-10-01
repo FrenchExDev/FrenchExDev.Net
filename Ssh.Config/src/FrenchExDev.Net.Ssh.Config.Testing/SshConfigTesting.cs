@@ -55,7 +55,7 @@ public static class SshConfigTesting
             var builder = new SshConfigFileBuilder();
             body(builder);
             var file = builder.Build();
-            assert(file.Failures<SshConfigFile>());
+            assert(file.Failures());
         }
     }
 
@@ -106,7 +106,7 @@ public static class SshConfigTesting
             var builder = new SshConfigHostBuilder();
             body(builder);
             var host = builder.Build();
-            assert(host.Failures<SshConfigHost>());
+            assert(host.Failures());
         }
     }
 }

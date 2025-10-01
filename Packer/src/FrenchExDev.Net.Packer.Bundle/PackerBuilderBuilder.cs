@@ -102,7 +102,7 @@ public class PackerBuilderBuilder : AbstractBuilder<PackerBuilder>
     /// <summary>
     /// Whether to keep the VM registered after build.
     /// </summary>
-    private string? _keepRegistered;
+    private bool? _keepRegistered;
     /// <summary>
     /// Command to shut down the VM after provisioning.
     /// </summary>
@@ -331,7 +331,7 @@ public class PackerBuilderBuilder : AbstractBuilder<PackerBuilder>
     /// </summary>
     /// <param name="value">"true" or "false" as string.</param>
     /// <returns>The builder instance.</returns>
-    public PackerBuilderBuilder KeepRegistered(string? value)
+    public PackerBuilderBuilder KeepRegistered(bool? value)
     {
         _keepRegistered = value;
         return this;
@@ -555,7 +555,11 @@ public class PackerBuilderBuilder : AbstractBuilder<PackerBuilder>
         return this;
     }
 
-   
+   /// <summary>
+   /// Performs validation of the builder's configuration properties and collects any validation failures encountered.
+   /// </summary>
+   /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
+   /// <param name="failures">A dictionary that accumulates validation failures, mapping property names to the corresponding exception details.</param>
     protected new void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
         AssertNotNullNotEmptyCollection(_bootCommand, nameof(PackerBuilder.BootCommand), failures, (name) => new StringIsEmptyOrWhitespaceException(name));

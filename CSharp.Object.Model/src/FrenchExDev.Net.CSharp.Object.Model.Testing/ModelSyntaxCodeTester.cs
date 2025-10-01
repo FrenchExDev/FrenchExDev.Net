@@ -87,6 +87,6 @@ public static class ModelSyntaxCodeTester
         buildResult.ShouldBeAssignableTo<FailureResult>();
 
         // Assert the build result using the provided assertion (expected to be invalid)
-        assertResult(buildResult.Failures<TModel>());
+        assertResult(buildResult.Failures());
     }
 }

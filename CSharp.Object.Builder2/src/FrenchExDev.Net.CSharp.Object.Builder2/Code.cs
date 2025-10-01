@@ -67,6 +67,16 @@ public class VisitedObjectDictionary : Dictionary<Guid, object> { }
 public interface IBuilder<TClass> where TClass : class
 {
     /// <summary>
+    /// Gets the unique identifier for the instance.
+    /// </summary>
+    Guid Id { get; }
+
+    /// <summary>
+    /// Gets the result of the operation, if available.
+    /// </summary>
+    IResult? Result { get; }
+
+    /// <summary>
     /// Gets the current status of the build process.
     /// </summary>
     BuildStatus BuildStatus { get; }
@@ -89,7 +99,7 @@ public interface IBuilder<TClass> where TClass : class
     void Validate(VisitedObjectDictionary visitedCollector, FailuresDictionary failures);
 
     /// <summary>
-    /// Creates a reference to the current instance of type <typeparamref name="TClass"/>.
+    /// Returns a <see cref="Reference{TClass}"/> reference object to the current instance of type <typeparamref name="TClass"/>.
     /// </summary>
     /// <returns>A <see cref="Reference{TClass}"/> representing a reference to the current instance.</returns>
     Reference<TClass> Reference();
@@ -101,15 +111,6 @@ public interface IBuilder<TClass> where TClass : class
     /// <returns>An <see cref="IBuilder{TClass}"/> that is initialized with the specified instance.</returns>
     IBuilder<TClass> Existing(TClass instance);
 
-    /// <summary>
-    /// Gets the unique identifier for the instance.
-    /// </summary>
-    Guid Id { get; }
-
-    /// <summary>
-    /// Gets the result of the operation, if available.
-    /// </summary>
-    IResult? Result { get; }
 
     /// <summary>
     /// Builds and returns the result of the current operation, optionally using a collector to track visited objects
@@ -636,12 +637,11 @@ public static class Extensions
     /// <exception cref="BuildSucceededException">Thrown if the result is a SuccessResult<TClass>, indicating that the build succeeded and no failures are
     /// available.</exception>
     /// <exception cref="NotSupportedException">Thrown if the result is not a recognized result type.</exception>
-    public static FailuresDictionary Failures<TClass>(this IResult result) where TClass : class
+    public static FailuresDictionary Failures(this IResult result)
         => result switch
         {
             FailureResult failure => failure.Failures,
-            SuccessResult<TClass> success => throw new BuildSucceededException(success.Object),
-            _ => throw new NotSupportedException(result.GetType().FullName),
+            _ => throw new BuildSucceededException(result.Success<object>()),
         };
 
     /// <summary>
@@ -983,7 +983,7 @@ where TBuilder : IBuilder<TClass>, new()
     /// </summary>
     /// <returns>A list of <see cref="FailuresDictionary"/> instances representing the failures associated with each built item.
     /// The list will be empty if there are no items or no failures.</returns>
-    public List<FailuresDictionary> BuildFailures() => [.. this.Select(x => x.Build().Failures<TClass>())];
+    public List<FailuresDictionary> BuildFailures() => [.. this.Select(x => x.Build().Failures())];
 
     /// <summary>
     /// Returns a list of failure dictionaries resulting from validating each builder in the collection.

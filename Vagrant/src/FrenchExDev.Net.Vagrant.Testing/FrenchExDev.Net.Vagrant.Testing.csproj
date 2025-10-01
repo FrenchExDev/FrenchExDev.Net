@@ -7,12 +7,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Shouldly" />
+		<ProjectReference Include="..\FrenchExDev.Net.Vagrant\FrenchExDev.Net.Vagrant.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\FrenchExDev.Net.Packer.Bundle.Testing\FrenchExDev.Net.Packer.Bundle.Testing.csproj" />
-	  <ProjectReference Include="..\FrenchExDev.Net.Packer\FrenchExDev.Net.Packer.csproj" />
+		<PackageReference Include="xunit" />
+		<PackageReference Include="Shouldly" />
 	</ItemGroup>
 
 </Project>
