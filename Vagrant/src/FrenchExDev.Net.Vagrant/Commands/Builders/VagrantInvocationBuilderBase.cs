@@ -37,7 +37,7 @@ public abstract class VagrantInvocationBuilderBase<TBuilder> : AbstractBuilder<I
         return inv;
     }
 
-    protected new void ValidateInternal(VisitedObjectDictionary visited, FailuresDictionary failures)
+    protected override void ValidateInternal(VisitedObjectDictionary visited, FailuresDictionary failures)
     {
         if (_command is null) { failures.Failure("Command", new InvalidDataException("Command not specified")); return; }
 
