@@ -27,7 +27,17 @@ public sealed class LeafCommandNode : CommandNodeBase
 
     public string BuildCommandLine()
     {
-        var path = string.Join(' ', Path().Skip(1).Select(n => n.Name));
+        // Build path excluding the implicit root node name ("vagrant")
+        var nodes = Path().Skip(1).ToList(); // skip root
+
+        string path = string.Join(' ', nodes.Select(n => n.Name));
+
+        // Fallback: if only the leaf name is present but it actually has a non-root parent, prefix the parent.
+        if (nodes.Count == 1 && Parent is ICommandGroupNode parentGroup && parentGroup.Parent is ICommandGroupNode)
+        {
+            path = parentGroup.Name + " " + path;
+        }
+
         var opts = GetEffectiveOptions()
             .OrderBy(o => o.Name, StringComparer.OrdinalIgnoreCase)
             .Select(o =>

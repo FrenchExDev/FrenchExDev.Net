@@ -5,49 +5,46 @@ using FrenchExDev.Net.Vagrant.Testing;
 
 namespace FrenchExDev.Net.Vagrant.Tests;
 
-/// <summary>
-/// Provides unit tests for all leaf command nodes in the Vagrant command tree, verifying correct invocation
-/// construction and expected behavior for both successful and failure scenarios.
-/// </summary>
-/// <remarks>This test class covers a comprehensive set of Vagrant CLI commands, ensuring that each leaf command
-/// is properly parsed and invoked with various combinations of parameters and options. The tests validate both valid
-/// and invalid input cases, helping to maintain the reliability of command parsing logic. These tests are intended to
-/// be run as part of the automated test suite and do not require external dependencies.</remarks>
 [Feature(feature: "vagrant", TestKind.Unit)]
 public class AllLeafCommandsTests
 {
-    /// <summary>
-    /// Retrieves the leaf command node associated with the specified command name.
-    /// </summary>
-    /// <param name="name">The name of the command to locate. Cannot be null or empty.</param>
-    /// <returns>The leaf command node corresponding to the specified name.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if a leaf command node with the specified name cannot be found.</exception>
-    private static LeafCommandNode GetLeaf(string name)
+    private static LeafCommandNode GetLeaf(string commandPath)
     {
         var tree = VagrantCommandTree.Build();
-        if (tree.Children.TryGetValue(name, out var direct) && direct is LeafCommandNode lc1) return lc1;
-        foreach (var child in tree.Children.Values)
-            if (child is ICommandGroupNode grp && grp.Children.TryGetValue(name, out var found) && found is LeafCommandNode lc) return lc;
-        throw new InvalidOperationException($"Command '{name}' not found.");
+        var segments = commandPath.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (segments.Length == 0) throw new InvalidOperationException("Empty command path");
+        ICommandNode current = tree;
+        for (int i = 0; i < segments.Length; i++)
+        {
+            var seg = segments[i];
+            if (current is ICommandGroupNode grp)
+            {
+                if (!grp.Children.TryGetValue(seg, out var next))
+                {
+                    if (segments.Length == 1)
+                    {
+                        foreach (var child in tree.Children.Values)
+                        {
+                            if (child is ICommandGroupNode g && g.Children.TryGetValue(seg, out var found) && found is LeafCommandNode lf1)
+                                return lf1;
+                        }
+                    }
+                    throw new InvalidOperationException($"Command segment '{seg}' not found in path '{commandPath}'.");
+                }
+                current = next;
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unexpected non-group before end of path at segment '{seg}'.");
+            }
+        }
+        return current as LeafCommandNode ?? throw new InvalidOperationException($"Path '{commandPath}' does not resolve to a leaf command.");
     }
 
-    /// <summary>
-    /// Constructs an Invocation object representing a command with specified parameters and options.
-    /// </summary>
-    /// <remarks>Parameter and option specifications are parsed from the provided strings. Parameters and
-    /// options without values are treated as flags. Invalid or empty specifications are ignored.</remarks>
-    /// <param name="command">The name of the command to invoke. Cannot be null or whitespace.</param>
-    /// <param name="paramSpec">A semicolon-delimited string specifying parameters and their values. Each parameter is defined as
-    /// 'name=value1,value2', or simply 'name' for parameters without values. Can be null or empty if no parameters are
-    /// required.</param>
-    /// <param name="optionSpec">A semicolon-delimited string specifying options and their values. Each option is defined as 'name=value' for
-    /// options with values, or simply 'name' for flag options. Can be null or empty if no options are required.</param>
-    /// <returns>An Invocation object initialized with the specified command, parameters, and options.</returns>
     private static Invocation BuildInvocation(string command, string paramSpec, string optionSpec)
     {
         var leaf = GetLeaf(command);
         var inv = new Invocation { Command = leaf };
-
         if (!string.IsNullOrWhiteSpace(paramSpec))
         {
             foreach (var part in paramSpec.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
@@ -69,122 +66,167 @@ public class AllLeafCommandsTests
         return inv;
     }
 
-    /// <summary>
-    /// Provides a collection of test cases representing valid command scenarios for box operations.
-    /// </summary>
-    /// <remarks>Each test case is constructed using the SuccessCase.Create method and covers a variety of box
-    /// commands, including 'up', 'add', 'remove', 'list', 'prune', 'repackage', 'init', 'halt', 'destroy', 'status',
-    /// 'ssh', 'provision', 'reload', and 'validate'. This method is typically used to supply data for parameterized
-    /// unit tests that verify command parsing and formatting logic.</remarks>
-    /// <returns>An enumerable sequence of object arrays, each containing a single test case that defines a valid command,
-    /// parameters, options, and expected output for box-related operations.</returns>
     public static IEnumerable<object[]> SuccessCases()
     {
+        // up (root)
         yield return [SuccessCase.Create(id: "up", command: "up", paramSpec: "", optionSpec: "", equalsExpectation: "up")];
         yield return [SuccessCase.Create(id: "up_provider", command: "up", paramSpec: "", optionSpec: "provider=virtualbox", containsCsv: "--provider virtualbox")];
         yield return [SuccessCase.Create(id: "up_full", command: "up", paramSpec: "machine=default", optionSpec: "provider=virtualbox;parallel;destroy-on-error;color=true", containsCsv: "--provider virtualbox;--parallel;--destroy-on-error;--color true;default")];
         yield return [SuccessCase.Create(id: "up_parallel_only", command: "up", paramSpec: "", optionSpec: "parallel", containsCsv: "--parallel")];
         yield return [SuccessCase.Create(id: "up_color_only", command: "up", paramSpec: "", optionSpec: "color=true", containsCsv: "--color true")];
-        yield return [SuccessCase.Create(id: "add_min", command: "add", paramSpec: "source=hashicorp/bionic64", optionSpec: "", containsCsv: "hashicorp/bionic64")];
-        yield return [SuccessCase.Create(id: "add_named", command: "add", paramSpec: "source=hashicorp/bionic64", optionSpec: "name=bionic-custom", containsCsv: "--name bionic-custom")];
-        yield return [SuccessCase.Create(id: "add_checksum_only", command: "add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=abc123", containsCsv: "--checksum abc123")];
-        yield return [SuccessCase.Create(id: "add_full", command: "add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=123;checksum-type=sha256;box-version=1.0.0;name=bionic;clean;force", containsCsv: "--checksum 123;--checksum-type sha256;--box-version 1.0.0;--name bionic;--clean;--force;hashicorp/bionic64")];
-        yield return [SuccessCase.Create(id: "remove_basic", command: "remove", paramSpec: "name=mybox", optionSpec: "", containsCsv: "remove;mybox")];
-        yield return [SuccessCase.Create(id: "remove_with_provider", command: "remove", paramSpec: "name=mybox", optionSpec: "provider=virtualbox", containsCsv: "--provider virtualbox")];
-        yield return [SuccessCase.Create(id: "remove_with_box_version", command: "remove", paramSpec: "name=mybox", optionSpec: "box-version=2.0.0", containsCsv: "--box-version 2.0.0")];
-        yield return [SuccessCase.Create(id: "remove_force_only", command: "remove", paramSpec: "name=mybox", optionSpec: "force", containsCsv: "--force")];
-        yield return [SuccessCase.Create(id: "remove_full", command: "remove", paramSpec: "name=mybox", optionSpec: "provider=virtualbox;box-version=1.2.3;force", containsCsv: "--provider virtualbox;--box-version 1.2.3;--force;mybox")];
-        yield return [SuccessCase.Create(id: "list", command: "list", paramSpec: "", optionSpec: "", equalsExpectation: "box list")];
-        yield return [SuccessCase.Create(id: "outdated", command: "outdated", paramSpec: "", optionSpec: "", equalsExpectation: "box outdated")];
-        yield return [SuccessCase.Create(id: "prune", command: "prune", paramSpec: "", optionSpec: "", equalsExpectation: "box prune")];
-        yield return [SuccessCase.Create(id: "prune_force", command: "prune", paramSpec: "", optionSpec: "force", containsCsv: "--force")];
-        yield return [SuccessCase.Create(id: "prune_force_dry", command: "prune", paramSpec: "", optionSpec: "dry-run;force", containsCsv: "--dry-run;--force")];
-        yield return [SuccessCase.Create(id: "repackage", command: "repackage", paramSpec: "name=mybox;provider=virtualbox;version=1.0.0", optionSpec: "", equalsExpectation: "box repackage mybox virtualbox 1.0.0")];
-        yield return [SuccessCase.Create(id: "repackage_output", command: "repackage", paramSpec: "name=mybox;provider=virtualbox;version=1.0.0", optionSpec: "output=out.box", containsCsv: "--output out.box")];
+        yield return [SuccessCase.Create(id: "up_color_flag_only", command: "up", paramSpec: "", optionSpec: "color", containsCsv: "--color")];
+        yield return [SuccessCase.Create(id: "up_destroy_on_error", command: "up", paramSpec: "", optionSpec: "destroy-on-error", containsCsv: "--destroy-on-error")];
+        yield return [SuccessCase.Create(id: "up_with_provision", command: "up", paramSpec: "", optionSpec: "provision", containsCsv: "--provision")];
+        yield return [SuccessCase.Create(id: "up_with_no_provision", command: "up", paramSpec: "", optionSpec: "no-provision", containsCsv: "--no-provision")];
+        yield return [SuccessCase.Create(id: "up_multi_machines", command: "up", paramSpec: "machine=default,db", optionSpec: "parallel", containsCsv: "default;db")];
+
+        // box group
+        yield return [SuccessCase.Create(id: "box_add_min", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "", containsCsv: "hashicorp/bionic64")];
+        yield return [SuccessCase.Create(id: "box_add_named", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "name=bionic-custom", containsCsv: "--name bionic-custom")];
+        yield return [SuccessCase.Create(id: "box_add_checksum_only", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=abc123", containsCsv: "--checksum abc123")];
+        yield return [SuccessCase.Create(id: "box_add_full", command: "box add", paramSpec: "source=hashicorp/bionic64", optionSpec: "checksum=123;checksum-type=sha256;box-version=1.0.0;name=bionic;clean;force", containsCsv: "--checksum 123;--checksum-type sha256;--box-version 1.0.0;--name bionic;--clean;--force;hashicorp/bionic64")];
+        yield return [SuccessCase.Create(id: "box_remove_basic", command: "box remove", paramSpec: "name=mybox", optionSpec: "", containsCsv: "remove;mybox")];
+        yield return [SuccessCase.Create(id: "box_remove_with_provider", command: "box remove", paramSpec: "name=mybox", optionSpec: "provider=virtualbox", containsCsv: "--provider virtualbox")];
+        yield return [SuccessCase.Create(id: "box_remove_with_box_version", command: "box remove", paramSpec: "name=mybox", optionSpec: "box-version=2.0.0", containsCsv: "--box-version 2.0.0")];
+        yield return [SuccessCase.Create(id: "box_remove_force_only", command: "box remove", paramSpec: "name=mybox", optionSpec: "force", containsCsv: "--force")];
+        yield return [SuccessCase.Create(id: "box_remove_all", command: "box remove", paramSpec: "name=mybox", optionSpec: "all", containsCsv: "--all")];
+        yield return [SuccessCase.Create(id: "box_remove_full", command: "box remove", paramSpec: "name=mybox", optionSpec: "provider=virtualbox;box-version=1.2.3;force;all", containsCsv: "--provider virtualbox;--box-version 1.2.3;--force;--all;mybox")];
+        yield return [SuccessCase.Create(id: "box_list", command: "box list", paramSpec: "", optionSpec: "", equalsExpectation: "box list")];
+        yield return [SuccessCase.Create(id: "box_outdated", command: "box outdated", paramSpec: "", optionSpec: "", equalsExpectation: "box outdated")];
+        yield return [SuccessCase.Create(id: "box_outdated_global", command: "box outdated", paramSpec: "", optionSpec: "global", containsCsv: "--global")];
+        yield return [SuccessCase.Create(id: "box_outdated_insecure", command: "box outdated", paramSpec: "", optionSpec: "insecure", containsCsv: "--insecure")];
+        yield return [SuccessCase.Create(id: "box_outdated_both", command: "box outdated", paramSpec: "", optionSpec: "global;insecure", containsCsv: "--global;--insecure")];
+        yield return [SuccessCase.Create(id: "box_prune", command: "box prune", paramSpec: "", optionSpec: "", equalsExpectation: "box prune")];
+        yield return [SuccessCase.Create(id: "box_prune_force", command: "box prune", paramSpec: "", optionSpec: "force", containsCsv: "--force")];
+        yield return [SuccessCase.Create(id: "box_prune_force_dry", command: "box prune", paramSpec: "", optionSpec: "dry-run;force", containsCsv: "--dry-run;--force")];
+        yield return [SuccessCase.Create(id: "box_prune_keep_active_provider", command: "box prune", paramSpec: "", optionSpec: "keep-active-provider", containsCsv: "--keep-active-provider")];
+        yield return [SuccessCase.Create(id: "box_repackage", command: "box repackage", paramSpec: "name=mybox;provider=virtualbox;version=1.0.0", optionSpec: "", equalsExpectation: "box repackage mybox virtualbox 1.0.0")];
+        yield return [SuccessCase.Create(id: "box_repackage_output", command: "box repackage", paramSpec: "name=mybox;provider=virtualbox;version=1.0.0", optionSpec: "output=out.box", containsCsv: "--output out.box")];
+        yield return [SuccessCase.Create(id: "box_update", command: "box update", paramSpec: "", optionSpec: "box=alpine", containsCsv: "--box alpine")];
+        yield return [SuccessCase.Create(id: "box_update_provider", command: "box update", paramSpec: "", optionSpec: "provider=virtualbox", containsCsv: "--provider virtualbox")];
+        yield return [SuccessCase.Create(id: "box_update_box_provider", command: "box update", paramSpec: "", optionSpec: "box=alpine;provider=virtualbox", containsCsv: "--box alpine;--provider virtualbox")];
+
+        // init (root)
         yield return [SuccessCase.Create(id: "init_basic", command: "init", paramSpec: "", optionSpec: "", equalsExpectation: "init")];
         yield return [SuccessCase.Create(id: "init_box_only", command: "init", paramSpec: "", optionSpec: "box=alpine", containsCsv: "--box alpine")];
         yield return [SuccessCase.Create(id: "init_minimal_only", command: "init", paramSpec: "", optionSpec: "minimal", containsCsv: "--minimal")];
         yield return [SuccessCase.Create(id: "init_full", command: "init", paramSpec: "", optionSpec: "box=alpine;output=Vagrantfile;minimal;force", containsCsv: "--box alpine;--output Vagrantfile;--minimal;--force")];
+        yield return [SuccessCase.Create(id: "init_with_box_name_param", command: "init", paramSpec: "box-name=mybox", optionSpec: "box=alpine", containsCsv: "mybox")];
+        yield return [SuccessCase.Create(id: "init_with_box_url_param", command: "init", paramSpec: "box-url=http://example", optionSpec: "", containsCsv: "http://example")];
+
+        // other root commands
         yield return [SuccessCase.Create(id: "halt", command: "halt", paramSpec: "", optionSpec: "", equalsExpectation: "halt")];
         yield return [SuccessCase.Create(id: "halt_force", command: "halt", paramSpec: "", optionSpec: "force", containsCsv: "--force")];
         yield return [SuccessCase.Create(id: "destroy", command: "destroy", paramSpec: "", optionSpec: "", equalsExpectation: "destroy")];
         yield return [SuccessCase.Create(id: "destroy_force", command: "destroy", paramSpec: "", optionSpec: "force", containsCsv: "--force")];
+        yield return [SuccessCase.Create(id: "destroy_graceful", command: "destroy", paramSpec: "", optionSpec: "graceful", containsCsv: "--graceful")];
         yield return [SuccessCase.Create(id: "status", command: "status", paramSpec: "", optionSpec: "", equalsExpectation: "status")];
+        yield return [SuccessCase.Create(id: "status_machine_readable", command: "status", paramSpec: "", optionSpec: "machine-readable", containsCsv: "--machine-readable")];
+        yield return [SuccessCase.Create(id: "status_machine_param", command: "status", paramSpec: "machine=default", optionSpec: "", containsCsv: "default")];
         yield return [SuccessCase.Create(id: "ssh_machine", command: "ssh", paramSpec: "machine=default", optionSpec: "", containsCsv: "ssh;default")];
-        yield return [SuccessCase.Create(id: "ssh_command", command: "ssh", paramSpec: "machine=default", optionSpec: "command=whoami", containsCsv: "--command whoami;default")];
+        yield return [SuccessCase.Create(id: "ssh_command_param_form", command: "ssh", paramSpec: "machine=default;command=whoami", optionSpec: "", containsCsv: "whoami")];
+        yield return [SuccessCase.Create(id: "ssh_command_option_form", command: "ssh", paramSpec: "machine=default", optionSpec: "command=whoami", containsCsv: "--command whoami")];
+        yield return [SuccessCase.Create(id: "ssh_plain", command: "ssh", paramSpec: "machine=default", optionSpec: "plain", containsCsv: "--plain")];
+        yield return [SuccessCase.Create(id: "ssh_config_basic", command: "ssh-config", paramSpec: "", optionSpec: "", equalsExpectation: "ssh-config")];
+        yield return [SuccessCase.Create(id: "ssh_config_machine", command: "ssh-config", paramSpec: "machine=default", optionSpec: "", containsCsv: "default")];
+        yield return [SuccessCase.Create(id: "ssh_config_host", command: "ssh-config", paramSpec: "", optionSpec: "host=myhost", containsCsv: "--host myhost")];
         yield return [SuccessCase.Create(id: "provision", command: "provision", paramSpec: "", optionSpec: "", equalsExpectation: "provision")];
         yield return [SuccessCase.Create(id: "provision_with", command: "provision", paramSpec: "", optionSpec: "provision-with=shell", containsCsv: "--provision-with shell")];
+        yield return [SuccessCase.Create(id: "provision_machine", command: "provision", paramSpec: "machine=default", optionSpec: "", containsCsv: "default")];
         yield return [SuccessCase.Create(id: "reload", command: "reload", paramSpec: "", optionSpec: "", equalsExpectation: "reload")];
         yield return [SuccessCase.Create(id: "reload_provider", command: "reload", paramSpec: "", optionSpec: "provider=virtualbox", containsCsv: "--provider virtualbox")];
+        yield return [SuccessCase.Create(id: "reload_provision", command: "reload", paramSpec: "", optionSpec: "provision", containsCsv: "--provision")];
+        yield return [SuccessCase.Create(id: "reload_no_provision", command: "reload", paramSpec: "", optionSpec: "no-provision", containsCsv: "--no-provision")];
         yield return [SuccessCase.Create(id: "validate", command: "validate", paramSpec: "", optionSpec: "", equalsExpectation: "validate")];
         yield return [SuccessCase.Create(id: "global_status", command: "global-status", paramSpec: "", optionSpec: "", equalsExpectation: "global-status")];
         yield return [SuccessCase.Create(id: "global_status_prune", command: "global-status", paramSpec: "", optionSpec: "prune", containsCsv: "--prune")];
         yield return [SuccessCase.Create(id: "package_basic", command: "package", paramSpec: "", optionSpec: "output=package.box", containsCsv: "--output package.box")];
+        yield return [SuccessCase.Create(id: "package_base", command: "package", paramSpec: "", optionSpec: "base=vm1", containsCsv: "--base vm1")];
+        yield return [SuccessCase.Create(id: "package_include", command: "package", paramSpec: "", optionSpec: "include=file1.txt", containsCsv: "--include file1.txt")];
+        yield return [SuccessCase.Create(id: "package_vagrantfile", command: "package", paramSpec: "", optionSpec: "vagrantfile=Vagrantfile.custom", containsCsv: "--vagrantfile Vagrantfile.custom")];
+        yield return [SuccessCase.Create(id: "package_full_combo", command: "package", paramSpec: "", optionSpec: "output=package.box;base=vm1;include=file1.txt;vagrantfile=Vagrantfile.custom", containsCsv: "--output package.box;--base vm1;--include file1.txt;--vagrantfile Vagrantfile.custom")];
         yield return [SuccessCase.Create(id: "port_basic", command: "port", paramSpec: "machine=default", optionSpec: "", containsCsv: "port;default")];
+        yield return [SuccessCase.Create(id: "port_no_machine", command: "port", paramSpec: "", optionSpec: "", equalsExpectation: "port")];
         yield return [SuccessCase.Create(id: "suspend_basic", command: "suspend", paramSpec: "machine=default", optionSpec: "", containsCsv: "suspend;default")];
         yield return [SuccessCase.Create(id: "resume_basic", command: "resume", paramSpec: "machine=default", optionSpec: "", containsCsv: "resume;default")];
-        yield return [SuccessCase.Create(id: "snapshot_save", command: "save", paramSpec: "name=snap1", optionSpec: "", containsCsv: "save;snap1")];
-        yield return [SuccessCase.Create(id: "snapshot_restore", command: "restore", paramSpec: "name=snap1", optionSpec: "", containsCsv: "restore;snap1")];
+
+        // snapshot group
+        yield return [SuccessCase.Create(id: "snapshot_save", command: "snapshot save", paramSpec: "name=snap1", optionSpec: "", containsCsv: "save;snap1")];
+        yield return [SuccessCase.Create(id: "snapshot_save_machine", command: "snapshot save", paramSpec: "machine=default;name=snap1", optionSpec: "", containsCsv: "default")];
+        yield return [SuccessCase.Create(id: "snapshot_restore", command: "snapshot restore", paramSpec: "name=snap1", optionSpec: "", containsCsv: "restore;snap1")];
+        yield return [SuccessCase.Create(id: "snapshot_restore_machine", command: "snapshot restore", paramSpec: "machine=default;name=snap1", optionSpec: "", containsCsv: "default")];
         yield return [SuccessCase.Create(id: "snapshot_list", command: "snapshot list", paramSpec: "", optionSpec: "", equalsExpectation: "snapshot list")];
-        yield return [SuccessCase.Create(id: "snapshot_delete", command: "delete", paramSpec: "name=snap1", optionSpec: "", containsCsv: "delete;snap1")];
-        yield return [SuccessCase.Create(id: "snapshot_push", command: "push", paramSpec: "", optionSpec: "", equalsExpectation: "snapshot push")];
-        yield return [SuccessCase.Create(id: "snapshot_pop", command: "pop", paramSpec: "", optionSpec: "", equalsExpectation: "snapshot pop")];
-        yield return [SuccessCase.Create(id: "plugin_install", command: "install", paramSpec: "name=myplugin", optionSpec: "", containsCsv: "install;myplugin")];
-        yield return [SuccessCase.Create(id: "plugin_uninstall", command: "uninstall", paramSpec: "name=myplugin", optionSpec: "", containsCsv: "uninstall;myplugin")];
+        yield return [SuccessCase.Create(id: "snapshot_list_machine", command: "snapshot list", paramSpec: "machine=default", optionSpec: "", containsCsv: "default")];
+        yield return [SuccessCase.Create(id: "snapshot_delete", command: "snapshot delete", paramSpec: "name=snap1", optionSpec: "", containsCsv: "delete;snap1")];
+        yield return [SuccessCase.Create(id: "snapshot_delete_machine", command: "snapshot delete", paramSpec: "machine=default;name=snap1", optionSpec: "", containsCsv: "default")];
+        yield return [SuccessCase.Create(id: "snapshot_push", command: "snapshot push", paramSpec: "", optionSpec: "", equalsExpectation: "snapshot push")];
+        yield return [SuccessCase.Create(id: "snapshot_push_machine", command: "snapshot push", paramSpec: "machine=default", optionSpec: "", containsCsv: "default")];
+        yield return [SuccessCase.Create(id: "snapshot_pop", command: "snapshot pop", paramSpec: "", optionSpec: "", equalsExpectation: "snapshot pop")];
+        yield return [SuccessCase.Create(id: "snapshot_pop_machine", command: "snapshot pop", paramSpec: "machine=default", optionSpec: "", containsCsv: "default")];
+
+        // plugin group
+        yield return [SuccessCase.Create(id: "plugin_install", command: "plugin install", paramSpec: "name=myplugin", optionSpec: "", containsCsv: "install;myplugin")];
+        yield return [SuccessCase.Create(id: "plugin_install_version", command: "plugin install", paramSpec: "name=myplugin", optionSpec: "plugin-version=1.2.3", containsCsv: "--plugin-version 1.2.3")];
+        yield return [SuccessCase.Create(id: "plugin_install_local", command: "plugin install", paramSpec: "name=myplugin", optionSpec: "local", containsCsv: "--local")];
+        yield return [SuccessCase.Create(id: "plugin_install_version_local", command: "plugin install", paramSpec: "name=myplugin", optionSpec: "plugin-version=1.2.3;local", containsCsv: "--plugin-version 1.2.3;--local")];
+        yield return [SuccessCase.Create(id: "plugin_uninstall", command: "plugin uninstall", paramSpec: "name=myplugin", optionSpec: "", containsCsv: "uninstall;myplugin")];
         yield return [SuccessCase.Create(id: "plugin_update_all", command: "plugin update", paramSpec: "", optionSpec: "", equalsExpectation: "plugin update")];
+        yield return [SuccessCase.Create(id: "plugin_update_specific", command: "plugin update", paramSpec: "name=myplugin", optionSpec: "", containsCsv: "myplugin")];
         yield return [SuccessCase.Create(id: "plugin_list", command: "plugin list", paramSpec: "", optionSpec: "", equalsExpectation: "plugin list")];
-        yield return [SuccessCase.Create(id: "plugin_expunge_force", command: "expunge", paramSpec: "", optionSpec: "force", containsCsv: "--force")];
+        yield return [SuccessCase.Create(id: "plugin_expunge_force", command: "plugin expunge", paramSpec: "", optionSpec: "force", containsCsv: "--force")];
+        yield return [SuccessCase.Create(id: "plugin_expunge_reinstall", command: "plugin expunge", paramSpec: "", optionSpec: "reinstall", containsCsv: "--reinstall")];
+        yield return [SuccessCase.Create(id: "plugin_expunge_full", command: "plugin expunge", paramSpec: "", optionSpec: "force;reinstall", containsCsv: "--force;--reinstall")];
+
+        // auth & sync
         yield return [SuccessCase.Create(id: "login", command: "login", paramSpec: "", optionSpec: "", equalsExpectation: "login")];
         yield return [SuccessCase.Create(id: "logout", command: "logout", paramSpec: "", optionSpec: "", equalsExpectation: "logout")];
         yield return [SuccessCase.Create(id: "rsync_basic", command: "rsync", paramSpec: "machine=default", optionSpec: "", containsCsv: "rsync;default")];
+        yield return [SuccessCase.Create(id: "rsync_no_machine", command: "rsync", paramSpec: "", optionSpec: "", equalsExpectation: "rsync")];
         yield return [SuccessCase.Create(id: "rsync_auto", command: "rsync-auto", paramSpec: "machine=default", optionSpec: "", containsCsv: "rsync-auto;default")];
-        yield return [SuccessCase.Create(id: "box_update", command: "update", paramSpec: "", optionSpec: "box=alpine", containsCsv: "--box alpine")];
+        yield return [SuccessCase.Create(id: "rsync_auto_no_machine", command: "rsync-auto", paramSpec: "", optionSpec: "", equalsExpectation: "rsync-auto")];
     }
 
     public static IEnumerable<object[]> FailureCases()
     {
-        yield return [FailureCase.Create(id: "add_missing_source", command: "add", paramSpec: "", optionSpec: "")];
-        yield return [FailureCase.Create(id: "add_missing_source_with_opts", command: "add", paramSpec: "", optionSpec: "name=bionic")];
-        yield return [FailureCase.Create(id: "add_missing_source_with_other_name", command: "add", paramSpec: "", optionSpec: "name=bionic-custom")];
-        yield return [FailureCase.Create(id: "add_empty_source_equals", command: "add", paramSpec: "source=", optionSpec: "")];
-        yield return [FailureCase.Create(id: "add_empty_source_placeholder", command: "add", paramSpec: "source", optionSpec: "")];
-        yield return [FailureCase.Create(id: "add_empty_source_with_flags", command: "add", paramSpec: "source", optionSpec: "force;clean")];
-        yield return [FailureCase.Create(id: "remove_missing_name", command: "remove", paramSpec: "", optionSpec: "")];
-        yield return [FailureCase.Create(id: "remove_missing_name_with_provider", command: "remove", paramSpec: "", optionSpec: "provider=virtualbox")];
-        yield return [FailureCase.Create(id: "remove_only_force", command: "remove", paramSpec: "", optionSpec: "force")];
-        yield return [FailureCase.Create(id: "remove_name_placeholder_no_value", command: "remove", paramSpec: "name", optionSpec: "")];
-        yield return [FailureCase.Create(id: "repackage_none", command: "repackage", paramSpec: "", optionSpec: "")];
-        yield return [FailureCase.Create(id: "repackage_missing_provider_version", command: "repackage", paramSpec: "name=mybox", optionSpec: "")];
-        yield return [FailureCase.Create(id: "repackage_missing_version", command: "repackage", paramSpec: "name=mybox;provider=virtualbox", optionSpec: "")];
-        yield return [FailureCase.Create(id: "repackage_missing_name", command: "repackage", paramSpec: "provider=virtualbox;version=1.0.0", optionSpec: "")];
-        yield return [FailureCase.Create(id: "repackage_only_provider", command: "repackage", paramSpec: "provider=virtualbox", optionSpec: "")];
-        yield return [FailureCase.Create(id: "repackage_only_version", command: "repackage", paramSpec: "version=1.0.0", optionSpec: "")];
-        yield return [FailureCase.Create(id: "repackage_name_empty_value", command: "repackage", paramSpec: "name=;provider=virtualbox;version=1.0.0", optionSpec: "")];
-        yield return [FailureCase.Create(id: "repackage_version_empty_value", command: "repackage", paramSpec: "name=mybox;provider=virtualbox;version=", optionSpec: "")];
-        yield return [FailureCase.Create(id: "snapshot_save_missing_name", command: "save", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
-        yield return [FailureCase.Create(id: "snapshot_restore_missing_name", command: "restore", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
-        yield return [FailureCase.Create(id: "snapshot_delete_missing_name", command: "delete", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
-        yield return [FailureCase.Create(id: "plugin_install_missing_name", command: "install", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
-        yield return [FailureCase.Create(id: "plugin_uninstall_missing_name", command: "uninstall", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
+        // box group failures
+        yield return [FailureCase.Create(id: "box_add_missing_source", command: "box add", paramSpec: "", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_add_missing_source_with_opts", command: "box add", paramSpec: "", optionSpec: "name=bionic")];
+        yield return [FailureCase.Create(id: "box_add_missing_source_with_other_name", command: "box add", paramSpec: "", optionSpec: "name=bionic-custom")];
+        yield return [FailureCase.Create(id: "box_add_empty_source_equals", command: "box add", paramSpec: "source=", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_add_empty_source_placeholder", command: "box add", paramSpec: "source", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_add_empty_source_with_flags", command: "box add", paramSpec: "source", optionSpec: "force;clean")];
+        yield return [FailureCase.Create(id: "box_remove_missing_name", command: "box remove", paramSpec: "", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_remove_missing_name_with_provider", command: "box remove", paramSpec: "", optionSpec: "provider=virtualbox")];
+        yield return [FailureCase.Create(id: "box_remove_only_force", command: "box remove", paramSpec: "", optionSpec: "force")];
+        yield return [FailureCase.Create(id: "box_remove_name_placeholder_no_value", command: "box remove", paramSpec: "name", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_repackage_none", command: "box repackage", paramSpec: "", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_repackage_missing_provider_version", command: "box repackage", paramSpec: "name=mybox", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_repackage_missing_version", command: "box repackage", paramSpec: "name=mybox;provider=virtualbox", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_repackage_missing_name", command: "box repackage", paramSpec: "provider=virtualbox;version=1.0.0", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_repackage_only_provider", command: "box repackage", paramSpec: "provider=virtualbox", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_repackage_only_version", command: "box repackage", paramSpec: "version=1.0.0", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_repackage_name_empty_value", command: "box repackage", paramSpec: "name=;provider=virtualbox;version=1.0.0", optionSpec: "")];
+        yield return [FailureCase.Create(id: "box_repackage_version_empty_value", command: "box repackage", paramSpec: "name=mybox;provider=virtualbox;version=", optionSpec: "")];
+
+        // snapshot group failures
+        yield return [FailureCase.Create(id: "snapshot_save_missing_name", command: "snapshot save", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "snapshot_save_empty_name", command: "snapshot save", paramSpec: "name=", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "snapshot_restore_missing_name", command: "snapshot restore", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "snapshot_restore_empty_name", command: "snapshot restore", paramSpec: "name=", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "snapshot_delete_missing_name", command: "snapshot delete", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "snapshot_delete_empty_name", command: "snapshot delete", paramSpec: "name=", optionSpec: "", expected: "Missing required parameter")];
+
+        // plugin group failures
+        yield return [FailureCase.Create(id: "plugin_install_missing_name", command: "plugin install", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "plugin_install_empty_name", command: "plugin install", paramSpec: "name=", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "plugin_uninstall_missing_name", command: "plugin uninstall", paramSpec: "", optionSpec: "", expected: "Missing required parameter")];
+        yield return [FailureCase.Create(id: "plugin_uninstall_empty_name", command: "plugin uninstall", paramSpec: "name=", optionSpec: "", expected: "Missing required parameter")];
     }
 
-    /// <summary>
-    /// Executes a test case that verifies successful command invocation using the provided success scenario.
-    /// </summary>
-    /// <remarks>This method is used in parameterized unit tests to ensure that various command scenarios
-    /// succeed as expected. Each test case is defined by the <paramref name="c"/> parameter and validated through its
-    /// assertions.</remarks>
-    /// <param name="c">The success case to execute, containing the expected inputs and assertions for a valid command invocation.</param>
     [Theory]
     [MemberData(nameof(SuccessCases))]
     public void Command_Success_Cases(SuccessCase c) => c.AssertInvocation(BuildInvocation);
 
-    /// <summary>
-    /// Executes a test case that verifies command invocation failure scenarios using the specified failure case.
-    /// </summary>
-    /// <remarks>This method is used in parameterized unit tests to ensure that command invocations fail as
-    /// expected under various conditions. Each failure case provides its own assertion logic.</remarks>
-    /// <param name="c">The failure case to test, which defines the expected command invocation and its failure conditions.</param>
     [Theory]
     [MemberData(nameof(FailureCases))]
     public void Command_Failure_Cases(FailureCase c) => c.AssertInvocation(BuildInvocation);
