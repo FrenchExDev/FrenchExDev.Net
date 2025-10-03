@@ -1,7 +1,7 @@
 ﻿using FrenchExDev.Net.Mm.Abstractions;
 using Shouldly;
 
-namespace FrenchExDev.Mm.Net.Abstractions.Tests;
+namespace FrenchExDev.Net.Mm.Abstractions.Tests;
 
 /// <summary>
 /// Unit tests for MajorMinorPatchModuleVersion and SemanticModuleVersion classes.

@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace FrenchExDev.Net.Packer;
+namespace FrenchExDev.Net.Packer.Commands;
 
 /// <summary>
 /// Common contract for a Packer CLI command (e.g. build, plugins install).

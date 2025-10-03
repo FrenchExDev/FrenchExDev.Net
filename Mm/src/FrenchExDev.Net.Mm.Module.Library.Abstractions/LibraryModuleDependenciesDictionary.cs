@@ -1,7 +1,6 @@
 ﻿using FrenchExDev.Net.Mm.Abstractions;
-using FrenchExDev.Net.Mm.Module.Library.Abstractions;
 
-namespace FrenchExDev.Net.Mm.Module.Library;
+namespace FrenchExDev.Net.Mm.Module.Library.Abstractions;
 
 /// <summary>
 /// Represents a collection of module dependencies, where each dependency is identified by a <see cref="ModuleId"/> and
