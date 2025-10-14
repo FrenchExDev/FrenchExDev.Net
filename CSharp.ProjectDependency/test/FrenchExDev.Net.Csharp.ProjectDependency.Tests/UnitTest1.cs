@@ -1,13 +1,6 @@
 ﻿using FrenchExDev.Net.CSharp.ProjectDependency;
 using FrenchExDev.Net.CSharp.ProjectDependency.Abstractions;
-using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.MSBuild;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace FrenchExDev.Net.Csharp.ProjectDependency.Tests;
 
@@ -17,7 +10,7 @@ public class UnitTest1
     public async Task Test1()
     {
         // Try to find a solution file by walking up the directory tree from the current working directory.
-        var rootProject = @"C:\code\FrenchExDev.Net\FrenchExDev.Net_i2\FrenchExDev.Net\CSharp.ManagedDictionary\test\FrenchExDev.Net.CSharp.ManagedDictionary.Tests\FrenchExDev.Net.CSharp.ManagedDictionary.Tests.csproj";
+        var rootSln = @"C:\code\FrenchExDev.Net\FrenchExDev.Net_i2\FrenchExDev.Net\FrenchExDev.Net.sln";
 
         var msBuildRegisteringService = new MsBuildRegisteringService();
         msBuildRegisteringService.Register();
@@ -27,13 +20,9 @@ public class UnitTest1
 
         var solutionLoader = new SolutionLoader(msBuildRegisteringService, msBuildWorkspace);
 
-        var projectLoader = new ProjectLoader();
+        var solutionR = await solutionLoader.OpenSolutionAsync(rootSln);
 
-        var solution = await projectLoader.LoadRoslynProjectAsync(msBuildWorkspace, rootProject);
-
-        Assert.True(solution.IsSuccess);
-
-
+        Assert.True(solutionR.IsSuccess);
     }
 
     List<Microsoft.CodeAnalysis.Project> TopologicallySortProjects(Microsoft.CodeAnalysis.Solution solution)
