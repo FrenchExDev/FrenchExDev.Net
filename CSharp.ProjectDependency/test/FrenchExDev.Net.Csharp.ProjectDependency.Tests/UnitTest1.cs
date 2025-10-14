@@ -6,6 +6,7 @@ namespace FrenchExDev.Net.Csharp.ProjectDependency.Tests;
 
 public class UnitTest1
 {
+
     [Fact]
     public async Task Test1()
     {
@@ -23,45 +24,35 @@ public class UnitTest1
         var solutionR = await solutionLoader.OpenSolutionAsync(rootSln);
 
         Assert.True(solutionR.IsSuccess);
+
+        // additional quick use of analyzer
+        var solution = solutionR.ObjectOrThrow();
+        var scans = solution.ScanProjects();
+        Assert.NotNull(scans);
+        Assert.True(scans.Count() > 0);
     }
 
-    List<Microsoft.CodeAnalysis.Project> TopologicallySortProjects(Microsoft.CodeAnalysis.Solution solution)
+    [Fact]
+    public async Task Test_AnalyzeAllProjects()
     {
-        var projects = solution.Projects.ToList();
-        var idToProject = projects.ToDictionary(p => p.Id);
-        // adjacency: project -> list of projectIds it references
-        var adj = projects.ToDictionary(
-            p => p.Id,
-            p => p.ProjectReferences.Select(r => r.ProjectId).ToList()
-        );
+        var rootSln = @"C:\code\FrenchExDev.Net\FrenchExDev.Net_i2\FrenchExDev.Net\FrenchExDev.Net.sln";
 
-        // compute in-degrees
-        var inDegree = projects.ToDictionary(p => p.Id, p => 0);
-        foreach (var kv in adj)
-            foreach (var to in kv.Value)
-                if (inDegree.ContainsKey(to))
-                    inDegree[to]++;
+        var msBuildRegisteringService = new MsBuildRegisteringService();
+        msBuildRegisteringService.Register();
 
-        // nodes with zero in-degree
-        var q = new Queue<ProjectId>(inDegree.Where(kv => kv.Value == 0).Select(kv => kv.Key));
-        var sorted = new List<Microsoft.CodeAnalysis.Project>();
+        var msBuildWorkspace = new MsBuildWorkspace();
+        msBuildWorkspace.Initialize();
 
-        while (q.Count > 0)
-        {
-            var id = q.Dequeue();
-            sorted.Add(idToProject[id]);
-            foreach (var nbr in adj[id])
-            {
-                if (!inDegree.ContainsKey(nbr)) continue;
-                inDegree[nbr]--;
-                if (inDegree[nbr] == 0) q.Enqueue(nbr);
-            }
-        }
+        var solutionLoader = new SolutionLoader(msBuildRegisteringService, msBuildWorkspace);
 
-        // if sorted doesn't contain all projects, there's a cycle
-        if (sorted.Count != projects.Count)
-            throw new InvalidOperationException("Cycle detected in project graph.");
+        var solutionR = await solutionLoader.OpenSolutionAsync(rootSln);
 
-        return sorted;
+        Assert.True(solutionR.IsSuccess);
+
+        var solution = solutionR.ObjectOrThrow();
+
+        var scans = solution.ScanProjects();
+
+        Assert.NotEmpty(scans);
     }
 }

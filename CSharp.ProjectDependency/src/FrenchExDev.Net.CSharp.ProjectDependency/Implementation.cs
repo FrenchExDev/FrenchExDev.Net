@@ -65,7 +65,7 @@ public class MsBuildWorkspace : IMsBuildWorkspace, IDisposable
     {
         try
         {
-            return Result<Abstractions.Project>.Success(new Abstractions.Project(await Workspace.OpenProjectAsync(csprojPath, progress, cancellationToken)));
+            return Result<Abstractions.Project>.Success(new Abstractions.Project(await Workspace.OpenProjectAsync(csprojPath, progress, cancellationToken), csprojPath));
         }
         catch (Exception ex)
         {

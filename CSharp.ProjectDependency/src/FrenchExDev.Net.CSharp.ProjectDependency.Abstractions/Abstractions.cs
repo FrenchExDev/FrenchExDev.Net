@@ -1,5 +1,6 @@
 ﻿using FrenchExDev.Net.CSharp.ManagedList;
 using FrenchExDev.Net.CSharp.Object.Result;
+using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis.MSBuild;
 
 namespace FrenchExDev.Net.CSharp.ProjectDependency.Abstractions;
@@ -43,6 +44,12 @@ public class SolutionLoader : ISolutionLoader
     }
 }
 
+public record ProjectAnalysis(string Name, string FilePath, IReadOnlyCollection<PackageReference> PackageReferences, IReadOnlyCollection<ProjectReference> ProjectReferences);
+
+public record PackageReference(string Name, string? Version = null);
+
+public record ProjectReference(Project Owner, Project Project);
+
 public class Solution
 {
     private readonly Microsoft.CodeAnalysis.Solution _code;
@@ -58,9 +65,52 @@ public class Solution
 
     public void Initialize()
     {
-        var dependencyGraph = _code.GetProjectDependencyGraph();
     }
 
+    public IEnumerable<ProjectAnalysis> ScanProjects()
+    {
+        // Use global ProjectCollection to load project files and read MSBuild items
+        var pc = ProjectCollection.GlobalProjectCollection;
+
+        foreach (Microsoft.CodeAnalysis.Project proj in _code.Projects)
+        {
+            var project = new Abstractions.Project(proj, proj.FilePath ?? string.Empty);
+            _projects.Add(project);
+        }
+
+        foreach (var project in _projects)
+        {
+            var filePath = project.FilePath ?? string.Empty;
+            var packageRefs = new List<PackageReference>();
+            var projectRefs = new List<ProjectReference>();
+
+            if (!string.IsNullOrWhiteSpace(filePath) && File.Exists(filePath))
+            {
+                var msproj = pc.LoadProject(filePath);
+
+                // PackageReference items
+                foreach (var item in msproj.GetItems("PackageReference"))
+                {
+                    var id = item.EvaluatedInclude ?? string.Empty;
+                    var version = item.GetMetadataValue("Version");
+                    if (string.IsNullOrWhiteSpace(version))
+                        version = item.GetMetadataValue("Version");
+                    packageRefs.Add(new PackageReference(id, version));
+                }
+
+                // ProjectReference items
+                foreach (ProjectItem? item in msproj.GetItems("ProjectReference"))
+                {
+                    var include = item.EvaluatedInclude ?? string.Empty;
+                    // resolve relative path
+                    var resolved = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, include));
+                    projectRefs.Add(new ProjectReference(_projects.First(x => x.FilePath.Equals(filePath)), _projects.First(x => x.FilePath.Equals(item.Project.ProjectFileLocation))));
+                }
+
+                yield return new ProjectAnalysis(project.Name, filePath, packageRefs, projectRefs);
+            }
+        }
+    }
 }
 
 /// <summary>
@@ -170,11 +220,14 @@ public interface IMsBuildWorkspace
 /// </summary>
 public class Project
 {
+    public string FilePath { get; init; }
+
     private Microsoft.CodeAnalysis.Project _code;
 
-    public Project(Microsoft.CodeAnalysis.Project code)
+    public Project(Microsoft.CodeAnalysis.Project code, string path)
     {
         _code = code;
+        FilePath = path;
     }
 
     /// <summary>
