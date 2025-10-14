@@ -47,7 +47,7 @@ public class BoxRepackageCommandBuilder : BoxCommandBuilder<BoxRepackageCommandB
             failures.Failure(nameof(_output), new InvalidDataException("--output cannot be empty"));
     }
 
-    protected override BoxRepackageCommand Instantiate() => new BoxRepackageCommand
+    protected override BoxRepackageCommand Instantiate() => new()
     {
         Name = _name,
         Provider = _provider,
@@ -61,6 +61,8 @@ public class BoxRepackageCommandBuilder : BoxCommandBuilder<BoxRepackageCommandB
         DebugTimestamp = _debugTimestamp,
         NoTty = _noTty,
         Help = _help,
-        EnvironmentVariables = _environmentVariables
+        EnvironmentVariables = _environmentVariables,
+        OnStdErr = _onStdErr,
+        OnStdOut = _onStdOut
     };
 }

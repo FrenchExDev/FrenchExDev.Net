@@ -45,7 +45,9 @@ public class BoxUpdateCommandBuilder : BoxCommandBuilder<BoxUpdateCommandBuilder
             NoTty = _noTty == true ? true : null,
             Timestamp = _timestamp == true ? true : null,
             Version = _version == true ? true : null,
-            Help = _help == true ? true : null
+            Help = _help == true ? true : null,
+            OnStdOut = _onStdOut,
+            OnStdErr = _onStdErr
         };
     }
 }

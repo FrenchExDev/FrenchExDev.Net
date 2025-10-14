@@ -15,7 +15,9 @@ public class VersionCommandBuilder : VagrantCommandBuilder<VersionCommandBuilder
             NoTty = _noTty,
             NoColor = _noColor,
             Timestamp = _timestamp,
-            Version = _version
+            Version = _version,
+            OnStdErr = _onStdErr,
+            OnStdOut = _onStdOut
         };
     }
 }

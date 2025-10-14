@@ -34,7 +34,9 @@ public class SnapshotRestoreCommandBuilder : VagrantCommandBuilder<SnapshotResto
             NoColor = _noColor,
             NoTty = _noTty,
             Timestamp = _timestamp,
-            Version = _version
+            Version = _version,
+            OnStdOut = _onStdOut,
+            OnStdErr = _onStdErr
         };
     }
 }

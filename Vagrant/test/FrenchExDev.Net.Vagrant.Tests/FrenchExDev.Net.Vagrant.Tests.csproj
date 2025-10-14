@@ -16,7 +16,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\CSharp.Process.Wrapper\src\FrenchExDev.Net.CSharp.Process.Wrapper.Testing\FrenchExDev.Net.CSharp.Process.Wrapper.Testing.csproj" />
 		<ProjectReference Include="..\..\..\Testing\src\FenchExDev.Net.Testing\FenchExDev.Net.Testing.csproj" />
 		<ProjectReference Include="..\..\src\FrenchExDev.Net.Vagrant.Testing\FrenchExDev.Net.Vagrant.Testing.csproj" />
 	</ItemGroup>

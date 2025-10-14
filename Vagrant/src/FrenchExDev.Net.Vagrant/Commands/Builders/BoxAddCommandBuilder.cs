@@ -17,6 +17,11 @@ public class BoxAddCommandBuilder : BoxCommandBuilder<BoxAddCommandBuilder, BoxA
     private string? _cert;
     private bool? _locationTrusted;
 
+    /// <summary>
+    /// Specifies the URL or file system path to use for the box add command.
+    /// </summary>
+    /// <param name="url">The URL or file system path that identifies the resource to be added. Cannot be null.</param>
+    /// <returns>The current <see cref="BoxAddCommandBuilder"/> instance to allow method chaining.</returns>
     public BoxAddCommandBuilder UrlOrPath(string url)
     {
         _nameUrlOrPath = url;
@@ -35,7 +40,6 @@ public class BoxAddCommandBuilder : BoxCommandBuilder<BoxAddCommandBuilder, BoxA
         return this;
     }
 
-    // Extended fluent setters
     public BoxAddCommandBuilder Checksum(string checksum)
     {
         _checksum = checksum;
@@ -165,6 +169,8 @@ public class BoxAddCommandBuilder : BoxCommandBuilder<BoxAddCommandBuilder, BoxA
             Provider = _provider,
             Help = _help,
             EnvironmentVariables = _environmentVariables,
+            OnStdOut = _onStdOut,
+            OnStdErr = _onStdErr
         };
     }
 }

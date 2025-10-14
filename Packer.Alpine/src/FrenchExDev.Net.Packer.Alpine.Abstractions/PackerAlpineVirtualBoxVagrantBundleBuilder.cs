@@ -67,6 +67,7 @@ public class PackerAlpineVirtualBoxVagrantBundleBuilder : AbstractBuilder<Packer
     protected PackerAlpineVirtualBoxVagrantBundleBuilder PreBuild()
     {
         ArgumentNullException.ThrowIfNull(_command);
+        ArgumentNullException.ThrowIfNull(_builder);
 
         const string eol = "\r\n";
 

@@ -1,7 +1,6 @@
-﻿namespace FrenchExDev.Net.Vos.Alpine
-{
-    public class Class1
-    {
+﻿namespace FrenchExDev.Net.Vos.Alpine;
 
-    }
+public class Class1
+{
+
 }

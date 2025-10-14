@@ -33,7 +33,7 @@ public class BoxPruneCommandBuilder : BoxCommandBuilder<BoxPruneCommandBuilder, 
         // no specific validations
     }
 
-    protected override BoxPruneCommand Instantiate() => new BoxPruneCommand
+    protected override BoxPruneCommand Instantiate() => new()
     {
         DryRun = _dryRun,
         KeepActiveProvider = _keepActiveProvider,
@@ -47,6 +47,8 @@ public class BoxPruneCommandBuilder : BoxCommandBuilder<BoxPruneCommandBuilder, 
         DebugTimestamp = _debugTimestamp,
         NoTty = _noTty,
         Help = _help,
-        EnvironmentVariables = _environmentVariables
+        EnvironmentVariables = _environmentVariables,
+        OnStdErr = _onStdErr,
+        OnStdOut = _onStdOut
     };
 }

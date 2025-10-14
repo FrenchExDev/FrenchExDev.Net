@@ -4,15 +4,10 @@ using FrenchExDev.Net.Vagrant.Commands.Builders;
 
 namespace FrenchExDev.Net.Vagrant.Testing;
 
-public class CommandBuilderTester<TBuilder, TCommand>
+public abstract class CommandBuilderTester<TBuilder, TCommand>
     where TCommand : VagrantCommandBase
     where TBuilder : VagrantCommandBuilder<TBuilder, TCommand>, new()
 {
-    public TBuilder NewBuilder()
-    {
-        return new TBuilder();
-    }
-
     protected void Valid(Action<TBuilder> body, Action<TCommand> assertCommand, Action<List<string>> assertToString)
     {
         var builder = new TBuilder();

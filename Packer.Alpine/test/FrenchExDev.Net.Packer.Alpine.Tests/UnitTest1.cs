@@ -24,8 +24,6 @@ public class PackerBundlerTests : TestsUsing<PackerBundlerTester>
     public void Can_Build_And_Serialize_Alpine_PackerFile_Successfully() =>
         NewTester().Valid(builder =>
         {
-            const string eol = "\r\n";
-
             var alpinePackerBundleCommand = new AlpinePackerVagrantBundleCommand
             {
                 OutputVagrant = "output-vagrant",

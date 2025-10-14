@@ -15,7 +15,9 @@ public class StatusCommandBuilder : VagrantCommandBuilder<StatusCommandBuilder, 
             Help = _help,
             NoTty = _noTty,
             Timestamp = _timestamp,
-            Version = _version
+            Version = _version,
+            OnStdErr = _onStdErr,
+            OnStdOut = _onStdOut
         };
     }
 }

@@ -24,7 +24,9 @@ public class BoxListCommandBuilder : BoxCommandBuilder<BoxListCommandBuilder, Bo
             DebugTimestamp = _debugTimestamp,
             NoTty = _noTty,
             Help = _help,
-            EnvironmentVariables = _environmentVariables
+            EnvironmentVariables = _environmentVariables,
+            OnStdErr = _onStdErr,
+            OnStdOut = _onStdOut
         };
     }
 }

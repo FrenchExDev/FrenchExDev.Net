@@ -17,7 +17,7 @@ public class DestroyCommandBuilder : VagrantCommandBuilder<DestroyCommandBuilder
         return this;
     }
 
-    protected override DestroyCommand Instantiate() => new DestroyCommand
+    protected override DestroyCommand Instantiate() => new()
     {
         Force = _force,
         Graceful = _graceful,
@@ -30,6 +30,8 @@ public class DestroyCommandBuilder : VagrantCommandBuilder<DestroyCommandBuilder
         NoColor = _noColor,
         NoTty = _noTty,
         Timestamp = _timestamp,
-        Version = _version
+        Version = _version,
+        OnStdErr = _onStdErr,
+        OnStdOut = _onStdOut
     };
 }

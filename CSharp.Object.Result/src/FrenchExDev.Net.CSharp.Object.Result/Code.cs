@@ -1,5 +1,14 @@
-﻿
-namespace FrenchExDev.Net.CSharp.Object.Result;
+﻿namespace FrenchExDev.Net.CSharp.Object.Result;
+
+/// <summary>
+/// Represents the result of an operation.
+/// </summary>
+/// <remarks>Implementations of this interface typically provide information about the outcome of an operation,
+/// such as success or failure, and may include additional details relevant to the operation's result.</remarks>
+public interface IResult
+{
+    bool IsSuccess { get; }
+}
 
 /// <summary>
 /// Exception class for all Result exceptions.
@@ -12,13 +21,54 @@ public class ResultException : Exception { }
 public class InvalidResultAccessException : ResultException { }
 
 /// <summary>
+/// Represents the outcome of an operation, indicating success or failure.
+/// </summary>
+/// <remarks>Use the <see cref="Success"/> and <see cref="Failure"/> methods to create instances representing
+/// successful or failed results. The <see cref="IsSuccess"/> property can be used to check whether the operation was
+/// successful.</remarks>
+public readonly struct Result : IResult
+{
+    /// <summary>
+    /// Initializes a new instance of the Result class with the specified success state.
+    /// </summary>
+    /// <param name="isSuccess">A value indicating whether the result represents a successful outcome. Specify <see langword="true"/> for
+    /// success; otherwise, <see langword="false"/>.</param>
+    private Result(bool isSuccess)
+    {
+        IsSuccess = isSuccess;
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the operation completed successfully.
+    /// </summary>
+    public bool IsSuccess { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the result represents a failure state.
+    /// </summary>
+    public bool IsFailure => !IsSuccess;
+
+    /// <summary>
+    /// Creates a new <see cref="Result"/> instance representing a successful operation.
+    /// </summary>
+    /// <returns>A <see cref="Result"/> indicating success.</returns>
+    public static Result Success() => new(true);
+
+    /// <summary>
+    /// Creates a new <see cref="Result"/> instance representing a failed operation.
+    /// </summary>
+    /// <returns>A <see cref="Result"/> indicating failure.</returns>
+    public static Result Failure() => new(false);
+}
+
+/// <summary>
 /// Represents the result of an operation that may succeed or fail, encapsulating an optional object of type T.
 /// </summary>
 /// <remarks>Use the Success and Failure static methods to create instances representing successful or failed
 /// operations. The IsSuccess property indicates whether the result contains a valid object. Access the contained object
 /// using Object, ObjectOrNull(), or ObjectOrThrow().</remarks>
 /// <typeparam name="T">The type of the object contained in the result.</typeparam>
-public readonly struct Result<T>
+public readonly struct Result<T> : IResult
 {
     /// <summary>
     /// Stores the result object on success.
@@ -28,7 +78,12 @@ public readonly struct Result<T>
     /// <summary>
     /// Gets a value indicating whether the result contains a valid object.
     /// </summary>
-    public bool IsSuccess => Object is not null;
+    public bool IsSuccess => _object is not null;
+
+    /// <summary>
+    /// Gets a value indicating whether the result represents a failure state.
+    /// </summary>
+    public bool IsFailure => !IsSuccess;
 
     /// <summary>
     /// Gets the value of the object contained by this instance.
@@ -48,6 +103,14 @@ public readonly struct Result<T>
     /// Holds failures
     /// </summary>
     public FailureDictionary? Failures { get; init; }
+
+    /// <summary>
+    /// Returns the collection of failures associated with the result, or throws an exception if no failures are
+    /// present.
+    /// </summary>
+    /// <returns>A <see cref="FailureDictionary"/> containing all failures for the result.</returns>
+    /// <exception cref="InvalidResultAccessException">Thrown if the result does not contain any failures.</exception>
+    public FailureDictionary FailuresOrThrow() => Failures ?? throw new InvalidResultAccessException();
 
     /// <summary>
     /// Initializes a new instance of the Result class with the specified collection of failures.
@@ -91,17 +154,41 @@ public readonly struct Result<T>
     }
 
     /// <summary>
+    /// Creates a failed result containing the specified exception.
+    /// </summary>
+    /// <param name="ex">The exception to associate with the failure. Cannot be null.</param>
+    /// <returns>A <see cref="Result{T}"/> representing a failed operation with the provided exception included in its error
+    /// details.</returns>
+    public static Result<T> Failure(Exception ex)
+    {
+        return Exception(ex);
+    }
+
+    /// <summary>
+    /// Creates a failed result containing the specified exception information.
+    /// </summary>
+    /// <remarks>Use this method to propagate exception details in a result object, enabling error handling
+    /// without throwing exceptions. The exception is stored in the result's error data under the key
+    /// "Exception".</remarks>
+    /// <param name="ex">The exception to associate with the failure result. Cannot be null.</param>
+    /// <returns>A failed <see cref="Result{T}"/> instance that includes the provided exception details.</returns>
+    public static Result<T> Exception(Exception ex)
+    {
+        return Failure(d => d.Add("Exception", ex));
+    }
+
+    /// <summary>
     /// Returns the contained object if available; otherwise, returns null.
     /// </summary>
     /// <returns>The object of type T if present; otherwise, null.</returns>
-    public T? ObjectOrNull() => Object;
+    public T? ObjectOrNull() => _object;
 
     /// <summary>
     /// Returns the contained object if it is available; otherwise, throws an exception.
     /// </summary>
     /// <returns>The object of type <typeparamref name="T"/> if it is present.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the object is not available.</exception>
-    public T ObjectOrThrow() => Object is not null ? Object : throw new InvalidOperationException("result is empty");
+    public T ObjectOrThrow() => _object is not null ? _object : throw new InvalidOperationException("result is empty");
 
     /// <summary>
     /// Attempts to retrieve the successful result value if the operation completed successfully.
@@ -111,9 +198,9 @@ public readonly struct Result<T>
     /// <returns>true if the operation was successful and the result was retrieved; otherwise, false.</returns>
     public bool TryGetSuccess(out T? result)
     {
-        if (IsSuccess)
+        if (_object is not null)
         {
-            result = Object;
+            result = _object;
             return true;
         }
         result = default;
@@ -130,6 +217,11 @@ public readonly struct Result<T>
 /// lists.</remarks>
 public class FailureDictionary : Dictionary<string, List<object>>
 {
+    /// <summary>
+    /// Initializes a new instance of the FailureDictionary class.
+    /// </summary>
+    public FailureDictionary() : base() { }
+
     /// <summary>
     /// Constructor.
     /// </summary>

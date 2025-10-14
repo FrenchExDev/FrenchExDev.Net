@@ -74,6 +74,8 @@ public class InitCommandBuilder : VagrantCommandBuilder<InitCommandBuilder, Init
             NoTty = _noTty,
             EnvironmentVariables = _environmentVariables,
             Help = _help,
+            OnStdErr = _onStdErr,
+            OnStdOut = _onStdOut
         };
     }
 }

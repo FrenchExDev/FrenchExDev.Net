@@ -34,7 +34,7 @@ public class BoxOutdatedCommandBuilder : BoxCommandBuilder<BoxOutdatedCommandBui
             failures.Failure("Options", new InvalidDataException("--provider cannot be empty"));
     }
 
-    protected override BoxOutdatedCommand Instantiate() => new BoxOutdatedCommand
+    protected override BoxOutdatedCommand Instantiate() => new()
     {
         Provider = _provider,
         Global = _global,
@@ -48,6 +48,8 @@ public class BoxOutdatedCommandBuilder : BoxCommandBuilder<BoxOutdatedCommandBui
         Timestamp = _timestamp == true ? true : null,
         Version = _version == true ? true : null,
         EnvironmentVariables = _environmentVariables,
-        Help = _help == true ? true : null
+        Help = _help == true ? true : null,
+        OnStdErr = _onStdErr,
+        OnStdOut = _onStdOut
     };
 }

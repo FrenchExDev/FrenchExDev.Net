@@ -2,7 +2,7 @@ namespace FrenchExDev.Net.Vagrant.Commands.Builders;
 
 public class LoginCommandBuilder : VagrantCommandBuilder<LoginCommandBuilder, LoginCommand>
 {
-    protected override LoginCommand Instantiate() => new LoginCommand
+    protected override LoginCommand Instantiate() => new()
     {
         WorkingDirectory = _workingDirectory,
         Debug = _debug,
@@ -13,6 +13,8 @@ public class LoginCommandBuilder : VagrantCommandBuilder<LoginCommandBuilder, Lo
         NoColor = _noColor,
         NoTty = _noTty,
         Timestamp = _timestamp,
-        Version = _version
+        Version = _version,
+        OnStdErr = _onStdErr,
+        OnStdOut = _onStdOut
     };
 }

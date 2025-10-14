@@ -32,7 +32,9 @@ public class HaltCommandBuilder : VagrantCommandBuilder<HaltCommandBuilder, Halt
             NoColor = _noColor,
             NoTty = _noTty,
             Timestamp = _timestamp,
-            Version = _version
+            Version = _version,
+            OnStdErr = _onStdErr,
+            OnStdOut = _onStdOut
         };
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace FrenchExDev.Net.CSharp.SolutionEngineering;
+﻿using FrenchExDev.Net.CSharp.ManagedList;
+
+namespace FrenchExDev.Net.CSharp.SolutionEngineering;
 
 public interface ISolution
 {
@@ -6,13 +8,36 @@ public interface ISolution
 
     SolutionParameterDictionary Parameters { get; }
 
-    ICollection<SolutionProject> Projects { get; }
+    SolutionProjectList Projects { get; }
+}
 
-    ICollection<IFeature> Features { get; }
+public class SolutionProjectList : OpenManagedList<SolutionProject>
+{
+
+}
+
+public class Solution : ISolution
+{
+    public Solution(string name)
+    {
+        _name = name ?? throw new ArgumentNullException(nameof(name));
+        _parameters = new SolutionParameterDictionary().ForSolution(this);
+        _projects = new SolutionProjectList();
+    }
+
+    private string _name;
+    public string Name => _name;
+
+    private SolutionParameterDictionary _parameters;
+    public SolutionParameterDictionary Parameters => _parameters;
+
+    private SolutionProjectList _projects;
+    public SolutionProjectList Projects => _projects;
 }
 
 public class SolutionParameterDictionary : Dictionary<string, object>
 {
+    public const string SolutionKey = "Solution";
     public SolutionParameterDictionary()
     {
     }
@@ -23,11 +48,11 @@ public class SolutionParameterDictionary : Dictionary<string, object>
 
     public SolutionParameterDictionary ForSolution(ISolution solution)
     {
-        this["Solution"] = solution;
+        this[SolutionKey] = solution;
         return this;
     }
 
-    public ISolution Solution => (ISolution)this["Solution"];
+    public ISolution Solution => (ISolution)this[SolutionKey];
 }
 
 public interface IProject
@@ -96,37 +121,9 @@ public enum ApplicationTargets
 
 public record ProgrammingLanguage(string Name, string Version)
 {
+    public static ProgrammingLanguage CPlusPlus(string version) => new("C++", version);
     public static ProgrammingLanguage CSharp(string version) => new("C#", version);
-
     public static ProgrammingLanguage TypeScript(string version) => new("TypeScript", version);
-
     public static ProgrammingLanguage Python(string version) => new("Python", version);
 }
-
-
-public interface IFeature
-{
-
-}
-
-public interface IFeatureToggle<TFeature, TToggler>
-    where TFeature : IFeature
-    where TToggler : notnull
-{
-    TFeature Feature { get; }
-    TToggler Toggler { get; }
-
-    bool Toggle();
-}
-
-public interface IFeaturePart<TFeature> where TFeature : IFeature
-{
-}
-
-public interface IFeaturePartWithToggle<TFeature, TToggler> : IFeaturePart<TFeature>, IFeatureToggle<TFeature, TToggler>
-    where TFeature : IFeature
-    where TToggler : notnull
-{
-}
-
 

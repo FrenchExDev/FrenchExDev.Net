@@ -26,6 +26,8 @@ public class AlpineVersionSearcher : IAlpineVersionSearcher
 {
     private readonly IHttpClient _httpClient;
 
+    private readonly static Regex RegExUrls = new Regex("<a\\s+(?:[^>]*?\\s+)?href=([\"'])(.*?)\\1");
+
     /// <summary>
     /// Initializes a new instance of <see cref="AlpineVersionSearcher"/> with the specified HTTP client.
     /// </summary>
@@ -98,9 +100,7 @@ public class AlpineVersionSearcher : IAlpineVersionSearcher
                                   ?.Select(x => x.ToString().ToLowerInvariant()).ToList()
                               ?? [];
 
-        var regexUrls = new Regex("<a\\s+(?:[^>]*?\\s+)?href=([\"'])(.*?)\\1");
-
-        var getAlpineVersionMatches = regexUrls.Matches(getAlpineVersionsHtml);
+        var getAlpineVersionMatches = RegExUrls.Matches(getAlpineVersionsHtml);
 
         if (getAlpineVersionMatches.Count == 0) return new AlpineVersionList();
 
@@ -144,7 +144,6 @@ public class AlpineVersionSearcher : IAlpineVersionSearcher
 
         var listAlpineVersionArchitectures = await QueryWebForAlpineVersionsForArchitecture(
             listAlpineVersions,
-            regexUrls,
             exclude,
             includedArchitectures,
             cancellationToken
@@ -155,7 +154,6 @@ public class AlpineVersionSearcher : IAlpineVersionSearcher
         var listAlpineVersionArchFlavors = await QueryAlpineVersionsMatchingFilters(
             alpineVersionSearchingFilters,
             listAlpineVersionArchitectures,
-            regexUrls,
             exclude,
             includedFlavors,
             cancellationToken
@@ -183,7 +181,6 @@ public class AlpineVersionSearcher : IAlpineVersionSearcher
     private async Task<ConcurrentBag<AlpineVersionArchFlavorRecord>> QueryAlpineVersionsMatchingFilters(
         AlpineVersionSearchingFilters alpineVersionSearchingFilters,
         ConcurrentBag<AlpineVersionArchRecord> listAlpineVersionArchitectures,
-        Regex regexUrls,
         List<string> exclude,
         List<string> includedFlavors,
         CancellationToken cancellationToken = default)
@@ -205,7 +202,7 @@ public class AlpineVersionSearcher : IAlpineVersionSearcher
 
                 var getAlpineVersionArchFlavorsHtml =
                     await getAlpineVersionArchFlavorsHtmlResponse.Content.ReadAsStringAsync(cT);
-                var getAlpineVersionArchFlavorMatches = regexUrls.Matches(getAlpineVersionArchFlavorsHtml);
+                var getAlpineVersionArchFlavorMatches = RegExUrls.Matches(getAlpineVersionArchFlavorsHtml);
 
                 if (getAlpineVersionArchFlavorMatches.Count <= 0) return;
 
@@ -483,7 +480,6 @@ public class AlpineVersionSearcher : IAlpineVersionSearcher
     /// <returns>Concurrent bag of <see cref="AlpineVersionArchRecord"/> results.</returns>
     private async Task<ConcurrentBag<AlpineVersionArchRecord>> QueryWebForAlpineVersionsForArchitecture(
         List<AlpineVersionRecord> listAlpineVersions,
-        Regex regexUrls,
         List<string> exclude,
         List<string> includedArchitectures,
         CancellationToken cancellationToken = default)
@@ -498,7 +494,7 @@ public class AlpineVersionSearcher : IAlpineVersionSearcher
                 var getAlpineVersionArchsHtmlResponse = await _httpClient.GetAsync(
                     $"https://dl-cdn.alpinelinux.org/alpine/{alpineVersionObj.ToMajorMinorUrl()}/releases/", ct);
                 var getAlpineVersionArchsHtml = await getAlpineVersionArchsHtmlResponse.Content.ReadAsStringAsync(ct);
-                var getAlpineVersionArchsMatches = regexUrls.Matches(getAlpineVersionArchsHtml);
+                var getAlpineVersionArchsMatches = RegExUrls.Matches(getAlpineVersionArchsHtml);
                 if (getAlpineVersionArchsMatches.Count > 0)
                     foreach (Match match in getAlpineVersionArchsMatches)
                     {
