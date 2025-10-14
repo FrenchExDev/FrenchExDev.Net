@@ -80,36 +80,41 @@ public class Solution
 
         foreach (var project in _projects)
         {
-            var filePath = project.FilePath ?? string.Empty;
-            var packageRefs = new List<PackageReference>();
-            var projectRefs = new List<ProjectReference>();
-
-            if (!string.IsNullOrWhiteSpace(filePath) && File.Exists(filePath))
-            {
-                var msproj = pc.LoadProject(filePath);
-
-                // PackageReference items
-                foreach (var item in msproj.GetItems("PackageReference"))
-                {
-                    var id = item.EvaluatedInclude ?? string.Empty;
-                    var version = item.GetMetadataValue("Version");
-                    if (string.IsNullOrWhiteSpace(version))
-                        version = item.GetMetadataValue("Version");
-                    packageRefs.Add(new PackageReference(id, version));
-                }
-
-                // ProjectReference items
-                foreach (ProjectItem? item in msproj.GetItems("ProjectReference"))
-                {
-                    var include = item.EvaluatedInclude ?? string.Empty;
-                    // resolve relative path
-                    var resolved = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, include));
-                    projectRefs.Add(new ProjectReference(_projects.First(x => x.FilePath.Equals(filePath)), _projects.First(x => x.FilePath.Equals(item.Project.ProjectFileLocation))));
-                }
-
-                yield return new ProjectAnalysis(project.Name, filePath, packageRefs, projectRefs);
-            }
+            yield return ScanProject(pc, project).ObjectOrThrow();
         }
+    }
+
+    private Result<ProjectAnalysis> ScanProject(ProjectCollection pc, Project project)
+    {
+        var filePath = project.FilePath ?? string.Empty;
+        var packageRefs = new List<PackageReference>();
+        var projectRefs = new List<ProjectReference>();
+
+        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+        {
+            return Result<ProjectAnalysis>.Failure(d => d.Add("File", "does not exist"));
+        }
+
+        var msproj = pc.LoadProject(filePath);
+
+        foreach (var item in msproj.GetItems("PackageReference"))
+        {
+            var id = item.EvaluatedInclude ?? string.Empty;
+            var version = item.GetMetadataValue("Version");
+            if (string.IsNullOrWhiteSpace(version))
+                version = item.GetMetadataValue("Version");
+            packageRefs.Add(new PackageReference(id, version));
+        }
+
+        foreach (ProjectItem? item in msproj.GetItems("ProjectReference"))
+        {
+            var include = item.EvaluatedInclude ?? string.Empty;
+            // resolve relative path
+            var resolved = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, include));
+            projectRefs.Add(new ProjectReference(_projects.First(x => x.FilePath.Equals(filePath)), _projects.First(x => x.FilePath.Equals(item.Project.ProjectFileLocation))));
+        }
+
+        return Result<ProjectAnalysis>.Success(new ProjectAnalysis(project.Name, filePath, packageRefs, projectRefs));
     }
 }
 
