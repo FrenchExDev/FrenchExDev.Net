@@ -2,6 +2,12 @@
 using FrenchExDev.Net.CSharp.Object.Result;
 using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace FrenchExDev.Net.CSharp.ProjectDependency.Abstractions;
 
@@ -58,10 +64,25 @@ public class Solution
                 }
 
                 // try to find corresponding Roslyn project in the solution by file path
-                var roslynForCurrent = _code.Projects.First(p => !string.IsNullOrWhiteSpace(p.FilePath)
+                var roslynForCurrent = _code.Projects.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.FilePath)
                     && Path.GetFullPath(p.FilePath).Equals(current, StringComparison.OrdinalIgnoreCase));
 
-                var project = new Abstractions.Project(roslynForCurrent, current, msproj);
+                Microsoft.CodeAnalysis.Project codeProject;
+                if (roslynForCurrent != null)
+                {
+                    codeProject = roslynForCurrent;
+                }
+                else
+                {
+                    // fallback: create a minimal project in adhoc workspace
+                    var adhoc = new AdhocWorkspace();
+                    var name = Path.GetFileNameWithoutExtension(current) ?? "Unknown";
+                    var pid = ProjectId.CreateNewId();
+                    var info = ProjectInfo.Create(pid, VersionStamp.Create(), name, name, LanguageNames.CSharp, filePath: current);
+                    codeProject = adhoc.AddProject(info);
+                }
+
+                var project = new Abstractions.Project(codeProject, current, msproj);
                 _projects.Add(current, project);
 
                 foreach (var item in msproj.GetItems("ProjectReference"))
@@ -121,6 +142,121 @@ public class Solution
             }
         }
 
-        return Result<ProjectAnalysis>.Success(new ProjectAnalysis(project.Name, filePath, packageRefs, projectRefs));
+        // analyze constructs exported by this project
+        ProjectConstructMetrics? constructs = null;
+        try
+        {
+            var compilation = project.Code.GetCompilationAsync().GetAwaiter().GetResult();
+            int records = 0, enums = 0, classes = 0, interfaces = 0, structs = 0, extensionMethods = 0, publicMembers = 0;
+
+            foreach (var tree in compilation.SyntaxTrees)
+            {
+                var model = compilation.GetSemanticModel(tree);
+                var root = tree.GetRoot();
+
+                // count type declarations
+                var typeDecls = root.DescendantNodes().OfType<BaseTypeDeclarationSyntax>();
+                foreach (var decl in typeDecls)
+                {
+                    var sym = model.GetDeclaredSymbol(decl) as INamedTypeSymbol;
+                    if (sym == null) continue;
+                    if (sym.DeclaredAccessibility != Accessibility.Public) continue;
+
+                    if (sym.TypeKind == TypeKind.Interface) interfaces++;
+                    else if (sym.TypeKind == TypeKind.Enum) enums++;
+                    else if (sym.TypeKind == TypeKind.Struct) structs++;
+                    else if (sym.IsRecord) records++;
+                    else if (sym.TypeKind == TypeKind.Class) classes++;
+
+                    // count public members
+                    foreach (var m in sym.GetMembers())
+                    {
+                        if (m.DeclaredAccessibility == Accessibility.Public)
+                            publicMembers++;
+                    }
+                }
+
+                // extension methods
+                var methodDecls = root.DescendantNodes().OfType<MethodDeclarationSyntax>();
+                foreach (var md in methodDecls)
+                {
+                    var msym = model.GetDeclaredSymbol(md) as IMethodSymbol;
+                    if (msym != null && msym.IsExtensionMethod && msym.DeclaredAccessibility == Accessibility.Public)
+                        extensionMethods++;
+                }
+            }
+
+            constructs = new ProjectConstructMetrics(records, enums, classes, interfaces, structs, extensionMethods, publicMembers);
+        }
+        catch
+        {
+            // ignore analysis failures; leave constructs null
+        }
+
+        // analyze reference coupling consumption from this project to referenced projects
+        var referenceCouplings = new List<ReferenceCoupling>();
+        try
+        {
+            var compilation = project.Code.GetCompilationAsync().GetAwaiter().GetResult();
+
+            foreach (var pref in projectRefs)
+            {
+                var referenced = pref.Project;
+                if (referenced == null) continue;
+
+                int totalUses = 0, ifaceUses = 0, classUses = 0;
+                var targetAssemblyName = referenced.Code.AssemblyName ?? Path.GetFileNameWithoutExtension(referenced.FilePath);
+
+                foreach (var tree in compilation.SyntaxTrees)
+                {
+                    var model = compilation.GetSemanticModel(tree);
+                    var ids = tree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>();
+                    foreach (var id in ids)
+                    {
+                        var s = model.GetSymbolInfo(id).Symbol;
+                        if (s is INamedTypeSymbol nts)
+                        {
+                            var asmName = nts.ContainingAssembly?.Name;
+                            if (string.Equals(asmName, targetAssemblyName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                totalUses++;
+                                if (nts.TypeKind == TypeKind.Interface || nts.TypeKind == TypeKind.Enum || nts.IsValueType || nts.IsRecord) ifaceUses++;
+                                else if (nts.TypeKind == TypeKind.Class) classUses++;
+                            }
+                        }
+                        else if (s is IMethodSymbol msym)
+                        {
+                            var asmName = msym.ContainingAssembly?.Name;
+                            if (string.Equals(asmName, targetAssemblyName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                totalUses++;
+                                // if method's receiver type is class or interface
+                                var recv = msym.ReceiverType;
+                                if (recv != null)
+                                {
+                                    if (recv.TypeKind == TypeKind.Class) classUses++;
+                                    else ifaceUses++;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var level = CouplingLevel.Low;
+                if (totalUses > 0)
+                {
+                    if ((double)classUses / Math.Max(1, totalUses) > 0.5) level = CouplingLevel.High;
+                    else level = CouplingLevel.Low;
+                }
+
+                referenceCouplings.Add(new ReferenceCoupling(referenced.FilePath, level, totalUses, ifaceUses, classUses));
+            }
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return Result<ProjectAnalysis>.Success(new ProjectAnalysis(project.Name, filePath, packageRefs, projectRefs, referenceCouplings, constructs));
     }
 }

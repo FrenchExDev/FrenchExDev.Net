@@ -2,6 +2,9 @@
 using FrenchExDev.Net.CSharp.Object.Result;
 using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis.MSBuild;
+using Microsoft.CodeAnalysis;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace FrenchExDev.Net.CSharp.ProjectDependency.Abstractions;
 
@@ -44,11 +47,19 @@ public class SolutionLoader : ISolutionLoader
     }
 }
 
-public record ProjectAnalysis(string Name, string FilePath, IReadOnlyCollection<PackageReference> PackageReferences, IReadOnlyCollection<ProjectReference> ProjectReferences);
-
 public record PackageReference(string Name, string? Version = null);
 
 public record ProjectReference(Project Owner, Project Project);
+
+// ProjectAnalysis extended to include reference coupling and construct metrics
+public record ProjectAnalysis(
+    string Name,
+    string FilePath,
+    IReadOnlyCollection<PackageReference> PackageReferences,
+    IReadOnlyCollection<ProjectReference> ProjectReferences,
+    IReadOnlyCollection<ReferenceCoupling>? ReferenceCouplings = null,
+    ProjectConstructMetrics? Constructs = null
+);
 
 public interface IProjectCollection
 {
