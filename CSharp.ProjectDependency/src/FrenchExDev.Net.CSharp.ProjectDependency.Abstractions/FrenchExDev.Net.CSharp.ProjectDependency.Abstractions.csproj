@@ -9,9 +9,11 @@
 		<PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
 		<PackageReference Include="Microsoft.Build.Locator" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+		<PackageReference Include="Microsoft.CodeAnalysis.FlowAnalysis.Utilities" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
 		<PackageReference Include="Microsoft.CSharp" />
 		<PackageReference Include="Roslynator.Analyzers" />
+		<PackageReference Include="LibGit2Sharp" />
 	</ItemGroup>
 
 	<ItemGroup>

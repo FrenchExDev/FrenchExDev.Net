@@ -152,5 +152,7 @@ public class UnitTest1
         Assert.False(string.IsNullOrWhiteSpace(allMd));
         // should contain at least one project header
         Assert.Contains("## ", allMd);
+
+        await File.WriteAllTextAsync(@"C:\code\FrenchExDev.Net\FrenchExDev.Net_i2\FrenchExDev.Net\FrenchExDev.Net.md", allMd);
     }
 }

@@ -2,13 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace FrenchExDev.Net.CSharp.ProjectDependency.Abstractions;
 
 /// <summary>
 /// Represents aggregated analysis information for a solution: per-project analyses and key indicators.
 /// </summary>
-public record ProjectMetrics(string FilePath, int TimesUsed, int SourceFileCount, int TotalLinesOfCode, int DiagnosticsCount, int CyclomaticComplexity, int TestProjectsReferencing);
+public record ProjectMetrics(string FilePath, int TimesUsed, int SourceFileCount, int TotalLinesOfCode, int DiagnosticsCount, int CyclomaticComplexity, int TestProjectsReferencing,
+    int OutgoingProjectReferences, int NuGetReferences, int CommentLines, double CommentDensity, int CommitCount, DateTimeOffset? LastCommitDate,
+    double MaintainabilityIndex, double TestabilityIndex, double HotspotScore);
 
 public record SolutionAnalysis(
     IReadOnlyList<ProjectAnalysis> Projects,
@@ -18,7 +22,8 @@ public record SolutionAnalysis(
     double AveragePackagesPerProject,
     int TotalProjectReferences,
     IReadOnlyDictionary<string, int> PackageReferenceCounts,
-    IReadOnlyDictionary<string, ProjectMetrics> ProjectMetricsMap
+    IReadOnlyDictionary<string, ProjectMetrics> ProjectMetricsMap,
+    SolutionIndicators Indicators
 );
 
 /// <summary>
@@ -26,6 +31,13 @@ public record SolutionAnalysis(
 /// </summary>
 public class SolutionAnalysisGenerator
 {
+    private readonly IGitRepository _git;
+
+    public SolutionAnalysisGenerator(IGitRepository? git = null)
+    {
+        _git = git ?? new GitCliRepository();
+    }
+
     /// <summary>
     /// Generate analysis for the provided solution. This will ensure the solution's projects are loaded via
     /// <see cref="Solution.LoadProjects(IProjectCollection)"/> before scanning.
@@ -124,6 +136,15 @@ public class SolutionAnalysisGenerator
             int diagnosticsCount = 0;
             int cyclomatic = 0;
             int testRefs = 0;
+            int outgoingRefs = 0;
+            int nugetRefs = 0;
+            int commentLines = 0;
+            double commentDensity = 0.0;
+            int commitCount = 0;
+            DateTimeOffset? lastCommit = null;
+            double maintainability = 0.0;
+            double testability = 0.0;
+            double hotspot = 0.0;
 
             try
             {
@@ -143,6 +164,12 @@ public class SolutionAnalysisGenerator
                         {
                             var text = doc.GetTextAsync().GetAwaiter().GetResult();
                             totalLines += text.Lines.Count;
+                            // count comment lines simple heuristic
+                            foreach (var line in text.Lines)
+                            {
+                                var s = line.ToString().Trim();
+                                if (s.StartsWith("//") || s.StartsWith("/*") || s.StartsWith("*")) commentLines++;
+                            }
                         }
                         catch
                         {
@@ -155,12 +182,25 @@ public class SolutionAnalysisGenerator
                             if (tree == null) continue;
                             var root = tree.GetRoot();
 
-                            // approximate cyclomatic complexity: count decision tokens
-                            var decisionNodes = root.DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.StatementSyntax>();
-                            foreach (var dn in decisionNodes)
+                            // improved cyclomatic complexity: count decision & branch constructs in method bodies
+                            var methods = root.DescendantNodes().OfType<MethodDeclarationSyntax>();
+                            foreach (var md in methods)
                             {
-                                var textNode = dn.ToString();
-                                cyclomatic += CountDecisionPoints(textNode);
+                                int methodComplexity = 1; // baseline
+
+                                methodComplexity += md.DescendantNodes().Count(n =>
+                                    n is IfStatementSyntax
+                                    || n is ForStatementSyntax
+                                    || n is ForEachStatementSyntax
+                                    || n is WhileStatementSyntax
+                                    || n is DoStatementSyntax
+                                    || n is SwitchStatementSyntax
+                                    || n is CaseSwitchLabelSyntax
+                                    || n is ConditionalExpressionSyntax
+                                    || (n is Microsoft.CodeAnalysis.CSharp.Syntax.BinaryExpressionSyntax be && (be.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.LogicalAndExpression) || be.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.LogicalOrExpression)))
+                                );
+
+                                cyclomatic += methodComplexity;
                             }
                         }
                         catch
@@ -168,8 +208,16 @@ public class SolutionAnalysisGenerator
                         }
                     }
 
+                    // outgoing project refs and nuget refs from msproj
+                    try
+                    {
+                        var msproj = project.Msproj;
+                        outgoingRefs = msproj.GetItems("ProjectReference").Count;
+                        nugetRefs = msproj.GetItems("PackageReference").Count;
+                    }
+                    catch { }
+
                     // compute how many test projects reference this project
-                    // if any project in solution.Project references this filePath and is a test project
                     foreach (var kv in graph)
                     {
                         var from = kv.Key;
@@ -179,6 +227,9 @@ public class SolutionAnalysisGenerator
                             testRefs++;
                         }
                     }
+
+                    // comment density
+                    commentDensity = totalLines == 0 ? 0.0 : (double)commentLines / totalLines;
                 }
             }
             catch
@@ -187,8 +238,69 @@ public class SolutionAnalysisGenerator
             }
 
             var timesUsed = inDegree.TryGetValue(filePath, out var v) ? v : 0;
-            metrics[filePath] = new ProjectMetrics(filePath, timesUsed, sourceFiles, totalLines, diagnosticsCount, cyclomatic, testRefs);
+
+            // derive indicators using constructs data from projectAnalyses when available
+            var pa = projectAnalyses.FirstOrDefault(x => string.Equals(x.FilePath, filePath, StringComparison.OrdinalIgnoreCase));
+            var constructs = pa?.Constructs;
+
+            maintainability = Math.Max(0.0, 100.0 - cyclomatic - (diagnosticsCount * 0.5));
+            testability = (double)(constructs?.Interfaces ?? 0) - (constructs?.Classes ?? 0) * 0.1;
+            hotspot = timesUsed * (1.0 + cyclomatic / Math.Max(1, sourceFiles) + diagnosticsCount * 0.1);
+
+            // git churn
+            try
+            {
+                var repoRoot = _git.GetRepositoryRoot(filePath);
+                if (repoRoot != null)
+                {
+                    var rel = Path.GetRelativePath(repoRoot, filePath).Replace(Path.DirectorySeparatorChar, '/');
+                    var commitR = _git.GetCommitCount(repoRoot, rel);
+                    if (commitR.IsSuccess) commitCount = commitR.ObjectOrThrow();
+                    var lastR = _git.GetLastCommitDate(repoRoot, rel);
+                    if (lastR.IsSuccess) lastCommit = lastR.ObjectOrThrow();
+                }
+            }
+            catch
+            {
+                // ignore git errors
+            }
+
+            metrics[filePath] = new ProjectMetrics(filePath, timesUsed, sourceFiles, totalLines, diagnosticsCount, cyclomatic, testRefs,
+                outgoingRefs, nugetRefs, commentLines, commentDensity, commitCount, lastCommit, maintainability, testability, hotspot);
         }
+
+        // enrich project analyses with per-project metrics so generators can print KPIs
+        var enrichedAnalyses = new List<ProjectAnalysis>();
+        foreach (var p in projectAnalyses)
+        {
+            var key = p.FilePath ?? string.Empty;
+            if (metrics.TryGetValue(key, out var m))
+            {
+                var core = new ProjectCoreKpis(m.TimesUsed, m.OutgoingProjectReferences, m.NuGetReferences);
+                var code = new ProjectCodeMetrics(m.SourceFileCount, m.TotalLinesOfCode, m.CommentLines, m.CommentDensity);
+                var quality = new ProjectQualityMetrics(m.DiagnosticsCount, m.CyclomaticComplexity);
+                var churn = new ProjectChurnMetrics(m.CommitCount, m.LastCommitDate);
+                var derived = new DerivedProjectIndicators(m.MaintainabilityIndex, m.TestabilityIndex, m.HotspotScore);
+
+                var enriched = new ProjectAnalysis(p.Name, p.FilePath, p.PackageReferences, p.ProjectReferences, p.ReferenceCouplings, p.Constructs, core, code, quality, churn, derived);
+                enrichedAnalyses.Add(enriched);
+            }
+            else
+            {
+                enrichedAnalyses.Add(p);
+            }
+        }
+
+        projectAnalyses = enrichedAnalyses;
+
+        // aggregate solution-level indicators
+        var totalSourceFiles = metrics.Values.Sum(m => m.SourceFileCount);
+        var totalLinesOfCode = metrics.Values.Sum(m => m.TotalLinesOfCode);
+        var totalDiagnostics = metrics.Values.Sum(m => m.DiagnosticsCount);
+        var avgCyclomatic = metrics.Values.Any() ? metrics.Values.Average(m => m.CyclomaticComplexity) : 0.0;
+        var avgMaintainability = metrics.Values.Any() ? metrics.Values.Average(m => m.MaintainabilityIndex) : 0.0;
+
+        var indicators = new SolutionIndicators(totalSourceFiles, totalLinesOfCode, totalDiagnostics, (double)avgCyclomatic, avgMaintainability);
 
         return new SolutionAnalysis(
             projectAnalyses,
@@ -198,7 +310,8 @@ public class SolutionAnalysisGenerator
             avgPackagesPerProject,
             totalProjectReferences,
             packageCounts,
-            metrics
+            metrics,
+            indicators
         );
     }
 

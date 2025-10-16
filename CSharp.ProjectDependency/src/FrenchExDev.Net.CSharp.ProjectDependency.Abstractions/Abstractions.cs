@@ -51,14 +51,19 @@ public record PackageReference(string Name, string? Version = null);
 
 public record ProjectReference(Project Owner, Project Project);
 
-// ProjectAnalysis extended to include reference coupling and construct metrics
+// ProjectAnalysis extended to include reference coupling and construct metrics and other computed metrics
 public record ProjectAnalysis(
     string Name,
     string FilePath,
     IReadOnlyCollection<PackageReference> PackageReferences,
     IReadOnlyCollection<ProjectReference> ProjectReferences,
     IReadOnlyCollection<ReferenceCoupling>? ReferenceCouplings = null,
-    ProjectConstructMetrics? Constructs = null
+    ProjectConstructMetrics? Constructs = null,
+    ProjectCoreKpis? CoreKpis = null,
+    ProjectCodeMetrics? CodeMetrics = null,
+    ProjectQualityMetrics? QualityMetrics = null,
+    ProjectChurnMetrics? ChurnMetrics = null,
+    DerivedProjectIndicators? DerivedIndicators = null
 );
 
 public interface IProjectCollection

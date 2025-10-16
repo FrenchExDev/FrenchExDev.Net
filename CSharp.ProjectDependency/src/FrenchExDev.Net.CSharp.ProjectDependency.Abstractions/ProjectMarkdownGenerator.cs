@@ -19,6 +19,80 @@ public class ProjectMarkdownGenerator : IMarkdownGenerator<ProjectAnalysis>
         sb.AppendLine($"`Path:` {p.FilePath}");
         sb.AppendLine();
 
+        // Key metrics if available on the ProjectAnalysis
+        sb.AppendLine("### Key metrics");
+        var printed = false;
+        var hasDetailed = p.CoreKpis != null || p.CodeMetrics != null || p.QualityMetrics != null || p.ChurnMetrics != null || p.DerivedIndicators != null;
+        var hasFallback = (p.PackageReferences != null && p.PackageReferences.Any()) || (p.ProjectReferences != null && p.ProjectReferences.Any()) || p.Constructs != null || (p.ReferenceCouplings != null && p.ReferenceCouplings.Any());
+
+        if (hasDetailed || hasFallback)
+        {
+            sb.AppendLine("Metric | Value");
+            sb.AppendLine("--- | ---");
+
+            if (p.CoreKpis != null)
+            {
+                sb.AppendLine($"Times used | {p.CoreKpis.TimesUsed}");
+                sb.AppendLine($"Outgoing project refs | {p.CoreKpis.OutgoingProjectReferences}");
+                sb.AppendLine($"NuGet references | {p.CoreKpis.NuGetReferences}");
+            }
+            else
+            {
+                // fallback minimal core metrics
+                var outgoing = p.ProjectReferences?.Count ?? 0;
+                var nuget = p.PackageReferences?.Count ?? 0;
+                sb.AppendLine($"Times used | -");
+                sb.AppendLine($"Outgoing project refs | {outgoing}");
+                sb.AppendLine($"NuGet references | {nuget}");
+            }
+
+            if (p.CodeMetrics != null)
+            {
+                sb.AppendLine($"Source files | {p.CodeMetrics.SourceFileCount}");
+                sb.AppendLine($"Lines of code | {p.CodeMetrics.TotalLinesOfCode}");
+                sb.AppendLine($"Comment lines | {p.CodeMetrics.CommentLines}");
+                sb.AppendLine($"Comment density | {p.CodeMetrics.CommentDensity:P1}");
+            }
+            else
+            {
+                // if constructs exist, show counts as proxy
+                if (p.Constructs != null)
+                {
+                    sb.AppendLine($"Exported records | {p.Constructs.Records}");
+                    sb.AppendLine($"Exported classes | {p.Constructs.Classes}");
+                    sb.AppendLine($"Exported interfaces | {p.Constructs.Interfaces}");
+                }
+            }
+
+            if (p.QualityMetrics != null)
+            {
+                sb.AppendLine($"Diagnostics | {p.QualityMetrics.DiagnosticsCount}");
+                sb.AppendLine($"Cyclomatic complexity | {p.QualityMetrics.CyclomaticComplexity}");
+            }
+
+            if (p.ChurnMetrics != null)
+            {
+                sb.AppendLine($"Commit count | {p.ChurnMetrics.CommitCount}");
+                sb.AppendLine($"Last commit | {p.ChurnMetrics.LastCommitDate?.ToString("u") ?? "-"}");
+            }
+
+            if (p.DerivedIndicators != null)
+            {
+                sb.AppendLine($"Maintainability index | {p.DerivedIndicators.MaintainabilityIndex:F1}");
+                sb.AppendLine($"Testability index | {p.DerivedIndicators.TestabilityIndex:F1}");
+                sb.AppendLine($"Hotspot score | {p.DerivedIndicators.HotspotScore:F2}");
+            }
+
+            printed = true;
+        }
+
+        if (!printed)
+        {
+            sb.AppendLine("_No KPI data available._");
+        }
+
+        sb.AppendLine();
+
         sb.AppendLine("### Exported constructs");
         if (p.Constructs == null)
         {

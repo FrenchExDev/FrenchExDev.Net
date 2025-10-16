@@ -32,3 +32,58 @@ public record ProjectConstructMetrics(
     int ExtensionMethods,
     int PublicMembersCount
 );
+
+/// <summary>
+/// Core KPIs for a project.
+/// </summary>
+public record ProjectCoreKpis(
+    int TimesUsed,
+    int OutgoingProjectReferences,
+    int NuGetReferences
+);
+
+/// <summary>
+/// Code-level metrics for a project.
+/// </summary>
+public record ProjectCodeMetrics(
+    int SourceFileCount,
+    int TotalLinesOfCode,
+    int CommentLines,
+    double CommentDensity
+);
+
+/// <summary>
+/// Quality and complexity metrics.
+/// </summary>
+public record ProjectQualityMetrics(
+    int DiagnosticsCount,
+    int CyclomaticComplexity
+);
+
+/// <summary>
+/// Churn / git metrics for a project.
+/// </summary>
+public record ProjectChurnMetrics(
+    int CommitCount,
+    DateTimeOffset? LastCommitDate
+);
+
+/// <summary>
+/// Derived indicators computed from basic metrics.
+/// </summary>
+public record DerivedProjectIndicators(
+    double MaintainabilityIndex,
+    double TestabilityIndex,
+    double HotspotScore
+);
+
+/// <summary>
+/// Aggregated solution-level indicators.
+/// </summary>
+public record SolutionIndicators(
+    int TotalSourceFiles,
+    int TotalLinesOfCode,
+    int TotalDiagnostics,
+    double AverageCyclomaticComplexity,
+    double AverageMaintainabilityIndex
+);

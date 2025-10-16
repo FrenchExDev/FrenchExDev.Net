@@ -9,6 +9,7 @@ namespace FrenchExDev.Net.CSharp.ProjectDependency.Abstractions;
 public class ProjectsMarkdownGenerator : IMarkdownGenerator<IEnumerable<ProjectAnalysis>>
 {
     private readonly ProjectMarkdownGenerator _projectGenerator = new ProjectMarkdownGenerator();
+    private readonly MermaidGenerator _mermaid = new MermaidGenerator();
 
     public string Generate(IEnumerable<ProjectAnalysis> projects)
     {
@@ -98,7 +99,7 @@ public class ProjectsMarkdownGenerator : IMarkdownGenerator<IEnumerable<ProjectA
     }
 
     /// <summary>
-    /// Generate projects markdown with TOC inserted before project contents.
+    /// Generate projects markdown with TOC inserted before project contents and KPI mermaid charts.
     /// </summary>
     public string GenerateWithTableOfContents(SolutionAnalysis analysis)
     {
@@ -106,6 +107,13 @@ public class ProjectsMarkdownGenerator : IMarkdownGenerator<IEnumerable<ProjectA
 
         var sb = new StringBuilder();
         sb.AppendLine(GenerateProjectsTableOfContents(analysis));
+
+        // KPI summary table
+        sb.AppendLine(GenerateKpiSummaryTable(analysis));
+
+        // include KPI mermaid charts and dependency graph
+        sb.AppendLine(GenerateKpiMermaidCharts(analysis));
+
         sb.AppendLine(Generate(analysis));
         return sb.ToString();
     }
@@ -118,4 +126,72 @@ public class ProjectsMarkdownGenerator : IMarkdownGenerator<IEnumerable<ProjectA
         sb.AppendLine(Generate(projects));
         return sb.ToString();
     }
+
+    /// <summary>
+    /// Generate a compact KPI summary table for all projects (one row per project).
+    /// Columns: Project | Times used | Source files | LOC | Diagnostics | Cyclomatic | Commits | Last commit | Maintainability
+    /// </summary>
+    private string GenerateKpiSummaryTable(SolutionAnalysis analysis)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("## Projects KPI summary");
+        sb.AppendLine();
+        sb.AppendLine("Project | Times used | Source files | LOC | Diagnostics | Cyclomatic | Commits | Last commit | Maintainability");
+        sb.AppendLine("--- | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: ");
+
+        foreach (var p in analysis.Projects.OrderBy(p => p.Name))
+        {
+            var key = p.FilePath ?? string.Empty;
+            if (analysis.ProjectMetricsMap != null && analysis.ProjectMetricsMap.TryGetValue(key, out var m))
+            {
+                var last = m.LastCommitDate?.ToString("u") ?? "-";
+                sb.AppendLine($"{p.Name} | {m.TimesUsed} | {m.SourceFileCount} | {m.TotalLinesOfCode} | {m.DiagnosticsCount} | {m.CyclomaticComplexity} | {m.CommitCount} | {last} | {m.MaintainabilityIndex:F1}");
+            }
+            else
+            {
+                sb.AppendLine($"{p.Name} | - | - | - | - | - | - | - | -");
+            }
+        }
+
+        sb.AppendLine();
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Generate mermaid charts for selected KPIs: dependency graph, times-used distribution and top packages.
+    /// </summary>
+    private string GenerateKpiMermaidCharts(SolutionAnalysis analysis)
+    {
+        var sb = new StringBuilder();
+
+        // dependency graph using existing mermaid generator
+        sb.AppendLine("## Dependency graph");
+        sb.AppendLine(_mermaid.Generate(analysis));
+
+        // times-used pie (projects most used by others)
+        sb.AppendLine("## Project usage distribution");
+        sb.AppendLine("```mermaid");
+        sb.AppendLine("pie title Projects times-used distribution");
+        var metrics = analysis.ProjectMetricsMap ?? new Dictionary<string, ProjectMetrics>(StringComparer.OrdinalIgnoreCase);
+        foreach (var kv in metrics.OrderByDescending(kv => kv.Value.TimesUsed).Take(10))
+        {
+            var name = Path.GetFileNameWithoutExtension(kv.Value.FilePath) ?? kv.Key;
+            sb.AppendLine($"    \"{Escape(name)}\" : {Math.Max(0, kv.Value.TimesUsed)}");
+        }
+        sb.AppendLine("```\n");
+
+        // package distribution pie
+        sb.AppendLine("## Top NuGet packages (by project references)");
+        sb.AppendLine("```mermaid");
+        sb.AppendLine("pie title Top NuGet packages");
+        foreach (var kv in analysis.PackageReferenceCounts.OrderByDescending(kv => kv.Value).Take(10))
+        {
+            sb.AppendLine($"    \"{Escape(kv.Key)}\" : {kv.Value}");
+        }
+        sb.AppendLine("```\n");
+
+        return sb.ToString();
+    }
+
+    private static string Escape(string s) => s?.Replace("\"", "\\\"") ?? string.Empty;
 }
