@@ -144,10 +144,12 @@ public class Solution
 
         // analyze constructs exported by this project
         ProjectConstructMetrics? constructs = null;
+        List<DeclarationDescriptor>? declarations = null;
         try
         {
             var compilation = project.Code.GetCompilationAsync().GetAwaiter().GetResult();
             int records = 0, enums = 0, classes = 0, interfaces = 0, structs = 0, extensionMethods = 0, publicMembers = 0;
+            var decls = new List<DeclarationDescriptor>();
 
             foreach (var tree in compilation.SyntaxTrees)
             {
@@ -162,11 +164,13 @@ public class Solution
                     if (sym == null) continue;
                     if (sym.DeclaredAccessibility != Accessibility.Public) continue;
 
-                    if (sym.TypeKind == TypeKind.Interface) interfaces++;
-                    else if (sym.TypeKind == TypeKind.Enum) enums++;
-                    else if (sym.TypeKind == TypeKind.Struct) structs++;
-                    else if (sym.IsRecord) records++;
-                    else if (sym.TypeKind == TypeKind.Class) classes++;
+                    string kind;
+                    if (sym.TypeKind == TypeKind.Interface) { interfaces++; kind = "interface"; }
+                    else if (sym.TypeKind == TypeKind.Enum) { enums++; kind = "enum"; }
+                    else if (sym.TypeKind == TypeKind.Struct) { structs++; kind = "struct"; }
+                    else if (sym.IsRecord) { records++; kind = "record"; }
+                    else if (sym.TypeKind == TypeKind.Class) { classes++; kind = "class"; }
+                    else { kind = "type"; }
 
                     // count public members
                     foreach (var m in sym.GetMembers())
@@ -174,6 +178,10 @@ public class Solution
                         if (m.DeclaredAccessibility == Accessibility.Public)
                             publicMembers++;
                     }
+
+                    var isAbstract = sym.IsAbstract;
+                    var name = sym.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+                    decls.Add(new DeclarationDescriptor(name, kind, isAbstract));
                 }
 
                 // extension methods
@@ -187,6 +195,7 @@ public class Solution
             }
 
             constructs = new ProjectConstructMetrics(records, enums, classes, interfaces, structs, extensionMethods, publicMembers);
+            declarations = decls;
         }
         catch
         {
@@ -257,6 +266,6 @@ public class Solution
             // ignore
         }
 
-        return Result<ProjectAnalysis>.Success(new ProjectAnalysis(project.Name, filePath, packageRefs, projectRefs, referenceCouplings, constructs));
+        return Result<ProjectAnalysis>.Success(new ProjectAnalysis(project.Name, filePath, packageRefs, projectRefs, referenceCouplings, constructs, null, null, null, null, null, declarations));
     }
 }

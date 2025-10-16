@@ -8,8 +8,20 @@ namespace FrenchExDev.Net.CSharp.ProjectDependency.Abstractions;
 /// </summary>
 public class ProjectsMarkdownGenerator : IMarkdownGenerator<IEnumerable<ProjectAnalysis>>
 {
-    private readonly ProjectMarkdownGenerator _projectGenerator = new ProjectMarkdownGenerator();
-    private readonly MermaidGenerator _mermaid = new MermaidGenerator();
+    private readonly IProjectMarkdownGenerator _projectGenerator;
+    private readonly IProjectDependencyMermaidGenerator _mermaid;
+    private readonly IDeclarationMermaidGenerator _declarationMermaid;
+    private readonly IPackageMermaidGenerator _packageMermaid;
+    private readonly IProjectReferencesMermaidGenerator _projectRefsMermaid;
+
+    public ProjectsMarkdownGenerator(IProjectMarkdownGenerator projectGenerator, IProjectDependencyMermaidGenerator mermaid, IDeclarationMermaidGenerator declarationMermaid, IPackageMermaidGenerator packageMermaid, IProjectReferencesMermaidGenerator projectRefsMermaid)
+    {
+        _projectGenerator = projectGenerator ?? throw new ArgumentNullException(nameof(projectGenerator));
+        _mermaid = mermaid ?? throw new ArgumentNullException(nameof(mermaid));
+        _declarationMermaid = declarationMermaid ?? throw new ArgumentNullException(nameof(declarationMermaid));
+        _packageMermaid = packageMermaid ?? throw new ArgumentNullException(nameof(packageMermaid));
+        _projectRefsMermaid = projectRefsMermaid ?? throw new ArgumentNullException(nameof(projectRefsMermaid));
+    }
 
     public string Generate(IEnumerable<ProjectAnalysis> projects)
     {
@@ -20,6 +32,13 @@ public class ProjectsMarkdownGenerator : IMarkdownGenerator<IEnumerable<ProjectA
         foreach (var p in projects.OrderBy(p => p.Name))
         {
             sb.AppendLine(_projectGenerator.Generate(p));
+            // append per-project mermaid diagrams
+            sb.AppendLine("### Declarations");
+            sb.AppendLine(_declarationMermaid.Generate(p));
+            sb.AppendLine("### Packages");
+            sb.AppendLine(_packageMermaid.Generate(p));
+            sb.AppendLine("### Project references");
+            sb.AppendLine(_projectRefsMermaid.Generate(p));
         }
 
         return sb.ToString();

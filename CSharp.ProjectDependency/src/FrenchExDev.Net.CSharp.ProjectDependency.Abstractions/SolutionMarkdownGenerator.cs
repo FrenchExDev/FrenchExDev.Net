@@ -7,12 +7,12 @@ namespace FrenchExDev.Net.CSharp.ProjectDependency.Abstractions;
 /// </summary>
 public class SolutionMarkdownGenerator : IMarkdownGenerator<SolutionAnalysis>
 {
-    private readonly IMermaidGenerator _mermaid;
+    private readonly IProjectDependencyMermaidGenerator _mermaid;
     private readonly ProjectMarkdownGenerator _projectGenerator = new ProjectMarkdownGenerator();
 
-    public SolutionMarkdownGenerator(IMermaidGenerator? mermaid = null)
+    public SolutionMarkdownGenerator(IProjectDependencyMermaidGenerator? mermaid = null)
     {
-        _mermaid = mermaid ?? new MermaidGenerator();
+        _mermaid = mermaid ?? new ProjectDependencyMermaidGenerator();
     }
 
     public string Generate(SolutionAnalysis analysis)

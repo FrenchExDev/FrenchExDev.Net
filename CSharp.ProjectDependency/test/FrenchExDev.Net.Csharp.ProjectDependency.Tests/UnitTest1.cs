@@ -1,10 +1,6 @@
 ﻿using FrenchExDev.Net.CSharp.ProjectDependency;
 using FrenchExDev.Net.CSharp.ProjectDependency.Abstractions;
-using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace FrenchExDev.Net.Csharp.ProjectDependency.Tests;
 
@@ -146,7 +142,7 @@ public class UnitTest1
         var generator = new SolutionAnalysisGenerator();
         var analysis = generator.Generate(solution, defaultProjectCollection);
 
-        var projectsGen = new ProjectsMarkdownGenerator();
+        var projectsGen = new ProjectsMarkdownGenerator(new ProjectMarkdownGenerator(), new ProjectDependencyMermaidGenerator(), new DeclarationMermaidGenerator(), new PackageMermaidGenerator(), new ProjectReferencesMermaidGenerator());
         var allMd = projectsGen.GenerateWithTableOfContents(analysis);
 
         Assert.False(string.IsNullOrWhiteSpace(allMd));

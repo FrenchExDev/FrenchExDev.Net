@@ -4,10 +4,14 @@ using System.Text;
 
 namespace FrenchExDev.Net.CSharp.ProjectDependency.Abstractions;
 
+public interface IProjectMarkdownGenerator : IMarkdownGenerator<ProjectAnalysis>
+{
+}
+
 /// <summary>
 /// Generates markdown for a single project analysis.
 /// </summary>
-public class ProjectMarkdownGenerator : IMarkdownGenerator<ProjectAnalysis>
+public class ProjectMarkdownGenerator : IProjectMarkdownGenerator
 {
     public string Generate(ProjectAnalysis p)
     {

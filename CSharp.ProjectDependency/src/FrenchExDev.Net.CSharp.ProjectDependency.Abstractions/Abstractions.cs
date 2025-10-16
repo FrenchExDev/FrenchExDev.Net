@@ -51,6 +51,11 @@ public record PackageReference(string Name, string? Version = null);
 
 public record ProjectReference(Project Owner, Project Project);
 
+/// <summary>
+/// Describes a public declaration found in a project for diagram generation.
+/// </summary>
+public record DeclarationDescriptor(string Name, string Kind, bool IsAbstract = false);
+
 // ProjectAnalysis extended to include reference coupling and construct metrics and other computed metrics
 public record ProjectAnalysis(
     string Name,
@@ -63,7 +68,8 @@ public record ProjectAnalysis(
     ProjectCodeMetrics? CodeMetrics = null,
     ProjectQualityMetrics? QualityMetrics = null,
     ProjectChurnMetrics? ChurnMetrics = null,
-    DerivedProjectIndicators? DerivedIndicators = null
+    DerivedProjectIndicators? DerivedIndicators = null,
+    IReadOnlyCollection<DeclarationDescriptor>? Declarations = null
 );
 
 public interface IProjectCollection
@@ -147,7 +153,7 @@ public interface IMsBuildRegisteringService
 /// Represents a workspace capable of initializing and opening MSBuild-based projects for analysis and manipulation.
 /// </summary>
 /// <remarks>Implementations of this interface provide methods to prepare the workspace and asynchronously load C#
-/// project files (.csproj) using MSBuild. This interface is typically used in scenarios where Roslyn-based project
+// project files (.csproj) using MSBuild. This interface is typically used in scenarios where Roslyn-based project
 /// analysis or code generation is required. Thread safety and initialization requirements may vary by
 /// implementation.</remarks>
 public interface IMsBuildWorkspace
