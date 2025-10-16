@@ -1,5 +1,6 @@
 ﻿using FrenchExDev.Net.CSharp.ProjectDependency;
 using FrenchExDev.Net.CSharp.ProjectDependency.Abstractions;
+using Microsoft.Build.Evaluation;
 using Microsoft.CodeAnalysis;
 
 namespace FrenchExDev.Net.Csharp.ProjectDependency.Tests;
@@ -16,7 +17,9 @@ public class UnitTest1
         var msBuildRegisteringService = new MsBuildRegisteringService();
         msBuildRegisteringService.Register();
 
-        var msBuildWorkspace = new MsBuildWorkspace();
+        var defaultProjectCollection = new DefaultProjectCollection();
+
+        var msBuildWorkspace = new MsBuildWorkspace(defaultProjectCollection);
         msBuildWorkspace.Initialize();
 
         var solutionLoader = new SolutionLoader(msBuildRegisteringService, msBuildWorkspace);
@@ -27,7 +30,7 @@ public class UnitTest1
 
         // additional quick use of analyzer
         var solution = solutionR.ObjectOrThrow();
-        var scans = solution.ScanProjects();
+        var scans = solution.ScanProjects(defaultProjectCollection);
         Assert.NotNull(scans);
         Assert.True(scans.Count() > 0);
     }
@@ -40,7 +43,9 @@ public class UnitTest1
         var msBuildRegisteringService = new MsBuildRegisteringService();
         msBuildRegisteringService.Register();
 
-        var msBuildWorkspace = new MsBuildWorkspace();
+        var defaultProjectCollection = new DefaultProjectCollection();
+
+        var msBuildWorkspace = new MsBuildWorkspace(defaultProjectCollection);
         msBuildWorkspace.Initialize();
 
         var solutionLoader = new SolutionLoader(msBuildRegisteringService, msBuildWorkspace);
@@ -51,8 +56,12 @@ public class UnitTest1
 
         var solution = solutionR.ObjectOrThrow();
 
-        var scans = solution.ScanProjects();
+        solution.LoadProjects(defaultProjectCollection);
+
+        var scans = solution.ScanProjects(defaultProjectCollection).ToList();
 
         Assert.NotEmpty(scans);
+
+
     }
 }

@@ -50,71 +50,21 @@ public record PackageReference(string Name, string? Version = null);
 
 public record ProjectReference(Project Owner, Project Project);
 
-public class Solution
+public interface IProjectCollection
 {
-    private readonly Microsoft.CodeAnalysis.Solution _code;
-    private readonly OpenManagedList<Project> _projects = [];
+    Microsoft.Build.Evaluation.Project LoadProject(string path);
+}
 
-    public Microsoft.CodeAnalysis.Solution Code => _code;
-
-    public ICollection<Project> Projects => _projects;
-    public Solution(Microsoft.CodeAnalysis.Solution solution)
+public class DefaultProjectCollection : IProjectCollection
+{
+    private readonly ProjectCollection _pc;
+    public DefaultProjectCollection()
     {
-        _code = solution;
+        _pc = ProjectCollection.GlobalProjectCollection;
     }
-
-    public void Initialize()
+    public Microsoft.Build.Evaluation.Project LoadProject(string path)
     {
-    }
-
-    public IEnumerable<ProjectAnalysis> ScanProjects()
-    {
-        // Use global ProjectCollection to load project files and read MSBuild items
-        var pc = ProjectCollection.GlobalProjectCollection;
-
-        foreach (Microsoft.CodeAnalysis.Project proj in _code.Projects)
-        {
-            var project = new Abstractions.Project(proj, proj.FilePath ?? string.Empty);
-            _projects.Add(project);
-        }
-
-        foreach (var project in _projects)
-        {
-            yield return ScanProject(pc, project).ObjectOrThrow();
-        }
-    }
-
-    private Result<ProjectAnalysis> ScanProject(ProjectCollection pc, Project project)
-    {
-        var filePath = project.FilePath ?? string.Empty;
-        var packageRefs = new List<PackageReference>();
-        var projectRefs = new List<ProjectReference>();
-
-        if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
-        {
-            return Result<ProjectAnalysis>.Failure(d => d.Add("File", "does not exist"));
-        }
-
-        var msproj = pc.LoadProject(filePath);
-
-        foreach (var item in msproj.GetItems("PackageReference"))
-        {
-            var id = item.EvaluatedInclude ?? string.Empty;
-            var version = item.GetMetadataValue("Version");
-            if (string.IsNullOrWhiteSpace(version))
-                version = item.GetMetadataValue("Version");
-            packageRefs.Add(new PackageReference(id, version));
-        }
-
-        foreach (ProjectItem? item in msproj.GetItems("ProjectReference"))
-        {
-            var include = item.EvaluatedInclude ?? string.Empty;
-            // resolve relative path
-            var resolved = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty, include));
-            projectRefs.Add(new ProjectReference(_projects.First(x => x.FilePath.Equals(filePath)), _projects.First(x => x.FilePath.Equals(item.Project.ProjectFileLocation))));
-        }
-
-        return Result<ProjectAnalysis>.Success(new ProjectAnalysis(project.Name, filePath, packageRefs, projectRefs));
+        return _pc.LoadProject(path);
     }
 }
 
@@ -226,13 +176,15 @@ public interface IMsBuildWorkspace
 public class Project
 {
     public string FilePath { get; init; }
+    public Microsoft.Build.Evaluation.Project Msproj { get; }
 
     private Microsoft.CodeAnalysis.Project _code;
 
-    public Project(Microsoft.CodeAnalysis.Project code, string path)
+    public Project(Microsoft.CodeAnalysis.Project code, string path, Microsoft.Build.Evaluation.Project msproj)
     {
         _code = code;
         FilePath = path;
+        Msproj = msproj;
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace FrenchExDev.Net.CSharp.ManagedDictionary;
@@ -149,6 +150,16 @@ public class ManagedDictionaryBuilder<TKey, TValue> where TKey : notnull
 public class OpenManagedDictionary<TKey, TValue> : ManagedDictionary<TKey, TValue> where TKey : notnull
 {
     /// <summary>
+    /// Initializes a new instance of the OpenManagedDictionary class with default settings.
+    /// </summary>
+    /// <remarks>This constructor creates an OpenManagedDictionary using default internal collections. Use
+    /// this overload when no custom configuration is required.</remarks>
+    public OpenManagedDictionary() : base(new(), new(), new())
+    {
+
+    }
+
+    /// <summary>
     /// Constructs an empty OpenManagedDictionary with default event handler lists.
     /// </summary>
     /// <param name="basis"></param>
@@ -256,6 +267,13 @@ public abstract class ManagedDictionary<TKey, TValue> : IDictionary<TKey, TValue
     private readonly OnAddList<TKey, TValue> _onAdd;
     private readonly OnRemoveList<TKey, TValue> _onRemove;
     private readonly OnClearList _onClear;
+
+    /// <summary>
+    /// Returns a read-only view of the current dictionary.
+    /// </summary>
+    /// <returns>An <see cref="IReadOnlyDictionary{TKey, TValue}"/> that provides a read-only view of the dictionary's contents.
+    /// The returned dictionary reflects the current state and cannot be modified.</returns>
+    public IReadOnlyDictionary<TKey, TValue> ToReadOnly() => _initial.AsReadOnly();
 
     /// <summary>
     /// Gets a collection containing the keys in the dictionary.

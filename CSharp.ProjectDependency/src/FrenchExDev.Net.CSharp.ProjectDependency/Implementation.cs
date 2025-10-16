@@ -43,9 +43,12 @@ public class MsBuildWorkspace : IMsBuildWorkspace, IDisposable
     public MSBuildWorkspace Workspace => _workspace ?? throw new InvalidOperationException();
     public ICollection<Microsoft.CodeAnalysis.Project> Projects => _projects;
 
-    public MsBuildWorkspace()
+    public IProjectCollection _projectCollection { get; }
+
+    public MsBuildWorkspace(IProjectCollection projectCollection)
     {
         _projects = new();
+        _projectCollection = projectCollection;
     }
 
     public void Initialize()
@@ -65,7 +68,7 @@ public class MsBuildWorkspace : IMsBuildWorkspace, IDisposable
     {
         try
         {
-            return Result<Abstractions.Project>.Success(new Abstractions.Project(await Workspace.OpenProjectAsync(csprojPath, progress, cancellationToken), csprojPath));
+            return Result<Abstractions.Project>.Success(new Abstractions.Project(await Workspace.OpenProjectAsync(csprojPath, progress, cancellationToken), csprojPath, _projectCollection.LoadProject(csprojPath)));
         }
         catch (Exception ex)
         {
