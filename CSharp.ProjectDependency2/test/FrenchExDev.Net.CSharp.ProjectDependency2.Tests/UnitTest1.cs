@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+﻿using FrenchExDev.Net.CSharp.Object.Result;
+using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 
 namespace FrenchExDev.Net.CSharp.ProjectDependency2.Tests;
@@ -27,5 +28,23 @@ public class UnitTest1
 
         projectCollectionR.IsSuccess.ShouldBeTrue();
         projectCollectionR.Object.Count.ShouldBeGreaterThan(0);
+
+        var generator = new ProjectAnalysisCollection()
+            .AddAnalyzer(new ProjectReferencesAnalyzer());
+
+        var dic = new Dictionary<string, List<Result<IProjectAnalysisResult>>>();
+
+        foreach (var projectKv in projectCollectionR.Object)
+        {
+            Result<List<Result<IProjectAnalysisResult>>> analysisR = generator.GenerateAnalysis(projectKv.Value.Object, solutionR.Object);
+            analysisR.IsSuccess.ShouldBeTrue();
+            if (!dic.ContainsKey(projectKv.Key))
+            {
+                dic[projectKv.Key] = new List<Result<IProjectAnalysisResult>>();
+            }
+            dic[projectKv.Key].AddRange(analysisR.ObjectOrThrow());
+        }
+
+        dic.ShouldNotBeEmpty();
     }
 }
