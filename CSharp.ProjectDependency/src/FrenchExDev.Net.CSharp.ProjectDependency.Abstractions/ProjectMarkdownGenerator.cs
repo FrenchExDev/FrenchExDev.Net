@@ -115,6 +115,11 @@ public class ProjectMarkdownGenerator : IProjectMarkdownGenerator
 
         sb.AppendLine();
 
+        // declarations mermaid diagram
+        sb.AppendLine("### Declarations diagram");
+        sb.AppendLine(new DeclarationMermaidGenerator().Generate(p));
+        sb.AppendLine();
+
         sb.AppendLine("### Package references");
         if (p.PackageReferences == null || !p.PackageReferences.Any())
         {
@@ -127,6 +132,11 @@ public class ProjectMarkdownGenerator : IProjectMarkdownGenerator
                 sb.AppendLine($"- {pkg.Name}{(string.IsNullOrWhiteSpace(pkg.Version) ? string.Empty : " (" + pkg.Version + ")")} ");
             }
         }
+        sb.AppendLine();
+
+        // package mermaid diagram
+        sb.AppendLine("### Package dependency diagram");
+        sb.AppendLine(new PackageMermaidGenerator().Generate(p));
         sb.AppendLine();
 
         sb.AppendLine("### Project references");
@@ -144,6 +154,11 @@ public class ProjectMarkdownGenerator : IProjectMarkdownGenerator
             }
         }
 
+        sb.AppendLine();
+
+        // project references mermaid diagram
+        sb.AppendLine("### Project references diagram");
+        sb.AppendLine(new ProjectReferencesMermaidGenerator().Generate(p));
         sb.AppendLine();
 
         sb.AppendLine("### Reference coupling");

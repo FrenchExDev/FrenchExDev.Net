@@ -42,7 +42,7 @@ public class SolutionAnalysisGenerator
     /// Generate analysis for the provided solution. This will ensure the solution's projects are loaded via
     /// <see cref="Solution.LoadProjects(IProjectCollection)"/> before scanning.
     /// </summary>
-    public SolutionAnalysis Generate(Solution solution, IProjectCollection projectCollection)
+    public async Task<SolutionAnalysis> GenerateAsync(Solution solution, IProjectCollection projectCollection)
     {
         if (solution is null) throw new ArgumentNullException(nameof(solution));
         if (projectCollection is null) throw new ArgumentNullException(nameof(projectCollection));
@@ -50,7 +50,8 @@ public class SolutionAnalysisGenerator
         // ensure internal project map is populated
         solution.LoadProjects(projectCollection);
 
-        var projectAnalyses = solution.ScanProjects(projectCollection).ToList();
+        var projectAnalyses = new List<ProjectAnalysis>();
+        await foreach (var item in solution.ScanProjectsAsync(projectCollection)) { projectAnalyses.Add(item); }
 
         var totalProjects = projectAnalyses.Count;
 

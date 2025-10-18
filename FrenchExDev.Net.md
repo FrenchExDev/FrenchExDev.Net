@@ -173,28 +173,28 @@ FrenchExDev.Net.CSharp.ManagedList.Tests | 0 | 5 | 268 | 15 | 10 | 2 | 2025-10-1
 FrenchExDev.Net.CSharp.Object.Biz | 1 | 4 | 195 | 11 | 11 | 1 | 2025-09-28 19:42:25Z | 83,5
 FrenchExDev.Net.CSharp.Object.Biz.Testing | 1 | 4 | 45 | 13 | 0 | 1 | 2025-09-28 19:42:25Z | 93,5
 FrenchExDev.Net.CSharp.Object.Biz.Tests | 0 | 6 | 165 | 15 | 5 | 2 | 2025-10-14 21:22:31Z | 87,5
-FrenchExDev.Net.CSharp.Object.Builder2 | 10 | 4 | 1041 | 10 | 122 | 1 | 2025-09-16 20:20:24Z | 0,0
+FrenchExDev.Net.CSharp.Object.Builder2 | 10 | 4 | 1040 | 10 | 122 | 1 | 2025-09-16 20:20:24Z | 0,0
 FrenchExDev.Net.CSharp.Object.Builder2.Testing | 1 | 4 | 400 | 11 | 28 | 1 | 2025-09-16 20:20:24Z | 66,5
 FrenchExDev.Net.CSharp.Object.Builder2.Tests | 0 | 5 | 148 | 13 | 3 | 1 | 2025-09-16 20:20:24Z | 90,5
 FrenchExDev.Net.CSharp.Object.Model | 1 | 3 | 37 | 13 | 0 | 1 | 2025-09-07 17:11:29Z | 93,5
-FrenchExDev.Net.CSharp.Object.Model.Abstractions | 2 | 45 | 3748 | 10 | 160 | 3 | 2025-09-21 01:40:40Z | 0,0
+FrenchExDev.Net.CSharp.Object.Model.Abstractions | 2 | 45 | 3749 | 10 | 160 | 3 | 2025-09-21 01:40:40Z | 0,0
 FrenchExDev.Net.CSharp.Object.Model.Infrastructure | 2 | 6 | 520 | 10 | 36 | 1 | 2025-09-07 17:11:29Z | 59,0
 FrenchExDev.Net.CSharp.Object.Model.Testing | 1 | 4 | 130 | 12 | 2 | 1 | 2025-09-07 17:11:29Z | 92,0
 FrenchExDev.Net.CSharp.Object.Model.Tests | 0 | 5 | 120 | 13 | 3 | 1 | 2025-09-07 17:11:29Z | 90,5
 FrenchExDev.Net.CSharp.Object.Result | 5 | 4 | 335 | 11 | 19 | 1 | 2025-09-28 19:42:25Z | 75,5
 FrenchExDev.Net.CSharp.Object.Result.Testing | 1 | 4 | 44 | 13 | 0 | 1 | 2025-09-28 19:42:25Z | 93,5
 FrenchExDev.Net.CSharp.Object.Result.Tests | 0 | 5 | 50 | 16 | 1 | 2 | 2025-10-14 21:22:31Z | 91,0
-FrenchExDev.Net.CSharp.ProjectDependency | 1 | 4 | 127 | 9 | 7 | 1 | 2025-10-14 20:25:20Z | 88,5
-FrenchExDev.Net.CSharp.ProjectDependency.Abstractions | 2 | 24 | 1922 | 52 | 266 | 4 | 2025-10-16 21:17:51Z | 0,0
+FrenchExDev.Net.CSharp.ProjectDependency | 1 | 4 | 128 | 9 | 7 | 1 | 2025-10-14 20:25:20Z | 88,5
+FrenchExDev.Net.CSharp.ProjectDependency.Abstractions | 2 | 26 | 2000 | 52 | 277 | 4 | 2025-10-16 21:17:51Z | 0,0
 FrenchExDev.Net.CSharp.ProjectDependency.Testing | 0 | 4 | 45 | 13 | 0 | 1 | 2025-10-14 20:25:20Z | 93,5
-FrenchExDev.Net.Csharp.ProjectDependency.Tests | 0 | 6 | 248 | 16 | 9 | 2 | 2025-10-14 21:22:31Z | 83,0
+FrenchExDev.Net.Csharp.ProjectDependency.Tests | 0 | 7 | 267 | 26 | 9 | 2 | 2025-10-14 21:22:31Z | 78,0
 FrenchExDev.Net.CSharp.SolutionEngineering | 1 | 4 | 167 | 11 | 7 | 2 | 2025-10-14 20:25:20Z | 87,5
 FrenchExDev.Net.CSharp.SolutionEngineering.Testing | 1 | 4 | 45 | 13 | 0 | 1 | 2025-10-14 20:25:20Z | 93,5
 FrenchExDev.Net.CSharp.SolutionEngineering.Tests | 0 | 5 | 54 | 15 | 2 | 3 | 2025-10-14 21:22:31Z | 90,5
-FrenchExDev.Net.Dotnet.Project | 3 | 4 | 48 | 13 | 0 | 2 | 2025-09-07 22:28:22Z | 93,5
+FrenchExDev.Net.Dotnet.Project | 3 | 4 | 49 | 13 | 0 | 2 | 2025-09-07 22:28:22Z | 93,5
 FrenchExDev.Net.Dotnet.Project.Abstractions | 5 | 18 | 1444 | 9 | 70 | 3 | 2025-09-21 01:40:40Z | 25,5
-FrenchExDev.Net.Dotnet.Project.Infrastructure | 1 | 4 | 159 | 13 | 19 | 3 | 2025-09-13 15:07:00Z | 74,5
-FrenchExDev.Net.Dotnet.Project.Testing | 1 | 4 | 48 | 13 | 0 | 1 | 2025-08-30 22:38:46Z | 93,5
+FrenchExDev.Net.Dotnet.Project.Infrastructure | 1 | 4 | 160 | 13 | 19 | 3 | 2025-09-13 15:07:00Z | 74,5
+FrenchExDev.Net.Dotnet.Project.Testing | 1 | 4 | 49 | 13 | 0 | 1 | 2025-08-30 22:38:46Z | 93,5
 FrenchExDev.Net.Dotnet.Project.Tests | 0 | 5 | 81 | 15 | 2 | 3 | 2025-10-14 21:22:31Z | 90,5
 FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType | 1 | 4 | 93 | 13 | 1 | 1 | 2025-09-07 17:11:29Z | 92,5
 FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions | 1 | 5 | 148 | 11 | 3 | 2 | 2025-09-07 21:46:20Z | 91,5
@@ -670,13 +670,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FenchExDev_Net_Testing {
-        + records: 1
-        + enums: 2
-        + classes: 5
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 44
+        // no public declarations detected
     }
 ```
 
@@ -739,13 +733,7 @@ FrenchExDev.Net.HttpClient.csproj | Low | 7 | 7 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Alpine_Version {
-        + records: 3
-        + enums: 3
-        + classes: 7
-        + interfaces: 1
-        + structs: 0
-        + extensionMethods: 1
-        + publicMembers: 157
+        // no public declarations detected
     }
 ```
 
@@ -814,13 +802,7 @@ FrenchExDev.Net.Alpine.Version.csproj | High | 10 | 2 | 8
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Alpine_Version_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -898,13 +880,7 @@ FrenchExDev.Net.Alpine.Version.Testing.csproj | High | 4 | 0 | 4
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Alpine_Version_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 2
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 5
+        // no public declarations detected
     }
 ```
 
@@ -979,13 +955,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_ManagedDictionary {
-        + records: 0
-        + enums: 0
-        + classes: 7
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 40
+        // no public declarations detected
     }
 ```
 
@@ -1048,13 +1018,7 @@ FrenchExDev.Net.CSharp.ManagedDictionary.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_ManagedDictionary_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -1122,13 +1086,7 @@ FrenchExDev.Net.CSharp.ManagedDictionary.Testing.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_ManagedDictionary_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -1199,13 +1157,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_ManagedList {
-        + records: 0
-        + enums: 0
-        + classes: 7
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 32
+        // no public declarations detected
     }
 ```
 
@@ -1268,13 +1220,7 @@ FrenchExDev.Net.CSharp.ManagedList.csproj | High | 6 | 0 | 6
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_ManagedList_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -1344,13 +1290,7 @@ FrenchExDev.Net.CSharp.ManagedList.Testing.csproj | High | 6 | 0 | 6
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_ManagedList_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 7
+        // no public declarations detected
     }
 ```
 
@@ -1423,13 +1363,7 @@ FrenchExDev.Net.CSharp.Object.Result.csproj | Low | 5 | 4 | 1
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Biz {
-        + records: 0
-        + enums: 0
-        + classes: 5
-        + interfaces: 3
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 14
+        // no public declarations detected
     }
 ```
 
@@ -1494,13 +1428,7 @@ FrenchExDev.Net.CSharp.Object.Biz.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Biz_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -1572,13 +1500,7 @@ FrenchExDev.Net.CSharp.Object.Biz.Testing.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Biz_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 2
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 4
+        // no public declarations detected
     }
 ```
 
@@ -1617,8 +1539,8 @@ Times used | 10
 Outgoing project refs | 0
 NuGet references | 0
 Source files | 4
-Lines of code | 1041
-Comment lines | 600
+Lines of code | 1040
+Comment lines | 599
 Comment density | 57,6 %
 Diagnostics | 10
 Cyclomatic complexity | 122
@@ -1651,13 +1573,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Builder2 {
-        + records: 1
-        + enums: 2
-        + classes: 13
-        + interfaces: 3
-        + structs: 1
-        + extensionMethods: 4
-        + publicMembers: 137
+        // no public declarations detected
     }
 ```
 
@@ -1720,13 +1636,7 @@ FrenchExDev.Net.CSharp.Object.Builder2.csproj | High | 29 | 0 | 29
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Builder2_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 10
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 42
+        // no public declarations detected
     }
 ```
 
@@ -1796,13 +1706,7 @@ FrenchExDev.Net.CSharp.Object.Builder2.Testing.csproj | High | 40 | 0 | 40
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Builder2_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 3
+        // no public declarations detected
     }
 ```
 
@@ -1875,13 +1779,7 @@ FrenchExDev.Net.CSharp.Object.Model.Infrastructure.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Model {
-        + records: 0
-        + enums: 0
-        + classes: 0
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 0
+        // no public declarations detected
     }
 ```
 
@@ -1910,8 +1808,8 @@ Times used | 2
 Outgoing project refs | 1
 NuGet references | 0
 Source files | 45
-Lines of code | 3748
-Comment lines | 1818
+Lines of code | 3749
+Comment lines | 1819
 Comment density | 48,5 %
 Diagnostics | 10
 Cyclomatic complexity | 160
@@ -1946,13 +1844,7 @@ FrenchExDev.Net.CSharp.Object.Builder2.csproj | High | 189 | 7 | 182
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Model_Abstractions {
-        + records: 0
-        + enums: 6
-        + classes: 35
-        + interfaces: 2
-        + structs: 0
-        + extensionMethods: 1
-        + publicMembers: 378
+        // no public declarations detected
     }
 ```
 
@@ -2018,13 +1910,7 @@ FrenchExDev.Net.CSharp.Object.Model.Abstractions.csproj | High | 36 | 9 | 27
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Model_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 2
-        + interfaces: 1
-        + structs: 0
-        + extensionMethods: 1
-        + publicMembers: 22
+        // no public declarations detected
     }
 ```
 
@@ -2093,13 +1979,7 @@ FrenchExDev.Net.CSharp.Object.Model.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Model_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -2169,13 +2049,7 @@ FrenchExDev.Net.CSharp.Object.Model.Testing.csproj | High | 2 | 0 | 2
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Model_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 3
+        // no public declarations detected
     }
 ```
 
@@ -2246,13 +2120,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Result {
-        + records: 0
-        + enums: 0
-        + classes: 4
-        + interfaces: 1
-        + structs: 2
-        + extensionMethods: 0
-        + publicMembers: 37
+        // no public declarations detected
     }
 ```
 
@@ -2315,13 +2183,7 @@ FrenchExDev.Net.CSharp.Object.Result.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Result_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -2390,13 +2252,7 @@ FrenchExDev.Net.CSharp.Object.Result.Testing.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_Object_Result_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -2435,9 +2291,9 @@ Times used | 1
 Outgoing project refs | 3
 NuGet references | 0
 Source files | 4
-Lines of code | 127
-Comment lines | 24
-Comment density | 18,9 %
+Lines of code | 128
+Comment lines | 25
+Comment density | 19,5 %
 Diagnostics | 9
 Cyclomatic complexity | 7
 Commit count | 1
@@ -2475,13 +2331,7 @@ FrenchExDev.Net.CSharp.ProjectDependency.Abstractions.csproj | High | 13 | 5 | 8
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_ProjectDependency {
-        + records: 0
-        + enums: 0
-        + classes: 2
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 13
+        // no public declarations detected
     }
 ```
 
@@ -2513,26 +2363,26 @@ Metric | Value
 Times used | 2
 Outgoing project refs | 3
 NuGet references | 8
-Source files | 24
-Lines of code | 1922
-Comment lines | 256
-Comment density | 13,3 %
+Source files | 26
+Lines of code | 2000
+Comment lines | 264
+Comment density | 13,2 %
 Diagnostics | 52
-Cyclomatic complexity | 266
+Cyclomatic complexity | 277
 Commit count | 4
 Last commit | 2025-10-16 21:17:51Z
 Maintainability index | 0,0
-Testability index | 10,5
-Hotspot score | 34,40
+Testability index | 11,4
+Hotspot score | 32,40
 
 ### Exported constructs
 - Records: **18**
 - Enums: **1**
-- Classes: **15**
-- Interfaces: **12**
+- Classes: **16**
+- Interfaces: **13**
 - Structs: **0**
 - Extension methods: **0**
-- Public members: **469**
+- Public members: **474**
 
 ### Package references
 - Microsoft.Build 
@@ -2561,13 +2411,7 @@ FrenchExDev.Net.CSharp.Object.Result.csproj | Low | 36 | 30 | 6
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_ProjectDependency_Abstractions {
-        + records: 18
-        + enums: 1
-        + classes: 15
-        + interfaces: 12
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 469
+        // no public declarations detected
     }
 ```
 
@@ -2652,13 +2496,7 @@ FrenchExDev.Net.Dotnet.Project.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_ProjectDependency_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -2688,26 +2526,26 @@ Metric | Value
 Times used | 0
 Outgoing project refs | 3
 NuGet references | 5
-Source files | 6
-Lines of code | 248
-Comment lines | 20
-Comment density | 8,1 %
-Diagnostics | 16
+Source files | 7
+Lines of code | 267
+Comment lines | 24
+Comment density | 9,0 %
+Diagnostics | 26
 Cyclomatic complexity | 9
 Commit count | 2
 Last commit | 2025-10-14 21:22:31Z
-Maintainability index | 83,0
-Testability index | -0,2
+Maintainability index | 78,0
+Testability index | -0,3
 Hotspot score | 0,00
 
 ### Exported constructs
 - Records: **0**
 - Enums: **0**
-- Classes: **2**
+- Classes: **3**
 - Interfaces: **0**
 - Structs: **0**
 - Extension methods: **0**
-- Public members: **9**
+- Public members: **8**
 
 ### Package references
 - coverlet.collector 
@@ -2725,7 +2563,7 @@ Hotspot score | 0,00
 Reference | Coupling | TotalUses | InterfaceUses | ClassUses
 --- | --- | ---: | ---: | ---:
 FrenchExDev.Net.Dotnet.Project.Testing.csproj | Low | 0 | 0 | 0
-FrenchExDev.Net.CSharp.ProjectDependency.Abstractions.csproj | High | 84 | 22 | 62
+FrenchExDev.Net.CSharp.ProjectDependency.Abstractions.csproj | High | 67 | 5 | 62
 FrenchExDev.Net.CSharp.ProjectDependency.csproj | High | 24 | 0 | 24
 
 
@@ -2733,13 +2571,7 @@ FrenchExDev.Net.CSharp.ProjectDependency.csproj | High | 24 | 0 | 24
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Csharp_ProjectDependency_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 2
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 9
+        // no public declarations detected
     }
 ```
 
@@ -2818,13 +2650,7 @@ FrenchExDev.Net.CSharp.ManagedList.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_SolutionEngineering {
-        + records: 1
-        + enums: 2
-        + classes: 5
-        + interfaces: 2
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 65
+        // no public declarations detected
     }
 ```
 
@@ -2889,13 +2715,7 @@ FrenchExDev.Net.CSharp.SolutionEngineering.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_SolutionEngineering_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -2963,13 +2783,7 @@ FrenchExDev.Net.CSharp.SolutionEngineering.Testing.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_CSharp_SolutionEngineering_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -3006,9 +2820,9 @@ Times used | 3
 Outgoing project refs | 1
 NuGet references | 0
 Source files | 4
-Lines of code | 48
-Comment lines | 11
-Comment density | 22,9 %
+Lines of code | 49
+Comment lines | 12
+Comment density | 24,5 %
 Diagnostics | 13
 Cyclomatic complexity | 0
 Commit count | 2
@@ -3042,13 +2856,7 @@ FrenchExDev.Net.Dotnet.Project.Infrastructure.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -3115,13 +2923,7 @@ FrenchExDev.Net.CSharp.Object.Model.Abstractions.csproj | Low | 6 | 4 | 2
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Abstractions {
-        + records: 5
-        + enums: 0
-        + classes: 8
-        + interfaces: 3
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 194
+        // no public declarations detected
     }
 ```
 
@@ -3152,9 +2954,9 @@ Times used | 1
 Outgoing project refs | 1
 NuGet references | 3
 Source files | 4
-Lines of code | 159
-Comment lines | 30
-Comment density | 18,9 %
+Lines of code | 160
+Comment lines | 31
+Comment density | 19,4 %
 Diagnostics | 13
 Cyclomatic complexity | 19
 Commit count | 3
@@ -3190,13 +2992,7 @@ FrenchExDev.Net.Dotnet.Project.Abstractions.csproj | Low | 2 | 2 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 1
-        + publicMembers: 17
+        // no public declarations detected
     }
 ```
 
@@ -3231,9 +3027,9 @@ Times used | 1
 Outgoing project refs | 1
 NuGet references | 0
 Source files | 4
-Lines of code | 48
-Comment lines | 11
-Comment density | 22,9 %
+Lines of code | 49
+Comment lines | 12
+Comment density | 24,5 %
 Diagnostics | 13
 Cyclomatic complexity | 0
 Commit count | 1
@@ -3267,13 +3063,7 @@ FrenchExDev.Net.Dotnet.Project.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -3343,13 +3133,7 @@ FrenchExDev.Net.Dotnet.Project.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -3424,13 +3208,7 @@ FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure.csproj | Lo
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_ClassProjectType {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 4
+        // no public declarations detected
     }
 ```
 
@@ -3495,13 +3273,7 @@ FrenchExDev.Net.Dotnet.Project.Abstractions.csproj | Low | 3 | 3 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_ClassProjectType_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 2
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -3566,13 +3338,7 @@ FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions.csproj | Low 
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_ClassProjectType_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -3637,13 +3403,7 @@ FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_ClassProjectType_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 3
+        // no public declarations detected
     }
 ```
 
@@ -3713,13 +3473,7 @@ FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing.csproj | High | 4 
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_ClassProjectType_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 3
+        // no public declarations detected
     }
 ```
 
@@ -3792,13 +3546,7 @@ FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure.csproj | Low 
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_CliProjectType {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 4
+        // no public declarations detected
     }
 ```
 
@@ -3863,13 +3611,7 @@ FrenchExDev.Net.Dotnet.Project.Abstractions.csproj | Low | 4 | 3 | 1
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_CliProjectType_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 2
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -3934,13 +3676,7 @@ FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions.csproj | Low | 
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_CliProjectType_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -4005,13 +3741,7 @@ FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_CliProjectType_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -4077,13 +3807,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_CliProjectType_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -4156,13 +3880,7 @@ FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure.csproj | 
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_DesktopProjectType {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 4
+        // no public declarations detected
     }
 ```
 
@@ -4229,13 +3947,7 @@ FrenchExDev.Net.Dotnet.Project.Abstractions.csproj | Low | 4 | 3 | 1
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_DesktopProjectType_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 2
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -4298,13 +4010,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_DesktopProjectType_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -4365,13 +4071,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_DesktopProjectType_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -4435,13 +4135,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_DesktopProjectType_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -4512,13 +4206,7 @@ FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure.csproj | Low 
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_LibraryProject {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -4583,13 +4271,7 @@ FrenchExDev.Net.Dotnet.Project.Abstractions.csproj | Low | 4 | 3 | 1
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_LibraryProject_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 2
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -4654,13 +4336,7 @@ FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions.csproj | Low | 
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_LibraryProject_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -4725,13 +4401,7 @@ FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_LibraryProject_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -4797,13 +4467,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_LibraryProject_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -4874,13 +4538,7 @@ FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure.csproj | L
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_WebApiProjectType {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -4943,13 +4601,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_WebApiProjectType_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -5012,13 +4664,7 @@ FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions.csproj | Low
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_WebApiProjectType_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -5083,13 +4729,7 @@ FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_WebApiProjectType_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -5155,13 +4795,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_WebApiProjectType_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -5232,13 +4866,7 @@ FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure.csproj 
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_WebWorkerProjectType {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -5301,13 +4929,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_WebWorkerProjectType_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -5370,13 +4992,7 @@ FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions.csproj | 
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_WebWorkerProjectType_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -5441,13 +5057,7 @@ FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.csproj | Low | 0 | 0 |
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_WebWorkerProjectType_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -5515,13 +5125,7 @@ FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing.csproj | Low |
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Project_Types_WebWorkerProjectType_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -5596,13 +5200,7 @@ FrenchExDev.Net.Dotnet.Solution.Infrastructure.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Solution {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -5667,13 +5265,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Solution_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -5736,13 +5328,7 @@ FrenchExDev.Net.Dotnet.Solution.Abstractions.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Solution_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -5807,13 +5393,7 @@ FrenchExDev.Net.Dotnet.Solution.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Solution_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -5879,13 +5459,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Dotnet_Solution_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -5954,13 +5528,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_HttpClient {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 1
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 3
+        // no public declarations detected
     }
 ```
 
@@ -6025,13 +5593,7 @@ FrenchExDev.Net.HttpClient.csproj | Low | 9 | 9 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_HttpClient_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 3
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 36
+        // no public declarations detected
     }
 ```
 
@@ -6096,13 +5658,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm {
-        + records: 0
-        + enums: 0
-        + classes: 0
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 0
+        // no public declarations detected
     }
 ```
 
@@ -6165,13 +5721,7 @@ FrenchExDev.Net.CSharp.Object.Builder2.csproj | High | 15 | 0 | 15
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_Abstractions {
-        + records: 2
-        + enums: 2
-        + classes: 8
-        + interfaces: 3
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 113
+        // no public declarations detected
     }
 ```
 
@@ -6240,13 +5790,7 @@ FrenchExDev.Net.Mm.Abstractions.csproj | High | 23 | 0 | 23
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_Abstractions_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 8
+        // no public declarations detected
     }
 ```
 
@@ -6319,13 +5863,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Cli {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -6389,13 +5927,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Cli_Builder_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -6467,13 +5999,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Cli_Generator_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -6542,13 +6068,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Cli_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -6612,13 +6132,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Cli_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -6687,13 +6201,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Desktop {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -6754,13 +6262,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Desktop_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -6821,13 +6323,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Desktop_Builder {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -6888,13 +6384,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Desktop_Builder_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -6955,13 +6445,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Desktop_Builder_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -7022,13 +6506,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Desktop_Builder_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -7092,13 +6570,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Desktop_Builder_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -7170,13 +6642,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Desktop_Generator_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -7248,13 +6714,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_Desktop_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -7323,13 +6783,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_WebApi {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -7390,13 +6844,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_WebApi_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -7460,13 +6908,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_WebApi_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -7535,13 +6977,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_WebWorker {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -7602,13 +7038,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_WebWorker_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -7672,13 +7102,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_App_WebWorker_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -7752,13 +7176,7 @@ FrenchExDev.Net.Mm.Module.Library.Infrastructure.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_Module_Library {
-        + records: 0
-        + enums: 0
-        + classes: 4
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 31
+        // no public declarations detected
     }
 ```
 
@@ -7830,13 +7248,7 @@ FrenchExDev.Net.Mm.Abstractions.csproj | Low | 11 | 11 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_Module_Library_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 3
-        + interfaces: 4
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 18
+        // no public declarations detected
     }
 ```
 
@@ -7906,13 +7318,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_Module_Library_Builder_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -7984,13 +7390,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_Module_Library_Generator_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -8062,13 +7462,7 @@ FrenchExDev.Net.Mm.Module.Library.Abstractions.csproj | Low | 3 | 3 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_Module_Library_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -8137,13 +7531,7 @@ FrenchExDev.Net.Mm.Module.Library.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_Module_Library_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 0
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 0
+        // no public declarations detected
     }
 ```
 
@@ -8214,13 +7602,7 @@ FrenchExDev.Net.Mm.Module.Library.Testing.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Mm_Module_Library_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 4
+        // no public declarations detected
     }
 ```
 
@@ -8293,13 +7675,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer {
-        + records: 0
-        + enums: 1
-        + classes: 5
-        + interfaces: 2
-        + structs: 0
-        + extensionMethods: 3
-        + publicMembers: 90
+        // no public declarations detected
     }
 ```
 
@@ -8362,13 +7738,7 @@ FrenchExDev.Net.Packer.Bundle.csproj | High | 35 | 0 | 35
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Abstractions {
-        + records: 3
-        + enums: 3
-        + classes: 14
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 114
+        // no public declarations detected
     }
 ```
 
@@ -8433,13 +7803,7 @@ FrenchExDev.Net.Packer.Alpine.Abstractions.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -8509,13 +7873,7 @@ FrenchExDev.Net.Packer.Bundle.csproj | High | 259 | 0 | 259
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 4
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 76
+        // no public declarations detected
     }
 ```
 
@@ -8588,13 +7946,7 @@ FrenchExDev.Net.Packer.Alpine.Docker.Infrastructure.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine_Docker {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -8657,13 +8009,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine_Docker_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -8726,13 +8072,7 @@ FrenchExDev.Net.Packer.Alpine.Docker.Abstractions.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine_Docker_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -8797,13 +8137,7 @@ FrenchExDev.Net.Packer.Alpine.Docker.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine_Docker_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -8871,13 +8205,7 @@ FrenchExDev.Net.Packer.Alpine.Docker.Testing.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine_Docker_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -8948,13 +8276,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine_Kubernetes {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -9015,13 +8337,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine_Kubernetes_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -9082,13 +8398,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine_Kubernetes_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -9152,13 +8462,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine_Kubernetes_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -9228,13 +8532,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -9310,13 +8608,7 @@ FrenchExDev.Net.Packer.Alpine.Testing.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Alpine_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -9395,13 +8687,7 @@ FrenchExDev.Net.CSharp.Object.Builder2.csproj | High | 90 | 1 | 89
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Bundle {
-        + records: 2
-        + enums: 0
-        + classes: 29
-        + interfaces: 3
-        + structs: 0
-        + extensionMethods: 2
-        + publicMembers: 329
+        // no public declarations detected
     }
 ```
 
@@ -9468,13 +8754,7 @@ FrenchExDev.Net.Packer.Bundle.csproj | High | 10 | 0 | 10
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Bundle_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 2
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 5
+        // no public declarations detected
     }
 ```
 
@@ -9550,13 +8830,7 @@ FrenchExDev.Net.Packer.Bundle.Testing.csproj | High | 3 | 0 | 3
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Bundle_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -9637,13 +8911,7 @@ FrenchExDev.Net.Packer.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -9713,13 +8981,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Packer_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -9790,13 +9052,7 @@ FrenchExDev.Net.CSharp.Object.Builder2.csproj | High | 69 | 0 | 69
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Ssh_Config {
-        + records: 0
-        + enums: 4
-        + classes: 16
-        + interfaces: 3
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 405
+        // no public declarations detected
     }
 ```
 
@@ -9861,13 +9117,7 @@ FrenchExDev.Net.Ssh.Config.csproj | High | 16 | 0 | 16
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Ssh_Config_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 3
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 6
+        // no public declarations detected
     }
 ```
 
@@ -9937,13 +9187,7 @@ FrenchExDev.Net.Ssh.Config.Testing.csproj | High | 381 | 0 | 381
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Ssh_Config_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 2
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 129
+        // no public declarations detected
     }
 ```
 
@@ -10016,13 +9260,7 @@ FrenchExDev.Net.CSharp.Object.Builder2.csproj | High | 87 | 0 | 87
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vagrant {
-        + records: 46
-        + enums: 0
-        + classes: 44
-        + interfaces: 1
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 846
+        // no public declarations detected
     }
 ```
 
@@ -10088,13 +9326,7 @@ FrenchExDev.Net.Vagrant.csproj | Low | 65 | 33 | 32
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vagrant_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 31
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 31
+        // no public declarations detected
     }
 ```
 
@@ -10169,13 +9401,7 @@ FrenchExDev.Net.Vagrant.Testing.csproj | High | 135 | 0 | 135
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vagrant_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 39
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 174
+        // no public declarations detected
     }
 ```
 
@@ -10250,13 +9476,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_VirtualBox_Version {
-        + records: 3
-        + enums: 0
-        + classes: 2
-        + interfaces: 2
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 55
+        // no public declarations detected
     }
 ```
 
@@ -10319,13 +9539,7 @@ FrenchExDev.Net.VirtualBox.Version.csproj | Low | 4 | 2 | 2
 ```mermaid
 classDiagram
     class FrenchExDev_Net_VirtualBox_Version_DependencyInjection {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 1
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -10394,13 +9608,7 @@ FrenchExDev.Net.VirtualBox.Version.csproj | Low | 4 | 2 | 2
 ```mermaid
 classDiagram
     class FrenchExDev_Net_VirtualBox_Version_Mm {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -10467,13 +9675,7 @@ FrenchExDev.Net.VirtualBox.Version.csproj | Low | 7 | 4 | 3
 ```mermaid
 classDiagram
     class FrenchExDev_Net_VirtualBox_Version_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -10543,13 +9745,7 @@ FrenchExDev.Net.VirtualBox.Version.Testing.csproj | High | 2 | 0 | 2
 ```mermaid
 classDiagram
     class FrenchExDev_Net_VirtualBox_Version_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 3
+        // no public declarations detected
     }
 ```
 
@@ -10620,13 +9816,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -10687,13 +9877,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -10756,13 +9940,7 @@ FrenchExDev.Net.Vos.Alpine.Abstractions.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -10825,13 +10003,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -10894,13 +10066,7 @@ FrenchExDev.Net.Vos.Alpine.Docker.Infrastructure.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine_Docker {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -10963,13 +10129,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine_Docker_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -11032,13 +10192,7 @@ FrenchExDev.Net.Vos.Alpine.Docker.Abstractions.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine_Docker_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -11103,13 +10257,7 @@ FrenchExDev.Net.Vos.Alpine.Docker.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine_Docker_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -11177,13 +10325,7 @@ FrenchExDev.Net.Vos.Alpine.Docker.Testing.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine_Docker_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -11256,13 +10398,7 @@ FrenchExDev.Net.Vos.Alpine.Kubernetes.Infrastructure.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine_Kubernetes {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -11325,13 +10461,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine_Kubernetes_Abstractions {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -11394,13 +10524,7 @@ FrenchExDev.Net.Vos.Alpine.Kubernetes.Abstractions.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine_Kubernetes_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -11465,13 +10589,7 @@ FrenchExDev.Net.Vos.Alpine.Kubernetes.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine_Kubernetes_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -11539,13 +10657,7 @@ FrenchExDev.Net.Vos.Alpine.Kubernetes.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine_Kubernetes_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -11621,13 +10733,7 @@ FrenchExDev.Net.Vos.Alpine.csproj | Low | 0 | 0 | 0
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Alpine_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 
@@ -11698,13 +10804,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Infrastructure {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -11765,13 +10865,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Testing {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 1
+        // no public declarations detected
     }
 ```
 
@@ -11835,13 +10929,7 @@ _No coupling data._
 ```mermaid
 classDiagram
     class FrenchExDev_Net_Vos_Tests {
-        + records: 0
-        + enums: 0
-        + classes: 1
-        + interfaces: 0
-        + structs: 0
-        + extensionMethods: 0
-        + publicMembers: 2
+        // no public declarations detected
     }
 ```
 

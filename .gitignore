@@ -10,3 +10,4 @@ __Local_Nuget_Registry__/
 *.csproj.user
 *..pubxml.user
 *.user
+doc/gen/

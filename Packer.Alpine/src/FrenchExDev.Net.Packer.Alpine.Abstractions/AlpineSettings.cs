@@ -87,7 +87,7 @@ public static class AlpineSettings
 
                             cat <<EOT> /etc/motd
                             """, eol)
-                .AddLines(FiggleFonts.Ogre.Render("Alpine Linux").Split(eol))
+                .AddLines(["Alpine Linux"])
                 .AddLines("""
                             Alpine ${VERSION_ID}
                             EOT

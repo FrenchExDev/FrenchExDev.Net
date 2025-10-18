@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Collections.Concurrent;
 
 namespace FrenchExDev.Net.CSharp.ProjectDependency.Abstractions;
 
@@ -15,6 +16,7 @@ public class Solution
 {
     private readonly Microsoft.CodeAnalysis.Solution _code;
     private readonly OpenManagedDictionary<string, Project> _projects = new OpenManagedDictionary<string, Project>();
+    private readonly object _projectsLock = new();
 
     public Microsoft.CodeAnalysis.Solution Code => _code;
 
@@ -26,30 +28,37 @@ public class Solution
 
     public void LoadProjects(IProjectCollection pc)
     {
-        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // Use a concurrent visited set so multiple threads can walk different roots in parallel
+        var visited = new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (Microsoft.CodeAnalysis.Project roslynProj in _code.Projects)
+        // collect root project file paths
+        var roots = _code.Projects
+            .Where(p => !string.IsNullOrWhiteSpace(p.FilePath))
+            .Select(p => Path.GetFullPath(p.FilePath!))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        // process each root in parallel
+        Parallel.ForEach(roots, rootPath =>
         {
-            if (string.IsNullOrWhiteSpace(roslynProj.FilePath))
-                continue;
-
-            var rootPath = Path.GetFullPath(roslynProj.FilePath);
-            if (visited.Contains(rootPath))
-                continue;
-
-            // DFS stack to walk project references recursively
+            // local DFS stack for this worker
             var stack = new Stack<string>();
             stack.Push(rootPath);
 
             while (stack.Count > 0)
             {
                 var current = stack.Pop();
-                if (visited.Contains(current))
+
+                // ensure single visit across all threads
+                if (!visited.TryAdd(current, 0))
                     continue;
 
-                visited.Add(current);
-
-                if (_projects.ContainsKey(current)) continue;
+                // already added to projects? skip loading
+                lock (_projectsLock)
+                {
+                    if (_projects.ContainsKey(current))
+                        continue;
+                }
 
                 // try to load the MSBuild project; on failure continue
                 Microsoft.Build.Evaluation.Project? msproj = null;
@@ -65,7 +74,7 @@ public class Solution
 
                 // try to find corresponding Roslyn project in the solution by file path
                 var roslynForCurrent = _code.Projects.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.FilePath)
-                    && Path.GetFullPath(p.FilePath).Equals(current, StringComparison.OrdinalIgnoreCase));
+                    && Path.GetFullPath(p.FilePath!).Equals(current, StringComparison.OrdinalIgnoreCase));
 
                 Microsoft.CodeAnalysis.Project codeProject;
                 if (roslynForCurrent != null)
@@ -83,8 +92,15 @@ public class Solution
                 }
 
                 var project = new Abstractions.Project(codeProject, current, msproj);
-                _projects.Add(current, project);
 
+                // add to shared dictionary under lock
+                lock (_projectsLock)
+                {
+                    if (!_projects.ContainsKey(current))
+                        _projects.Add(current, project);
+                }
+
+                // enqueue referenced project files for further processing
                 foreach (var item in msproj.GetItems("ProjectReference"))
                 {
                     var include = item.EvaluatedInclude ?? string.Empty;
@@ -95,22 +111,25 @@ public class Solution
                     var resolved = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(current) ?? string.Empty, include));
 
                     // schedule for visit if not already visited or loaded
-                    if (!visited.Contains(resolved) && !_projects.ContainsKey(resolved))
+                    if (!visited.ContainsKey(resolved))
+                    {
+                        // small race is fine; TryAdd will protect from duplicates when popped
                         stack.Push(resolved);
+                    }
                 }
             }
-        }
+        });
     }
 
-    public IEnumerable<ProjectAnalysis> ScanProjects(IProjectCollection projectCollection)
+    public async IAsyncEnumerable<ProjectAnalysis> ScanProjectsAsync(IProjectCollection projectCollection)
     {
         foreach (var project in _projects)
         {
-            yield return ScanProject(project.Value).ObjectOrThrow();
+            yield return (await ScanProjectAsync(project.Value)).ObjectOrThrow();
         }
     }
 
-    private Result<ProjectAnalysis> ScanProject(Project project)
+    private async Task<Result<ProjectAnalysis>> ScanProjectAsync(Project project)
     {
         var filePath = Path.GetFullPath(project.FilePath) ?? string.Empty;
         var current = _projects[filePath];

@@ -78,17 +78,15 @@ public class ShellScriptBuilder : AbstractBuilder<ShellScript>
     }
 
     /// <summary>
-    /// Adds multiple lines to the shell script from a list of strings.
+    /// Appends the specified lines to the shell script being built.
     /// </summary>
-    /// <param name="value">List of lines to add.</param>
-    /// <returns>The builder instance.</returns>
-    /// <remarks>Example: AddLines(new List&lt;string&gt; { "echo Hello", "exit 0" })</remarks>
-    public ShellScriptBuilder AddLines(List<string> value)
+    /// <param name="value">An array of strings representing the lines to add to the script. Cannot be null.</param>
+    /// <returns>The current <see cref="ShellScriptBuilder"/> instance, allowing for method chaining.</returns>
+    public ShellScriptBuilder AddLines(string[] value)
     {
         _lines.AddRange(value);
         return this;
     }
-
     /// <summary>
     /// Adds multiple lines to the shell script by splitting a string using the specified end-of-line delimiter.
     /// </summary>
@@ -99,18 +97,6 @@ public class ShellScriptBuilder : AbstractBuilder<ShellScript>
     public ShellScriptBuilder AddLines(string lines, string eol)
     {
         _lines.AddRange(lines.Split(eol));
-        return this;
-    }
-
-    /// <summary>
-    /// Adds multiple lines to the shell script from an array of strings.
-    /// </summary>
-    /// <param name="value">Array of lines to add.</param>
-    /// <returns>The builder instance.</returns>
-    /// <remarks>Example: AddLines(new[] { "echo Hello", "exit 0" })</remarks>
-    public ShellScriptBuilder AddLines(string[] value)
-    {
-        _lines.AddRange(value);
         return this;
     }
 
