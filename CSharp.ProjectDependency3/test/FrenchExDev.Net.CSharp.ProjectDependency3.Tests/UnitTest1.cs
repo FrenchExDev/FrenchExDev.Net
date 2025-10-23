@@ -25,7 +25,7 @@ public class UnitTest1
         var solution = solutionR.ObjectOrThrow();
 
         // Run analyzers
-        var aggregator = new ProjectAnalysisAggregator()
+        var aggregator = new ProjectAnalyzerAggregator()
             .Add(new StructuralCouplingAnalyzer())
             .Add(new ClassicalCouplingAnalyzer())
             .Add(new DirectionalCouplingAnalyzer());
