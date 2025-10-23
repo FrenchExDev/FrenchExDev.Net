@@ -1,3 +1,5 @@
+using FrenchExDev.Net.CSharp.ProjectDependency3.Analysis;
+
 namespace FrenchExDev.Net.CSharp.ProjectDependency3;
 
 /// <summary>
@@ -9,15 +11,15 @@ namespace FrenchExDev.Net.CSharp.ProjectDependency3;
 /// quantifying their incoming and outgoing dependencies. Instability is computed as Ce divided by the sum of Ca and Ce,
 /// indicating how likely a project is to change when other projects change. This analyzer is useful for architectural
 /// reviews and dependency management in multi-project solutions.</remarks>
+// Afferent (Ca) and Efferent (Ce) and Instability I = Ce/(Ca+Ce)
 public class ClassicalCouplingAnalyzer : IProjectAnalyzer
 {
     public string Name => "ClassicalCoupling";
 
-    public Task<object> AnalyzeAsync(Solution solution, CancellationToken cancellationToken = default)
+    public Task<IProjectAnalysisResult> AnalyzeAsync(Solution solution, CancellationToken cancellationToken = default)
     {
         // Map project by path for resolution
         var byPath = solution.Projects.ToDictionary(p => p.Path, p => p, StringComparer.OrdinalIgnoreCase);
-        var byName = solution.Projects.ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
 
         // Build adjacency list using structural references
         var outgoing = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
@@ -52,6 +54,10 @@ public class ClassicalCouplingAnalyzer : IProjectAnalyzer
             metrics[p.Name] = (ca, ce, instability);
         }
 
-        return Task.FromResult<object>(metrics);
+        IProjectAnalysisResult res = new ClassicalCouplingResult(Name,
+            metrics,
+            incoming.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value.ToList()),
+            outgoing.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value.ToList()));
+        return Task.FromResult(res);
     }
 }

@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+﻿using FrenchExDev.Net.CSharp.ProjectDependency3.Analysis;
+using FrenchExDev.Net.CSharp.ProjectDependency3.Markdown;
+using FrenchExDev.Net.CSharp.ProjectDependency3.Reporting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 
 namespace FrenchExDev.Net.CSharp.ProjectDependency3.Tests;
@@ -9,7 +12,8 @@ public class UnitTest1
     public async Task Test1()
     {
         // same solution used by other tests in this project
-        var rootSln = @"C:\code\FrenchExDev.Net\FrenchExDev.Net_i2\FrenchExDev.Net\Alpine\FrenchExDev.Net.Alpine.sln";
+        var rootSln = @"C:\code\FrenchExDev.Net\FrenchExDev.Net_i2\FrenchExDev.Net\FrenchExDev.Net.sln";
+        //var rootSln = @"C:\\code\\FrenchExDev.Net\\FrenchExDev.Net_i2\\FrenchExDev.Net\\Alpine\\FrenchExDev.Net.Alpine.sln";
 
         var msBuildRegisteringService = new MsBuildRegisteringService();
         msBuildRegisteringService.RegisterIfNeeded();
@@ -32,8 +36,30 @@ public class UnitTest1
 
         var results = await aggregator.RunAsync(solution);
         results.ShouldNotBeNull();
-        results.ContainsKey("StructuralCoupling").ShouldBeTrue();
-        results.ContainsKey("ClassicalCoupling").ShouldBeTrue();
-        results.ContainsKey("DirectionalCoupling").ShouldBeTrue();
+
+        // Generate markdown for each known analyzer result
+        var doc = new MarkdownDocument();
+        foreach (var kv in results)
+        {
+            switch (kv.Value)
+            {
+                case StructuralCouplingResult sr:
+                    var sSections = new StructuralCouplingReportGenerator().Generate(sr);
+                    foreach (var s in sSections) doc.AddSection(s);
+                    break;
+                case ClassicalCouplingResult cr:
+                    var cSections = new ClassicalCouplingReportGenerator().Generate(cr);
+                    foreach (var s in cSections) doc.AddSection(s);
+                    break;
+                case DirectionalCouplingResult dr:
+                    var dSections = new DirectionalCouplingReportGenerator().Generate(dr);
+                    foreach (var s in dSections) doc.AddSection(s);
+                    break;
+            }
+        }
+        var markdown = doc.Render();
+        markdown.ShouldNotBeNullOrWhiteSpace();
+
+        await File.WriteAllTextAsync(@"C:\code\output.md", markdown);
     }
 }
