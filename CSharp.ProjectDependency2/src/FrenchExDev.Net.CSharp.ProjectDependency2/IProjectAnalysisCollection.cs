@@ -1,5 +1,5 @@
 ﻿using FrenchExDev.Net.CSharp.Object.Result;
-using FrenchExDev.Net.CSharp.ProjectDependency2.Tests;
+using FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.Shared;
 
 namespace FrenchExDev.Net.CSharp.ProjectDependency2;
 

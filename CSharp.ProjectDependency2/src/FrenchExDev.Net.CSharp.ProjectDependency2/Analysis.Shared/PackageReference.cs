@@ -1,4 +1,6 @@
-﻿namespace FrenchExDev.Net.CSharp.ProjectDependency2;
+﻿using FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.References;
+
+namespace FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.Shared;
 
 /// <summary>
 /// Represents a reference to a NuGet package within a project.

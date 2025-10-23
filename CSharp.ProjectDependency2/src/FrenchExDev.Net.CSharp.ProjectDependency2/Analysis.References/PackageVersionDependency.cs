@@ -1,4 +1,4 @@
-﻿namespace FrenchExDev.Net.CSharp.ProjectDependency2;
+﻿namespace FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.References;
 
 /// <summary>
 /// Represents a package dependency that requires a specific version of the package.

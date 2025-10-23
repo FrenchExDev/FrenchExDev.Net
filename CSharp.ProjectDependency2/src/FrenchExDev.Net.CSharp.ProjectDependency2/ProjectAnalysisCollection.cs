@@ -1,6 +1,7 @@
 ﻿using FrenchExDev.Net.CSharp.Object.Result;
+using FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.Shared;
 
-namespace FrenchExDev.Net.CSharp.ProjectDependency2.Tests;
+namespace FrenchExDev.Net.CSharp.ProjectDependency2;
 
 /// <summary>
 /// Represents a collection of project analyzers that can be configured to analyze a project and generate analysis

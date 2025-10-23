@@ -1,6 +1,6 @@
-﻿using FrenchExDev.Net.CSharp.ProjectDependency2.Tests;
+﻿using FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.Shared;
 
-namespace FrenchExDev.Net.CSharp.ProjectDependency2;
+namespace FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.References;
 
 /// <summary>
 /// Represents the result of analyzing a project, including counts of its package and project references.

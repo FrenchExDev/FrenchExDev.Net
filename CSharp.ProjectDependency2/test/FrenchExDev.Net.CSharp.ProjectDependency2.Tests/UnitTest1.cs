@@ -1,4 +1,9 @@
-﻿using FrenchExDev.Net.CSharp.Object.Result;
+﻿using FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.Api;
+using FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.CodeQuality;
+using FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.Dependencies;
+using FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.Markdown;
+using FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.Shared;
+using FrenchExDev.Net.CSharp.ProjectDependency2.Analysis.Tests;
 using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 
@@ -29,22 +34,46 @@ public class UnitTest1
         projectCollectionR.IsSuccess.ShouldBeTrue();
         projectCollectionR.Object.Count.ShouldBeGreaterThan(0);
 
-        var generator = new ProjectAnalysisCollection()
-            .AddAnalyzer(new ProjectReferencesAnalyzer());
+        // Prepare report generators (one per analyzer)
+        var reportGenerators = new IProjectAnalysisReportGenerator[]
+        {
+            new ProjectReferencesReportGenerator(),
+            new PublicApiReportGenerator(),
+            new InterfaceDesignReportGenerator(),
+            new XmlDocCoverageReportGenerator(),
+            new InterfaceTestUsageReportGenerator(),
+            new AsyncConventionsReportGenerator(),
+            new ExceptionUsageReportGenerator()
+        };
 
-        var dic = new Dictionary<string, List<Result<IProjectAnalysisResult>>>();
+        var outDir = Path.Combine(Path.GetTempPath(), "projdep2-md", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(outDir);
 
+        var mdGen = new ProjectMarkdownFileGenerator();
+
+        int generated = 0;
         foreach (var projectKv in projectCollectionR.Object)
         {
-            Result<List<Result<IProjectAnalysisResult>>> analysisR = generator.GenerateAnalysis(projectKv.Value.Object, solutionR.Object);
-            analysisR.IsSuccess.ShouldBeTrue();
-            if (!dic.ContainsKey(projectKv.Key))
+            var project = projectKv.Value.ObjectOrNull();
+            if (project is null) continue;
+
+            var reports = new List<IProjectAnalysisReportResult>();
+            foreach (var gen in reportGenerators)
             {
-                dic[projectKv.Key] = new List<Result<IProjectAnalysisResult>>();
+                var r = gen.GenerateReport<object>(project, solutionR.Object);
+                if (r.IsSuccess && r.Object != null)
+                {
+                    reports.Add(r.Object);
+                }
             }
-            dic[projectKv.Key].AddRange(analysisR.ObjectOrThrow());
+
+            var mdR = mdGen.Generate(project.Name, reports);
+            mdR.IsSuccess.ShouldBeTrue();
+            var file = Path.Combine(outDir, $"{project.Name}.md");
+            File.WriteAllText(file, mdR.ObjectOrThrow());
+            generated++;
         }
 
-        dic.ShouldNotBeEmpty();
+        generated.ShouldBeGreaterThan(0);
     }
 }
