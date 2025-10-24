@@ -3,6 +3,7 @@ using FrenchExDev.Net.CSharp.ProjectDependency3.Markdown;
 using FrenchExDev.Net.CSharp.ProjectDependency3.Reporting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
+using System.Text.Json;
 
 namespace FrenchExDev.Net.CSharp.ProjectDependency3.Tests;
 
@@ -32,7 +33,8 @@ public class UnitTest1
         var aggregator = new ProjectAnalyzerAggregator()
             .Add(new StructuralCouplingAnalyzer())
             .Add(new ClassicalCouplingAnalyzer())
-            .Add(new DirectionalCouplingAnalyzer());
+            .Add(new DirectionalCouplingAnalyzer())
+            .Add(new CodeGraphAnalyzer());
 
         var results = await aggregator.RunAsync(solution);
         results.ShouldNotBeNull();
@@ -55,11 +57,25 @@ public class UnitTest1
                     var dSections = new DirectionalCouplingReportGenerator().Generate(dr);
                     foreach (var s in dSections) doc.AddSection(s);
                     break;
+                case CodeGraphResult gr:
+                    // write graph.json for HTML viewer
+                    var json = JsonSerializer.Serialize(gr.Model, new JsonSerializerOptions { WriteIndented = true });
+                    await File.WriteAllTextAsync(@"C:\code\graph.json", json);
+                    break;
             }
         }
         var markdown = doc.Render();
         markdown.ShouldNotBeNullOrWhiteSpace();
 
         await File.WriteAllTextAsync(@"C:\code\output.md", markdown);
+
+        // Copy the viewer HTML next to the graph so it can be opened directly
+        var slnDir = Path.GetDirectoryName(rootSln)!;
+        var indexHtmlSrc = Path.Combine(slnDir,
+        "CSharp.ProjectDependency3", "src", "FrenchExDev.Net.CSharp.ProjectDependency3", "Reporting", "index.html");
+        if (File.Exists(indexHtmlSrc))
+        {
+            File.Copy(indexHtmlSrc, @"C:\code\index.html", overwrite: true);
+        }
     }
 }

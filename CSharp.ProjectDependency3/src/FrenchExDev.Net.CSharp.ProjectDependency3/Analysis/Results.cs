@@ -12,3 +12,5 @@ public record ClassicalCouplingResult(string AnalyzerName, IReadOnlyDictionary<s
  IReadOnlyDictionary<string, IReadOnlyList<string>> Outgoing) : IProjectAnalysisResult;
 
 public record DirectionalCouplingResult(string AnalyzerName, IReadOnlyDictionary<string, IReadOnlyDictionary<string, (int UniqueTypes, int MemberUses)>> Coupling) : IProjectAnalysisResult;
+
+public record CodeGraphResult(string AnalyzerName, GraphModel Model) : IProjectAnalysisResult;

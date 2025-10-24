@@ -5,6 +5,16 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="Reporting\index.html" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Reporting\index.html">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
 	
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
