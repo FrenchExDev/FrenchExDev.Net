@@ -91,6 +91,57 @@
         #canvas {
             position: relative;
             background: var(--canvas-bg);
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        #canvas:active {
+            cursor: grabbing;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 100;
+        }
+
+        .zoom-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .zoom-btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--node-stroke);
+        }
+
+        .zoom-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            padding: 4px 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            z-index: 100;
         }
 
         .control-section {
@@ -248,6 +299,21 @@
         <main>
             <aside>
                 <div class="control-section">
+                    <h3>Navigation</h3>
+                    <div style="margin-bottom: 8px; font-size: 11px; color: var(--text-secondary);">
+                        <strong>Mouse:</strong><br>
+                        • Wheel: Zoom in/out<br>
+                        • Drag: Pan around<br>
+                        • Click nodes: Show info<br><br>
+                        <strong>Keyboard:</strong><br>
+                        • +/- : Zoom in/out<br>
+                        • 0 : Reset zoom<br>
+                        • F : Fit to screen<br><br>
+                        <strong>Controls:</strong> Use buttons →
+                    </div>
+                </div>
+
+                <div class="control-section">
                     <h3>Node Visualization</h3>
                     <div style="margin-bottom: 8px; font-size: 11px; color: var(--text-secondary);">
                         Size: Larger = More relationships<br>
@@ -276,7 +342,14 @@
                     <div id="relationControls"></div>
                 </div>
             </aside>
-            <div id="canvas"></div>
+            <div id="canvas">
+                <div class="zoom-controls">
+                    <button class="zoom-btn" id="zoomIn" title="Zoom In">+</button>
+                    <button class="zoom-btn" id="zoomOut" title="Zoom Out">−</button>
+                    <button class="zoom-btn" id="zoomReset" title="Reset Zoom">⌂</button>
+                </div>
+                <div class="zoom-info" id="zoomInfo">100%</div>
+            </div>
             <div id="nodeInfo" class="node-info"></div>
         </main>
     </div>
@@ -296,6 +369,8 @@
         let nodeTypes = {};
         let relationTypes = {};
         let nodeMetrics = {};
+        let currentZoom = null;
+        let svg = null;
 
         // Theme management
         function initTheme() {
@@ -554,11 +629,29 @@
             const canvas = document.getElementById('canvas');
             const width = canvas.clientWidth || window.innerWidth - 320;
             const height = canvas.clientHeight || window.innerHeight - 60;
-            canvas.innerHTML = '';
+            
+            // Clear canvas but preserve zoom controls and info
+            d3.select('#canvas svg').remove();
 
-            const svg = d3.select('#canvas').append('svg').attr('width', width).attr('height', height);
-            const linkGroup = svg.append('g').selectAll('line');
-            const nodeGroup = svg.append('g').selectAll('g');
+            // Create SVG with zoom and pan
+            svg = d3.select('#canvas').append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Create zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 5])
+                .on('zoom', handleZoom);
+
+            // Apply zoom to SVG
+            svg.call(zoom);
+            currentZoom = zoom;
+
+            // Create main group for all graph elements
+            const g = svg.append('g').attr('class', 'main-group');
+            
+            const linkGroup = g.append('g').attr('class', 'links');
+            const nodeGroup = g.append('g').attr('class', 'nodes');
 
             // Set up links with proper source/target mapping
             const processedLinks = data.links.map(link => ({
@@ -571,16 +664,20 @@
                 .force('link', d3.forceLink(processedLinks).id(d => d.Id).distance(l => l.Kind === 'Contains' ? 60 : 120).strength(0.3))
                 .force('charge', d3.forceManyBody().strength(-300))
                 .force('center', d3.forceCenter(width / 2, height / 2))
-                .force('collide', d3.forceCollide(25));
+                .force('collide', d3.forceCollide(d => getNodeSize(d.Id) + 5));
 
-            const links = linkGroup.data(processedLinks).join('line')
+            const links = linkGroup.selectAll('line')
+                .data(processedLinks)
+                .join('line')
                 .attr('class', 'link')
                 .attr('stroke-width', d => d.Kind === 'Usage' ? 1 : 2)
                 .attr('stroke', d => relationTypes[d.Kind] || '#999');
 
-            const nodes = nodeGroup.data(data.nodes).join('g')
+            const nodes = nodeGroup.selectAll('g')
+                .data(data.nodes)
+                .join('g')
                 .attr('class', 'node')
-                .call(drag(simulation));
+                .call(dragBehavior(simulation));
 
             nodes.append('circle')
                 .attr('r', d => getNodeSize(d.Id))
@@ -598,7 +695,9 @@
             nodes.append('text')
                 .text(d => d.Name)
                 .attr('x', d => getNodeSize(d.Id) + 4)
-                .attr('y', '0.31em');
+                .attr('y', '0.31em')
+                .style('font-size', '11px')
+                .style('pointer-events', 'none');
 
             simulation.on('tick', () => {
                 links
@@ -610,7 +709,10 @@
                 nodes.attr('transform', d => `translate(${d.x},${d.y})`);
             });
 
-            function drag(simulation) {
+            // Initialize zoom level display
+            updateZoomInfo(1);
+
+            function dragBehavior(simulation) {
                 function dragstarted(event, d) {
                     if (!event.active) simulation.alphaTarget(0.3).restart();
                     d.fx = d.x; d.fy = d.y;
@@ -625,7 +727,96 @@
                     d.fx = null; d.fy = null;
                 }
 
-                return d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
+                return d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended);
+            }
+        }
+
+        function handleZoom(event) {
+            const { transform } = event;
+            svg.select('.main-group').attr('transform', transform);
+            updateZoomInfo(transform.k);
+        }
+
+        function updateZoomInfo(scale) {
+            const percentage = Math.round(scale * 100);
+            document.getElementById('zoomInfo').textContent = `${percentage}%`;
+        }
+
+        function zoomIn() {
+            if (currentZoom && svg) {
+                svg.transition().duration(300).call(
+                    currentZoom.scaleBy, 1.5
+                );
+            }
+        }
+
+        function zoomOut() {
+            if (currentZoom && svg) {
+                svg.transition().duration(300).call(
+                    currentZoom.scaleBy, 1 / 1.5
+                );
+            }
+        }
+
+        function resetZoom() {
+            if (currentZoom && svg) {
+                svg.transition().duration(500).call(
+                    currentZoom.transform,
+                    d3.zoomIdentity
+                );
+            }
+        }
+
+        function centerOnGraph() {
+            if (svg) {
+                const canvas = document.getElementById('canvas');
+                const width = canvas.clientWidth;
+                const height = canvas.clientHeight;
+                
+                // Get bounds of all nodes
+                const nodes = svg.selectAll('.node').nodes();
+                if (nodes.length === 0) return;
+                
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                
+                nodes.forEach(node => {
+                    const transform = d3.select(node).attr('transform');
+                    if (transform) {
+                        const match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+                        if (match) {
+                            const x = parseFloat(match[1]);
+                            const y = parseFloat(match[2]);
+                            minX = Math.min(minX, x);
+                            minY = Math.min(minY, y);
+                            maxX = Math.max(maxX, x);
+                            maxY = Math.max(maxY, y);
+                        }
+                    }
+                });
+                
+                if (minX < maxX && minY < maxY) {
+                    const graphWidth = maxX - minX;
+                    const graphHeight = maxY - minY;
+                    const centerX = (minX + maxX) / 2;
+                    const centerY = (minY + maxY) / 2;
+                    
+                    const scale = Math.min(
+                        (width * 0.8) / graphWidth,
+                        (height * 0.8) / graphHeight,
+                        2 // Maximum scale
+                    );
+                    
+                    const translateX = width / 2 - centerX * scale;
+                    const translateY = height / 2 - centerY * scale;
+                    
+                    svg.transition().duration(750).call(
+                        currentZoom.transform,
+                        d3.zoomIdentity.translate(translateX, translateY).scale(scale)
+                    );
+                }
             }
         }
 
@@ -646,7 +837,6 @@
         function handleNodeMouseOver(event, d) {
             // Highlight connected nodes and edges
             const nodeId = d.Id;
-            const svg = d3.select('#canvas svg');
             
             // Fade all nodes and links
             svg.selectAll('.node circle').attr('opacity', 0.3);
@@ -663,7 +853,7 @@
                 if (link.SourceId === nodeId || link.TargetId === nodeId) {
                     // Highlight the link
                     svg.selectAll('.link')
-                        .filter(l => l.SourceId === link.SourceId && l.TargetId === link.TargetId)
+                        .filter(l => (l.source.Id || l.source) === link.SourceId && (l.target.Id || l.target) === link.TargetId)
                         .attr('opacity', 0.8);
                     
                     // Highlight connected nodes
@@ -683,10 +873,11 @@
 
         function handleNodeMouseOut(event, d) {
             // Restore all nodes and links opacity
-            const svg = d3.select('#canvas svg');
-            svg.selectAll('.node circle').attr('opacity', 1);
-            svg.selectAll('.link').attr('opacity', 0.7);
-            svg.selectAll('.node text').attr('opacity', 1);
+            if (svg) {
+                svg.selectAll('.node circle').attr('opacity', 1);
+                svg.selectAll('.link').attr('opacity', 0.7);
+                svg.selectAll('.node text').attr('opacity', 1);
+            }
         }
 
         function showNodeInfo(node, x, y) {
@@ -765,6 +956,33 @@
             }
         });
 
+        // Keyboard shortcuts for zoom
+        document.addEventListener('keydown', (event) => {
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') return;
+            
+            switch(event.key) {
+                case '+':
+                case '=':
+                    event.preventDefault();
+                    zoomIn();
+                    break;
+                case '-':
+                    event.preventDefault();
+                    zoomOut();
+                    break;
+                case '0':
+                    event.preventDefault();
+                    resetZoom();
+                    setTimeout(centerOnGraph, 100);
+                    break;
+                case 'f':
+                case 'F':
+                    event.preventDefault();
+                    centerOnGraph();
+                    break;
+            }
+        });
+
         function applyFiltersAndRender() {
             hideNodeInfo(); // Hide node info when re-rendering
             const filteredData = getFilteredData();
@@ -780,6 +998,14 @@
             loadAndRender(url);
         });
         document.getElementById('kindFilter').addEventListener('change', applyFiltersAndRender);
+        
+        // Zoom control listeners
+        document.getElementById('zoomIn').addEventListener('click', zoomIn);
+        document.getElementById('zoomOut').addEventListener('click', zoomOut);
+        document.getElementById('zoomReset').addEventListener('click', () => {
+            resetZoom();
+            setTimeout(centerOnGraph, 100); // Center after reset
+        });
 
         // Initialize
         initTheme();
