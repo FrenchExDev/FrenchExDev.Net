@@ -31,9 +31,9 @@ public class CodeGraphAnalyzer : IProjectAnalyzer
     {
         var model = new GraphModel();
         var roslynSolution = solution.Code;
-        var projectNodes = new Dictionary<ProjectId, GraphNode>();
 
-        // Create project nodes
+        // Create project nodes (always internal)
+        var projectNodes = new Dictionary<ProjectId, GraphNode>();
         foreach (var p in roslynSolution.Projects)
         {
             var node = new GraphNode { Id = p.Id.Id.ToString(), Name = p.Name, Kind = "Project" };
@@ -41,46 +41,85 @@ public class CodeGraphAnalyzer : IProjectAnalyzer
             projectNodes[p.Id] = node;
         }
 
-        // Walk symbols per project
+        // First pass: gather all declared types across the whole solution (internal elements only)
+        var declared = new Dictionary<string, (string Name, string Kind, string ProjectNodeId)>(StringComparer.Ordinal);
         foreach (var p in roslynSolution.Projects)
         {
             var comp = await p.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
             if (comp is null) continue;
-            var projectId = p.Id.Id.ToString();
+            var projectNodeId = p.Id.Id.ToString();
+            foreach (var tree in comp.SyntaxTrees)
+            {
+                var semantic = comp.GetSemanticModel(tree);
+                var root = await tree.GetRootAsync(cancellationToken).ConfigureAwait(false);
+                foreach (var decl in root.DescendantNodes().OfType<BaseTypeDeclarationSyntax>())
+                {
+                    var symbol = semantic.GetDeclaredSymbol(decl, cancellationToken) as ITypeSymbol;
+                    if (symbol is null) continue;
+                    var id = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    var kind = SymbolKindToNodeKind(symbol);
+                    declared[id] = (symbol.Name, kind, projectNodeId);
+                }
+            }
+        }
+
+        // Add internal type nodes and containment links
+        var nodesById = new Dictionary<string, GraphNode>(StringComparer.Ordinal);
+        foreach (var (id, info) in declared)
+        {
+            var node = new GraphNode { Id = id, Name = info.Name, Kind = info.Kind, ParentId = info.ProjectNodeId };
+            model.Nodes.Add(node);
+            nodesById[id] = node;
+            model.Links.Add(new GraphLink { SourceId = info.ProjectNodeId, TargetId = id, Kind = "Contains" });
+        }
+
+        // Dedup set for links
+        var linkSet = new HashSet<(string s, string t, string k)>();
+
+        // Second pass: relationships (only between internal types)
+        foreach (var p in roslynSolution.Projects)
+        {
+            var comp = await p.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
+            if (comp is null) continue;
+            var projectNodeId = p.Id.Id.ToString();
 
             foreach (var tree in comp.SyntaxTrees)
             {
                 var semantic = comp.GetSemanticModel(tree);
                 var root = await tree.GetRootAsync(cancellationToken).ConfigureAwait(false);
 
+                // Type relationships
                 foreach (var decl in root.DescendantNodes().OfType<BaseTypeDeclarationSyntax>())
                 {
-                    var symbol = semantic.GetDeclaredSymbol(decl, cancellationToken);
+                    var symbol = semantic.GetDeclaredSymbol(decl, cancellationToken) as ITypeSymbol;
                     if (symbol is null) continue;
-                    var kind = SymbolKindToNodeKind(symbol);
                     var id = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                    var node = EnsureNode(model, id, symbol.Name, kind, projectId);
-                    // containment link: project contains type
-                    model.Links.Add(new GraphLink { SourceId = projectId, TargetId = id, Kind = "Contains" });
 
-                    // Base types / interfaces
-                    foreach (var baseType in symbol.Interfaces)
+                    // Interfaces implemented (internal only)
+                    foreach (var iface in symbol.Interfaces)
                     {
-                        var bid = baseType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                        EnsureNode(model, bid, baseType.Name, SymbolKindToNodeKind(baseType), projectId);
-                        model.Links.Add(new GraphLink { SourceId = id, TargetId = bid, Kind = "Implements" });
+                        var bid = iface.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                        if (!declared.ContainsKey(bid)) continue;
+                        var tup = (id, bid, "Implements");
+                        if (linkSet.Add(tup)) model.Links.Add(new GraphLink { SourceId = id, TargetId = bid, Kind = "Implements" });
                     }
+
+                    // Base type (internal only and not special)
                     if (symbol.BaseType is { } bt && bt.SpecialType == SpecialType.None)
                     {
                         var bid = bt.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                        EnsureNode(model, bid, bt.Name, SymbolKindToNodeKind(bt), projectId);
-                        model.Links.Add(new GraphLink { SourceId = id, TargetId = bid, Kind = "Inherits" });
+                        if (declared.ContainsKey(bid))
+                        {
+                            var tup = (id, bid, "Inherits");
+                            if (linkSet.Add(tup)) model.Links.Add(new GraphLink { SourceId = id, TargetId = bid, Kind = "Inherits" });
+                        }
                     }
                 }
 
-                // Usages: simple pass on IdentifierName/Invocation/ObjectCreation
+                // Usages (project -> type) limited to internal targets only
                 foreach (var node in root.DescendantNodes())
                 {
+                    if (cancellationToken.IsCancellationRequested) break;
                     ISymbol? sym = node switch
                     {
                         InvocationExpressionSyntax inv => semantic.GetSymbolInfo(inv.Expression, cancellationToken).Symbol,
@@ -91,10 +130,9 @@ public class CodeGraphAnalyzer : IProjectAnalyzer
                     if (sym is null) continue;
                     var owner = sym.ContainingType ?? sym;
                     var targetId = owner.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                    var targetKind = SymbolKindToNodeKind(owner);
-                    EnsureNode(model, targetId, owner.Name, targetKind, projectId);
-                    // link from file/project scope to target; we use project as source for coarse granularity
-                    model.Links.Add(new GraphLink { SourceId = projectId, TargetId = targetId, Kind = "Usage" });
+                    if (!declared.ContainsKey(targetId)) continue; // skip external
+                    var tup = (projectNodeId, targetId, "Usage");
+                    if (linkSet.Add(tup)) model.Links.Add(new GraphLink { SourceId = projectNodeId, TargetId = targetId, Kind = "Usage" });
                 }
             }
         }
@@ -114,14 +152,5 @@ public class CodeGraphAnalyzer : IProjectAnalyzer
             INamespaceSymbol => "Namespace",
             _ => symbol.Kind.ToString()
         };
-    }
-
-    private static GraphNode EnsureNode(GraphModel model, string id, string name, string kind, string? parentId = null)
-    {
-        var existing = model.Nodes.FirstOrDefault(n => n.Id == id);
-        if (existing is not null) return existing;
-        var node = new GraphNode { Id = id, Name = name, Kind = kind, ParentId = parentId };
-        model.Nodes.Add(node);
-        return node;
     }
 }

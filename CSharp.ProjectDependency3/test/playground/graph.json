@@ -1,0 +1,1080 @@
+{
+  "Nodes": [
+    {
+      "Id": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "Name": "FrenchExDev.Net.Alpine.Version",
+      "Kind": "Project",
+      "ParentId": null
+    },
+    {
+      "Id": "5b7ec114-5220-467d-9eec-3999ab1a8856",
+      "Name": "FrenchExDev.Net.Alpine.Version.Testing",
+      "Kind": "Project",
+      "ParentId": null
+    },
+    {
+      "Id": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "Name": "FrenchExDev.Net.Alpine.Version.Tests",
+      "Kind": "Project",
+      "ParentId": null
+    },
+    {
+      "Id": "9becae18-60f3-4237-aec7-7ade95c3e296",
+      "Name": "FrenchExDev.Net.HttpClient",
+      "Kind": "Project",
+      "ParentId": null
+    },
+    {
+      "Id": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "Name": "FrenchExDev.Net.CSharp.Object.Builder2",
+      "Kind": "Project",
+      "ParentId": null
+    },
+    {
+      "Id": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "Name": "FrenchExDev.Net.HttpClient.Testing",
+      "Kind": "Project",
+      "ParentId": null
+    },
+    {
+      "Id": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "Name": "FenchExDev.Net.Testing",
+      "Kind": "Project",
+      "ParentId": null
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineArchitectures",
+      "Name": "AlpineArchitectures",
+      "Kind": "Enum",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineFlavors",
+      "Name": "AlpineFlavors",
+      "Kind": "Enum",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineVersion",
+      "Name": "AlpineVersion",
+      "Kind": "Class",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineVersion.Operator",
+      "Name": "Operator",
+      "Kind": "Enum",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineVersion.MajorMinorPatchRelationalComparer",
+      "Name": "MajorMinorPatchRelationalComparer",
+      "Kind": "Class",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionArchFlavorRecord",
+      "Name": "AlpineVersionArchFlavorRecord",
+      "Kind": "Record",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionArchRecord",
+      "Name": "AlpineVersionArchRecord",
+      "Kind": "Record",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionBuilder",
+      "Name": "AlpineVersionBuilder",
+      "Kind": "Class",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionList",
+      "Name": "AlpineVersionList",
+      "Kind": "Class",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionRecord",
+      "Name": "AlpineVersionRecord",
+      "Kind": "Record",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearcher",
+      "Name": "AlpineVersionSearcher",
+      "Kind": "Class",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearcher.ShaRecords",
+      "Name": "ShaRecords",
+      "Kind": "Record",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearchingFilters",
+      "Name": "AlpineVersionSearchingFilters",
+      "Kind": "Class",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearchingFiltersBuilder",
+      "Name": "AlpineVersionSearchingFiltersBuilder",
+      "Kind": "Class",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.IAlpineVersionSearcher",
+      "Name": "IAlpineVersionSearcher",
+      "Kind": "Interface",
+      "ParentId": "3909c44b-48ab-458f-89cb-e505660fac5b"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.Testing.AlpineVersionSearcherTester",
+      "Name": "AlpineVersionSearcherTester",
+      "Kind": "Class",
+      "ParentId": "5b7ec114-5220-467d-9eec-3999ab1a8856"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.Tests.AlpineVersionComparerTests",
+      "Name": "AlpineVersionComparerTests",
+      "Kind": "Class",
+      "ParentId": "ee69a047-55da-4f0a-b996-7128b5b399c4"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.Alpine.Version.Tests.AlpineVersionSearcherTests",
+      "Name": "AlpineVersionSearcherTests",
+      "Kind": "Class",
+      "ParentId": "ee69a047-55da-4f0a-b996-7128b5b399c4"
+    },
+    {
+      "Id": "global::AutoGeneratedProgram",
+      "Name": "AutoGeneratedProgram",
+      "Kind": "Class",
+      "ParentId": "ee69a047-55da-4f0a-b996-7128b5b399c4"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.HttpClient.IHttpClient",
+      "Name": "IHttpClient",
+      "Kind": "Interface",
+      "ParentId": "9becae18-60f3-4237-aec7-7ade95c3e296"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.HttpClient.HttpClient",
+      "Name": "HttpClient",
+      "Kind": "Class",
+      "ParentId": "9becae18-60f3-4237-aec7-7ade95c3e296"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.Failure",
+      "Name": "Failure",
+      "Kind": "Struct",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.IResult",
+      "Name": "IResult",
+      "Kind": "Interface",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.SuccessResult\u003CTClass\u003E",
+      "Name": "SuccessResult",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.FailuresDictionary",
+      "Name": "FailuresDictionary",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.FailureResult",
+      "Name": "FailureResult",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.VisitedObjectDictionary",
+      "Name": "VisitedObjectDictionary",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.IBuilder\u003CTClass\u003E",
+      "Name": "IBuilder",
+      "Kind": "Interface",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.NotResolvedException",
+      "Name": "NotResolvedException",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.Reference\u003CTClass\u003E",
+      "Name": "Reference",
+      "Kind": "Record",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.ValidationStatus",
+      "Name": "ValidationStatus",
+      "Kind": "Enum",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildStatus",
+      "Name": "BuildStatus",
+      "Kind": "Enum",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.AbstractBuilder\u003CTClass\u003E",
+      "Name": "AbstractBuilder",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildException",
+      "Name": "BuildException",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.StringIsEmptyOrWhitespaceException",
+      "Name": "StringIsEmptyOrWhitespaceException",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildFailedException",
+      "Name": "BuildFailedException",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildSucceededException",
+      "Name": "BuildSucceededException",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.Extensions",
+      "Name": "Extensions",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.IReferenceList\u003CTClass\u003E",
+      "Name": "IReferenceList",
+      "Kind": "Interface",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.ReferenceList\u003CTClass\u003E",
+      "Name": "ReferenceList",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuilderList\u003CTClass, TBuilder\u003E",
+      "Name": "BuilderList",
+      "Kind": "Class",
+      "ParentId": "3c4cfba7-640d-4e01-b042-134b867a0a59"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.HttpClient.Testing.FakeHttpClient",
+      "Name": "FakeHttpClient",
+      "Kind": "Class",
+      "ParentId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.HttpClient.Testing.FakeHttpClientBuilder",
+      "Name": "FakeHttpClientBuilder",
+      "Kind": "Class",
+      "ParentId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c"
+    },
+    {
+      "Id": "global::FrenchExDev.Net.HttpClient.Testing.HttpResponseMessageBuilder",
+      "Name": "HttpResponseMessageBuilder",
+      "Kind": "Class",
+      "ParentId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c"
+    },
+    {
+      "Id": "global::FenchExDev.Net.Testing.TestKind",
+      "Name": "TestKind",
+      "Kind": "Enum",
+      "ParentId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc"
+    },
+    {
+      "Id": "global::FenchExDev.Net.Testing.Kind",
+      "Name": "Kind",
+      "Kind": "Class",
+      "ParentId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc"
+    },
+    {
+      "Id": "global::FenchExDev.Net.Testing.Integration",
+      "Name": "Integration",
+      "Kind": "Class",
+      "ParentId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc"
+    },
+    {
+      "Id": "global::FenchExDev.Net.Testing.Internet",
+      "Name": "Internet",
+      "Kind": "Class",
+      "ParentId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc"
+    },
+    {
+      "Id": "global::FenchExDev.Net.Testing.IntegrationKind",
+      "Name": "IntegrationKind",
+      "Kind": "Enum",
+      "ParentId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc"
+    },
+    {
+      "Id": "global::FenchExDev.Net.Testing.FeatureName",
+      "Name": "FeatureName",
+      "Kind": "Record",
+      "ParentId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc"
+    },
+    {
+      "Id": "global::FenchExDev.Net.Testing.FeatureAttribute",
+      "Name": "FeatureAttribute",
+      "Kind": "Class",
+      "ParentId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc"
+    },
+    {
+      "Id": "global::FenchExDev.Net.Testing.TestsUsing\u003CTCommandTester\u003E",
+      "Name": "TestsUsing",
+      "Kind": "Class",
+      "ParentId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc"
+    }
+  ],
+  "Links": [
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineArchitectures",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineFlavors",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersion",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersion.Operator",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersion.MajorMinorPatchRelationalComparer",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionArchFlavorRecord",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionArchRecord",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionBuilder",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionList",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionRecord",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearcher",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearcher.ShaRecords",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearchingFilters",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearchingFiltersBuilder",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.IAlpineVersionSearcher",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "5b7ec114-5220-467d-9eec-3999ab1a8856",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.Testing.AlpineVersionSearcherTester",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.Tests.AlpineVersionComparerTests",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.Tests.AlpineVersionSearcherTests",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::AutoGeneratedProgram",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "9becae18-60f3-4237-aec7-7ade95c3e296",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.IHttpClient",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "9becae18-60f3-4237-aec7-7ade95c3e296",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.HttpClient",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.Failure",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.IResult",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.SuccessResult\u003CTClass\u003E",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.FailuresDictionary",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.FailureResult",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.VisitedObjectDictionary",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.IBuilder\u003CTClass\u003E",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.NotResolvedException",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.Reference\u003CTClass\u003E",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.ValidationStatus",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildStatus",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.AbstractBuilder\u003CTClass\u003E",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildException",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.StringIsEmptyOrWhitespaceException",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildFailedException",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildSucceededException",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.Extensions",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.IReferenceList\u003CTClass\u003E",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.ReferenceList\u003CTClass\u003E",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuilderList\u003CTClass, TBuilder\u003E",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.Testing.FakeHttpClient",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.Testing.FakeHttpClientBuilder",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.Testing.HttpResponseMessageBuilder",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.TestKind",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.Kind",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.Integration",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.Internet",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.IntegrationKind",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.FeatureName",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.FeatureAttribute",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.TestsUsing\u003CTCommandTester\u003E",
+      "Kind": "Contains"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersion",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersion.Operator",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersion.MajorMinorPatchRelationalComparer",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionArchFlavorRecord",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionBuilder",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionList",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearcher",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.IAlpineVersionSearcher",
+      "Kind": "Implements"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.IAlpineVersionSearcher",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.IHttpClient",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearcher",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearchingFiltersBuilder",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearchingFilters",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionArchRecord",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearcher.ShaRecords",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionRecord",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineFlavors",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3909c44b-48ab-458f-89cb-e505660fac5b",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineArchitectures",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "5b7ec114-5220-467d-9eec-3999ab1a8856",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.IAlpineVersionSearcher",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "5b7ec114-5220-467d-9eec-3999ab1a8856",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearchingFiltersBuilder",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "5b7ec114-5220-467d-9eec-3999ab1a8856",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionList",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "5b7ec114-5220-467d-9eec-3999ab1a8856",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.Testing.AlpineVersionSearcherTester",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "5b7ec114-5220-467d-9eec-3999ab1a8856",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.Testing.FakeHttpClientBuilder",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "5b7ec114-5220-467d-9eec-3999ab1a8856",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.IHttpClient",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "5b7ec114-5220-467d-9eec-3999ab1a8856",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.Extensions",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "5b7ec114-5220-467d-9eec-3999ab1a8856",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearcher",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersion",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersion.Operator",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionBuilder",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.Tests.AlpineVersionComparerTests",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FenchExDev.Net.Testing.FeatureAttribute",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.IAlpineVersionSearcher",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FenchExDev.Net.Testing.TestKind",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FenchExDev.Net.Testing.IntegrationKind",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FenchExDev.Net.Testing.Internet",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FenchExDev.Net.Testing.Kind",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineFlavors",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineArchitectures",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.Testing.AlpineVersionSearcherTester",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.Testing.FakeHttpClientBuilder",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.Tests.AlpineVersionSearcherTests",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.Testing.HttpResponseMessageBuilder",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearchingFiltersBuilder",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionArchFlavorRecord",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FenchExDev.Net.Testing.Integration",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.Alpine.Version.AlpineVersionSearcher",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "ee69a047-55da-4f0a-b996-7128b5b399c4",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.HttpClient",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "global::FrenchExDev.Net.HttpClient.HttpClient",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.IHttpClient",
+      "Kind": "Implements"
+    },
+    {
+      "SourceId": "9becae18-60f3-4237-aec7-7ade95c3e296",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.IHttpClient",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "9becae18-60f3-4237-aec7-7ade95c3e296",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.HttpClient",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "global::FrenchExDev.Net.CSharp.Object.Builder2.SuccessResult\u003CTClass\u003E",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.IResult",
+      "Kind": "Implements"
+    },
+    {
+      "SourceId": "global::FrenchExDev.Net.CSharp.Object.Builder2.FailureResult",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.IResult",
+      "Kind": "Implements"
+    },
+    {
+      "SourceId": "global::FrenchExDev.Net.CSharp.Object.Builder2.Reference\u003CTClass\u003E",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.IResult",
+      "Kind": "Implements"
+    },
+    {
+      "SourceId": "global::FrenchExDev.Net.CSharp.Object.Builder2.AbstractBuilder\u003CTClass\u003E",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.IBuilder\u003CTClass\u003E",
+      "Kind": "Implements"
+    },
+    {
+      "SourceId": "global::FrenchExDev.Net.CSharp.Object.Builder2.StringIsEmptyOrWhitespaceException",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildException",
+      "Kind": "Inherits"
+    },
+    {
+      "SourceId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildFailedException",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildException",
+      "Kind": "Inherits"
+    },
+    {
+      "SourceId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildSucceededException",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildException",
+      "Kind": "Inherits"
+    },
+    {
+      "SourceId": "global::FrenchExDev.Net.CSharp.Object.Builder2.ReferenceList\u003CTClass\u003E",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.IReferenceList\u003CTClass\u003E",
+      "Kind": "Implements"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.Failure",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.FailuresDictionary",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.SuccessResult\u003CTClass\u003E",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.IResult",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.FailureResult",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.IBuilder\u003CTClass\u003E",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildStatus",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.ValidationStatus",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.VisitedObjectDictionary",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.NotResolvedException",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.Reference\u003CTClass\u003E",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.AbstractBuilder\u003CTClass\u003E",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildException",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.StringIsEmptyOrWhitespaceException",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildFailedException",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildSucceededException",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.Extensions",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.IReferenceList\u003CTClass\u003E",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.ReferenceList\u003CTClass\u003E",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "3c4cfba7-640d-4e01-b042-134b867a0a59",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuilderList\u003CTClass, TBuilder\u003E",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "global::FrenchExDev.Net.HttpClient.Testing.FakeHttpClient",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.IHttpClient",
+      "Kind": "Implements"
+    },
+    {
+      "SourceId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.IHttpClient",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.Testing.FakeHttpClient",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.IResult",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.Testing.FakeHttpClientBuilder",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.BuildStatus",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.ValidationStatus",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "TargetId": "global::FrenchExDev.Net.HttpClient.Testing.HttpResponseMessageBuilder",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.VisitedObjectDictionary",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "46b16ee4-8f8f-4327-bb0c-d5e6f6f39f6c",
+      "TargetId": "global::FrenchExDev.Net.CSharp.Object.Builder2.FailuresDictionary",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.FeatureName",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.TestKind",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.IntegrationKind",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.FeatureAttribute",
+      "Kind": "Usage"
+    },
+    {
+      "SourceId": "d006d7d6-317d-4f70-9d99-0c3411bc63cc",
+      "TargetId": "global::FenchExDev.Net.Testing.TestsUsing\u003CTCommandTester\u003E",
+      "Kind": "Usage"
+    }
+  ]
+}
