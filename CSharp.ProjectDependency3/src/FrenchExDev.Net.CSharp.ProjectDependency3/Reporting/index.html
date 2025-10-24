@@ -288,6 +288,44 @@
             margin-left: 8px;
             border-radius: 1px;
         }
+
+        /* Search result highlighting */
+        .node.search-match circle {
+            stroke: #ff6b6b !important;
+            stroke-width: 3px !important;
+            filter: drop-shadow(0 0 6px rgba(255, 107, 107, 0.6));
+        }
+
+        .node.search-related circle {
+            stroke: #4ecdc4 !important;
+            stroke-width: 2px !important;
+            filter: drop-shadow(0 0 4px rgba(78, 205, 196, 0.4));
+        }
+
+        .node.search-dimmed {
+            opacity: 0.3 !important;
+        }
+
+        .link.search-dimmed {
+            opacity: 0.1 !important;
+        }
+
+        .link.search-related {
+            opacity: 1 !important;
+            stroke-width: 3px !important;
+        }
+
+        #searchQuery {
+            margin-top: 4px;
+        }
+
+        .search-stats {
+            background: var(--bg-secondary);
+            padding: 4px 6px;
+            border-radius: 3px;
+            margin-top: 4px;
+            border: 1px solid var(--border-color);
+        }
     </style>
 </head>
 <body>
@@ -308,7 +346,10 @@
                         <strong>Keyboard:</strong><br>
                         • +/- : Zoom in/out<br>
                         • 0 : Reset zoom<br>
-                        • F : Fit to screen<br><br>
+                        • F : Fit to view<br>
+                        • Ctrl+F : Focus search<br>
+                        • Enter : Search<br>
+                        • Escape : Clear search<br><br>
                         <strong>Controls:</strong> Use buttons →
                     </div>
                 </div>
@@ -320,6 +361,29 @@
                         Color: Blue = More incoming, Yellow = More outgoing
                     </div>
                     <div class="legend" id="nodeLegend"></div>
+                </div>
+
+                <div class="control-section">
+                    <h3>Search & Query</h3>
+                    <label for="searchQuery">Search nodes:</label>
+                    <input type="text" id="searchQuery" placeholder="Enter node name, type, or pattern..." />
+                    <div style="margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap;">
+                        <button id="searchBtn" style="font-size: 11px; padding: 3px 8px;">Search</button>
+                        <button id="clearSearchBtn" style="font-size: 11px; padding: 3px 8px; background: #6c757d;">Clear</button>
+                    </div>
+                    <div style="margin-top: 6px;">
+                        <label>
+                            <input type="checkbox" id="searchRelated" checked style="width: auto; margin-right: 4px;" />
+                            <span style="font-size: 11px;">Include related nodes</span>
+                        </label>
+                    </div>
+                    <div style="margin-top: 6px;">
+                        <label>
+                            <input type="checkbox" id="isolateSearch" style="width: auto; margin-right: 4px;" />
+                            <span style="font-size: 11px;">Isolate search results</span>
+                        </label>
+                    </div>
+                    <div id="searchResults" style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);"></div>
                 </div>
 
                 <div class="control-section">
@@ -371,6 +435,12 @@
         let nodeMetrics = {};
         let currentZoom = null;
         let svg = null;
+        let searchState = {
+            query: '',
+            matchedNodes: new Set(),
+            relatedNodes: new Set(),
+            active: false
+        };
 
         // Theme management
         function initTheme() {
@@ -623,6 +693,219 @@
             calculateNodeMetrics(filteredData);
 
             return filteredData;
+        }
+
+        function performSearch() {
+            const query = document.getElementById('searchQuery').value.trim().toLowerCase();
+            const includeRelated = document.getElementById('searchRelated').checked;
+            const isolateResults = document.getElementById('isolateSearch').checked;
+            
+            // Clear previous search state
+            searchState = {
+                query: query,
+                matchedNodes: new Set(),
+                relatedNodes: new Set(),
+                active: query.length > 0
+            };
+
+            if (!query) {
+                clearSearch();
+                return;
+            }
+
+            const data = getFilteredData();
+            if (!data) return;
+
+            // Find matching nodes
+            data.nodes.forEach(node => {
+                const matchesName = node.Name.toLowerCase().includes(query);
+                const matchesKind = node.Kind.toLowerCase().includes(query);
+                const matchesId = node.Id.toLowerCase().includes(query);
+                
+                if (matchesName || matchesKind || matchesId) {
+                    searchState.matchedNodes.add(node.Id);
+                }
+            });
+
+            // Find related nodes if option is enabled
+            if (includeRelated && searchState.matchedNodes.size > 0) {
+                data.links.forEach(link => {
+                    if (searchState.matchedNodes.has(link.SourceId)) {
+                        searchState.relatedNodes.add(link.TargetId);
+                    }
+                    if (searchState.matchedNodes.has(link.TargetId)) {
+                        searchState.relatedNodes.add(link.SourceId);
+                    }
+                });
+
+                // Remove matched nodes from related nodes to avoid duplication
+                searchState.matchedNodes.forEach(nodeId => {
+                    searchState.relatedNodes.delete(nodeId);
+                });
+            }
+
+            // Apply search highlighting
+            applySearchHighlighting(isolateResults);
+            
+            // Update search results display
+            updateSearchResults();
+
+            // Zoom to fit search results if isolating
+            if (isolateResults && (searchState.matchedNodes.size > 0 || searchState.relatedNodes.size > 0)) {
+                setTimeout(() => centerOnSearchResults(), 300);
+            }
+        }
+
+        function clearSearch() {
+            searchState = {
+                query: '',
+                matchedNodes: new Set(),
+                relatedNodes: new Set(),
+                active: false
+            };
+
+            document.getElementById('searchQuery').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+
+            if (svg) {
+                // Remove all search-related classes
+                svg.selectAll('.node')
+                    .classed('search-match search-related search-dimmed', false);
+                svg.selectAll('.link')
+                    .classed('search-related search-dimmed', false);
+            }
+        }
+
+        function applySearchHighlighting(isolateResults) {
+            if (!svg) return;
+
+            // Reset all search classes
+            svg.selectAll('.node')
+                .classed('search-match search-related search-dimmed', false);
+            svg.selectAll('.link')
+                .classed('search-related search-dimmed', false);
+
+            if (!searchState.active) return;
+
+            // Highlight matched nodes
+            svg.selectAll('.node')
+                .filter(d => searchState.matchedNodes.has(d.Id))
+                .classed('search-match', true);
+
+            // Highlight related nodes
+            svg.selectAll('.node')
+                .filter(d => searchState.relatedNodes.has(d.Id))
+                .classed('search-related', true);
+
+            // Dim non-matching nodes if isolating
+            if (isolateResults) {
+                svg.selectAll('.node')
+                    .filter(d => !searchState.matchedNodes.has(d.Id) && !searchState.relatedNodes.has(d.Id))
+                    .classed('search-dimmed', true);
+
+                // Dim non-related links
+                svg.selectAll('.link')
+                    .filter(d => {
+                        const sourceId = d.source.Id || d.source;
+                        const targetId = d.target.Id || d.target;
+                        const isRelated = searchState.matchedNodes.has(sourceId) || searchState.matchedNodes.has(targetId) ||
+                                        searchState.relatedNodes.has(sourceId) || searchState.relatedNodes.has(targetId);
+                        return !isRelated;
+                    })
+                    .classed('search-dimmed', true);
+
+                // Highlight related links
+                svg.selectAll('.link')
+                    .filter(d => {
+                        const sourceId = d.source.Id || d.source;
+                        const targetId = d.target.Id || d.target;
+                        const isDirectlyRelated = (searchState.matchedNodes.has(sourceId) && 
+                                                 (searchState.matchedNodes.has(targetId) || searchState.relatedNodes.has(targetId))) ||
+                                                (searchState.matchedNodes.has(targetId) && 
+                                                 (searchState.matchedNodes.has(sourceId) || searchState.relatedNodes.has(sourceId)));
+                        return isDirectlyRelated;
+                    })
+                    .classed('search-related', true);
+            }
+        }
+
+        function updateSearchResults() {
+            const resultsDiv = document.getElementById('searchResults');
+            const matchCount = searchState.matchedNodes.size;
+            const relatedCount = searchState.relatedNodes.size;
+
+            if (!searchState.active) {
+                resultsDiv.innerHTML = '';
+                return;
+            }
+
+            let resultText = '';
+            if (matchCount === 0) {
+                resultText = '<div style="color: #dc3545;">No matches found</div>';
+            } else {
+                resultText = `<div class="search-stats">
+                    <div><strong>${matchCount}</strong> direct match${matchCount !== 1 ? 'es' : ''}</div>
+                    ${relatedCount > 0 ? `<div><strong>${relatedCount}</strong> related node${relatedCount !== 1 ? 's' : ''}</div>` : ''}
+                </div>`;
+            }
+
+            resultsDiv.innerHTML = resultText;
+        }
+
+        function centerOnSearchResults() {
+            if (!svg || (!searchState.matchedNodes.size && !searchState.relatedNodes.size)) return;
+
+            const canvas = document.getElementById('canvas');
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+
+            // Get positions of search result nodes
+            const relevantNodeIds = new Set([...searchState.matchedNodes, ...searchState.relatedNodes]);
+            const nodes = svg.selectAll('.node').nodes().filter(node => {
+                const nodeData = d3.select(node).datum();
+                return relevantNodeIds.has(nodeData.Id);
+            });
+
+            if (nodes.length === 0) return;
+
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+            nodes.forEach(node => {
+                const transform = d3.select(node).attr('transform');
+                if (transform) {
+                    const match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+                    if (match) {
+                        const x = parseFloat(match[1]);
+                        const y = parseFloat(match[2]);
+                        minX = Math.min(minX, x);
+                        minY = Math.min(minY, y);
+                        maxX = Math.max(maxX, x);
+                        maxY = Math.max(maxY, y);
+                    }
+                }
+            });
+
+            if (minX < maxX && minY < maxY) {
+                const padding = 50;
+                const graphWidth = maxX - minX + padding * 2;
+                const graphHeight = maxY - minY + padding * 2;
+                const centerX = (minX + maxX) / 2;
+                const centerY = (minY + maxY) / 2;
+
+                const scale = Math.min(
+                    (width * 0.8) / graphWidth,
+                    (height * 0.8) / graphHeight,
+                    3 // Maximum scale for search results
+                );
+
+                const translateX = width / 2 - centerX * scale;
+                const translateY = height / 2 - centerY * scale;
+
+                svg.transition().duration(750).call(
+                    currentZoom.transform,
+                    d3.zoomIdentity.translate(translateX, translateY).scale(scale)
+                );
+            }
         }
 
         function renderGraph(data) {
@@ -956,29 +1239,52 @@
             }
         });
 
-        // Keyboard shortcuts for zoom
+        // Keyboard shortcuts
         document.addEventListener('keydown', (event) => {
-            if (event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT') return;
+            // Don't interfere with input fields unless it's a special key
+            const isInputFocused = event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT';
+            
+            // Allow Ctrl+F even in input fields
+            if (event.ctrlKey && (event.key === 'f' || event.key === 'F')) {
+                event.preventDefault();
+                document.getElementById('searchQuery').focus();
+                document.getElementById('searchQuery').select();
+                return;
+            }
+
+            if (isInputFocused && event.target.id !== 'searchQuery') return;
             
             switch(event.key) {
                 case '+':
                 case '=':
-                    event.preventDefault();
-                    zoomIn();
+                    if (!isInputFocused) {
+                        event.preventDefault();
+                        zoomIn();
+                    }
                     break;
                 case '-':
-                    event.preventDefault();
-                    zoomOut();
+                    if (!isInputFocused) {
+                        event.preventDefault();
+                        zoomOut();
+                    }
                     break;
                 case '0':
-                    event.preventDefault();
-                    resetZoom();
-                    setTimeout(centerOnGraph, 100);
+                    if (!isInputFocused) {
+                        event.preventDefault();
+                        resetZoom();
+                        setTimeout(centerOnGraph, 100);
+                    }
                     break;
                 case 'f':
                 case 'F':
-                    event.preventDefault();
-                    centerOnGraph();
+                    if (!isInputFocused && !event.ctrlKey) {
+                        event.preventDefault();
+                        if (searchState.active && (searchState.matchedNodes.size > 0 || searchState.relatedNodes.size > 0)) {
+                            centerOnSearchResults();
+                        } else {
+                            centerOnGraph();
+                        }
+                    }
                     break;
             }
         });
@@ -988,6 +1294,14 @@
             const filteredData = getFilteredData();
             if (filteredData) {
                 renderGraph(filteredData);
+                
+                // Reapply search highlighting if there's an active search
+                if (searchState.active) {
+                    const isolateResults = document.getElementById('isolateSearch').checked;
+                    setTimeout(() => {
+                        applySearchHighlighting(isolateResults);
+                    }, 100);
+                }
             }
         }
 
@@ -1005,6 +1319,46 @@
         document.getElementById('zoomReset').addEventListener('click', () => {
             resetZoom();
             setTimeout(centerOnGraph, 100); // Center after reset
+        });
+
+        // Search functionality listeners
+        document.getElementById('searchBtn').addEventListener('click', performSearch);
+        document.getElementById('clearSearchBtn').addEventListener('click', clearSearch);
+        document.getElementById('searchQuery').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                performSearch();
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                clearSearch();
+            }
+        });
+        
+        // Real-time search option
+        document.getElementById('searchQuery').addEventListener('input', (event) => {
+            const query = event.target.value.trim();
+            if (query.length >= 2) {
+                // Debounce search for performance
+                clearTimeout(window.searchTimeout);
+                window.searchTimeout = setTimeout(performSearch, 300);
+            } else if (query.length === 0) {
+                clearSearch();
+            }
+        });
+
+        // Search options change listeners
+        document.getElementById('searchRelated').addEventListener('change', () => {
+            if (searchState.active) performSearch();
+        });
+        
+        document.getElementById('isolateSearch').addEventListener('change', () => {
+            if (searchState.active) {
+                const isolateResults = document.getElementById('isolateSearch').checked;
+                applySearchHighlighting(isolateResults);
+                if (isolateResults) {
+                    setTimeout(() => centerOnSearchResults(), 300);
+                }
+            }
         });
 
         // Initialize
