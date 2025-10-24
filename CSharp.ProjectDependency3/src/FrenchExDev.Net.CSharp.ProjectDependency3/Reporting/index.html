@@ -295,6 +295,19 @@
             filter: drop-shadow(0 0 3px #ff6b35);
         }
 
+        /* Dark mode link improvements */
+        [data-theme="dark"] .link {
+            stroke-opacity: 0.85;
+        }
+
+        [data-theme="dark"] .deduced-link {
+            stroke-opacity: 0.9;
+        }
+
+        [data-theme="dark"] .deduced-link:hover {
+            filter: drop-shadow(0 0 5px #ffb347);
+        }
+
         .legend {
             margin-bottom: 12px;
         }
@@ -483,48 +496,57 @@
         .convex-hull {
             fill: none;
             stroke: var(--border-color);
-            stroke-width: 2;
-            stroke-dasharray: 5,5;
-            opacity: 0.6;
+            stroke-width: 3;
+            stroke-dasharray: 8,4;
+            opacity: 0.9;
             pointer-events: none;
+            filter: drop-shadow(0 0 4px rgba(0,0,0,0.3));
         }
 
         .convex-hull.namespace-hull {
             stroke: #ff9800;
-            fill: rgba(255, 152, 0, 0.1);
-            stroke-width: 1.5;
-            opacity: 0.7;
+            fill: rgba(255, 152, 0, 0.25);
+            stroke-width: 4;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 8px rgba(255, 152, 0, 0.4));
         }
 
         .convex-hull.project-hull {
             stroke: #0077be;
-            fill: rgba(0, 119, 190, 0.08);
-            stroke-width: 2;
-            opacity: 0.6;
+            fill: rgba(0, 119, 190, 0.2);
+            stroke-width: 5;
+            opacity: 0.85;
+            filter: drop-shadow(0 0 10px rgba(0, 119, 190, 0.5));
         }
 
         [data-theme="dark"] .convex-hull.namespace-hull {
             stroke: #ffb347;
-            fill: rgba(255, 179, 71, 0.1);
+            fill: rgba(255, 179, 71, 0.2);
+            filter: drop-shadow(0 0 8px rgba(255, 179, 71, 0.3));
         }
 
         [data-theme="dark"] .convex-hull.project-hull {
             stroke: #4a8cc7;
-            fill: rgba(74, 140, 199, 0.1);
+            fill: rgba(74, 140, 199, 0.18);
+            filter: drop-shadow(0 0 10px rgba(74, 140, 199, 0.4));
         }
 
         .hull-label {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 11px;
-            font-weight: bold;
+            font-size: 13px;
+            font-weight: 900;
             text-anchor: middle;
             pointer-events: none;
-            opacity: 0.8;
-            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+            opacity: 1;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9), -1px -1px 2px rgba(0, 0, 0, 0.3);
+            stroke: rgba(255, 255, 255, 0.8);
+            stroke-width: 3;
+            paint-order: stroke fill;
         }
 
         [data-theme="dark"] .hull-label {
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9), -1px -1px 2px rgba(255, 255, 255, 0.3);
+            stroke: rgba(0, 0, 0, 0.8);
         }
 
         .namespace-stats {
@@ -854,6 +876,17 @@
             '#6f42c1', '#fd7e14', '#20c997', '#e83e8c', '#6c757d'
         ];
 
+        // Theme-aware color palette for dark mode
+        const darkRelationColorPalette = [
+            '#adb5bd', '#f5c2c7', '#6ea8fe', '#75dd8c', '#ffda6a',
+            '#c29ffa', '#fd9e44', '#6edbd0', '#f7a8d4', '#adb5bd'
+        ];
+
+        function getThemeAwareRelationColors() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            return isDark ? darkRelationColorPalette : relationColorPalette;
+        }
+
         let originalData = null;
         let nodeTypes = {};
         let relationTypes = {};
@@ -884,8 +917,16 @@
             localStorage.setItem('theme', newTheme);
             updateThemeToggle(newTheme);
             
-            // Re-render graph to update colors
+            // Update relation colors for new theme
             if (originalData) {
+                const relationKinds = [...new Set(originalData.links.map(link => link.Kind))];
+                const currentPalette = getThemeAwareRelationColors();
+                relationTypes = {};
+                relationKinds.forEach((kind, index) => {
+                    relationTypes[kind] = currentPalette[index % currentPalette.length];
+                });
+                
+                // Re-render graph to update colors
                 applyFiltersAndRender();
             }
         }
@@ -930,7 +971,8 @@
             // Add deduced relationship if in project-only mode
             const projectOnlyMode = document.getElementById('projectOnlyView')?.checked;
             if (projectOnlyMode) {
-                allRelationTypes['Deduced Project Dependency'] = '#ff6b35';
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                allRelationTypes['Deduced Project Dependency'] = isDark ? '#ffb347' : '#ff6b35';
             }
             
             Object.entries(allRelationTypes).forEach(([type, color]) => {
@@ -981,8 +1023,9 @@
             // Extract unique relation types
             const relationKinds = [...new Set(data.links.map(link => link.Kind))];
             relationTypes = {};
+            const currentPalette = getThemeAwareRelationColors();
             relationKinds.forEach((kind, index) => {
-                relationTypes[kind] = relationColorPalette[index % relationColorPalette.length];
+                relationTypes[kind] = currentPalette[index % currentPalette.length];
             });
 
             // Calculate node metrics for sizing and coloring
@@ -1152,6 +1195,7 @@
             const relationshipTypes = new Map();
             
             let processedLinks = 0;
+            let crossProjectLinks = 0;
             data.links.forEach(link => {
                 if (!enabledRelations.includes(link.Kind) || link.Kind === 'Contains') {
                     return; // Skip disabled relations and containment (already processed)
@@ -1163,6 +1207,7 @@
                 
                 // Only create project relationships for cross-project dependencies
                 if (sourceProject && targetProject && sourceProject !== targetProject) {
+                    crossProjectLinks++;
                     const relationKey = `${sourceProject}-${targetProject}`;
                     
                     if (!projectRelationships.has(relationKey)) {
@@ -1190,8 +1235,6 @@
                     relationshipTypes.set(typeKey, currentCount + 1);
                 }
             });
-            
-
             
             // Convert to link format with the most common relationship type
             const deducedLinks = [];
@@ -1275,8 +1318,6 @@
                     link.isDeduced = true;
                     link.underlyingConnections = link.DeducedFromCount || 1;
                 });
-                
-
                 
                 // Update relationship count in UI
                 const countElement = document.getElementById('relationshipCount');
@@ -1875,6 +1916,7 @@
 
 
         function renderForceDirectedLayout(g, data, width, height) {
+            
             const linkGroup = g.append('g').attr('class', 'links');
             const nodeGroup = g.append('g').attr('class', 'nodes');
 
@@ -1885,8 +1927,11 @@
                 .map(link => ({
                     source: link.SourceId,
                     target: link.TargetId,
-                    Kind: link.Kind
+                    Kind: link.Kind,
+                    isDeduced: link.isDeduced || false,
+                    underlyingConnections: link.underlyingConnections || 1
                 }));
+
 
             // Get slider values for dynamic force parameters
             const containmentDistance = parseInt(document.getElementById('containmentDistance').value);
@@ -1934,9 +1979,16 @@
                     return 2;
                 })
                 .attr('stroke', d => {
-                    if (d.Kind === 'Contains') return '#6c757d';
-                    if (d.isDeduced) return '#ff6b35'; // Orange for deduced project relationships
-                    return relationTypes[d.Kind] || '#999';
+                    if (d.Kind === 'Contains') {
+                        // Use CSS variable for theme-appropriate containment color
+                        return getComputedStyle(document.documentElement).getPropertyValue('--node-stroke').trim();
+                    }
+                    if (d.isDeduced) {
+                        // Brighter orange for deduced relationships in dark mode
+                        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                        return isDark ? '#ffb347' : '#ff6b35';
+                    }
+                    return relationTypes[d.Kind] || (document.documentElement.getAttribute('data-theme') === 'dark' ? '#adb5bd' : '#999');
                 })
                 .style('stroke-dasharray', d => {
                     if (d.Kind === 'Contains') return '5,5';
@@ -2893,7 +2945,21 @@
             // Rebuild relation controls to include/exclude deduced relationships
             buildRelationControls();
             
-            applyFiltersAndRender();
+            // Auto-enable deduced project relationships when entering project-only mode
+            if (isProjectOnly) {
+                // Wait for buildRelationControls to finish creating the checkbox
+                setTimeout(() => {
+                    const deducedCheckbox = document.getElementById('relation_Deduced_Project_Dependency');
+                    if (deducedCheckbox && !deducedCheckbox.checked) {
+                        deducedCheckbox.checked = true;
+                        applyFiltersAndRender();
+                    } else if (!deducedCheckbox) {
+                        applyFiltersAndRender();
+                    }
+                }, 10);
+            } else {
+                applyFiltersAndRender();
+            }
         });
 
         // Force parameter slider listeners

@@ -32,9 +32,9 @@ public class UnitTest1
 
         // Run analyzers
         var aggregator = new ProjectAnalyzerAggregator()
-            /* .Add(new StructuralCouplingAnalyzer())
+             .Add(new StructuralCouplingAnalyzer())
              .Add(new ClassicalCouplingAnalyzer())
-             .Add(new DirectionalCouplingAnalyzer())*/
+             .Add(new DirectionalCouplingAnalyzer())
             .Add(new CodeGraphAnalyzer());
 
         var results = await aggregator.RunAsync(solution);
@@ -64,11 +64,10 @@ public class UnitTest1
                     break;
             }
         }
-        //var markdown = doc.Render();
+        var markdown = doc.Render();
 
-        //await File.WriteAllTextAsync(Path.Combine(playground, "output.md"), markdown);
+        await File.WriteAllTextAsync(Path.Combine(playground, "output.md"), markdown);
 
-        // Copy the viewer HTML next to the graph so it can be opened directly
         var slnDir = Path.GetDirectoryName(dep3Sln)!;
         var indexHtmlSrc = Path.Combine(slnDir, "src", "FrenchExDev.Net.CSharp.ProjectDependency3", "Reporting", "index.html");
         if (File.Exists(indexHtmlSrc))
