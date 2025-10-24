@@ -577,12 +577,101 @@
             50% { box-shadow: 0 2px 8px rgba(74, 140, 199, 0.7); }
             100% { box-shadow: 0 2px 4px rgba(74, 140, 199, 0.4); }
         }
+
+        /* Container node styling */
+        .container-background {
+            stroke: var(--node-stroke);
+            stroke-width: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .container-background.project {
+            fill: rgba(0, 119, 190, 0.2);
+            stroke: #0077be;
+            stroke-opacity: 0.8;
+        }
+
+        .container-background.namespace {
+            fill: rgba(255, 152, 0, 0.2);
+            stroke: #ff9800;
+            stroke-opacity: 0.8;
+        }
+
+        .container-background:hover {
+            stroke-width: 3px;
+            filter: brightness(1.1);
+            stroke-opacity: 1.0;
+        }
+
+        .container-background.project:hover {
+            fill: rgba(0, 119, 190, 0.3);
+            stroke: #0099cc;
+        }
+
+        .container-background.namespace:hover {
+            fill: rgba(255, 152, 0, 0.3);
+            stroke: #ffaa00;
+        }
+
+        [data-theme="dark"] .container-background.project {
+            fill: rgba(74, 140, 199, 0.25);
+            stroke: #4a8cc7;
+            stroke-opacity: 0.9;
+        }
+
+        [data-theme="dark"] .container-background.namespace {
+            fill: rgba(255, 179, 71, 0.25);
+            stroke: #ffb347;
+            stroke-opacity: 0.9;
+        }
+
+        [data-theme="dark"] .container-background.project:hover {
+            fill: rgba(74, 140, 199, 0.4);
+            stroke: #66a3d9;
+            stroke-opacity: 1.0;
+        }
+
+        [data-theme="dark"] .container-background.namespace:hover {
+            fill: rgba(255, 179, 71, 0.4);
+            stroke: #ffc266;
+            stroke-opacity: 1.0;
+        }
+
+        /* Regular node styling */
+        circle.node-circle {
+            stroke: var(--node-stroke);
+            stroke-width: 2px;
+            fill-opacity: 0.8;
+            transition: all 0.2s ease;
+        }
+
+        circle.node-circle:hover {
+            stroke-width: 3px;
+            fill-opacity: 1.0;
+            filter: brightness(1.1);
+        }
+
+        /* Arrow marker styling */
+        marker path {
+            transition: fill 0.2s ease, stroke 0.2s ease;
+        }
+
+        /* Dark theme arrow adjustments */
+        [data-theme="dark"] #arrowhead path {
+            fill: #ccc;
+            stroke: #ccc;
+        }
+
+        [data-theme="dark"] #deduced-arrowhead path {
+            fill: #ff8c5a;
+            stroke: #ff8c5a;
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <header>
-            <h1>Code Graph<span id="projectOnlyIndicator" class="project-only-indicator" style="display: none;">Projects Only</span></h1>
+            <h1>Code Graph<span id="projectOnlyIndicator" class="project-only-indicator" style="display: none;">Projects Only <span id="relationshipCount"></span></span></h1>
             <button class="theme-toggle" id="themeToggle">🌙 Dark</button>
         </header>
         <main>
@@ -645,8 +734,14 @@
                 </div>
 
                 <div class="control-section">
-                    <h3>Node Visualization</h3>
+                    <h3>Relationships</h3>
                     <div style="margin-bottom: 8px; font-size: 11px; color: var(--text-secondary);">
+                        <strong>Arrows show direction:</strong><br>
+                        • A → B means "A uses B"<br>
+                        • <span style="color: #ff6b35;">Orange arrows</span>: Deduced project dependencies<br>
+                        • <span style="color: #999;">Gray arrows</span>: Direct relationships<br><br>
+                        
+                        <strong>Node sizing:</strong><br>
                         Size: Larger = More relationships<br>
                         Color: Blue = More incoming, Yellow = More outgoing
                     </div>
@@ -1013,6 +1108,8 @@
                 projectToNodes.set(project.Id, new Set());
             });
             
+
+            
             // Build containment hierarchy to map nodes to their projects
             const containsLinks = data.links.filter(link => link.Kind === 'Contains');
             
@@ -1054,10 +1151,12 @@
             const projectRelationships = new Map();
             const relationshipTypes = new Map();
             
+            let processedLinks = 0;
             data.links.forEach(link => {
                 if (!enabledRelations.includes(link.Kind) || link.Kind === 'Contains') {
                     return; // Skip disabled relations and containment (already processed)
                 }
+                processedLinks++;
                 
                 const sourceProject = nodeToProject.get(link.SourceId);
                 const targetProject = nodeToProject.get(link.TargetId);
@@ -1091,6 +1190,8 @@
                     relationshipTypes.set(typeKey, currentCount + 1);
                 }
             });
+            
+
             
             // Convert to link format with the most common relationship type
             const deducedLinks = [];
@@ -1159,11 +1260,47 @@
                 nodeIds.has(link.TargetId)
             );
 
-            // In project-only view, deduce project-to-project relationships
-            if (projectOnlyView && showDeducedRelations) {
-                const deducedLinks = deduceProjectRelationships(originalData, enabledRelations);
-                // Only keep deduced links, not the original filtered links
-                filteredLinks = deducedLinks;
+            // In project-only view, always deduce project-to-project relationships
+            if (projectOnlyView) {
+                let deducedLinks = deduceProjectRelationships(originalData, enabledRelations);
+                
+                // If no relationships found, try with all relationship types
+                if (deducedLinks.length === 0) {
+                    const allRelationTypes = [...new Set(originalData.links.map(link => link.Kind))];
+                    deducedLinks = deduceProjectRelationships(originalData, allRelationTypes);
+                }
+                
+                // Mark deduced links as such for special styling
+                deducedLinks.forEach(link => {
+                    link.isDeduced = true;
+                    link.underlyingConnections = link.DeducedFromCount || 1;
+                });
+                
+
+                
+                // Update relationship count in UI
+                const countElement = document.getElementById('relationshipCount');
+                if (countElement) {
+                    countElement.textContent = `(${deducedLinks.length} relationships)`;
+                }
+                
+                if (showDeducedRelations) {
+                    // Show both original project-to-project links AND deduced links
+                    filteredLinks = [...filteredLinks, ...deducedLinks];
+                } else {
+                    if (countElement) {
+                        countElement.textContent = `(${deducedLinks.length} available, enable "Deduced Project Dependency")`;
+                    }
+                    // Show only original project-to-project links (if any)
+                    // This will typically be empty, so user will see no connections
+                    // until they enable deduced relationships
+                }
+            } else {
+                // Clear relationship count when not in project-only mode
+                const countElement = document.getElementById('relationshipCount');
+                if (countElement) {
+                    countElement.textContent = '';
+                }
             }
 
             // Recalculate metrics for filtered data
@@ -1683,6 +1820,40 @@
                 .attr('width', width)
                 .attr('height', height);
 
+            // Add arrow markers for directional relationships
+            const defs = svg.append('defs');
+            
+            // Standard arrow marker for regular relationships
+            defs.append('marker')
+                .attr('id', 'arrowhead')
+                .attr('viewBox', '-0 -5 10 10')
+                .attr('refX', 10)
+                .attr('refY', 0)
+                .attr('orient', 'auto')
+                .attr('markerWidth', 10)
+                .attr('markerHeight', 10)
+                .attr('xoverflow', 'visible')
+                .append('svg:path')
+                .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+                .attr('fill', '#999')
+                .attr('stroke', '#999');
+            
+            // Orange arrow marker for deduced project relationships
+            defs.append('marker')
+                .attr('id', 'deduced-arrowhead')
+                .attr('viewBox', '-0 -6 12 12')
+                .attr('refX', 12)
+                .attr('refY', 0)
+                .attr('orient', 'auto')
+                .attr('markerWidth', 12)
+                .attr('markerHeight', 12)
+                .attr('xoverflow', 'visible')
+                .append('svg:path')
+                .attr('d', 'M 0,-6 L 12 ,0 L 0,6')
+                .attr('fill', '#ff6b35')
+                .attr('stroke', '#ff6b35')
+                .style('stroke-width', '1');
+
             // Create zoom behavior
             const zoom = d3.zoom()
                 .scaleExtent([0.1, 5])
@@ -1776,6 +1947,27 @@
                     if (d.Kind === 'Contains') return 0.5;
                     if (d.isDeduced) return Math.min(0.9, 0.3 + (d.underlyingConnections * 0.1));
                     return 0.7;
+                })
+                .attr('marker-end', d => {
+                    // Add directional arrows for non-containment relationships
+                    if (d.Kind === 'Contains') return null; // No arrows for containment
+                    if (d.isDeduced) return 'url(#deduced-arrowhead)'; // Orange arrows for deduced relationships
+                    return 'url(#arrowhead)'; // Standard arrows for regular relationships
+                });
+
+            // Add informative tooltips to links
+            links.append('title')
+                .text(d => {
+                    const sourceName = d.source.Name || d.source;
+                    const targetName = d.target.Name || d.target;
+                    
+                    if (d.isDeduced) {
+                        return `${sourceName} → ${targetName}\nDeduced ${d.Kind} relationship\nBased on ${d.underlyingConnections} underlying connection(s)`;
+                    } else if (d.Kind === 'Contains') {
+                        return `${sourceName} contains ${targetName}`;
+                    } else {
+                        return `${sourceName} → ${targetName}\n${d.Kind} relationship`;
+                    }
                 });
 
             // Enhanced node rendering with container distinction
@@ -1839,6 +2031,7 @@
                 } else {
                     // Regular nodes as circles
                     node.append('circle')
+                        .attr('class', 'node-circle')
                         .attr('r', d => getNodeSize(d.Id))
                         .attr('fill', d => getNodeColor(d.Id))
                         .on('click', handleNodeClick)
@@ -1870,12 +2063,116 @@
                     return tooltip;
                 });
 
+            // Helper function to calculate intersection point with rectangle edge
+            function getRectangleIntersection(centerX, centerY, width, height, targetX, targetY) {
+                const dx = targetX - centerX;
+                const dy = targetY - centerY;
+                
+                if (Math.abs(dx) === 0 && Math.abs(dy) === 0) {
+                    return { x: centerX, y: centerY };
+                }
+                
+                const halfWidth = width / 2;
+                const halfHeight = height / 2;
+                
+                // Calculate intersection with rectangle edges
+                const xIntersect = Math.sign(dx) * halfWidth;
+                const yIntersect = Math.sign(dy) * halfHeight;
+                
+                // Determine which edge is crossed first
+                const tX = Math.abs(dx) > 0 ? halfWidth / Math.abs(dx) : Infinity;
+                const tY = Math.abs(dy) > 0 ? halfHeight / Math.abs(dy) : Infinity;
+                
+                if (tX < tY) {
+                    // Crosses vertical edge first
+                    return {
+                        x: centerX + xIntersect,
+                        y: centerY + (dy * tX)
+                    };
+                } else {
+                    // Crosses horizontal edge first
+                    return {
+                        x: centerX + (dx * tY),
+                        y: centerY + yIntersect
+                    };
+                }
+            }
+
+            // Helper function to calculate link endpoints that don't overlap with nodes
+            function calculateLinkEndpoints(link) {
+                const source = link.source;
+                const target = link.target;
+                
+                // Calculate the vector from source to target
+                const dx = target.x - source.x;
+                const dy = target.y - source.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance === 0 || distance < 5) {
+                    return { x1: source.x, y1: source.y, x2: target.x, y2: target.y };
+                }
+                
+                const padding = 3; // Extra padding for arrow space
+                
+                let sourceEdge, targetEdge;
+                
+                // Calculate source edge point
+                if (source.Kind === 'Project' || source.Kind === 'Namespace') {
+                    // Rectangular node - calculate proper intersection
+                    const nameLength = source.Name.length;
+                    const rectWidth = Math.max(nameLength * 7, 60);
+                    const rectHeight = 25;
+                    sourceEdge = getRectangleIntersection(source.x, source.y, rectWidth, rectHeight, target.x, target.y);
+                } else {
+                    // Circular node
+                    const radius = getNodeSize(source.Id);
+                    const unitX = dx / distance;
+                    const unitY = dy / distance;
+                    sourceEdge = {
+                        x: source.x + unitX * radius,
+                        y: source.y + unitY * radius
+                    };
+                }
+                
+                // Calculate target edge point
+                if (target.Kind === 'Project' || target.Kind === 'Namespace') {
+                    // Rectangular node - calculate proper intersection
+                    const nameLength = target.Name.length;
+                    const rectWidth = Math.max(nameLength * 7, 60);
+                    const rectHeight = 25;
+                    targetEdge = getRectangleIntersection(target.x, target.y, rectWidth, rectHeight, source.x, source.y);
+                } else {
+                    // Circular node
+                    const radius = getNodeSize(target.Id);
+                    const unitX = dx / distance;
+                    const unitY = dy / distance;
+                    targetEdge = {
+                        x: target.x - unitX * radius,
+                        y: target.y - unitY * radius
+                    };
+                }
+                
+                // Add padding for arrow visibility
+                const linkUnitX = dx / distance;
+                const linkUnitY = dy / distance;
+                
+                return {
+                    x1: sourceEdge.x + linkUnitX * padding,
+                    y1: sourceEdge.y + linkUnitY * padding,
+                    x2: targetEdge.x - linkUnitX * padding,
+                    y2: targetEdge.y - linkUnitY * padding
+                };
+            }
+
             simulation.on('tick', () => {
-                links
-                    .attr('x1', d => d.source.x)
-                    .attr('y1', d => d.source.y)
-                    .attr('x2', d => d.target.x)
-                    .attr('y2', d => d.target.y);
+                links.each(function(d) {
+                    const endpoints = calculateLinkEndpoints(d);
+                    d3.select(this)
+                        .attr('x1', endpoints.x1)
+                        .attr('y1', endpoints.y1)
+                        .attr('x2', endpoints.x2)
+                        .attr('y2', endpoints.y2);
+                });
 
                 nodes.attr('transform', d => `translate(${d.x},${d.y})`);
 
