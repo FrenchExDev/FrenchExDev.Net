@@ -1,0 +1,284 @@
+@page "/analysis"
+@using Markdig
+@inject Services.IAnalysisService AnalysisSvc
+@inject Services.ISessionManager Sessions
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h1>Analyze Solution</h1>
+
+<div class="mb-3">
+ <button class="btn btn-outline-primary" @onclick="CreateSession">Create Session</button>
+ <button class="btn btn-outline-danger ms-2" @onclick="StopSession" disabled="@(string.IsNullOrWhiteSpace(sessionId))">Stop Session</button>
+ <span class="ms-2">@sessionStatus</span>
+</div>
+
+<div class="mb-3">
+ <label class="form-label">Orchestrator base URL</label>
+ <input class="form-control" @bind-value="orchestratorUrl" placeholder="http://localhost:5080" />
+</div>
+
+@if (!string.IsNullOrWhiteSpace(agentUrl))
+{
+ <div class="alert alert-secondary">
+ <strong>Agent:</strong> @agentUrl
+ </div>
+}
+
+<div class="mb-3">
+ <label class="form-label">Search solutions</label>
+ <input class="form-control" @bind-value="search" @oninput="FilterSolutions" placeholder="type to filter..." />
+</div>
+
+@if (solutions is not null)
+{
+ <div style="max-height:250px; overflow: auto;" class="list-group">
+ @foreach (var s in filteredSolutions)
+ {
+ <button class="list-group-item list-group-item-action" @onclick="() => SelectSolution(s.path)">@s.name (@s.path)</button>
+ }
+ </div>
+}
+
+<div class="mt-3">
+ <button class="btn btn-primary me-2" @onclick="RunAnalysis" disabled="@(string.IsNullOrWhiteSpace(solutionPath))">Start analysis</button>
+ <button class="btn btn-secondary" @onclick="OpenGraph">Open Graph Viewer</button>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(jobId))
+{
+ <div class="mt-3">
+ <h5>Job: @jobId</h5>
+ <p>Status: @jobStatus | Progress: @jobProgress%</p>
+ @if (!string.IsNullOrWhiteSpace(progressLog))
+ {
+ <pre style="max-height:200px; overflow:auto">@progressLog</pre>
+ }
+ </div>
+}
+
+@if (result is not null)
+{
+ <div class="alert alert-info mt-3">
+ <div><strong>Session:</strong> @result.SessionId</div>
+ <div><strong>Solution:</strong> @result.SolutionPath</div>
+ </div>
+
+ <h3>Markdown</h3>
+ <div class="card">
+ <div class="card-body">
+ @if (!string.IsNullOrWhiteSpace(mdHtml))
+ {
+ @((MarkupString)mdHtml)
+ }
+ else
+ {
+ <pre style="white-space:pre-wrap">@result.MarkdownContent</pre>
+ }
+ </div>
+ </div>
+}
+
+@code {
+ private string orchestratorUrl = "http://localhost:5080";
+ private string? sessionId;
+ private string sessionStatus = "No session";
+ private string? agentUrl;
+ private string? solutionPath;
+ private Services.AnalysisRunResult? result;
+ private string? mdHtml;
+ private List<(string name, string path)>? solutions;
+ private List<(string name, string path)> filteredSolutions = new();
+ private string search = string.Empty;
+ private string? progressLog;
+ private CancellationTokenSource? wsCts;
+ private string? jobId;
+ private string jobStatus = "";
+ private int jobProgress = 0;
+
+ protected override async Task OnInitializedAsync()
+ {
+ solutionPath = await Sessions.GetLastSolutionPathAsync();
+ agentUrl = await Sessions.GetAgentUrlAsync();
+ sessionId = await Sessions.GetSessionIdAsync();
+ if (!string.IsNullOrWhiteSpace(agentUrl)) await LoadSolutionsFromAgent();
+ }
+
+ private async Task CreateSession()
+ {
+ try
+ {
+ var url = $"{orchestratorUrl.TrimEnd('/')}/sessions";
+ var r = await Http.PostAsync(url, new StringContent(""));
+ var json = await r.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+ sessionId = json?["sessionId"]; 
+ agentUrl = json?["agentUrl"]; 
+ await Sessions.SetSessionIdAsync(sessionId);
+ await Sessions.SetAgentUrlAsync(agentUrl);
+ sessionStatus = sessionId is null ? "Session error" : $"Session: {sessionId}";
+ if (!string.IsNullOrWhiteSpace(agentUrl)) await LoadSolutionsFromAgent();
+ }
+ catch (Exception ex)
+ {
+ sessionStatus = $"Error: {ex.Message}";
+ }
+ }
+
+ private async Task StopSession()
+ {
+ if (string.IsNullOrWhiteSpace(sessionId)) return;
+ try
+ {
+ var url = $"{orchestratorUrl.TrimEnd('/')}/sessions/{sessionId}";
+ await Http.DeleteAsync(url);
+ sessionStatus = "No session";
+ await Sessions.SetSessionIdAsync(null);
+ await Sessions.SetAgentUrlAsync(null);
+ sessionId = null;
+ agentUrl = null;
+ solutions = null; filteredSolutions.Clear();
+ progressLog = null;
+ wsCts?.Cancel(); wsCts = null;
+ }
+ catch (Exception ex)
+ {
+ sessionStatus = $"Stop error: {ex.Message}";
+ }
+ }
+
+ private async Task LoadSolutionsFromAgent()
+ {
+ if (string.IsNullOrWhiteSpace(agentUrl)) return;
+ var url = new Uri(new Uri(agentUrl), "/solutions").ToString();
+ var res = await Http.GetFromJsonAsync<List<SlnDto>>(url);
+ solutions = res?.Select(x => (x.name, x.path)).ToList() ?? new();
+ filteredSolutions = solutions;
+ }
+
+ private void FilterSolutions(ChangeEventArgs _)
+ {
+ if (solutions is null) return;
+ var q = (search ?? string.Empty).Trim();
+ if (string.IsNullOrWhiteSpace(q)) { filteredSolutions = solutions; return; }
+ filteredSolutions = solutions.Where(s => s.name.Contains(q, StringComparison.OrdinalIgnoreCase) || s.path.Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
+ }
+
+ private void SelectSolution(string path)
+ {
+ solutionPath = path;
+ }
+
+ private async Task RunAnalysis()
+ {
+ if (string.IsNullOrWhiteSpace(solutionPath) || string.IsNullOrWhiteSpace(agentUrl)) return;
+ try
+ {
+ // UI calls agent to start analysis (async)
+ var analyzeUrl = new Uri(new Uri(agentUrl), "/analyze").ToString();
+ var resp = await Http.PostAsync(analyzeUrl, new StringContent(solutionPath));
+ var json = await resp.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+ jobId = json?["jobId"];
+ if (string.IsNullOrWhiteSpace(jobId)) { progressLog = "Error: no jobId"; return; }
+ progressLog = $"Job {jobId} started\n";
+ jobStatus = "pending";
+ jobProgress = 0;
+ // Connect WS for progress
+ await ConnectProgressWs();
+ // Poll job status until complete
+ await PollJobStatus();
+ }
+ catch (Exception ex)
+ {
+ progressLog += $"Error: {ex.Message}\n";
+ }
+ }
+
+ private async Task ConnectProgressWs()
+ {
+ if (string.IsNullOrWhiteSpace(jobId) || string.IsNullOrWhiteSpace(agentUrl)) return;
+ wsCts?.Cancel();
+ wsCts = new CancellationTokenSource();
+ var ws = new System.Net.WebSockets.ClientWebSocket();
+ var uri = new Uri(new Uri(agentUrl), $"/ws/progress?jobId={jobId}");
+ await ws.ConnectAsync(uri, wsCts.Token);
+ _ = Task.Run(async () =>
+ {
+ var buff = new byte[4096];
+ while (ws.State == System.Net.WebSockets.WebSocketState.Open && !wsCts.IsCancellationRequested)
+ {
+ try
+ {
+ var res = await ws.ReceiveAsync(buff, wsCts.Token);
+ if (res.MessageType == System.Net.WebSockets.WebSocketMessageType.Close) break;
+ var msg = System.Text.Encoding.UTF8.GetString(buff,0, res.Count);
+ progressLog += msg + "\n";
+ // parse JSON for status/progress
+ try
+ {
+ var progJson = System.Text.Json.JsonDocument.Parse(msg);
+ if (progJson.RootElement.TryGetProperty("status", out var s)) jobStatus = s.GetString() ?? jobStatus;
+ if (progJson.RootElement.TryGetProperty("progress", out var p)) jobProgress = p.GetInt32();
+ }
+ catch { }
+ StateHasChanged();
+ }
+ catch { break; }
+ }
+ try { await ws.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "done", CancellationToken.None); } catch { }
+ }, wsCts.Token);
+ }
+
+ private async Task PollJobStatus()
+ {
+ if (string.IsNullOrWhiteSpace(jobId) || string.IsNullOrWhiteSpace(agentUrl)) return;
+ while (jobStatus != "completed" && jobStatus != "failed")
+ {
+ await Task.Delay(1000);
+ try
+ {
+ var statusUrl = new Uri(new Uri(agentUrl), $"/jobs/{jobId}").ToString();
+ var job = await Http.GetFromJsonAsync<JobDto>(statusUrl);
+ if (job is null) break;
+ jobStatus = job.Status;
+ jobProgress = job.Progress;
+ if (jobStatus == "completed")
+ {
+ progressLog += "Job completed. Fetching results...\n";
+ await FetchResults();
+ break;
+ }
+ else if (jobStatus == "failed")
+ {
+ progressLog += $"Job failed: {job.Error}\n";
+ break;
+ }
+ }
+ catch { break; }
+ }
+ }
+
+ private async Task FetchResults()
+ {
+ if (string.IsNullOrWhiteSpace(solutionPath) || string.IsNullOrWhiteSpace(agentUrl)) return;
+ try
+ {
+ var mdUrl = new Uri(new Uri(agentUrl), $"/artifacts/markdown?sln={Uri.EscapeDataString(solutionPath)}").ToString();
+ var md = await Http.GetStringAsync(mdUrl);
+ result = new( sessionId ?? "", solutionPath, "Reporting/graph.json", md);
+ mdHtml = Markdown.ToHtml(result.MarkdownContent ?? string.Empty);
+ await Sessions.SetLastSolutionPathAsync(solutionPath);
+ }
+ catch (Exception ex)
+ {
+ progressLog += $"Error fetching results: {ex.Message}\n";
+ }
+ }
+
+ private void OpenGraph()
+ {
+ Nav.NavigateTo("/Reporting/index.html", forceLoad: true);
+ }
+
+ private record SlnDto(string name, string path);
+ private record JobDto(string JobId, string SolutionPath, string Status, int Progress, string? Error);
+}

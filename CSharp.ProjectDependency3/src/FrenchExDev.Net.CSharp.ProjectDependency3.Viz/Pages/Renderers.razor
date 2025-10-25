@@ -1,0 +1,67 @@
+@page "/renderers"
+@inject NavigationManager Nav
+@inject HttpClient Http
+
+<h1>Renderers</h1>
+<p>Fetch generated artifacts from orchestrator.</p>
+
+<div class="mb-3">
+ <label class="form-label">Orchestrator base URL</label>
+ <input class="form-control" @bind-value="orchestratorUrl" placeholder="http://localhost:5080" />
+</div>
+<div class="mb-3">
+ <label class="form-label">Solution identifier or path</label>
+ <input class="form-control" @bind-value="solution" />
+</div>
+<div class="mb-2">
+ <button class="btn btn-primary" @onclick="FetchGraph">Get Graph</button>
+ <button class="btn btn-secondary ms-2" @onclick="FetchMarkdown">Get Markdown</button>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(graphJson))
+{
+ <h3>Graph JSON</h3>
+ <pre style="max-height:300px; overflow:auto">@graphJson</pre>
+ <div class="mt-2">
+ <a class="btn btn-success" href="/Reporting/index.html" target="_blank">Open Graph Viewer</a>
+ </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(markdown))
+{
+ <h3>Markdown</h3>
+ <pre style="white-space: pre-wrap">@markdown</pre>
+}
+
+@code {
+ private string orchestratorUrl = "http://localhost:5080";
+ private string solution = "";
+ private string? graphJson;
+ private string? markdown;
+
+ private async Task FetchGraph()
+ {
+ try
+ {
+ var url = $"{orchestratorUrl.TrimEnd('/')}/orchestrate/artifacts/graph?sln={Uri.EscapeDataString(solution)}";
+ graphJson = await Http.GetStringAsync(url);
+ }
+ catch (Exception ex)
+ {
+ graphJson = $"Error: {ex.Message}";
+ }
+ }
+
+ private async Task FetchMarkdown()
+ {
+ try
+ {
+ var url = $"{orchestratorUrl.TrimEnd('/')}/orchestrate/artifacts/markdown?sln={Uri.EscapeDataString(solution)}";
+ markdown = await Http.GetStringAsync(url);
+ }
+ catch (Exception ex)
+ {
+ markdown = $"Error: {ex.Message}";
+ }
+ }
+}

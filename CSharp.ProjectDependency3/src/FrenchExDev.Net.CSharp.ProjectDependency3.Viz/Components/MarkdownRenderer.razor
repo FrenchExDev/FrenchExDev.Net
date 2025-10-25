@@ -1,0 +1,18 @@
+@using Markdig
+@code {
+ [Parameter] public string? Markdown { get; set; }
+ private string? html;
+ protected override void OnParametersSet()
+ {
+ html = string.IsNullOrWhiteSpace(Markdown) ? null : Markdig.Markdown.ToHtml(Markdown);
+ }
+}
+
+@if (!string.IsNullOrWhiteSpace(html))
+{
+ @((MarkupString)html)
+}
+else
+{
+ <div class="text-muted">No markdown</div>
+}

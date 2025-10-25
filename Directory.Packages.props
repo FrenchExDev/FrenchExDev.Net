@@ -51,5 +51,9 @@
 		<PackageVersion Include="YamlDotNet" Version="16.2.1" />
 		<PackageVersion Include="ByteSize" Version="2.1.2" />
 		<PackageVersion Include="Figgle" Version="0.6.5" />
+		<!-- Viz dependencies -->
+		<PackageVersion Include="Blazored.SessionStorage" Version="2.4.0" />
+		<PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />
+		<PackageVersion Include="Markdig" Version="0.36.2" />
 	</ItemGroup>
 </Project>

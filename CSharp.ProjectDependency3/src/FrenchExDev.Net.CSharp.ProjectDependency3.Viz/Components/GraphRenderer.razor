@@ -1,0 +1,13 @@
+@using System.Text.Json
+@code {
+ [Parameter] public string? GraphJson { get; set; }
+}
+
+@if (!string.IsNullOrWhiteSpace(GraphJson))
+{
+ <pre style="max-height:300px; overflow:auto">@GraphJson</pre>
+}
+else
+{
+ <div class="text-muted">No graph data</div>
+}

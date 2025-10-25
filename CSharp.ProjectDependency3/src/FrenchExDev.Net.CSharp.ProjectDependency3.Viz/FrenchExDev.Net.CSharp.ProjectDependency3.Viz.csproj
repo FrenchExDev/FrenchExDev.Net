@@ -8,12 +8,26 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly"  />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+		<!-- Session and client-side storage for per-user sessions -->
+		<PackageReference Include="Blazored.SessionStorage" />
+		<PackageReference Include="Blazored.LocalStorage" />
+		<!-- Markdown rendering for uploaded/generated markdown docs -->
+		<PackageReference Include="Markdig" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+	</ItemGroup>
+
+	<!-- Expose the reporting artifacts and graph visualizer HTML under /Reporting/ -->
+	<ItemGroup>
+		<Content Include="..\FrenchExDev.Net.CSharp.ProjectDependency3\Reporting\index.html">
+			<Link>wwwroot\Reporting\index.html</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
 	</ItemGroup>
 
 </Project>
