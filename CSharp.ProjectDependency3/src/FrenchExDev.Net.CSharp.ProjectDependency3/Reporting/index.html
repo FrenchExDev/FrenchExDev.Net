@@ -259,10 +259,14 @@
             padding: 8px;
             font-size: 12px;
             color: var(--text-primary);
-            max-width: 300px;
+            max-width: 400px;
+            min-width: 250px;
             z-index: 1000;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             display: none;
+            word-wrap: break-word;
+            word-break: break-all;
+            overflow-wrap: break-word;
         }
 
         .node-info h4 {
@@ -278,6 +282,18 @@
         .node-info .label {
             font-weight: 500;
             color: var(--text-secondary);
+        }
+
+        .node-info .id-value {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 10px;
+            background: var(--bg-secondary);
+            padding: 2px 4px;
+            border-radius: 3px;
+            margin-top: 2px;
+            word-break: break-all;
+            line-height: 1.3;
+            border: 1px solid var(--border-color);
         }
 
         .link {
@@ -725,6 +741,12 @@
                             <span style="font-size: 12px;">Show namespace hulls</span>
                         </label>
                     </div>
+                    <div style="margin-bottom: 8px;">
+                        <label>
+                            <input type="checkbox" id="showProjectHulls" style="width: auto; margin-right: 4px;" />
+                            <span style="font-size: 12px;">Show project hulls</span>
+                        </label>
+                    </div>
                     <div style="margin-bottom: 8px; border-top: 1px solid var(--border-color); padding-top: 8px;">
                         <label>
                             <input type="checkbox" id="projectOnlyView" style="width: auto; margin-right: 4px;" />
@@ -972,7 +994,7 @@
             const projectOnlyMode = document.getElementById('projectOnlyView')?.checked;
             if (projectOnlyMode) {
                 const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                allRelationTypes['Deduced Project Dependency'] = isDark ? '#ffb347' : '#ff6b35';
+                allRelationTypes['Deduced Project Dependency'] = isDark ? '#ffb347' : '#e55100'; // Darker orange for light mode
             }
             
             Object.entries(allRelationTypes).forEach(([type, color]) => {
@@ -1141,12 +1163,16 @@
         }
 
         function deduceProjectRelationships(data, enabledRelations) {
+            console.log('🔍 DEBUGGING DEDUCED RELATIONSHIPS');
+            console.log('Enabled relations:', enabledRelations);
+            
             // Build project-to-node mappings using containment relationships
             const projectToNodes = new Map();
             const nodeToProject = new Map();
             
             // Get all projects
             const projects = data.nodes.filter(node => node.Kind === 'Project');
+            console.log('Found projects:', projects.length, projects.map(p => p.Name));
             projects.forEach(project => {
                 projectToNodes.set(project.Id, new Set());
             });
@@ -1197,17 +1223,27 @@
             let processedLinks = 0;
             let crossProjectLinks = 0;
             data.links.forEach(link => {
-                if (!enabledRelations.includes(link.Kind) || link.Kind === 'Contains') {
-                    return; // Skip disabled relations and containment (already processed)
+                // Skip containment links but be more permissive with other links
+                if (link.Kind === 'Contains') {
+                    return; // Skip containment (already processed)
                 }
+                
+                // Only check enabled relations if they exist, otherwise include all
+                if (enabledRelations.length > 0 && !enabledRelations.includes(link.Kind)) {
+                    return; // Skip disabled relations only if we have enabled relations
+                }
+                
                 processedLinks++;
                 
                 const sourceProject = nodeToProject.get(link.SourceId);
                 const targetProject = nodeToProject.get(link.TargetId);
                 
+                console.log(`🔗 Link: ${link.Kind} from ${sourceProject || 'unknown'} to ${targetProject || 'unknown'}`);
+                
                 // Only create project relationships for cross-project dependencies
                 if (sourceProject && targetProject && sourceProject !== targetProject) {
                     crossProjectLinks++;
+                    console.log(`✅ Cross-project link found: ${sourceProject} -> ${targetProject} (${link.Kind})`);
                     const relationKey = `${sourceProject}-${targetProject}`;
                     
                     if (!projectRelationships.has(relationKey)) {
@@ -1236,6 +1272,9 @@
                 }
             });
             
+            console.log(`📊 Processed ${processedLinks} links, found ${crossProjectLinks} cross-project links`);
+            console.log(`📊 Found ${projectRelationships.size} unique project relationships`);
+            
             // Convert to link format with the most common relationship type
             const deducedLinks = [];
             projectRelationships.forEach((relationship, key) => {
@@ -1261,6 +1300,19 @@
                 });
             });
             
+            console.log(`📋 Project to nodes summary:`);
+            projectToNodes.forEach((nodes, projectId) => {
+                const project = data.nodes.find(n => n.Id === projectId);
+                console.log(`  📦 ${project?.Name}: ${nodes.size} nodes`);
+            });
+            
+            console.log(`✅ Generated ${deducedLinks.length} deduced project relationships:`);
+            deducedLinks.forEach(link => {
+                const sourceProj = data.nodes.find(n => n.Id === link.SourceId);
+                const targetProj = data.nodes.find(n => n.Id === link.TargetId);
+                console.log(`  📈 ${sourceProj?.Name} -> ${targetProj?.Name} (${link.Kind}, ${link.DeducedFromCount} underlying)`);
+            });
+            
             return deducedLinks;
         }
 
@@ -1279,9 +1331,12 @@
             // Check for deduced relationships in project-only mode
             let showDeducedRelations = false;
             const deducedCheckbox = document.getElementById('relation_Deduced_Project_Dependency');
+            console.log('🔍 Checking deduced relations checkbox:', deducedCheckbox);
+            console.log('🔍 Deduced checkbox checked state:', deducedCheckbox?.checked);
             if (deducedCheckbox && deducedCheckbox.checked) {
                 showDeducedRelations = true;
             }
+            console.log('🔍 Show deduced relations final:', showDeducedRelations);
 
             const kindFilter = document.getElementById('kindFilter').value;
             const projectOnlyView = document.getElementById('projectOnlyView').checked;
@@ -1305,12 +1360,23 @@
 
             // In project-only view, always deduce project-to-project relationships
             if (projectOnlyView) {
+                console.log('🎯 PROJECT-ONLY MODE: Deducing relationships...');
+                console.log('Show deduced relations:', showDeducedRelations);
+                
                 let deducedLinks = deduceProjectRelationships(originalData, enabledRelations);
                 
                 // If no relationships found, try with all relationship types
                 if (deducedLinks.length === 0) {
-                    const allRelationTypes = [...new Set(originalData.links.map(link => link.Kind))];
+                    console.log('⚠️ No deduced links with enabled relations, trying with ALL relation types...');
+                    const allRelationTypes = [...new Set(originalData.links.map(link => link.Kind).filter(kind => kind !== 'Contains'))];
+                    console.log('All relation types (excluding Contains):', allRelationTypes);
                     deducedLinks = deduceProjectRelationships(originalData, allRelationTypes);
+                }
+                
+                // If still no relationships, try with empty array (will include ALL links)
+                if (deducedLinks.length === 0) {
+                    console.log('⚠️ Still no deduced links, trying with NO filtering...');
+                    deducedLinks = deduceProjectRelationships(originalData, []);
                 }
                 
                 // Mark deduced links as such for special styling
@@ -1326,9 +1392,13 @@
                 }
                 
                 if (showDeducedRelations) {
+                    console.log('✅ Adding deduced links to filtered links');
+                    console.log('Original filtered links:', filteredLinks.length);
                     // Show both original project-to-project links AND deduced links
                     filteredLinks = [...filteredLinks, ...deducedLinks];
+                    console.log('New filtered links total:', filteredLinks.length);
                 } else {
+                    console.log('❌ Deduced relations checkbox NOT checked');
                     if (countElement) {
                         countElement.textContent = `(${deducedLinks.length} available, enable "Deduced Project Dependency")`;
                     }
@@ -1974,7 +2044,10 @@
                 })
                 .attr('stroke-width', d => {
                     if (d.Kind === 'Contains') return 2;
-                    if (d.isDeduced) return Math.max(1, Math.log(d.underlyingConnections + 1));
+                    if (d.isDeduced) {
+                        // Thicker strokes for deduced links to make them more visible
+                        return Math.max(3, Math.log(d.underlyingConnections + 1) + 2);
+                    }
                     if (d.Kind === 'Usage') return 1;
                     return 2;
                 })
@@ -1984,11 +2057,11 @@
                         return getComputedStyle(document.documentElement).getPropertyValue('--node-stroke').trim();
                     }
                     if (d.isDeduced) {
-                        // Brighter orange for deduced relationships in dark mode
+                        // More visible colors for deduced relationships
                         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                        return isDark ? '#ffb347' : '#ff6b35';
+                        return isDark ? '#ffb347' : '#e55100'; // Darker orange for light mode
                     }
-                    return relationTypes[d.Kind] || (document.documentElement.getAttribute('data-theme') === 'dark' ? '#adb5bd' : '#999');
+                    return relationTypes[d.Kind] || (document.documentElement.getAttribute('data-theme') === 'dark' ? '#adb5bd' : '#666');
                 })
                 .style('stroke-dasharray', d => {
                     if (d.Kind === 'Contains') return '5,5';
@@ -1997,7 +2070,12 @@
                 })
                 .style('opacity', d => {
                     if (d.Kind === 'Contains') return 0.5;
-                    if (d.isDeduced) return Math.min(0.9, 0.3 + (d.underlyingConnections * 0.1));
+                    if (d.isDeduced) {
+                        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                        // Higher opacity in light mode for better visibility
+                        const baseOpacity = isDark ? 0.8 : 0.9;
+                        return Math.min(0.95, baseOpacity + (d.underlyingConnections * 0.05));
+                    }
                     return 0.7;
                 })
                 .attr('marker-end', d => {
@@ -2235,7 +2313,12 @@
 
                 // Update convex hulls if they exist
                 if (document.getElementById('showConvexHulls').checked) {
-                    updateConvexHulls();
+                    updateConvexHulls('namespace');
+                }
+                
+                // Update project hulls if they exist
+                if (document.getElementById('showProjectHulls').checked) {
+                    updateConvexHulls('project');
                 }
             });
 
@@ -2246,7 +2329,12 @@
 
             // Add convex hulls
             if (document.getElementById('showConvexHulls').checked) {
-                addConvexHullsToForceLayout(g, data);
+                addConvexHullsToForceLayout(g, data, 'namespace');
+            }
+            
+            // Add project hulls
+            if (document.getElementById('showProjectHulls').checked) {
+                addConvexHullsToForceLayout(g, data, 'project');
             }
 
             function dragBehavior(simulation) {
@@ -2364,38 +2452,47 @@
                 });
         }
 
-        function addConvexHullsToForceLayout(g, data) {
+        function addConvexHullsToForceLayout(g, data, hullType = 'namespace') {
             if (!containmentHierarchy.containers) return;
             
-            const hullGroup = g.append('g').attr('class', 'convex-hulls');
+            const hullGroupClass = hullType === 'project' ? 'project-hulls' : 'convex-hulls';
+            let hullGroup = g.select(`.${hullGroupClass}`);
+            if (hullGroup.empty()) {
+                hullGroup = g.append('g').attr('class', hullGroupClass);
+            }
             
             // Group nodes by their container (namespace or project)
             const containerGroups = new Map();
             
             data.nodes.forEach(node => {
                 const containerInfo = containmentHierarchy.nodeToContainer.get(node.Id);
-                if (containerInfo) {
-                    const containerId = containerInfo.container.node.Id;
-                    if (!containerGroups.has(containerId)) {
-                        containerGroups.set(containerId, {
-                            container: containerInfo.container.node,
-                            nodes: []
-                        });
+                if (containerInfo && containerInfo.node) {
+                    const container = containerInfo.node;
+                    // Filter by hull type
+                    if ((hullType === 'namespace' && container.Kind === 'Namespace') || 
+                        (hullType === 'project' && container.Kind === 'Project')) {
+                        const containerId = container.Id;
+                        if (!containerGroups.has(containerId)) {
+                            containerGroups.set(containerId, {
+                                container: container,
+                                nodes: []
+                            });
+                        }
+                        containerGroups.get(containerId).nodes.push(node);
                     }
-                    containerGroups.get(containerId).nodes.push(node);
                 }
             });
             
             // Create hulls for containers with multiple nodes
             containerGroups.forEach((group, containerId) => {
                 if (group.nodes.length >= 3) { // Need at least 3 points for a meaningful hull
-                    createHullForGroup(hullGroup, group.container, group.nodes);
+                    createHullForGroup(hullGroup, group.container, group.nodes, hullType);
                 }
             });
         }
         
-        function createHullForGroup(parentGroup, container, nodes) {
-            const hullId = `hull-${container.Id}`;
+        function createHullForGroup(parentGroup, container, nodes, hullType = 'namespace') {
+            const hullId = `${hullType}-hull-${container.Id}`;
             
             // Create or update hull path
             let hull = parentGroup.select(`#${hullId}`);
@@ -2467,23 +2564,30 @@
             });
         }
         
-        function updateConvexHulls() {
-            if (!document.getElementById('showConvexHulls').checked) return;
+        function updateConvexHulls(hullType = 'namespace') {
+            const checkboxId = hullType === 'project' ? 'showProjectHulls' : 'showConvexHulls';
+            if (!document.getElementById(checkboxId).checked) return;
             
-            const hullGroup = svg.select('.convex-hulls');
+            const hullGroupClass = hullType === 'project' ? 'project-hulls' : 'convex-hulls';
+            const hullGroup = svg.select(`.${hullGroupClass}`);
             if (hullGroup.empty()) return;
             
             // Update all existing hulls
             hullGroup.selectAll('.convex-hull').each(function() {
                 const hull = d3.select(this);
                 const hullId = hull.attr('id');
-                const containerId = hullId.replace('hull-', '');
+                const containerId = hullId.replace(`${hullType}-hull-`, '');
                 
                 // Find nodes for this container
                 const containerNodes = svg.selectAll('.node').data()
                     .filter(node => {
                         const containerInfo = containmentHierarchy.nodeToContainer.get(node.Id);
-                        return containerInfo && containerInfo.container.node.Id === containerId;
+                        if (!containerInfo || !containerInfo.node) return false;
+                        
+                        const container = containerInfo.node;
+                        return container.Id === containerId && 
+                               ((hullType === 'namespace' && container.Kind === 'Namespace') ||
+                                (hullType === 'project' && container.Kind === 'Project'));
                     });
                 
                 if (containerNodes.length >= 3) {
@@ -2683,7 +2787,10 @@
             let infoHtml = `
                 <h4>${node.Name}</h4>
                 <div class="info-row"><span class="label">Type:</span> ${node.Kind}</div>
-                <div class="info-row"><span class="label">ID:</span> ${node.Id}</div>
+                <div class="info-row">
+                    <span class="label">ID:</span>
+                    <div class="id-value">${node.Id}</div>
+                </div>
             `;
             
             if (isProjectOnlyView && node.Kind === 'Project') {
@@ -2750,8 +2857,8 @@
             let top = y - canvasRect.top + 10;
             
             // Adjust position if it would go outside the canvas
-            if (left + 300 > canvasRect.width) {
-                left = x - canvasRect.left - 310;
+            if (left + 420 > canvasRect.width) {
+                left = x - canvasRect.left - 430;
             }
             if (top + infoRect.height > canvasRect.height) {
                 top = y - canvasRect.top - infoRect.height - 10;
@@ -2888,6 +2995,7 @@
         document.getElementById('showNamespaceLinks').addEventListener('change', applyFiltersAndRender);
         document.getElementById('animateNamespaceLinks').addEventListener('change', applyFiltersAndRender);
         document.getElementById('showConvexHulls').addEventListener('change', applyFiltersAndRender);
+        document.getElementById('showProjectHulls').addEventListener('change', applyFiltersAndRender);
         document.getElementById('projectOnlyView').addEventListener('change', function() {
             const isProjectOnly = this.checked;
             const indicator = document.getElementById('projectOnlyIndicator');
@@ -2947,13 +3055,22 @@
             
             // Auto-enable deduced project relationships when entering project-only mode
             if (isProjectOnly) {
+                console.log('🔄 PROJECT-ONLY: Auto-enabling deduced relationships...');
                 // Wait for buildRelationControls to finish creating the checkbox
                 setTimeout(() => {
                     const deducedCheckbox = document.getElementById('relation_Deduced_Project_Dependency');
+                    console.log('Deduced checkbox element:', deducedCheckbox);
+                    console.log('Deduced checkbox checked:', deducedCheckbox?.checked);
+                    
                     if (deducedCheckbox && !deducedCheckbox.checked) {
+                        console.log('✅ AUTO-ENABLING deduced relationships checkbox');
                         deducedCheckbox.checked = true;
                         applyFiltersAndRender();
                     } else if (!deducedCheckbox) {
+                        console.log('❌ Deduced checkbox not found, applying filters anyway');
+                        applyFiltersAndRender();
+                    } else {
+                        console.log('✅ Deduced checkbox already checked');
                         applyFiltersAndRender();
                     }
                 }, 10);
