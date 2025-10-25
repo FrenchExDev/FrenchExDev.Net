@@ -19,8 +19,8 @@ if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(keyPath) && File.Ex
     {
         serverOptions.ConfigureHttpsDefaults(httpsOptions =>
         {
-            httpsOptions.ServerCertificate = X509Certificate2.CreateFromPemFile(certPath, keyPath);
-            httpsOptions.ClientCertificateMode = ClientCertificateMode.NoCertificate;
+      httpsOptions.ServerCertificate = X509Certificate2.CreateFromPemFile(certPath, keyPath);
+httpsOptions.ClientCertificateMode = ClientCertificateMode.NoCertificate;
         });
     });
 }
@@ -28,6 +28,10 @@ if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(keyPath) && File.Ex
 builder.Services.AddRouting();
 builder.Services.AddSingleton<AgentState>();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
+// Add health checks
+builder.Services.AddHealthChecks()
+    .AddCheck("agent_ready", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("Agent is ready"));
 
 // Register analysis dependencies
 builder.Services.AddSingleton<IMsBuildRegisteringService, MsBuildRegisteringService>();
@@ -43,7 +47,10 @@ var wsConnections = new ConcurrentDictionary<string, List<WebSocket>>();
 
 app.UseCors();
 
-app.MapGet("/health", () => Results.Ok(new { status = "ok", role = "agent" }));
+// Map health check endpoints
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/alive");
+app.UseHealthChecks("/health");
 
 app.UseWebSockets();
 

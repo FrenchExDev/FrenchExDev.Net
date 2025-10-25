@@ -1,10 +1,18 @@
 ﻿using FrenchExDev.Net.CSharp.ProjectDependency3.AppHost;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 
 public class DevAppHost : IDevAppHost
 {
+    private readonly ILogger _logger;
+
+    public DevAppHost(ILogger logger)
+    {
+        _logger = logger;
+    }
+
     public bool IsRunningAsAdministrator()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -73,7 +81,7 @@ public class DevAppHost : IDevAppHost
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to restart with elevation: {ex.Message}");
+            _logger.LogError(ex, "Failed to restart with elevation: {Message}", ex.Message);
             return false;
         }
     }
@@ -82,20 +90,20 @@ public class DevAppHost : IDevAppHost
     {
         try
         {
-            Console.WriteLine("Checking mkcert installation...");
+            _logger.LogInformation("Checking mkcert installation...");
 
             // Check if mkcert is installed
             var mkcertCheck = ExecuteCommand("mkcert", "-help", out var output);
             if (!mkcertCheck)
             {
                 throw new InvalidOperationException(
-        "mkcert is not installed. Please install it:\n" +
-             "Windows: choco install mkcert\n" +
-         "macOS: brew install mkcert\n" +
-                    "Linux: See https://github.com/FiloSottile/mkcert#installation");
+                  "mkcert is not installed. Please install it:\n" +
+                     "Windows: choco install mkcert\n" +
+              "macOS: brew install mkcert\n" +
+                  "Linux: See https://github.com/FiloSottile/mkcert#installation");
             }
 
-            Console.WriteLine("Installing mkcert local CA...");
+            _logger.LogInformation("Installing mkcert local CA...");
             // Install local CA if not already installed
             ExecuteCommand("mkcert", "-install", out _);
 
@@ -108,7 +116,7 @@ public class DevAppHost : IDevAppHost
 
             if (!File.Exists(certFile) || !File.Exists(keyFile))
             {
-                Console.WriteLine("Generating SSL certificates...");
+                _logger.LogInformation("Generating SSL certificates...");
 
                 var hostsArg = string.Join(" ", config.GetAllHosts());
                 var command = $"-cert-file \"{certFile}\" -key-file \"{keyFile}\" {hostsArg}";
@@ -116,7 +124,7 @@ public class DevAppHost : IDevAppHost
                 var success = ExecuteCommand("mkcert", command, out var certOutput);
                 if (success)
                 {
-                    Console.WriteLine($"✓ Certificates generated: {certFile}");
+                    _logger.LogInformation("✓ Certificates generated: {CertFile}", certFile);
                 }
                 else
                 {
@@ -125,7 +133,7 @@ public class DevAppHost : IDevAppHost
             }
             else
             {
-                Console.WriteLine($"✓ Using existing certificates: {certFile}");
+                _logger.LogInformation("✓ Using existing certificates: {CertFile}", certFile);
             }
         }
         catch (Exception ex)
@@ -138,11 +146,11 @@ public class DevAppHost : IDevAppHost
     {
         try
         {
-            Console.WriteLine("Updating hosts file configuration...");
+            _logger.LogInformation("Updating hosts file configuration...");
 
             var hostsFilePath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-       ? @"C:\Windows\System32\drivers\etc\hosts"
-              : "/etc/hosts";
+                 ? @"C:\Windows\System32\drivers\etc\hosts"
+                        : "/etc/hosts";
 
             var entries = config.GetHostsFileEntries().ToList();
             var hostsContent = File.Exists(hostsFilePath) ? File.ReadAllText(hostsFilePath) : "";
@@ -163,7 +171,7 @@ public class DevAppHost : IDevAppHost
                     // On Windows with admin rights, update directly
                     if (IsRunningAsAdministrator())
                     {
-                        Console.WriteLine("Adding entries to hosts file...");
+                        _logger.LogInformation("Adding entries to hosts file...");
 
                         // Ensure there's a newline at the end of the file
                         var contentToAppend = hostsContent;
@@ -180,17 +188,17 @@ public class DevAppHost : IDevAppHost
                         }
 
                         File.WriteAllText(hostsFilePath, contentToAppend);
-                        Console.WriteLine("✓ Hosts file updated successfully.");
+                        _logger.LogInformation("✓ Hosts file updated successfully.");
                     }
                     else
                     {
-                        Console.WriteLine("⚠ Not running as Administrator. Cannot update hosts file.");
+                        _logger.LogWarning("⚠ Not running as Administrator. Cannot update hosts file.");
                     }
                 }
                 else
                 {
                     // Unix systems
-                    Console.WriteLine($"Adding entries to {hostsFilePath}...");
+                    _logger.LogInformation("Adding entries to {HostsFilePath}...", hostsFilePath);
 
                     try
                     {
@@ -205,40 +213,40 @@ public class DevAppHost : IDevAppHost
 
                         if (success)
                         {
-                            Console.WriteLine("✓ Hosts file updated successfully.");
+                            _logger.LogInformation("✓ Hosts file updated successfully.");
                         }
                         else
                         {
-                            Console.WriteLine($"⚠ Could not automatically update hosts file: {output}");
-                            Console.WriteLine("Please run: sudo nano /etc/hosts");
-                            Console.WriteLine("And add these entries:");
+                            _logger.LogWarning("⚠ Could not automatically update hosts file: {Output}", output);
+                            _logger.LogWarning("Please run: sudo nano /etc/hosts");
+                            _logger.LogWarning("And add these entries:");
                             foreach (var entry in missingEntries)
                             {
-                                Console.WriteLine($"  {entry}");
+                                _logger.LogWarning("  {Entry}", entry);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"⚠ Could not automatically update hosts file: {ex.Message}");
-                        Console.WriteLine("Please run: sudo nano /etc/hosts");
-                        Console.WriteLine("And add these entries:");
+                        _logger.LogWarning(ex, "⚠ Could not automatically update hosts file: {Message}", ex.Message);
+                        _logger.LogWarning("Please run: sudo nano /etc/hosts");
+                        _logger.LogWarning("And add these entries:");
                         foreach (var entry in missingEntries)
                         {
-                            Console.WriteLine($"  {entry}");
+                            _logger.LogWarning("  {Entry}", entry);
                         }
                     }
                 }
             }
             else
             {
-                Console.WriteLine("✓ All hosts file entries already exist.");
+                _logger.LogInformation("✓ All hosts file entries already exist.");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"⚠ Warning: Could not update hosts file: {ex.Message}");
-            Console.WriteLine("Please add the DNS entries manually to your hosts file.");
+            _logger.LogWarning(ex, "⚠ Warning: Could not update hosts file: {Message}", ex.Message);
+            _logger.LogWarning("Please add the DNS entries manually to your hosts file.");
         }
     }
 
@@ -305,14 +313,14 @@ public class DevAppHost : IDevAppHost
                 // Check if hosts file needs updating
                 if (NeedsHostsFileUpdate(dnsConfig))
                 {
-                    Console.WriteLine("⚠ Administrator privileges required to update hosts file.");
-                    Console.WriteLine("Restarting application with elevated privileges...\n");
+                    _logger.LogError("⚠ Administrator privileges required to update hosts file.");
+                    _logger.LogError("Restarting application with elevated privileges...\n");
 
                     if (!RestartAsAdministrator())
                     {
-                        Console.WriteLine("Failed to restart with administrator privileges.");
-                        Console.WriteLine("Please run the application as Administrator or manually update the hosts file.");
-                        Console.WriteLine("\nPress any key to exit...");
+                        _logger.LogError("Failed to restart with administrator privileges.");
+                        _logger.LogError("Please run the application as Administrator or manually update the hosts file.");
+                        _logger.LogError("\nPress any key to exit...");
                         Console.ReadKey();
                         return;
                     }

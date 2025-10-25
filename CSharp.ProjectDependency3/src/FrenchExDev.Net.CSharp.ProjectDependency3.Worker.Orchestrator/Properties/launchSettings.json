@@ -4,19 +4,7 @@
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "applicationUrl": "https://orchestrator.pd3i1.com:5080",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Orchestrator": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "applicationUrl": "https://orchestrator.pd3i1.com:5080",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      "launchBrowser": false
     }
   }
 }

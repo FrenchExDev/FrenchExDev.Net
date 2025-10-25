@@ -4,19 +4,7 @@
     "https": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
-      "applicationUrl": "https://worker-agent-1.pd3i1.com:5090",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Agent": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "applicationUrl": "https://worker-agent-1.pd3i1.com:5090",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      "launchBrowser": false
     }
   }
 }
