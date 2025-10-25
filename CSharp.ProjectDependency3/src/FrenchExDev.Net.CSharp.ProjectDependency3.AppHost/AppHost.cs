@@ -17,6 +17,7 @@ var orchestrator = builder.AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_
     .WithHttpsEndpoint(port: dnsConfig.Ports.Orchestrator, name: "https-custom")
     .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__Path", dnsConfig.CertPathOrDie())
     .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__KeyPath", dnsConfig.KeyPathOrDie())
+    .WithUrl(orchestratorUrl)
     ;
 
 logger.LogInformation($"Using Orchestrator URL: {orchestratorUrl}");
@@ -28,6 +29,7 @@ var viz = builder.AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Viz>("viz
     .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__KeyPath", dnsConfig.KeyPathOrDie())
     .WithEnvironment("OrchestratorUrl", orchestratorUrl)
     .WithReference(orchestrator)
+    .WithUrl(vizUrl)
     ;
 
 logger.LogInformation($"Using Viz URL: {vizUrl}");

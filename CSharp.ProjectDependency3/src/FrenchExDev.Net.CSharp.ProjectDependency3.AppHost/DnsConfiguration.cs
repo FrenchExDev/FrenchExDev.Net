@@ -14,7 +14,7 @@ public class DnsConfiguration
     public string WorkerHostPrefix { get; set; } = "worker-agent";
     public string DashboardHost { get; set; } = "dashboard";
     public PortConfiguration Ports { get; set; } = new();
-    public int WorkerCount { get; set; } = 2;
+    public int WorkerCount { get; set; } = 1;
     public bool EnableHttps { get; set; } = true;
     public string CertificatesDirectory { get; set; } = ".aspire-certs";
 
