@@ -15,6 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\FrenchExDev.Net.CSharp.ProjectDependency3.Viz.Api\FrenchExDev.Net.CSharp.ProjectDependency3.Viz.Api.csproj" />
 	  <ProjectReference Include="..\FrenchExDev.Net.CSharp.ProjectDependency3.Viz\FrenchExDev.Net.CSharp.ProjectDependency3.Viz.csproj" />
 	  <ProjectReference Include="..\FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Agent\FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Agent.csproj" />
 	  <ProjectReference Include="..\FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Orchestrator\FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Orchestrator.csproj" />

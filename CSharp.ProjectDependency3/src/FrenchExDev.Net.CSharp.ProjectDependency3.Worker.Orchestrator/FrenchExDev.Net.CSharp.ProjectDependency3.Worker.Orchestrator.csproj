@@ -7,4 +7,7 @@
  <ItemGroup>
  <PackageReference Include="Microsoft.Extensions.Http" />
  </ItemGroup>
+ <ItemGroup>
+   <ProjectReference Include="..\..\..\CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result\FrenchExDev.Net.CSharp.Object.Result.csproj" />
+ </ItemGroup>
 </Project>

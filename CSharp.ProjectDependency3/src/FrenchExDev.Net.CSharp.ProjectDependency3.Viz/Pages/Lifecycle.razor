@@ -1,0 +1,256 @@
+@page "/lifecycle"
+@using System.Net.WebSockets
+@using System.Text
+@using System.Text.Json
+@inject IJSRuntime JS
+@inject IConfiguration Configuration
+@implements IAsyncDisposable
+
+<PageTitle>Service Lifecycle</PageTitle>
+
+<h3>Service Lifecycle Monitor</h3>
+
+<div class="row">
+	<div class="col-md-6">
+		<h4>Orchestrators</h4>
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>URL</th>
+					<th>Status</th>
+					<th>Last Heartbeat</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var orch in orchestrators)
+				{
+					<tr>
+						<td><small>@orch.Id</small></td>
+						<td>@orch.Url</td>
+						<td><span class="badge bg-@GetStatusColor(orch.Status)">@orch.Status</span></td>
+						<td>@orch.LastHeartbeat.ToLocalTime().ToString("HH:mm:ss")</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	<div class="col-md-6">
+		<h4>Agents</h4>
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Orchestrator</th>
+					<th>URL</th>
+					<th>Status</th>
+					<th>Last Heartbeat</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var agent in agents)
+				{
+					<tr>
+						<td><small>@agent.Id</small></td>
+						<td><small>@agent.OrchestratorId</small></td>
+						<td>@agent.Url</td>
+						<td><span class="badge bg-@GetAgentStatusColor(agent.Status)">@agent.Status</span></td>
+						<td>@agent.LastHeartbeat.ToLocalTime().ToString("HH:mm:ss")</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="mt-3">
+	<h5>Connection Status: <span class="badge bg-@(isConnected ? "success" : "danger")">@(isConnected ? "Connected" : "Disconnected")</span></h5>
+	<small class="text-muted">Registry API: @registryApiUrl</small>
+</div>
+
+@code {
+	private List<OrchestratorInfo> orchestrators = new();
+	private List<AgentInfo> agents = new();
+	private ClientWebSocket? webSocket;
+	private bool isConnected = false;
+	private CancellationTokenSource? cts;
+	private string registryApiUrl = "";
+
+	protected override async Task OnInitializedAsync()
+	{
+		registryApiUrl = Configuration["RegistryApiUrl"] ?? "https://api.pd3i1.com:5060";
+		await ConnectWebSocketAsync();
+	}
+
+	private async Task ConnectWebSocketAsync()
+	{
+		try
+		{
+			var wsUrl = registryApiUrl.Replace("https://", "wss://").Replace("http://", "ws://") + "/ws";
+
+			webSocket = new ClientWebSocket();
+			cts = new CancellationTokenSource();
+
+			await webSocket.ConnectAsync(new Uri(wsUrl), cts.Token);
+			isConnected = true;
+			StateHasChanged();
+
+			_ = Task.Run(async () => await ReceiveLoopAsync());
+
+			// Initial data load
+			await LoadDataAsync();
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"WebSocket connection error: {ex.Message}");
+		}
+	}
+
+	private async Task ReceiveLoopAsync()
+	{
+		var buffer = new byte[1024 * 4];
+
+		try
+		{
+			while (webSocket?.State == WebSocketState.Open && cts is { IsCancellationRequested: false })
+			{
+				var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cts.Token);
+
+				if (result.MessageType == WebSocketMessageType.Text)
+				{
+					var json = Encoding.UTF8.GetString(buffer, 0, result.Count);
+					await HandleWebSocketMessageAsync(json);
+				}
+				else if (result.MessageType == WebSocketMessageType.Close)
+				{
+					break;
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"WebSocket receive error: {ex.Message}");
+		}
+		finally
+		{
+			isConnected = false;
+			await InvokeAsync(StateHasChanged);
+		}
+	}
+
+	private async Task HandleWebSocketMessageAsync(string json)
+	{
+		try
+		{
+			var message = JsonSerializer.Deserialize<WebSocketMessage>(json);
+			if (message == null) return;
+
+			switch (message.type)
+			{
+				case "orchestrator_registered":
+				case "orchestrator_status_changed":
+				case "orchestrator_unregistered":
+				case "agent_registered":
+				case "agent_status_changed":
+				case "agent_unregistered":
+					await LoadDataAsync();
+					break;
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error handling WebSocket message: {ex.Message}");
+		}
+	}
+
+	private async Task LoadDataAsync()
+	{
+		try
+		{
+			using var http = new HttpClient { BaseAddress = new Uri(registryApiUrl) };
+
+			var orchResponse = await http.GetAsync("/api/orchestrators");
+			if (orchResponse.IsSuccessStatusCode)
+			{
+				var json = await orchResponse.Content.ReadAsStringAsync();
+				orchestrators = JsonSerializer.Deserialize<List<OrchestratorInfo>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+			}
+
+			var agentResponse = await http.GetAsync("/api/agents");
+			if (agentResponse.IsSuccessStatusCode)
+			{
+				var json = await agentResponse.Content.ReadAsStringAsync();
+				agents = JsonSerializer.Deserialize<List<AgentInfo>>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
+			}
+
+			await InvokeAsync(StateHasChanged);
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Error loading data: {ex.Message}");
+		}
+	}
+
+	private string GetStatusColor(string status)
+	{
+		return status switch
+		{
+			"Running" => "success",
+			"Starting" => "info",
+			"Stopping" => "warning",
+			"Stopped" => "secondary",
+			"Failed" => "danger",
+			_ => "secondary"
+		};
+	}
+
+	private string GetAgentStatusColor(string status)
+	{
+		return status switch
+		{
+			"Idle" => "success",
+			"Busy" => "primary",
+			"Starting" => "info",
+			"Stopping" => "warning",
+			"Stopped" => "secondary",
+			"Failed" => "danger",
+			_ => "secondary"
+		};
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		cts?.Cancel();
+		if (webSocket != null)
+		{
+			await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Component disposed", CancellationToken.None);
+			webSocket.Dispose();
+		}
+		cts?.Dispose();
+	}
+
+	private class WebSocketMessage
+	{
+		public string type { get; set; } = "";
+		public JsonElement data { get; set; }
+	}
+
+	private class OrchestratorInfo
+	{
+		public string Id { get; set; } = "";
+		public string Url { get; set; } = "";
+		public DateTime RegisteredAt { get; set; }
+		public DateTime LastHeartbeat { get; set; }
+		public string Status { get; set; } = "";
+	}
+
+	private class AgentInfo
+	{
+		public string Id { get; set; } = "";
+		public string OrchestratorId { get; set; } = "";
+		public string Url { get; set; } = "";
+		public DateTime RegisteredAt { get; set; }
+		public DateTime LastHeartbeat { get; set; }
+		public string Status { get; set; } = "";
+	}
+}

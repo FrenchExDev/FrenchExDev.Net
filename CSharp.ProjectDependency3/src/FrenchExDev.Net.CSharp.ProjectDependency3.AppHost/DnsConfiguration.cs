@@ -1,58 +1,106 @@
+using System.Text.Json;
+
 namespace FrenchExDev.Net.CSharp.ProjectDependency3.AppHost;
 
-public class DnsConfiguration
+public record DnsConfiguration
 {
-    public string VizHost { get; set; }
-    public string CertPath { get; set; }
-    public string KeyPath { get; set; }
-
+    public string? VizHost { get; init; }
+    public string? CertPath { get; set; }
+    public string? KeyPath { get; set; }
     public string CertPathOrDie() => CertPath ?? throw new InvalidOperationException("Certificates not initialized. Call EnsureSetup first.");
     public string KeyPathOrDie() => KeyPath ?? throw new InvalidOperationException("Certificates not initialized. Call EnsureSetup first.");
     public string VizHostOrDie() => VizHost ?? throw new InvalidOperationException("VizPath is not initialized.");
-    public string Suffix { get; set; } = "pd3i1.com";
-    public string OrchestratorHost { get; set; } = "orchestrator";
-    public string WorkerHostPrefix { get; set; } = "worker-agent";
-    public string DashboardHost { get; set; } = "dashboard";
-    public PortConfiguration Ports { get; set; } = new();
-    public int WorkerCount { get; set; } = 1;
-    public bool EnableHttps { get; set; } = true;
-    public string CertificatesDirectory { get; set; } = ".aspire-certs";
+public string Domain { get; init; } = "pd3i1.com";
+ public string OrchestratorHost { get; init; } = "orchestrator";
+    public string WorkerHostTemplate { get; init; } = "worker-agent";
+    public string DashboardHost { get; init; } = "dashboard";
+    public string ApiHost { get; init; } = "api";
+    public PortConfiguration Ports { get; init; } = new();
+    public int WorkerCount { get; init; } = 1;
+    public bool EnableHttps { get; init; } = true;
+    public string CertificatesDirectory { get; init; } = ".aspire-certs";
 
-    public string GetOrchestratorFqdn() => $"{OrchestratorHost}.{Suffix}";
-    public string GetWorkerFqdn(int index) => $"{WorkerHostPrefix}-{index}.{Suffix}";
-    public string GetDashboardFqdn() => $"{DashboardHost}.{Suffix}";
-    public string GetVizFqdn() => $"{VizHost}.{Suffix}";
+  public string GetOrchestratorFqdn() => $"{OrchestratorHost}.{Domain}";
+    public string GetWorkerFqdn(int index) => $"{WorkerHostTemplate}-{index}.{Domain}";
+    public string GetDashboardFqdn() => $"{DashboardHost}.{Domain}";
+    public string GetVizFqdn() => $"{VizHost}.{Domain}";
+    public string GetApiHostFqdn() => $"{ApiHost}.{Domain}";
 
     public string GetOrchestratorUrl() => $"{(EnableHttps ? "https" : "http")}://{GetOrchestratorFqdn()}:{Ports.Orchestrator}";
-    public string GetWorkerUrl(int index) => $"{(EnableHttps ? "https" : "http")}://{GetWorkerFqdn(index)}:{Ports.WorkerBase + index - 1}";
+public string GetWorkerUrl(int index) => $"{(EnableHttps ? "https" : "http")}://{GetWorkerFqdn(index)}:{Ports.WorkerBase + index - 1}";
     public string GetDashboardUrl() => $"{(EnableHttps ? "https" : "http")}://{GetDashboardFqdn()}:{Ports.Dashboard}";
     public string GetVizUrl() => $"{(EnableHttps ? "https" : "http")}://{GetVizFqdn()}:{Ports.Viz}";
+    public string GetApiHostUrl() => $"{(EnableHttps ? "https" : "http")}://{GetApiHostFqdn()}:{Ports.Api}";
 
     public IEnumerable<string> GetAllHosts()
-    {
-        yield return GetVizFqdn();
-        yield return GetOrchestratorFqdn();
+{
+      yield return GetVizFqdn();
+   yield return GetOrchestratorFqdn();
         yield return GetDashboardFqdn();
+        yield return GetApiHostFqdn();
         for (int i = 1; i <= WorkerCount; i++)
         {
-            yield return GetWorkerFqdn(i);
+ yield return GetWorkerFqdn(i);
         }
     }
 
     public IEnumerable<string> GetHostsFileEntries()
     {
-        foreach (var host in GetAllHosts())
-        {
-            yield return $"127.0.0.1 {host}";
+     foreach (var host in GetAllHosts())
+   {
+ yield return $"127.0.0.1 {host}";
         }
     }
 
+    /// <summary>
+    /// Calculates a hash of the DNS configuration to detect changes.
+    /// Uses the record's built-in GetHashCode for consistent structural equality.
+    /// Excludes CertPath and KeyPath as they are mutable and not part of configuration identity.
+    /// </summary>
+    public string CalculateConfigurationHash()
+    {
+        // Create a copy with nulled certificate paths for consistent hashing
+        var configForHashing = this with { CertPath = null, KeyPath = null };
+        
+        // Use the record's built-in GetHashCode which considers all init properties
+        var hashCode = configForHashing.GetHashCode();
+        
+  // Convert to hex string for readability and storage
+     return hashCode.ToString("X8");
+    }
+
+    /// <summary>
+    /// Serializes the configuration to JSON
+/// </summary>
+    public string ToJson()
+    {
+  return JsonSerializer.Serialize(this, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+    }
+
+    /// <summary>
+    /// Deserializes a configuration from JSON
+    /// </summary>
+    public static DnsConfiguration? FromJson(string json)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<DnsConfiguration>(json);
+        }
+        catch
+     {
+   return null;
+    }
+    }
 }
 
-public class PortConfiguration
+public record PortConfiguration
 {
-    public int Viz { get; set; } = 5070;
-    public int Orchestrator { get; set; } = 5080;
-    public int WorkerBase { get; set; } = 5090;
-    public int Dashboard { get; set; } = 18888;
+    public int Api { get; init; } = 5060;
+    public int Viz { get; init; } = 5070;
+    public int Orchestrator { get; init; } = 5080;
+    public int WorkerBase { get; init; } = 5090;
+    public int Dashboard { get; init; } = 18888;
 }

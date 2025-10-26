@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text;
 using FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Orchestrator;
+using FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Orchestrator.Services;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -38,6 +39,9 @@ builder.Services.AddHealthChecks()
     });
 
 builder.Services.AddHttpClient();
+
+// Register auto-registration service
+builder.Services.AddHostedService<OrchestratorRegistrationService>();
 
 var app = builder.Build();
 

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 public static class DevAppHostExtensions
 {
-    public static IDistributedApplicationBuilder EnsureSetup(this IDistributedApplicationBuilder builder, DnsConfiguration dnsConfiguration, ILogger logger)
+    public static IDistributedApplicationBuilder EnsureSetup(this IDistributedApplicationBuilder builder, DnsConfiguration dnsConfiguration, ILogger logger, bool forceCertificateRegeneration = false)
     {
         if (builder.Services.Any(s => s.ServiceType == typeof(DevAppHost)))
         {
@@ -13,7 +13,7 @@ public static class DevAppHostExtensions
 
         var da = new DevAppHost(logger);
         builder.Services.AddSingleton<IDevAppHost>(da);
-        da.EnsureSetup(dnsConfiguration);
+        da.EnsureSetup(dnsConfiguration, forceCertificateRegeneration);
         return builder;
     }
 }
