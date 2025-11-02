@@ -118,38 +118,12 @@ public class OrchestratorRegistrationService : BackgroundService, IRegistrationS
                 return Result<string>.Failure(b => b.Add("Configuration", "RegistryApiUrl is missing"));
             }
 
-            // Retrieve orchestrator URL from API
-            string? orchestratorUrl;
-            try
+            // Retrieve orchestrator URL from configuration
+            var orchestratorUrl = _configuration["OrchestratorUrl"];
+            if (string.IsNullOrEmpty(orchestratorUrl))
             {
-                var orchestratorResponse = await _httpClient.GetAsync($"{apiUrl}/api/orchestrators/url");
-                
-                if (!orchestratorResponse.IsSuccessStatusCode)
-                {
-                    _logger.LogError("Failed to retrieve orchestrator URL: {StatusCode}", orchestratorResponse.StatusCode);
-                    return Result<string>.Failure(b => b.Add("OrchestratorUrl", $"Failed to retrieve URL: {orchestratorResponse.StatusCode}"));
-                }
-
-                var urlJson = await orchestratorResponse.Content.ReadAsStringAsync();
-                var urlData = JsonSerializer.Deserialize<OrchestratorUrlResponse>(urlJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                
-                orchestratorUrl = urlData?.Url;
-                
-                if (string.IsNullOrEmpty(orchestratorUrl))
-                {
-                    _logger.LogError("Orchestrator URL not found in API response");
-                    return Result<string>.Failure(b => b.Add("OrchestratorUrl", "URL is missing in API response"));
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.LogWarning(ex, "Network error retrieving orchestrator URL");
-                return Result<string>.Failure(b => b.Add("Network", ex));
-            }
-            catch (TaskCanceledException ex)
-            {
-                _logger.LogWarning(ex, "Request timed out while retrieving orchestrator URL");
-                return Result<string>.Failure(b => b.Add("Timeout", ex));
+                _logger.LogError("OrchestratorUrl not configured in appsettings");
+                return Result<string>.Failure(b => b.Add("Configuration", "OrchestratorUrl is missing"));
             }
 
             var request = new { Url = orchestratorUrl };
@@ -184,7 +158,7 @@ public class OrchestratorRegistrationService : BackgroundService, IRegistrationS
                 }
 
                 _registrationId = Result<string>.Success(result.Id);
-                _logger.LogInformation("Orchestrator registered with ID: {Id}", result.Id);
+                _logger.LogInformation("Orchestrator registered with ID: {Id} and URL: {Url}", result.Id, orchestratorUrl);
                 return _registrationId;
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -375,11 +349,6 @@ public class OrchestratorRegistrationService : BackgroundService, IRegistrationS
     private class RegistrationResponse
     {
         public string? Id { get; set; }
-    }
-
-    private class OrchestratorUrlResponse
-    {
-        public string? Url { get; set; }
     }
 
     public override void Dispose()

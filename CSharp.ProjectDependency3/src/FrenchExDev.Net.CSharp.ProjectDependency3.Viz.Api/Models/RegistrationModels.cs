@@ -9,7 +9,7 @@ public record OrchestratorRegistration(
 
 public enum OrchestratorStatus
 {
-  Starting,
+    Starting,
     Running,
     Stopping,
     Stopped,
@@ -27,11 +27,11 @@ public record AgentRegistration(
 public enum AgentStatus
 {
     Starting,
-  Idle,
-  Busy,
+    Idle,
+    Busy,
     Stopping,
     Stopped,
- Failed
+    Failed
 }
 
 public record RegisterOrchestratorRequest(string Url);

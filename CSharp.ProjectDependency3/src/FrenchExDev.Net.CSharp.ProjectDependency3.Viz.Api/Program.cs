@@ -17,13 +17,14 @@ if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(keyPath) && File.Ex
     {
         serverOptions.ConfigureHttpsDefaults(httpsOptions =>
         {
-            httpsOptions.ServerCertificate = X509Certificate2.CreateFromPemFile(certPath, keyPath);
-            httpsOptions.ClientCertificateMode = ClientCertificateMode.NoCertificate;
-        });
+        httpsOptions.ServerCertificate = X509Certificate2.CreateFromPemFile(certPath, keyPath);
+        httpsOptions.ClientCertificateMode = ClientCertificateMode.NoCertificate;
+  });
     });
 }
 
 // Add services to the container
+builder.Services.AddControllersWithViews();
 builder.Services.AddOpenApi();
 
 // Add registry services and WebSocket manager
@@ -36,10 +37,10 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-  policy.AllowAnyOrigin()
-      .AllowAnyMethod()
- .AllowAnyHeader();
-  });
+        policy.AllowAnyOrigin()
+     .AllowAnyMethod()
+      .AllowAnyHeader();
+    });
 });
 
 var app = builder.Build();
@@ -54,6 +55,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors();
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
 app.UseWebSockets();
 
 // Wire up registry events to WebSocket broadcasts
@@ -65,7 +68,7 @@ if (orchestratorRegistry != null)
 {
     orchestratorRegistry.OrchestratorRegistered += async (_, reg) => await wsManager.BroadcastAsync(new { type = "orchestrator_registered", data = reg });
     orchestratorRegistry.OrchestratorUnregistered += async (_, reg) => await wsManager.BroadcastAsync(new { type = "orchestrator_unregistered", data = reg });
- orchestratorRegistry.OrchestratorStatusChanged += async (_, reg) => await wsManager.BroadcastAsync(new { type = "orchestrator_status_changed", data = reg });
+    orchestratorRegistry.OrchestratorStatusChanged += async (_, reg) => await wsManager.BroadcastAsync(new { type = "orchestrator_status_changed", data = reg });
 }
 
 if (agentRegistry != null)
@@ -74,6 +77,11 @@ if (agentRegistry != null)
     agentRegistry.AgentUnregistered += async (_, reg) => await wsManager.BroadcastAsync(new { type = "agent_unregistered", data = reg });
     agentRegistry.AgentStatusChanged += async (_, reg) => await wsManager.BroadcastAsync(new { type = "agent_status_changed", data = reg });
 }
+
+// Map MVC routes
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // Orchestrator API endpoints
 app.MapGet("/api/orchestrators", (IOrchestratorRegistry registry) => Results.Ok(registry.GetAll()))
@@ -159,12 +167,12 @@ app.MapGet("/ws", async (HttpContext context, RegistryWebSocketManager wsManager
 {
     if (context.WebSockets.IsWebSocketRequest)
     {
-   var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
         await wsManager.HandleWebSocketAsync(webSocket);
     }
     else
     {
-        context.Response.StatusCode = 400;
+     context.Response.StatusCode = 400;
     }
 })
 .WithName("WebSocketEndpoint")

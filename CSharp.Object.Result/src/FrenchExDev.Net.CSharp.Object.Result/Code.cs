@@ -296,3 +296,69 @@ public class FailureDictionaryBuilder
         return new FailureDictionary(_internal);
     }
 }
+
+/// <summary>
+/// Provides extension methods for converting values and objects to standardized result types.
+/// </summary>
+/// <remarks>These extension methods simplify the creation of success and failure result objects, enabling a more
+/// fluent and expressive approach to handling operation outcomes. The methods are designed to work with generic and
+/// non-generic result types, and can be used to encapsulate both successful and failed states along with relevant
+/// data.</remarks>
+public static class Extensions
+{
+    /// <summary>
+    /// Creates a successful result containing the specified value.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to include in the result.</typeparam>
+    /// <param name="value">The value to wrap in a successful result.</param>
+    /// <returns>A Result<T> instance representing a successful operation with the specified value.</returns>
+    public static Result<T> ToSuccess<T>(this T value)
+    {
+        return Result<T>.Success(value);
+    }
+
+    /// <summary>
+    /// Converts a Boolean value to a corresponding Result instance representing success or failure.
+    /// </summary>
+    /// <param name="isSuccess">A value indicating whether the operation was successful. If <see langword="true"/>, a successful result is
+    /// returned; otherwise, a failure result is returned.</param>
+    /// <returns>A Result instance representing success if <paramref name="isSuccess"/> is <see langword="true"/>; otherwise, a
+    /// Result representing failure.</returns>
+    public static Result ToResult(this bool isSuccess)
+    {
+        return isSuccess ? Result.Success() : Result.Failure();
+    }
+
+    /// <summary>
+    /// Creates a failed result for the specified subject, associating it with the provided failure value.
+    /// </summary>
+    /// <remarks>The returned result will include both the failure value and the subject in its failure
+    /// details. Use this method to conveniently create a failure result when you have an object and a corresponding
+    /// failure reason.</remarks>
+    /// <typeparam name="T">The type of the subject for which the failure result is created.</typeparam>
+    /// <param name="subject">The subject instance to associate with the failure. Cannot be null.</param>
+    /// <param name="value">The value describing the failure to associate with the result.</param>
+    /// <returns>A failed result containing the subject and the specified failure value.</returns>
+    public static Result<T> ToFailure<T>(this T subject, object value)
+    {
+        ArgumentNullException.ThrowIfNull(subject);
+
+        var failures = new FailureDictionary();
+        failures.Add("Failure", value);
+        failures.Add("Subject", subject);
+        return Result<T>.Failure(failures);
+    }
+
+    /// <summary>
+    /// Creates a failed result of type <typeparamref name="T"/> that represents the specified exception.
+    /// </summary>
+    /// <remarks>This extension method allows exceptions to be easily converted into failed result objects,
+    /// enabling consistent error handling in result-based workflows.</remarks>
+    /// <typeparam name="T">The type of the value that would be held by a successful result.</typeparam>
+    /// <param name="ex">The exception to associate with the failed result. Cannot be null.</param>
+    /// <returns>A <see cref="Result{T}"/> representing a failure with the specified exception.</returns>
+    public static Result<T> ToFailure<T>(this Exception ex)
+    {
+        return Result<T>.Exception(ex);
+    }
+}
