@@ -54,7 +54,7 @@ public class DevAppHost : IDevAppHost
 
             var hostsContent = File.ReadAllText(hostsFilePath);
 
-            foreach (var entry in config.Domains)
+            foreach (var entry in config.Subdomains)
             {
                 if (!hostsContent.Contains(entry.Value.Domain))
                 {
@@ -124,7 +124,7 @@ public class DevAppHost : IDevAppHost
         }
     }
 
-    public DnsConfiguration? LoadSavedConfiguration(DnsConfiguration config)
+    public Result<DnsConfiguration> LoadSavedConfiguration(DnsConfiguration config)
     {
         try
         {
@@ -132,13 +132,13 @@ public class DevAppHost : IDevAppHost
             if (!File.Exists(configPath))
             {
                 _logger.LogInformation("No saved configuration found at {ConfigPath}", configPath);
-                return null;
+                return Result<DnsConfiguration>.Failure(b => b.Add("Configuration", "Not found."));
             }
 
             var json = File.ReadAllText(configPath);
             var savedConfig = DnsConfiguration.FromJson(json);
 
-            if (savedConfig != null)
+            if (savedConfig.IsSuccess)
             {
                 _logger.LogInformation("✓ Loaded saved configuration from {ConfigPath}", configPath);
             }
@@ -148,7 +148,7 @@ public class DevAppHost : IDevAppHost
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to load saved configuration");
-            return null;
+            return Result<DnsConfiguration>.Exception(ex);
         }
     }
 
@@ -156,13 +156,13 @@ public class DevAppHost : IDevAppHost
     {
         var savedConfig = LoadSavedConfiguration(config);
 
-        if (savedConfig == null)
+        if (savedConfig.IsFailure)
         {
             _logger.LogInformation("No saved configuration - certificates will be generated");
             return true;
         }
 
-        if (savedConfig != config)
+        if (savedConfig.ObjectOrThrow() != config)
         {
             _logger.LogWarning("Configuration has changed - certificates need regeneration");
             return true;
@@ -223,7 +223,7 @@ public class DevAppHost : IDevAppHost
         if (File.Exists(certFile)) File.Delete(certFile);
         if (File.Exists(keyFile)) File.Delete(keyFile);
 
-        var hostsArg = string.Join(" ", config.Domains.Select(x => x.Value.Domain));
+        var hostsArg = string.Join(" ", config.Subdomains.Select(x => x.Value.Domain + "." + config.Domain));
         var command = $"-cert-file \"{certFile}\" -key-file \"{keyFile}\" {hostsArg}";
 
         var success = ExecuteCommand("mkcert", command, out var certOutput);
@@ -338,7 +338,7 @@ public class DevAppHost : IDevAppHost
                ? @"C:\Windows\System32\drivers\etc\hosts"
                   : "/etc/hosts";
 
-            var entries = config.Domains.Select(x => x.Value.Domain).ToList();
+            var entries = config.Subdomains.Select(x => x.Value.Domain + "." + config.Domain).ToList();
             var hostsContent = File.Exists(hostsFilePath) ? File.ReadAllText(hostsFilePath) : "";
             var missingEntries = new List<string>();
 

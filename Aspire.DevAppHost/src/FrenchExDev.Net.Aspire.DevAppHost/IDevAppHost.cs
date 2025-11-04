@@ -1,4 +1,6 @@
-﻿namespace FrenchExDev.Net.Aspire.DevAppHost;
+﻿using FrenchExDev.Net.CSharp.Object.Result;
+
+namespace FrenchExDev.Net.Aspire.DevAppHost;
 
 /// <summary>
 /// Defines methods for managing development application host setup, certificate management, DNS configuration, and
@@ -97,7 +99,7 @@ public interface IDevAppHost
     /// <param name="config">The DNS configuration parameters to use when searching for a saved configuration. Cannot be null.</param>
     /// <returns>A <see cref="DnsConfiguration"/> object representing the saved configuration if found; otherwise, <see
     /// langword="null"/>.</returns>
-    DnsConfiguration? LoadSavedConfiguration(DnsConfiguration config);
+    Result<DnsConfiguration> LoadSavedConfiguration(DnsConfiguration config);
 
     /// <summary>
     /// Updates the system hosts file using the specified DNS configuration.

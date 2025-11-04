@@ -1,5 +1,6 @@
 using FrenchExDev.Net.Aspire.DevAppHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Projects;
 
@@ -20,7 +21,6 @@ var logger = LoggerFactory.Create(c =>
     });
 }).CreateLogger("apphost");
 
-builder.EnsureSetup(logger);
 
 var apps = new Dictionary<string, IResourceBuilder<ProjectResource>>();
 
@@ -29,7 +29,7 @@ var dnsConfig = builder.Configuration.GetSection("DnsConfiguration").Get<DnsConf
 var workers = 0;
 var orchestrators = 0;
 
-foreach (var dnsRecord in dnsConfig.Domains)
+foreach (var dnsRecord in dnsConfig.Subdomains)
 {
     logger.LogInformation($"DNS Record: {dnsRecord.Key} -> {dnsRecord.Value.Domain}:{dnsRecord.Value.Port}");
     switch (dnsRecord.Key)
@@ -41,8 +41,6 @@ foreach (var dnsRecord in dnsConfig.Domains)
                 var instance = $"orchestrator-{orchestrators++}";
                 apps[instance] = builder
                     .AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Worker_Orchestrator>(instance)
-                    .WithDevSetup(dns, dnsRecord.Value.Port, dnsConfig)
-                    .WithEnvironment("ApiUrl", dnsConfig.GetDomain("api").ObjectOrThrow())
                     .WithReference(apps["api"])
                 ;
             }
@@ -51,7 +49,6 @@ foreach (var dnsRecord in dnsConfig.Domains)
             {
                 apps["viz"] = builder
                     .AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Viz>("viz")
-                    .WithDevSetup(dnsConfig.GetDomain("viz").ObjectOrThrow(), dnsRecord.Value.Port, dnsConfig)
                     .WithEnvironment("ApiUrl", dnsConfig.GetDomain("api").ObjectOrThrow())
                     .WithReference(apps["api"])
                 ;
@@ -61,7 +58,6 @@ foreach (var dnsRecord in dnsConfig.Domains)
             {
                 apps["api"] = builder
                    .AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Viz_Api>("api")
-                   .WithDevSetup("api", dnsConfig)
                    .WithReference(apps["orchestrator"])
                    ;
             }
@@ -71,7 +67,6 @@ foreach (var dnsRecord in dnsConfig.Domains)
                 var dns = dnsConfig.GetDomain(dnsRecord.Value.Domain).ObjectOrThrow();
                 var instance = $"worker-{workers++}";
                 var project = builder.AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Worker_Agent>(instance)
-                    .WithDevSetup(dns, dnsRecord.Value.Port, dnsConfig)
                     .WithEnvironment("ApiUrl", dnsConfig.GetDomain("api").ObjectOrThrow())
                     .WithReference(apps["api"])
                     ;

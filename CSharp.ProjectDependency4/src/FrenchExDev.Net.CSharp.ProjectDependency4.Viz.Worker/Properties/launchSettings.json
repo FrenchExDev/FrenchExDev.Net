@@ -1,10 +1,7 @@
 {
   "profiles": {
-    "FrenchExDev.Net.CSharp.ProjectDependency4.Viz.Worker": {
+    "https": {
       "commandName": "Project",
-      "environmentVariables": {
-        "DOTNET_ENVIRONMENT": "Development"
-      },
       "dotnetRunMessages": true
     },
     "Container (Dockerfile)": {

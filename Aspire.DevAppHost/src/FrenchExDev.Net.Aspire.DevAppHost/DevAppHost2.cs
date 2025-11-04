@@ -87,7 +87,7 @@ public record AppConfiguration2
     /// <summary>
     /// Gets the value assigned to the Zeroes property.
     /// </summary>
-    public required string Zeroes { get; init; }
+    public required int Zeroes { get; init; }
 }
 
 /// <summary>
@@ -213,15 +213,32 @@ public record DnsConfiguration2
     public string KeyPathOrDie() => KeyPath ?? throw new InvalidOperationException("Certificates not initialized. Call EnsureSetup first.");
 
     /// <summary>
-    /// Retrieves the fully qualified domain name associated with the specified name.
+    /// Generates a fully qualified domain URL for the specified subdomain name, optionally formatting with an index and
+    /// protocol.
     /// </summary>
-    /// <param name="name">The key used to look up the domain. Cannot be null.</param>
-    /// <returns>A result containing the fully qualified domain name if the specified name exists; otherwise, a failure result.</returns>
-    public Result<string> GetDomain(string name)
+    /// <remarks>If the subdomain is defined as a template and an index is provided, the method replaces the
+    /// template placeholder with the formatted index. If the subdomain does not exist or is invalid, the result
+    /// indicates failure.</remarks>
+    /// <param name="name">The key identifying the subdomain entry to resolve.</param>
+    /// <param name="i">An optional index value used to replace template placeholders in the subdomain, if applicable. If not provided,
+    /// the template is not expanded.</param>
+    /// <param name="zeroes">The minimum number of digits to use when formatting the index value. Defaults to 2.</param>
+    /// <param name="protocol">The protocol to use in the generated URL, such as "https" or "http". Defaults to "https".</param>
+    /// <returns>A <see cref="Result{String}"/> containing the constructed domain URL if the subdomain exists; otherwise, a
+    /// failure result.</returns>
+    public Result<string> GetDomain(string name, int? i = null, int zeroes = 2, string? protocol = "https")
     {
         var exist = Subdomains.TryGetValue(name, out var dns);
-        if (!exist || dns is null) return Result<string>.Failure();
-        return (dns.Domain + "." + Domain).ToSuccess();
+
+        if (!exist || dns is null)
+            return Result<string>.Failure();
+
+        if (dns.IsTemplate() && i.HasValue && dns.DomainTemplate is not null)
+        {
+            return ($"{protocol}://" + dns.DomainTemplateOrDie().Replace("$i", i.Value.ToString("D" + zeroes)) + "." + Domain).ToSuccess();
+        }
+
+        return $"{protocol}://" + dns.Domain is not null ? (dns.Domain + "." + Domain).ToSuccess() : string.Empty.ToFailure("No domain.");
     }
 
     /// <summary>
@@ -229,17 +246,7 @@ public record DnsConfiguration2
     /// </summary>
     /// <param name="json">A JSON-formatted string that represents a DnsConfiguration object. Cannot be null.</param>
     /// <returns>A DnsConfiguration instance deserialized from the specified JSON string, or null if the JSON is null or invalid.</returns>
-    public static Result<DnsConfiguration2> FromJson(string json)
-    {
-        try
-        {
-            return Result<DnsConfiguration2>.Success(JsonSerializer.Deserialize<DnsConfiguration2>(json) ?? throw new InvalidDataException());
-        }
-        catch (Exception ex)
-        {
-            return ex.ToFailure<DnsConfiguration2>();
-        }
-    }
+    public static Result<DnsConfiguration2> FromJson(string json) => Result<DnsConfiguration2>.TryCatch(() => JsonSerializer.Deserialize<DnsConfiguration2>(json) ?? throw new InvalidDataException("Cannot deserialize from json. Please check its structure"));
 
     /// <summary>
     /// Converts the current object to its JSON string representation.
@@ -248,17 +255,7 @@ public record DnsConfiguration2
     /// depending on the object's structure and the default serialization options. If the object contains circular
     /// references or unsupported types, serialization may fail.</remarks>
     /// <returns>A JSON-formatted string that represents the current object.</returns>
-    public Result<string> ToJson()
-    {
-        try
-        {
-            return JsonSerializer.Serialize(this).ToSuccess();
-        }
-        catch (Exception ex)
-        {
-            return ex.ToFailure<string>();
-        }
-    }
+    public Result<string> ToJson() => Result<string>.TryCatch(() => JsonSerializer.Serialize(this));
 
     /// <summary>
     /// Retrieves the port number associated with the specified DNS record name.
@@ -269,9 +266,22 @@ public record DnsConfiguration2
     {
         var exist = Subdomains.TryGetValue(name, out var dns);
 
-        if (!exist || dns is null || !dns.Port.HasValue) return Result<int>.Failure();
+        if (!exist || dns is null) return Result<int>.Failure();
 
-        return dns.Port.Value.ToSuccess();
+        if (dns.IsTemplate() && dns.PortRangeStart is not null) return dns.PortRangeStart.Value.ToSuccess();
+        else if (dns.Port.HasValue) return dns.Port.Value.ToSuccess();
+        else return 0.ToFailure("No port defined.");
+    }
+
+    public bool IsEqual(DnsConfiguration2 other)
+    {
+        var firstLevel = other.CertificatesDirectory == this.CertificatesDirectory && other.CertPath == this.CertPath && other.Domain == this.Domain;
+
+        var secondLevel = false;
+        foreach (var otherDns in other.Subdomains)
+            secondLevel &= this.Subdomains.Any(x => x.Key == otherDns.Key && x.Value.Ipv4 == otherDns.Value.Ipv4 && x.Value.Domain == otherDns.Value.Domain);
+
+        return firstLevel && secondLevel;
     }
 }
 
@@ -283,17 +293,28 @@ public record DnsConfiguration2
 /// of a standard development application host by introducing additional setup requirements.</remarks>
 public interface IDevAppHost2
 {
-    void EnsureSetup2();
+    /// <summary>
+    /// Ensures that the DNS configuration is set up and returns the result of the operation.
+    /// </summary>
+    /// <returns>A <see cref="Result{DnsConfiguration2}"/> that contains the DNS configuration if setup is successful, or an
+    /// error result if the setup fails.</returns>
+    Result<DnsConfiguration2> EnsureSetup2();
 }
 
 public class DevAppHost2Builder
 {
     protected ILogger? _logger;
     protected bool _ensureDevSetup2;
+    protected Dictionary<string, Func<IDistributedApplicationBuilder, string, AppsConfiguration2, DnsConfiguration2, int, int, IResourceBuilder<ProjectResource>>> _builders = new();
 
-    public static IDistributedApplicationBuilder Defaults(params string[] args)
+    public DevAppHost2Builder WithBuilder(string name, Func<IDistributedApplicationBuilder, string, AppsConfiguration2, DnsConfiguration2, int, int, IResourceBuilder<ProjectResource>> actor)
     {
-        return new DevAppHost2Builder().WithDefaultLogger().EnsureDevSetup2().CreateBuilder(args);
+        _builders[name] = actor;
+        return this;
+    }
+    public static DevAppHost2Builder Defaults(params string[] args)
+    {
+        return new DevAppHost2Builder().WithDefaultLogger().EnsureDevSetup2();
     }
 
     public IDistributedApplicationBuilder CreateBuilder(params string[] args)
@@ -303,6 +324,25 @@ public class DevAppHost2Builder
         if (_ensureDevSetup2 && _logger is not null)
         {
             builder.EnsureDevSetup2(_logger);
+        }
+
+        var apps = builder.Configuration.GetSection("AppsConfiguration").Get<AppsConfiguration2>();
+        var dns = builder.Configuration.GetSection("DnsConfiguration").Get<DnsConfiguration2>();
+
+        ArgumentNullException.ThrowIfNull(apps);
+        ArgumentNullException.ThrowIfNull(dns);
+
+        foreach (var app in apps.Apps)
+        {
+            if (app.Key.ToLowerInvariant() == "devdash") continue;
+
+            var port = dns.GetPortOfDns(app.Key).ObjectOrThrow();
+
+            for (var i = 1; i < app.Value.Instances + 1; i++)
+            {
+                var dnsConfigForApp = dns.GetDomain(app.Key, i, app.Value.Zeroes);
+                var appProvider = _builders[app.Key](builder, app.Value.Domain, apps, dns, i, port++);
+            }
         }
 
         return builder;
@@ -342,6 +382,11 @@ public class DevAppHost2 : IDevAppHost2
     private IDistributedApplicationBuilder _builder;
 
     /// <summary>
+    /// Gets the logger instance used for recording diagnostic and operational messages.
+    /// </summary>
+    public ILogger Logger => _logger;
+
+    /// <summary>
     /// Initializes a new instance of the DevAppHost2 class with the specified distributed application builder and
     /// logger.
     /// </summary>
@@ -354,6 +399,34 @@ public class DevAppHost2 : IDevAppHost2
     }
 
     /// <summary>
+    /// Creates a new instance of the DevAppHost2 class using the specified distributed application builder and a
+    /// default logger.
+    /// </summary>
+    /// <param name="builder">The distributed application builder used to configure and construct the application host. Cannot be null.</param>
+    /// <returns>A new DevAppHost2 instance configured with the provided builder and a default logger.</returns>
+    public static DevAppHost2 Default(IDistributedApplicationBuilder builder) => new DevAppHost2(builder, DefaultLogger());
+
+    /// <summary>
+    /// Creates a default console logger with debug-level logging and customizable name and timestamp format.
+    /// </summary>
+    /// <remarks>The returned logger is configured with a minimum log level of Debug and includes scopes in
+    /// its output. The logger uses a single-line console format for log entries.</remarks>
+    /// <param name="name">The name for the logger instance. If null, "apphost" is used as the default name.</param>
+    /// <param name="timestampFormat">The format string for timestamps in log messages. If null, the default format "HH:mm:ss:FFF " is used.</param>
+    /// <returns>An <see cref="ILogger"/> instance configured to log to the console with the specified name and timestamp format.</returns>
+    public static ILogger DefaultLogger(string? name = "apphost", string? timestampFormat = "HH:mm:ss:FFF ") => LoggerFactory.Create(c =>
+    {
+        c.SetMinimumLevel(LogLevel.Debug);
+        c.AddConsole();
+        c.AddSimpleConsole(options =>
+        {
+            options.SingleLine = true;
+            options.IncludeScopes = true;
+            options.TimestampFormat = timestampFormat ?? "HH:mm:ss:FFF ";
+        });
+    }).CreateLogger(name ?? "apphost");
+
+    /// <summary>
     /// Ensures that the application is properly configured and running with the required administrator or root
     /// privileges. Registers necessary services and validates configuration sections for application and DNS settings.
     /// </summary>
@@ -363,14 +436,14 @@ public class DevAppHost2 : IDevAppHost2
     /// changes. If the hosts file requires updates based on the DNS configuration, the method attempts to update it and
     /// logs a warning.</remarks>
     /// <exception cref="InvalidOperationException">Thrown if the application is not running with administrator or root privileges.</exception>
-    public void EnsureSetup2()
+    public Result<DnsConfiguration2> EnsureSetup2()
     {
         _builder.Services.AddSingleton<IDevAppHost2>(this);
 
         if (!IsRunningAsAdministrator().ObjectOrThrow())
         {
             _logger.LogError("The application is not running with administrator/root privileges. Please restart Visual Studio with Administrative rights.");
-            throw new InvalidOperationException("The application is not running with administrator/root privileges. Please restart Visual Studio with Administrative rights.");
+            return Result<DnsConfiguration2>.Failure(b => b.Add("User.Rights", "The application is not running with administrator/root privileges. Please restart Visual Studio with Administrative rights."));
         }
 
         var appsConfigurationSection = _builder.Configuration.GetSection("AppsConfiguration").Get<AppsConfiguration2>();
@@ -379,7 +452,37 @@ public class DevAppHost2 : IDevAppHost2
         ArgumentNullException.ThrowIfNull(appsConfigurationSection, "AppsConfiguration section is missing in configuration.");
         ArgumentNullException.ThrowIfNull(dnsConfigurationSection, "DnsConfiguration section is missing in configuration.");
 
-        UpdateHostsFileIfNeeded(dnsConfigurationSection, appsConfigurationSection);
+        var hasUpdatedHostsSuccessfully = true;
+        var hasGeneratedCertificatesSuccessfully = true;
+
+        if (UpdateHostsFileIfNeeded(dnsConfigurationSection, appsConfigurationSection).IsFailure)
+        {
+            _logger.LogError("Failed to update hosts file. Please ensure the hosts file contains the necessary entries for development domains.");
+            hasUpdatedHostsSuccessfully = false;
+        }
+
+        if (EnsureMkcertSetup(dnsConfigurationSection, appsConfigurationSection).IsFailure)
+        {
+            _logger.LogError("Failed to generate certificates.");
+            hasGeneratedCertificatesSuccessfully = false;
+        }
+
+        if (!hasUpdatedHostsSuccessfully || !hasGeneratedCertificatesSuccessfully)
+        {
+            return Result<DnsConfiguration2>
+                .Failure(b => b
+                    .Add("Setup", "Failed to complete setup tasks.")
+                    .Add("Certificates", hasGeneratedCertificatesSuccessfully)
+                    .Add("EtcHosts", hasUpdatedHostsSuccessfully));
+        }
+
+        dnsConfigurationSection.CertPath = GetCertificatePath(dnsConfigurationSection);
+        dnsConfigurationSection.KeyPath = GetKeyPath(dnsConfigurationSection);
+
+        _builder.Configuration.GetSection("DnsConfiguration")["CertPath"] = dnsConfigurationSection.CertPath;
+        _builder.Configuration.GetSection("DnsConfiguration")["KeyPath"] = dnsConfigurationSection.KeyPath;
+
+        return dnsConfigurationSection.ToSuccess();
     }
 
     /// <summary>
@@ -391,15 +494,17 @@ public class DevAppHost2 : IDevAppHost2
     /// required to modify the hosts file.</remarks>
     /// <param name="dnsConfiguration">The DNS configuration containing domain and address mappings to be validated against the hosts file.</param>
     /// <param name="appsConfiguration">The application configuration specifying which applications and domains should be mapped in the hosts file.</param>
-    protected void UpdateHostsFileIfNeeded(DnsConfiguration2 dnsConfiguration, AppsConfiguration2 appsConfiguration)
+    protected Result UpdateHostsFileIfNeeded(DnsConfiguration2 dnsConfiguration, AppsConfiguration2 appsConfiguration)
     {
         var neededDnsLinesForApps = GetAllDnses(dnsConfiguration, appsConfiguration);
 
-        if (NeedsHostsFileUpdate(neededDnsLinesForApps).ObjectOrThrow())
+        if (!NeedsHostsFileUpdate(neededDnsLinesForApps).ObjectOrThrow())
         {
-            _logger.LogWarning("The hosts file may need to be updated to map development domains. Please ensure the necessary entries are present.");
-            UpdateHostsFile(neededDnsLinesForApps);
+            return Result.Success();
         }
+
+        _logger.LogDebug("The hosts file needs to be updated to map development domains. Fixing entries.");
+        return UpdateHostsFile(neededDnsLinesForApps);
     }
 
     /// <summary>
@@ -481,13 +586,13 @@ public class DevAppHost2 : IDevAppHost2
 
             foreach (var subdomain in neededDnsLinesForApps)
             {
-                if (file.Entries.FirstOrDefault(x => subdomain.Domain.All(y => y.Equals(x.CanonicalHostname, StringComparison.InvariantCultureIgnoreCase))) == null)
+                if (!file.Entries.Any(x => subdomain.Domain.All(y => y.Equals(x.CanonicalHostname, StringComparison.InvariantCultureIgnoreCase))))
                 {
-                    return true.ToSuccess();
+                    return false.ToSuccess();
                 }
             }
 
-            return false.ToSuccess();
+            return true.ToSuccess();
         }
         catch (Exception ex)
         {
@@ -583,7 +688,7 @@ public class DevAppHost2 : IDevAppHost2
             return true;
         }
 
-        if (savedConfig.ObjectOrThrow() != config)
+        if (savedConfig.ObjectOrThrow().IsEqual(config))
         {
             _logger.LogWarning("Configuration has changed - certificates need regeneration");
             return true;
@@ -601,13 +706,13 @@ public class DevAppHost2 : IDevAppHost2
     /// needed, and manages SSL certificates for the configured domain and subdomains. Existing certificates are reused
     /// unless regeneration is required due to configuration changes or the <paramref name="force"/> parameter being set
     /// to <see langword="true"/>.</remarks>
-    /// <param name="config">The DNS configuration specifying the domain, subdomains, and certificate directory for which SSL certificates
+    /// <param name="dnsConfig">The DNS configuration specifying the domain, subdomains, and certificate directory for which SSL certificates
     /// should be managed.</param>
     /// <param name="force">If set to <see langword="true"/>, forces regeneration of SSL certificates even if valid certificates already
     /// exist. If <see langword="false"/> or <see langword="null"/>, certificates are only generated if missing or if
     /// the configuration has changed.</param>
     /// <exception cref="InvalidOperationException">Thrown if mkcert is not installed on the system, or if certificate generation fails.</exception>
-    protected void EnsureMkcertSetup(DnsConfiguration2 config, bool? force = false)
+    protected Result EnsureMkcertSetup(DnsConfiguration2 dnsConfig, AppsConfiguration2 apps, bool? force = false)
     {
         _logger.LogInformation("Checking mkcert installation...");
 
@@ -628,18 +733,18 @@ public class DevAppHost2 : IDevAppHost2
         ExecuteCommand("mkcert", "-install", out _);
 
         // Generate certificates for all hosts
-        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
-        Directory.CreateDirectory(certsDir);
+        var certFile = GetCertificatePath(dnsConfig);
+        var keyFile = GetKeyPath(dnsConfig);
 
-        var certFile = Path.Combine(certsDir, $"{config.Domain}.pem");
-        var keyFile = Path.Combine(certsDir, $"{config.Domain}-key.pem");
+        Directory.CreateDirectory(Path.GetDirectoryName(certFile) ?? throw new InvalidOperationException());
+        Directory.CreateDirectory(Path.GetDirectoryName(keyFile) ?? throw new InvalidOperationException());
 
-        bool shouldRegenerate = force ?? false || !File.Exists(certFile) || !File.Exists(keyFile) || NeedsCertificateRegeneration(config);
+        bool shouldRegenerate = !File.Exists(certFile) || !File.Exists(keyFile) || NeedsCertificateRegeneration(dnsConfig) || (force ?? false);
 
         if (!shouldRegenerate)
         {
             _logger.LogInformation("✓ Using existing certificates: {CertFile}", certFile);
-            return;
+            return Result.Success();
         }
 
         if (force ?? false)
@@ -658,19 +763,31 @@ public class DevAppHost2 : IDevAppHost2
         if (File.Exists(certFile)) File.Delete(certFile);
         if (File.Exists(keyFile)) File.Delete(keyFile);
 
-        var hostsArg = string.Join(" ", config.Subdomains.Select(x => x.Value.Domain + "." + config.Domain));
-        var command = $"-cert-file \"{certFile}\" -key-file \"{keyFile}\" {hostsArg}";
+        var domains = new List<string>();
+        foreach (var app in apps.Apps)
+        {
+            for (var i = 1; i < app.Value.Instances + 1; i++)
+            {
+                var dnsConfigForApp = dnsConfig.GetDomain(app.Key, i, app.Value.Zeroes);
+                domains.Add(dnsConfigForApp.ObjectOrThrow());
+            }
+        }
 
+        var hostsArg = string.Join(" ", domains);
+        var command = $"-cert-file \"{certFile}\" -key-file \"{keyFile}\" {hostsArg}";
+        _logger.LogDebug("Generating mkcert command: {command}", command);
         var success = ExecuteCommand("mkcert", command, out var certOutput);
 
         if (success.IsFailure)
         {
-            throw new InvalidOperationException($"Failed to generate certificates: {certOutput}");
+            return Result.Failure();
         }
 
         _logger.LogInformation("✓ Certificates generated: {CertFile}", certFile);
 
-        SaveConfiguration(config);
+        SaveConfiguration(dnsConfig);
+
+        return Result.Success();
     }
 
     /// <summary>
@@ -762,12 +879,12 @@ public class DevAppHost2 : IDevAppHost2
     /// <param name="entries">A list of host file entry strings to ensure are present in the system hosts file. Each entry should be formatted
     /// as a valid hosts file line (e.g., IP address followed by hostname).</param>
     /// <exception cref="InvalidOperationException">Thrown if the hosts file cannot be updated due to an unexpected error.</exception>
-    protected void UpdateHostsFile(List<EtcHostFileEntry> entries)
+    protected Result UpdateHostsFile(List<EtcHostFileEntry> entries)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsRunningAsAdministrator().ObjectOrThrow())
         {
             _logger.LogError("⚠ Not running as Administrator. Cannot update hosts file.");
-            return;
+            return Result.Failure();
         }
 
         try
@@ -776,19 +893,34 @@ public class DevAppHost2 : IDevAppHost2
 
             var hostsFile = hosts.net.Hosts.OpenHostsFile();
 
+            var hostnames = hostsFile.Entries.Where(x => x.IsValid && x.Type == hosts.net.Parsing.EntryType.Host);
+
             foreach (var entry in entries)
             {
-                hostsFile.AddBlankEntry().SetHost(IPAddress.Parse(entry.Ipv4), entry.Domain.First());
+                var asIpv4 = IPAddress.Parse(entry.Ipv4);
+
+                foreach (var entryDomain in entry.Domain)
+                {
+                    if (hostnames.Any(x => x.Address.Address == asIpv4.Address && x.CanonicalHostname == entryDomain))
+                    {
+                        _logger.LogDebug("Hosts file already contains entry for {Domain} -> {IpAddress}", entryDomain, entry.Ipv4);
+                        continue;
+                    }
+                    _logger.LogDebug("Adding for {Domain} -> {IpAddress}", entryDomain, entry.Ipv4);
+                    hostsFile.AddBlankEntry().SetHost(asIpv4, entryDomain);
+                }
             }
 
             hostsFile.Write();
+
+            return Result.Success();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "⚠ Warning: Could not update hosts file: {Message}", ex.Message);
             _logger.LogError("Please add the DNS entries manually to your hosts file.");
 
-            throw new InvalidOperationException("Cannot update hosts file.");
+            return Result.Failure(ex);
         }
     }
 }

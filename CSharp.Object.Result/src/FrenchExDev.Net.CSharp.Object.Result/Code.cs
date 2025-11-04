@@ -33,10 +33,18 @@ public readonly struct Result : IResult
     /// </summary>
     /// <param name="isSuccess">A value indicating whether the result represents a successful outcome. Specify <see langword="true"/> for
     /// success; otherwise, <see langword="false"/>.</param>
-    private Result(bool isSuccess)
+    private Result(bool isSuccess, Exception? exception)
     {
         IsSuccess = isSuccess;
+        Exception = exception;
     }
+
+    /// <summary>
+    /// Gets the exception that caused the current operation to fail, if any.
+    /// </summary>
+    /// <remarks>Use this property to retrieve detailed information about the error that occurred during the
+    /// operation. If the operation completed successfully, this property returns null.</remarks>
+    public Exception? Exception { get; }
 
     /// <summary>
     /// Gets a value indicating whether the operation completed successfully.
@@ -52,13 +60,20 @@ public readonly struct Result : IResult
     /// Creates a new <see cref="Result"/> instance representing a successful operation.
     /// </summary>
     /// <returns>A <see cref="Result"/> indicating success.</returns>
-    public static Result Success() => new(true);
+    public static Result Success() => new(true, null);
 
     /// <summary>
     /// Creates a new <see cref="Result"/> instance representing a failed operation.
     /// </summary>
     /// <returns>A <see cref="Result"/> indicating failure.</returns>
-    public static Result Failure() => new(false);
+    public static Result Failure() => new(false, null);
+
+    /// <summary>
+    /// Creates a failed result that encapsulates the specified exception.
+    /// </summary>
+    /// <param name="ex">The exception that describes the reason for the failure. Cannot be null.</param>
+    /// <returns>A <see cref="Result"/> instance representing a failure, containing the provided exception.</returns>
+    public static Result Failure(Exception ex) => new(false, ex);
 }
 
 /// <summary>
@@ -68,7 +83,7 @@ public readonly struct Result : IResult
 /// operations. The IsSuccess property indicates whether the result contains a valid object. Access the contained object
 /// using Object, ObjectOrNull(), or ObjectOrThrow().</remarks>
 /// <typeparam name="T">The type of the object contained in the result.</typeparam>
-public readonly struct Result<T> : IResult
+public readonly struct Result<T> : IResult where T : notnull
 {
     /// <summary>
     /// Stores the result object on success.
@@ -196,15 +211,48 @@ public readonly struct Result<T> : IResult
     /// <param name="result">When this method returns, contains the result value if the operation was successful; otherwise, the default
     /// value for type <typeparamref name="T"/>.</param>
     /// <returns>true if the operation was successful and the result was retrieved; otherwise, false.</returns>
-    public bool TryGetSuccess(out T? result)
+    public bool TryGetSuccess(out T result)
     {
         if (_object is not null)
         {
             result = _object;
             return true;
         }
-        result = default;
+        result = default(T);
         return false;
+    }
+
+    /// <summary>
+    /// Executes the specified action and returns a successful result if no exception of type TException is thrown;
+    /// otherwise, returns a failure result containing the exception.
+    /// </summary>
+    /// <remarks>Use this method to simplify error handling by converting exceptions of a specific type into
+    /// failure results, enabling fluent result-based programming patterns. Exceptions not of type TException are not
+    /// caught and will propagate.</remarks>
+    /// <typeparam name="TResult">The type of the value returned by the action. Must be non-null.</typeparam>
+    /// <typeparam name="TException">The type of exception to catch and convert to a failure result. Must be a non-null exception type.</typeparam>
+    /// <param name="action">A function that produces the result to be returned. This delegate is executed within a try-catch block.</param>
+    /// <returns>A Result<TResult> representing either a successful outcome with the returned value, or a failure containing the
+    /// caught exception of type TException.</returns>
+    public static Result<TResult> TryCatch<TResult, TException>(Func<TResult> action) where TResult : notnull where TException : notnull, Exception
+    {
+        try { return action().ToSuccess(); } catch (TException ex) { return ex.ToFailure<TResult>(); }
+    }
+
+    /// <summary>
+    /// Executes the specified function and returns a result that indicates success or failure, capturing any exception
+    /// that occurs during execution.
+    /// </summary>
+    /// <remarks>Use this method to simplify error handling by encapsulating exceptions as failure results,
+    /// rather than allowing them to propagate. This is useful for functional programming patterns or when chaining
+    /// operations that may fail.</remarks>
+    /// <typeparam name="TResult">The type of the value returned by the function. This type must not be null.</typeparam>
+    /// <param name="action">The function to execute. This delegate should return a value of type TResult when called.</param>
+    /// <returns>A Result<TResult> that contains the value returned by the function if execution is successful; otherwise, a
+    /// failure result containing the captured exception.</returns>
+    public static Result<TResult> TryCatch<TResult>(Func<TResult> action) where TResult : notnull
+    {
+        try { return action().ToSuccess(); } catch (Exception ex) { return ex.ToFailure<TResult>(); }
     }
 }
 
@@ -312,7 +360,7 @@ public static class Extensions
     /// <typeparam name="T">The type of the value to include in the result.</typeparam>
     /// <param name="value">The value to wrap in a successful result.</param>
     /// <returns>A Result<T> instance representing a successful operation with the specified value.</returns>
-    public static Result<T> ToSuccess<T>(this T value)
+    public static Result<T> ToSuccess<T>(this T value) where T : notnull
     {
         return Result<T>.Success(value);
     }
@@ -339,7 +387,7 @@ public static class Extensions
     /// <param name="subject">The subject instance to associate with the failure. Cannot be null.</param>
     /// <param name="value">The value describing the failure to associate with the result.</param>
     /// <returns>A failed result containing the subject and the specified failure value.</returns>
-    public static Result<T> ToFailure<T>(this T subject, object value)
+    public static Result<T> ToFailure<T>(this T subject, object value) where T : notnull
     {
         ArgumentNullException.ThrowIfNull(subject);
 
@@ -357,7 +405,7 @@ public static class Extensions
     /// <typeparam name="T">The type of the value that would be held by a successful result.</typeparam>
     /// <param name="ex">The exception to associate with the failed result. Cannot be null.</param>
     /// <returns>A <see cref="Result{T}"/> representing a failure with the specified exception.</returns>
-    public static Result<T> ToFailure<T>(this Exception ex)
+    public static Result<T> ToFailure<T>(this Exception ex) where T : notnull
     {
         return Result<T>.Exception(ex);
     }
