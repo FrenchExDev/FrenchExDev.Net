@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text.Json;
 
@@ -461,9 +463,9 @@ public class DevAppHost2 : IDevAppHost2
             hasUpdatedHostsSuccessfully = false;
         }
 
-        if (EnsureMkcertSetup(dnsConfigurationSection, appsConfigurationSection).IsFailure)
+        if (EnsureSelfSignedCertificateSetup(dnsConfigurationSection, appsConfigurationSection, true).IsFailure)
         {
-            _logger.LogError("Failed to generate certificates.");
+            _logger.LogError("Failed to generate self-signed certificates.");
             hasGeneratedCertificatesSuccessfully = false;
         }
 
@@ -922,6 +924,390 @@ public class DevAppHost2 : IDevAppHost2
 
             return Result.Failure(ex);
         }
+    }
+
+    /// <summary>
+    /// Ensures that self-signed SSL certificates are generated using C# X509 cryptography and installed in the local 
+    /// certificate store for browser acceptance.
+    /// </summary>
+    /// <remarks>This method creates a Certificate Authority (CA) certificate and domain-specific certificates 
+    /// signed by that CA. The CA certificate is installed in the Trusted Root Certification Authorities store so that 
+    /// browsers will trust certificates signed by it. Domain certificates are installed in the Personal (My) store. 
+    /// This method is an alternative to using mkcert and provides the same functionality using native .NET APIs.</remarks>
+    /// <param name="dnsConfig">The DNS configuration specifying the domain, subdomains, and certificate directory for which SSL certificates 
+    /// should be managed.</param>
+    /// <param name="apps">The application configuration specifying which applications and domains require certificates.</param>
+    /// <param name="force">If set to <see langword="true"/>, forces regeneration of SSL certificates even if valid certificates already 
+    /// exist. If <see langword="false"/> or <see langword="null"/>, certificates are only generated if missing or if 
+    /// the configuration has changed.</param>
+    /// <returns>A <see cref="Result"/> indicating success or failure of the certificate generation and installation process.</returns>
+    protected Result EnsureSelfSignedCertificateSetup(DnsConfiguration2 dnsConfig, AppsConfiguration2 apps, bool? force = false)
+    {
+        _logger.LogInformation("Checking self-signed certificate setup...");
+
+        var certFile = GetCertificatePath(dnsConfig);
+        var keyFile = GetKeyPath(dnsConfig);
+        var caFile = GetCaCertificatePath(dnsConfig);
+        var caKeyFile = GetCaKeyPath(dnsConfig);
+
+        Directory.CreateDirectory(Path.GetDirectoryName(certFile) ?? throw new InvalidOperationException());
+        Directory.CreateDirectory(Path.GetDirectoryName(keyFile) ?? throw new InvalidOperationException());
+
+        bool shouldRegenerate = !File.Exists(certFile)
+            || !File.Exists(keyFile)
+            || !File.Exists(caFile)
+            || !File.Exists(caKeyFile)
+            || NeedsCertificateRegeneration(dnsConfig)
+            || (force ?? false);
+
+        if (!shouldRegenerate)
+        {
+            _logger.LogInformation("✓ Using existing self-signed certificates: {CertFile}", certFile);
+            return Result.Success();
+        }
+
+        if (force ?? false)
+        {
+            _logger.LogInformation("Force regeneration of self-signed SSL certificates...");
+        }
+        else if (!File.Exists(certFile) || !File.Exists(keyFile))
+        {
+            _logger.LogInformation("Generating self-signed SSL certificates...");
+        }
+        else
+        {
+            _logger.LogInformation("Configuration changed - regenerating self-signed SSL certificates...");
+        }
+
+        try
+        {
+            // Clean up existing files
+            if (File.Exists(certFile)) File.Delete(certFile);
+            if (File.Exists(keyFile)) File.Delete(keyFile);
+            if (File.Exists(caFile)) File.Delete(caFile);
+            if (File.Exists(caKeyFile)) File.Delete(caKeyFile);
+
+            // Step 1: Create or load CA certificate
+            X509Certificate2 caCertificate;
+            if (!TryLoadCaFromStore(dnsConfig, out caCertificate))
+            {
+                _logger.LogInformation("Creating new Certificate Authority...");
+                caCertificate = CreateCaCertificate(dnsConfig);
+
+                // Save CA certificate and key to files
+                SaveCertificateToPemFiles(caCertificate, caFile, caKeyFile);
+
+                // Install CA certificate to Trusted Root store
+                InstallCaToTrustedRoot(caCertificate);
+
+                _logger.LogInformation("✓ Certificate Authority created and installed");
+            }
+            else
+            {
+                _logger.LogInformation("✓ Using existing Certificate Authority from store");
+            }
+
+            // Step 2: Get all domains for which we need certificates
+            var domains = new List<string>();
+            foreach (var app in apps.Apps)
+            {
+                for (var i = 1; i < app.Value.Instances + 1; i++)
+                {
+                    var dnsConfigForApp = dnsConfig.GetDomain(app.Key, i, app.Value.Zeroes, "https");
+                    if (dnsConfigForApp.IsSuccess)
+                    {
+                        // Remove protocol prefix if present
+                        var domain = dnsConfigForApp.ObjectOrThrow().Replace("https://", "").Replace("http://", "");
+                        domains.Add(domain);
+                    }
+                }
+            }
+
+            // Add localhost and 127.0.0.1 for local development
+            if (!domains.Contains("localhost")) domains.Add("localhost");
+            if (!domains.Contains("127.0.0.1")) domains.Add("127.0.0.1");
+
+            _logger.LogInformation("Generating certificate for domains: {Domains}", string.Join(", ", domains));
+
+            // Step 3: Create domain certificate signed by CA
+            var domainCertificate = CreateDomainCertificate(dnsConfig, domains, caCertificate);
+
+            // Save domain certificate and key to files
+            SaveCertificateToPemFiles(domainCertificate, certFile, keyFile);
+
+            // Install domain certificate to Personal store
+            InstallCertificateToPersonalStore(domainCertificate);
+
+            _logger.LogInformation("✓ Self-signed certificates generated and installed: {CertFile}", certFile);
+
+            SaveConfiguration(dnsConfig);
+
+            // Cleanup: Dispose certificates
+            caCertificate.Dispose();
+            domainCertificate.Dispose();
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate self-signed certificates");
+            return Result.Failure(ex);
+        }
+    }
+
+    /// <summary>
+    /// Attempts to load the Certificate Authority certificate from the Trusted Root certificate store.
+    /// </summary>
+    /// <param name="dnsConfig">The DNS configuration used to identify the CA certificate.</param>
+    /// <param name="caCertificate">When this method returns, contains the CA certificate if found; otherwise, null.</param>
+    /// <returns>true if the CA certificate was found and loaded; otherwise, false.</returns>
+    protected bool TryLoadCaFromStore(DnsConfiguration2 dnsConfig, out X509Certificate2 caCertificate)
+    {
+        caCertificate = null!;
+
+        try
+        {
+            var caSubjectName = $"CN=DevAppHost2 Local CA ({dnsConfig.Domain})";
+
+            using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+            store.Open(OpenFlags.ReadOnly);
+
+            var certificates = store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, caSubjectName, false);
+
+            if (certificates.Count > 0)
+            {
+                caCertificate = certificates[0];
+                _logger.LogDebug("Found existing CA certificate: {Subject}", caCertificate.Subject);
+                return true;
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not load CA from store");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Creates a new Certificate Authority certificate that can be used to sign domain certificates.
+    /// </summary>
+    /// <param name="dnsConfig">The DNS configuration containing the domain information.</param>
+    /// <returns>A new CA certificate with private key.</returns>
+    protected X509Certificate2 CreateCaCertificate(DnsConfiguration2 dnsConfig)
+    {
+        using var rsa = RSA.Create(4096);
+
+        var request = new CertificateRequest(
+            $"CN=DevAppHost2 Local CA ({dnsConfig.Domain})",
+            rsa,
+         HashAlgorithmName.SHA256,
+            RSASignaturePadding.Pkcs1);
+
+        // Add basic constraints for CA
+        request.CertificateExtensions.Add(
+  new X509BasicConstraintsExtension(
+         certificateAuthority: true,
+    hasPathLengthConstraint: true,
+      pathLengthConstraint: 0,
+    critical: true));
+
+        // Add key usage
+        request.CertificateExtensions.Add(
+ new X509KeyUsageExtension(
+     X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign | X509KeyUsageFlags.DigitalSignature,
+      critical: true));
+
+        // Add subject key identifier
+        request.CertificateExtensions.Add(
+         new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+
+        // Create self-signed CA certificate
+        var certificate = request.CreateSelfSigned(
+      DateTimeOffset.UtcNow.AddDays(-1),
+            DateTimeOffset.UtcNow.AddYears(10));
+
+        return certificate;
+    }
+
+    /// <summary>
+    /// Creates a domain certificate signed by the specified CA certificate.
+    /// </summary>
+    /// <param name="dnsConfig">The DNS configuration containing certificate directory information.</param>
+    /// <param name="domains">The list of domain names (including SANs) to include in the certificate.</param>
+    /// <param name="caCertificate">The CA certificate used to sign the domain certificate.</param>
+    /// <returns>A new domain certificate with private key, signed by the CA.</returns>
+    protected X509Certificate2 CreateDomainCertificate(DnsConfiguration2 dnsConfig, List<string> domains, X509Certificate2 caCertificate)
+    {
+        using var rsa = RSA.Create(2048);
+
+        var request = new CertificateRequest(
+                $"CN={domains[0]}",
+                   rsa,
+            HashAlgorithmName.SHA256,
+           RSASignaturePadding.Pkcs1);
+
+        // Add Subject Alternative Names (SANs)
+        var sanBuilder = new SubjectAlternativeNameBuilder();
+        foreach (var domain in domains)
+        {
+            if (IPAddress.TryParse(domain, out var ipAddress))
+            {
+                sanBuilder.AddIpAddress(ipAddress);
+            }
+            else
+            {
+                sanBuilder.AddDnsName(domain);
+            }
+        }
+        request.CertificateExtensions.Add(sanBuilder.Build());
+
+        // Add key usage
+        request.CertificateExtensions.Add(
+            new X509KeyUsageExtension(
+      X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment,
+      critical: true));
+
+        // Add enhanced key usage for TLS server authentication
+        request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection { new Oid("1.3.6.1.5.5.7.3.1") }, critical: true));
+
+        // Add subject key identifier
+        request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+
+        // Add authority key identifier (references CA)
+        request.CertificateExtensions.Add(
+        new X509Extension(new Oid("2.5.29.35"), // Authority Key Identifier
+            caCertificate.Extensions["2.5.29.14"]!.RawData, // Use CA's Subject Key Identifier
+            false));
+
+        // Generate serial number
+        var serialNumber = new byte[20];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(serialNumber);
+        }
+        serialNumber[0] &= 0x7F; // Ensure positive number
+
+        // Sign the certificate with CA
+        var certificate = request.Create(
+       caCertificate,
+               DateTimeOffset.UtcNow.AddDays(-1),
+                DateTimeOffset.UtcNow.AddYears(2),
+               serialNumber);
+
+        // Combine with private key
+        var certificateWithPrivateKey = certificate.CopyWithPrivateKey(rsa);
+
+        return certificateWithPrivateKey;
+    }
+
+    /// <summary>
+    /// Saves a certificate and its private key to PEM format files.
+    /// </summary>
+    /// <param name="certificate">The certificate to save (must include private key).</param>
+    /// <param name="certFilePath">The path where the certificate PEM file will be saved.</param>
+    /// <param name="keyFilePath">The path where the private key PEM file will be saved.</param>
+    protected void SaveCertificateToPemFiles(X509Certificate2 certificate, string certFilePath, string keyFilePath)
+    {
+        // Export certificate to PEM
+        var certPem = certificate.ExportCertificatePem();
+        File.WriteAllText(certFilePath, certPem);
+        _logger.LogDebug("Saved certificate to {CertFile}", certFilePath);
+
+        // Export private key to PEM
+        if (certificate.HasPrivateKey)
+        {
+            var keyPem = certificate.GetRSAPrivateKey()!.ExportRSAPrivateKeyPem();
+            File.WriteAllText(keyFilePath, keyPem);
+            _logger.LogDebug("Saved private key to {KeyFile}", keyFilePath);
+        }
+        else
+        {
+            _logger.LogWarning("Certificate does not have a private key to export");
+        }
+    }
+
+    /// <summary>
+    /// Installs the CA certificate to the Trusted Root Certification Authorities store.
+    /// </summary>
+    /// <param name="caCertificate">The CA certificate to install.</param>
+    protected void InstallCaToTrustedRoot(X509Certificate2 caCertificate)
+    {
+        try
+        {
+            using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+            store.Open(OpenFlags.ReadWrite);
+
+            // Check if certificate already exists
+            var existing = store.Certificates.Find(X509FindType.FindByThumbprint, caCertificate.Thumbprint, false);
+            if (existing.Count == 0)
+            {
+                store.Add(caCertificate);
+                _logger.LogInformation("✓ CA certificate installed to Trusted Root store");
+            }
+            else
+            {
+                _logger.LogDebug("CA certificate already exists in Trusted Root store");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to install CA certificate to Trusted Root store. You may need to run as administrator.");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Installs the domain certificate to the Personal certificate store.
+    /// </summary>
+    /// <param name="certificate">The domain certificate to install.</param>
+    protected void InstallCertificateToPersonalStore(X509Certificate2 certificate)
+    {
+        try
+        {
+            using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+            store.Open(OpenFlags.ReadWrite);
+
+            // Check if certificate already exists
+            var existing = store.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, false);
+            if (existing.Count == 0)
+            {
+                store.Add(certificate);
+                _logger.LogInformation("✓ Domain certificate installed to Personal store");
+            }
+            else
+            {
+                _logger.LogDebug("Domain certificate already exists in Personal store");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to install domain certificate to Personal store");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Gets the full file path to the CA certificate PEM file.
+    /// </summary>
+    /// <param name="config">The DNS configuration containing the certificates directory.</param>
+    /// <returns>The full path to the CA certificate file.</returns>
+    protected string GetCaCertificatePath(DnsConfiguration2 config)
+    {
+        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
+        return Path.Combine(certsDir, $"{config.Domain}-ca.pem");
+    }
+
+    /// <summary>
+    /// Gets the full file path to the CA private key PEM file.
+    /// </summary>
+    /// <param name="config">The DNS configuration containing the certificates directory.</param>
+    /// <returns>The full path to the CA private key file.</returns>
+    protected string GetCaKeyPath(DnsConfiguration2 config)
+    {
+        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
+        return Path.Combine(certsDir, $"{config.Domain}-ca-key.pem");
     }
 }
 

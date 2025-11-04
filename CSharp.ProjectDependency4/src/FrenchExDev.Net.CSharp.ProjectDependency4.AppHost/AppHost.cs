@@ -22,7 +22,7 @@ var vizApi = builder.AddProject<FrenchExDev_Net_CSharp_ProjectDependency4_Viz_Ap
     .WithHttpsEndpoint(port: port, name: "https")
     .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__Path", dnsConfiguration.CertPathOrDie())
     .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__KeyPath", dnsConfiguration.KeyPathOrDie())
-    .WithEnvironment("ASPNETCORE_URLS", $"https://0.0.0.0:{port.ToString()}")
+    .WithEnvironment("ASPNETCORE_URLS", $"{domain}:{port.ToString()}")
     ;
 
 builder.Build().Run();

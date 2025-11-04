@@ -1,2 +1,1383 @@
-﻿namespace FrenchExDev.Net.CSharp.Aspire.DevAppHost;
+﻿
 
+using FrenchExDev.Net.CSharp.Object.Result;
+using hosts.net;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using System.Net;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Principal;
+using System.Text.Json;
+
+namespace FrenchExDev.Net.CSharp.Aspire.DevAppHost;
+
+/// <summary>
+/// Represents a single entry in an /etc/hosts file, associating an IPv4 address with one or more domain names.
+/// </summary>
+/// <remarks>Use this record to model mappings between IPv4 addresses and domain names as defined in a system's
+/// hosts file. Each entry typically corresponds to a line in the hosts file, where the IPv4 address is mapped to one or
+/// more domains for local name resolution.</remarks>
+public record EtcHostFileEntry
+{
+    public required string Ipv4 { get; init; }
+    public required string[] Domain { get; init; }
+}
+
+/// <summary>
+/// Represents a collection of application configurations, indexed by application name.
+/// </summary>
+/// <remarks>Use this class to manage and access configuration settings for multiple applications within a single
+/// structure. Each entry in the collection corresponds to a specific application's configuration, identified by its
+/// unique name.</remarks>
+public class AppsConfiguration2
+{
+    public required Dictionary<string, AppConfiguration2> Apps { get; init; }
+}
+
+/// <summary>
+/// Specifies the type of application being configured or executed.
+/// </summary>
+/// <remarks>Use this enumeration to distinguish between different application roles, such as a web API or a
+/// background worker, when configuring services or application behavior.</remarks>
+public enum AppKind
+{
+    /// <summary>
+    /// Represents a user interface component for web-based interactions.
+    /// </summary>
+    WebUi,
+
+    /// <summary>
+    /// Represents a web API endpoint or service for handling HTTP requests and responses.
+    /// </summary>
+    /// <remarks>Use this class to define and expose HTTP-based APIs that can be consumed by clients over the
+    /// web. The class typically provides methods for processing incoming requests, performing business logic, and
+    /// returning appropriate HTTP responses. Thread safety and authentication requirements depend on the specific
+    /// implementation.</remarks>
+    WebApi,
+
+    /// <summary>
+    /// Represents a background worker that executes tasks independently of the main application thread.
+    /// </summary>
+    /// <remarks>Use this class to offload work from the main thread, improving application responsiveness.
+    /// Web workers are commonly used for running long-running or computationally intensive operations without blocking
+    /// user interactions.</remarks>
+    WebWorker
+}
+
+/// <summary>
+/// Represents the configuration settings for an application, including its domain and the number of instances to run.
+/// </summary>
+public record AppConfiguration2
+{
+    /// <summary>
+    /// Gets the kind of application represented by this instance.
+    /// </summary>
+    public required AppKind Kind { get; init; }
+
+    /// <summary>
+    /// Gets the domain name associated with the current instance.
+    /// </summary>
+    public required string Domain { get; init; }
+
+    /// <summary>
+    /// Gets or sets the number of instances to create or manage.
+    /// </summary>
+    public required int Instances { get; init; }
+
+    /// <summary>
+    /// Gets the value assigned to the Zeroes property.
+    /// </summary>
+    public required int Zeroes { get; init; }
+
+    public required bool IsAspireResource { get; init; }
+
+    public required bool Enabled { get; init; }
+}
+
+/// <summary>
+/// Represents a DNS record containing a domain name and associated port number.
+/// </summary>
+public record DnsRecord2
+{
+    /// <summary>
+    /// Gets the list of IPv4 addresses associated with this instance.
+    /// </summary>
+    public required string Ipv4 { get; init; }
+
+    /// <summary>
+    /// Gets the domain name associated with the current instance.
+    /// </summary>
+    public required string? Domain { get; init; }
+
+    /// <summary>
+    /// Gets the domain value if it is set; otherwise, throws an exception.
+    /// </summary>
+    /// <returns>The domain value as a string.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the domain value is not set.</exception>
+    public string DomainOrDie() => Domain ?? throw new InvalidOperationException("Domain is not set.");
+
+    /// <summary>
+    /// Gets the template string used to generate domain names dynamically.
+    /// </summary>
+    /// <remarks>The template may include placeholders that are replaced with specific values at runtime to
+    /// construct domain names. The format and supported placeholders should be defined by the consuming
+    /// application.</remarks>
+    public string? DomainTemplate { get; init; }
+
+    /// <summary>
+    /// Gets the domain template string, or throws an exception if it is not set.
+    /// </summary>
+    /// <returns>The domain template string if it is set.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the domain template has not been set.</exception>
+    public string DomainTemplateOrDie() => DomainTemplate ?? throw new InvalidOperationException("DomainTemplate is not set.");
+
+    /// <summary>
+    /// Gets the network port number used for the connection.
+    /// </summary>
+    public required int? Port { get; init; }
+
+    /// <summary>
+    /// Gets the starting value of the port range to be used.
+    /// </summary>
+    /// <remarks>The value typically represents the lowest port number in a range allocated for network
+    /// operations. Ensure that the specified port is within the valid range for TCP or UDP ports (0 to 65535), and that
+    /// it does not conflict with reserved or well-known ports unless explicitly intended.</remarks>
+    public required int? PortRangeStart { get; init; }
+
+    /// <summary>
+    /// Determines whether the current instance represents a template domain.
+    /// </summary>
+    /// <returns>true if the domain is a template; otherwise, false.</returns>
+    public bool IsTemplate() => !string.IsNullOrWhiteSpace(DomainTemplate);
+
+    /// <summary>
+    /// Returns the domain string, optionally substituting the specified value if the domain is a template.
+    /// </summary>
+    /// <remarks>If the domain is not a template, the value parameter is ignored. If the domain is a template
+    /// and value is null, the placeholder will be replaced with a null value, which may result in an incomplete or
+    /// invalid domain string.</remarks>
+    /// <param name="value">The value to substitute for the "$i" placeholder in the domain template. If null, the placeholder will be
+    /// replaced with a null value.</param>
+    /// <returns>A string representing the domain. If the domain is a template, the returned string includes the specified value
+    /// substituted for the "$i" placeholder; otherwise, the base domain string is returned.</returns>
+    public string Get(string? value = null) => IsTemplate() ? DomainTemplateOrDie().Replace("$i", value) : DomainOrDie();
+}
+
+/// <summary>
+/// Represents the configuration settings for DNS domains, certificates, and related records used for authentication or
+/// encryption.
+/// </summary>
+/// <remarks>This record encapsulates information about the primary domain, associated subdomains and their DNS
+/// records, and file system paths to certificate and key files. It provides methods for serialization, deserialization,
+/// and retrieval of domain and port information. All required properties must be initialized when creating an instance.
+/// The configuration is intended to be immutable after initialization, except for properties explicitly marked as
+/// settable.</remarks>
+public record DnsConfiguration2
+{
+    /// <summary>
+    /// Gets the path to the directory containing certificate files required for authentication or encryption.
+    /// </summary>
+    public required string CertificatesDirectory { get; init; }
+
+    /// <summary>
+    /// Gets the domain associated with the current instance.
+    /// </summary>
+    public required string Domain { get; init; }
+
+    /// <summary>
+    /// Gets the collection of domain names and their associated DNS records.
+    /// </summary>
+    /// <remarks>Each entry in the dictionary maps a domain name to its corresponding DNS record. The
+    /// collection is initialized during object construction and cannot be modified after initialization.</remarks>
+    public required Dictionary<string, DnsRecord2> Subdomains { get; init; }
+
+    /// <summary>
+    /// Gets or sets the file system path to the certificate file used for authentication or encryption.
+    /// </summary>
+    public string? CertPath { get; set; }
+
+    /// <summary>
+    /// Gets or sets the file system path to the cryptographic key.
+    /// </summary>
+    public string? KeyPath { get; set; }
+
+    /// <summary>
+    /// Gets the file system path to the certificate. Throws an exception if the certificate has not been initialized.
+    /// </summary>
+    /// <returns>The file system path to the certificate.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the certificate has not been initialized. Call EnsureSetup before accessing this property.</exception>
+    public string CertPathOrDie() => CertPath ?? throw new InvalidOperationException("Certificates not initialized. Call EnsureSetup first.");
+
+    /// <summary>
+    /// Gets the file system path to the certificate key. Throws an exception if the certificates have not been
+    /// initialized.
+    /// </summary>
+    /// <returns>The file system path to the certificate key.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the certificates have not been initialized. Call EnsureSetup before accessing this property.</exception>
+    public string KeyPathOrDie() => KeyPath ?? throw new InvalidOperationException("Certificates not initialized. Call EnsureSetup first.");
+
+    /// <summary>
+    /// Generates a fully qualified domain URL for the specified subdomain name, optionally formatting with an index and
+    /// protocol.
+    /// </summary>
+    /// <remarks>If the subdomain is defined as a template and an index is provided, the method replaces the
+    /// template placeholder with the formatted index. If the subdomain does not exist or is invalid, the result
+    /// indicates failure.</remarks>
+    /// <param name="name">The key identifying the subdomain entry to resolve.</param>
+    /// <param name="i">An optional index value used to replace template placeholders in the subdomain, if applicable. If not provided,
+    /// the template is not expanded.</param>
+    /// <param name="zeroes">The minimum number of digits to use when formatting the index value. Defaults to 2.</param>
+    /// <param name="protocol">The protocol to use in the generated URL, such as "https" or "http". Defaults to "https".</param>
+    /// <returns>A <see cref="Result{String}"/> containing the constructed domain URL if the subdomain exists; otherwise, a
+    /// failure result.</returns>
+    public Result<string> GetDomain(string name, int? i = null, int zeroes = 2, string? protocol = "https")
+    {
+        var exist = Subdomains.TryGetValue(name, out var dns);
+
+        if (!exist || dns is null)
+            return Result<string>.Failure();
+
+        if (dns.IsTemplate() && i.HasValue && dns.DomainTemplate is not null)
+        {
+            return ($"{protocol}://" + dns.DomainTemplateOrDie().Replace("$i", i.Value.ToString("D" + zeroes)) + "." + Domain).ToSuccess();
+        }
+
+        return $"{protocol}://" + dns.Domain is not null ? (dns.Domain + "." + Domain).ToSuccess() : string.Empty.ToFailure("No domain.");
+    }
+
+    /// <summary>
+    /// Deserializes a JSON string into a new instance of the DnsConfiguration class.
+    /// </summary>
+    /// <param name="json">A JSON-formatted string that represents a DnsConfiguration object. Cannot be null.</param>
+    /// <returns>A DnsConfiguration instance deserialized from the specified JSON string, or null if the JSON is null or invalid.</returns>
+    public static Result<DnsConfiguration2> FromJson(string json) => Result<DnsConfiguration2>.TryCatch(() => JsonSerializer.Deserialize<DnsConfiguration2>(json) ?? throw new InvalidDataException("Cannot deserialize from json. Please check its structure"));
+
+    /// <summary>
+    /// Converts the current object to its JSON string representation.
+    /// </summary>
+    /// <remarks>The resulting JSON string includes all public properties of the object. The output may vary
+    /// depending on the object's structure and the default serialization options. If the object contains circular
+    /// references or unsupported types, serialization may fail.</remarks>
+    /// <returns>A JSON-formatted string that represents the current object.</returns>
+    public Result<string> ToJson() => Result<string>.TryCatch(() => JsonSerializer.Serialize(this));
+
+    /// <summary>
+    /// Retrieves the port number associated with the specified DNS record name.
+    /// </summary>
+    /// <param name="name">The name of the DNS record for which to retrieve the port number. Cannot be null.</param>
+    /// <returns>A <see cref="Result{T}"/> containing the port number if the DNS record exists; otherwise, a failure result.</returns>
+    public Result<int> GetPortOfDns(string name)
+    {
+        var exist = Subdomains.TryGetValue(name, out var dns);
+
+        if (!exist || dns is null) return Result<int>.Failure();
+
+        if (dns.IsTemplate() && dns.PortRangeStart is not null) return dns.PortRangeStart.Value.ToSuccess();
+        else if (dns.Port.HasValue) return dns.Port.Value.ToSuccess();
+        else return 0.ToFailure("No port defined.");
+    }
+
+    public bool IsEqual(DnsConfiguration2 other)
+    {
+        var firstLevel = other.CertificatesDirectory == this.CertificatesDirectory && other.CertPath == this.CertPath && other.Domain == this.Domain;
+
+        var secondLevel = false;
+        foreach (var otherDns in other.Subdomains)
+            secondLevel &= this.Subdomains.Any(x => x.Key == otherDns.Key && x.Value.Ipv4 == otherDns.Value.Ipv4 && x.Value.Domain == otherDns.Value.Domain);
+
+        return firstLevel && secondLevel;
+    }
+}
+
+/// <summary>
+/// Defines a contract for performing additional setup operations required by the development application host.
+/// </summary>
+/// <remarks>Implementations of this interface should provide logic to ensure that any necessary configuration or
+/// initialization steps specific to the development environment are completed. This interface extends the capabilities
+/// of a standard development application host by introducing additional setup requirements.</remarks>
+public interface IDevAppHost2
+{
+    /// <summary>
+    /// Ensures that the DNS configuration is set up and returns the result of the operation.
+    /// </summary>
+    /// <returns>A <see cref="Result{DnsConfiguration2}"/> that contains the DNS configuration if setup is successful, or an
+    /// error result if the setup fails.</returns>
+    Result<DnsConfiguration2> EnsureSetup2(bool? force = false);
+}
+
+public class DevAppHost2Builder
+{
+    protected ILogger? _logger;
+    protected bool _ensureDevSetup2;
+    protected Dictionary<string, Func<IDistributedApplicationBuilder, string, AppsConfiguration2, DnsConfiguration2, int, int, IResourceBuilder<ProjectResource>>> _builders = new();
+
+    public DevAppHost2Builder WithBuilder(string name, Func<IDistributedApplicationBuilder, string, AppsConfiguration2, DnsConfiguration2, int, int, IResourceBuilder<ProjectResource>> actor)
+    {
+        _builders[name] = actor;
+        return this;
+    }
+    public static DevAppHost2Builder Defaults(params string[] args)
+    {
+        return new DevAppHost2Builder().WithDefaultLogger().EnsureDevSetup2();
+    }
+
+    public IDistributedApplicationBuilder CreateBuilder(params string[] args)
+    {
+        var builder = DistributedApplication.CreateBuilder(args);
+
+        var apps = builder.Configuration.GetSection("AppsConfiguration").Get<AppsConfiguration2>();
+        var dns = builder.Configuration.GetSection("DnsConfiguration").Get<DnsConfiguration2>();
+
+        if (_ensureDevSetup2 && _logger is not null)
+        {
+            var dnsConfig = builder.Configuration.GetSection("DnsConfiguration").Get<DnsConfiguration2>() ?? throw new InvalidOperationException("missing DnsConfiguration");
+            var dnsResult = new DevAppHost2(builder, _logger).EnsureSetup2((args.Contains("--force") || args.Contains("-f")));
+            if (dnsResult.IsFailure)
+            {
+                foreach (var failure in dnsResult.FailuresOrThrow())
+                {
+                    _logger.LogError("DevAppHost2 Setup Error: {Key} => {Value}", failure.Key, failure.Value);
+                }
+                throw new InvalidOperationException("DevAppHost2 Setup failed. See logs for details.");
+            }
+
+            dns = dnsResult.ObjectOrThrow();
+        }
+
+        ArgumentNullException.ThrowIfNull(apps);
+        ArgumentNullException.ThrowIfNull(dns);
+
+        foreach (var app in apps.Apps)
+        {
+            if (app.Value.IsAspireResource) continue;
+            if (!app.Value.Enabled) continue;
+            var port = dns.GetPortOfDns(app.Key).ObjectOrThrow();
+
+            for (var i = 1; i < app.Value.Instances + 1; i++)
+            {
+                var dnsConfigForApp = dns.GetDomain(app.Key, i, app.Value.Zeroes);
+                var appProvider = _builders[app.Key](builder, app.Value.Domain, apps, dns, i, port++);
+            }
+        }
+
+        return builder;
+    }
+
+    public DevAppHost2Builder EnsureDevSetup2()
+    {
+        _ensureDevSetup2 = true;
+        return this;
+    }
+
+    public DevAppHost2Builder WithDefaultLogger()
+    {
+        _logger = LoggerFactory.Create(c =>
+        {
+            c.SetMinimumLevel(LogLevel.Debug);
+            c.AddConsole();
+        }).CreateLogger("apphost");
+
+        return this;
+    }
+}
+
+/// <summary>
+/// Provides functionality for configuring and managing development application hosting, including DNS and SSL
+/// certificate setup, within a distributed application environment.
+/// </summary>
+/// <remarks>DevAppHost2 is intended for use in development scenarios where local DNS and SSL certificate
+/// management are required to support distributed application workflows. It integrates with the distributed application
+/// builder to ensure necessary configuration, updates the system hosts file as needed, and manages SSL certificates
+/// using mkcert. This class is typically used as part of the application startup process to automate environment setup
+/// and validation. Thread safety is not guaranteed; use from a single thread or ensure external synchronization if
+/// accessed concurrently.</remarks>
+public class DevAppHost2 : IDevAppHost2
+{
+    private ILogger _logger;
+    private IDistributedApplicationBuilder _builder;
+
+    /// <summary>
+    /// Gets the logger instance used for recording diagnostic and operational messages.
+    /// </summary>
+    public ILogger Logger => _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the DevAppHost2 class with the specified distributed application builder and
+    /// logger.
+    /// </summary>
+    /// <param name="builder">The distributed application builder used to configure and construct the application components.</param>
+    /// <param name="logger">The logger used to record diagnostic and operational messages for the application host.</param>
+    public DevAppHost2(IDistributedApplicationBuilder builder, ILogger logger)
+    {
+        _logger = logger;
+        _builder = builder;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the DevAppHost2 class using the specified distributed application builder and a
+    /// default logger.
+    /// </summary>
+    /// <param name="builder">The distributed application builder used to configure and construct the application host. Cannot be null.</param>
+    /// <returns>A new DevAppHost2 instance configured with the provided builder and a default logger.</returns>
+    public static DevAppHost2 Default(IDistributedApplicationBuilder builder) => new DevAppHost2(builder, DefaultLogger());
+
+    /// <summary>
+    /// Creates a default console logger with debug-level logging and customizable name and timestamp format.
+    /// </summary>
+    /// <remarks>The returned logger is configured with a minimum log level of Debug and includes scopes in
+    /// its output. The logger uses a single-line console format for log entries.</remarks>
+    /// <param name="name">The name for the logger instance. If null, "apphost" is used as the default name.</param>
+    /// <param name="timestampFormat">The format string for timestamps in log messages. If null, the default format "HH:mm:ss:FFF " is used.</param>
+    /// <returns>An <see cref="ILogger"/> instance configured to log to the console with the specified name and timestamp format.</returns>
+    public static ILogger DefaultLogger(string? name = "apphost", string? timestampFormat = "HH:mm:ss:FFF ") => LoggerFactory.Create(c =>
+    {
+        c.SetMinimumLevel(LogLevel.Debug);
+        c.AddConsole();
+        c.AddSimpleConsole(options =>
+        {
+            options.SingleLine = true;
+            options.IncludeScopes = true;
+            options.TimestampFormat = timestampFormat ?? "HH:mm:ss:FFF ";
+        });
+    }).CreateLogger(name ?? "apphost");
+
+    /// <summary>
+    /// Ensures that the application is properly configured and running with the required administrator or root
+    /// privileges. Registers necessary services and validates configuration sections for application and DNS settings.
+    /// </summary>
+    /// <remarks>This method should be called during application startup to verify that all required
+    /// configuration sections are present and that the application has sufficient privileges to perform necessary setup
+    /// tasks. If the DNS configuration section is missing, a warning is logged and the method returns without making
+    /// changes. If the hosts file requires updates based on the DNS configuration, the method attempts to update it and
+    /// logs a warning.</remarks>
+    /// <exception cref="InvalidOperationException">Thrown if the application is not running with administrator or root privileges.</exception>
+    public Result<DnsConfiguration2> EnsureSetup2(bool? force = false)
+    {
+        _builder.Services.AddSingleton<IDevAppHost2>(this);
+
+        if (!IsRunningAsAdministrator().ObjectOrThrow())
+        {
+            _logger.LogError("The application is not running with administrator/root privileges. Please restart Visual Studio with Administrative rights.");
+            return Result<DnsConfiguration2>.Failure(b => b.Add("User.Rights", "The application is not running with administrator/root privileges. Please restart Visual Studio with Administrative rights."));
+        }
+
+        var appsConfigurationSection = _builder.Configuration.GetSection("AppsConfiguration").Get<AppsConfiguration2>();
+        var dnsConfigurationSection = _builder.Configuration.GetSection("DnsConfiguration").Get<DnsConfiguration2>();
+
+        ArgumentNullException.ThrowIfNull(appsConfigurationSection, "AppsConfiguration section is missing in configuration.");
+        ArgumentNullException.ThrowIfNull(dnsConfigurationSection, "DnsConfiguration section is missing in configuration.");
+
+        var hasUpdatedHostsSuccessfully = true;
+        var hasGeneratedCertificatesSuccessfully = true;
+
+        if (UpdateHostsFileIfNeeded(dnsConfigurationSection, appsConfigurationSection).IsFailure)
+        {
+            _logger.LogError("Failed to update hosts file. Please ensure the hosts file contains the necessary entries for development domains.");
+            hasUpdatedHostsSuccessfully = false;
+        }
+
+        if (EnsureSelfSignedCertificateSetup(dnsConfigurationSection, appsConfigurationSection, force).IsFailure)
+        {
+            _logger.LogError("Failed to generate self-signed certificates.");
+            hasGeneratedCertificatesSuccessfully = false;
+        }
+
+        if (!hasUpdatedHostsSuccessfully || !hasGeneratedCertificatesSuccessfully)
+        {
+            return Result<DnsConfiguration2>
+                .Failure(b => b
+                    .Add("Setup", "Failed to complete setup tasks.")
+                    .Add("Certificates", hasGeneratedCertificatesSuccessfully)
+                    .Add("EtcHosts", hasUpdatedHostsSuccessfully));
+        }
+
+        dnsConfigurationSection.CertPath = GetCertificatePath(dnsConfigurationSection);
+        dnsConfigurationSection.KeyPath = GetKeyPath(dnsConfigurationSection);
+
+        _builder.Configuration.GetSection("DnsConfiguration")["CertPath"] = dnsConfigurationSection.CertPath;
+        _builder.Configuration.GetSection("DnsConfiguration")["KeyPath"] = dnsConfigurationSection.KeyPath;
+
+        return dnsConfigurationSection.ToSuccess();
+    }
+
+    /// <summary>
+    /// Checks whether the system hosts file requires updates based on the provided DNS and application configurations,
+    /// and updates it if necessary.
+    /// </summary>
+    /// <remarks>This method logs a warning if the hosts file may need to be updated to support development
+    /// domains. It then attempts to update the hosts file with the required entries. Administrative privileges may be
+    /// required to modify the hosts file.</remarks>
+    /// <param name="dnsConfiguration">The DNS configuration containing domain and address mappings to be validated against the hosts file.</param>
+    /// <param name="appsConfiguration">The application configuration specifying which applications and domains should be mapped in the hosts file.</param>
+    protected Result UpdateHostsFileIfNeeded(DnsConfiguration2 dnsConfiguration, AppsConfiguration2 appsConfiguration)
+    {
+        var neededDnsLinesForApps = GetAllDnses(dnsConfiguration, appsConfiguration);
+
+        if (!NeedsHostsFileUpdate(neededDnsLinesForApps).ObjectOrThrow())
+        {
+            return Result.Success();
+        }
+
+        _logger.LogDebug("The hosts file needs to be updated to map development domains. Fixing entries.");
+        return UpdateHostsFile(neededDnsLinesForApps);
+    }
+
+    /// <summary>
+    /// Determines whether the current process is running with administrator privileges on Windows.
+    /// </summary>
+    /// <remarks>On non-Windows platforms, this method always returns a successful result with a value of <see
+    /// langword="false"/>. If an error occurs while checking the administrator status, the result will indicate failure
+    /// and contain the exception.</remarks>
+    /// <returns>A <see cref="Result{Boolean}"/> indicating whether the process is running as an administrator. The result is
+    /// <see langword="false"/> on non-Windows platforms or if the check fails.</returns>
+    protected Result<bool> IsRunningAsAdministrator()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            return Result<bool>.Success(false);
+
+        try
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            var principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator).ToSuccess();
+        }
+        catch (Exception ex)
+        {
+            return ex.ToFailure<bool>();
+        }
+    }
+
+    /// <summary>
+    /// Generates a list of fully qualified DNS names for all applications based on the provided DNS and application
+    /// configurations.
+    /// </summary>
+    /// <remarks>If a subdomain configuration uses a template, the method generates DNS names for each
+    /// application instance by replacing the template variable with the instance number. Otherwise, a single DNS name
+    /// is generated per application. The order of the returned DNS names corresponds to the order of applications in
+    /// the configuration.</remarks>
+    /// <param name="dnsConfig">The DNS configuration containing domain and subdomain templates used to construct DNS names.</param>
+    /// <param name="appsConfig">The application configuration specifying the set of applications and their associated domains and instance
+    /// counts.</param>
+    /// <returns>A list of strings, each representing a fully qualified DNS name for an application instance as defined by the
+    /// configurations.</returns>
+    protected List<EtcHostFileEntry> GetAllDnses(DnsConfiguration2 dnsConfig, AppsConfiguration2 appsConfig)
+    {
+        var neededDnsLinesForApps = new List<EtcHostFileEntry>();
+
+        foreach (var appConfig in appsConfig.Apps)
+        {
+            var domain = appConfig.Value.Domain;
+            var dnsConfigForDomain = dnsConfig.Subdomains[domain];
+
+            if (dnsConfigForDomain.IsTemplate())
+            {
+                for (var i = 1; i < appConfig.Value.Instances + 1; i++)
+                {
+                    neededDnsLinesForApps.Add(new EtcHostFileEntry() { Domain = [dnsConfigForDomain.DomainTemplateOrDie().Replace("$i", i.ToString("D" + appConfig.Value.Zeroes)) + "." + dnsConfig.Domain], Ipv4 = dnsConfigForDomain.Ipv4 });
+                }
+            }
+            else
+            {
+                neededDnsLinesForApps.Add(new EtcHostFileEntry() { Domain = [dnsConfigForDomain.DomainOrDie() + "." + dnsConfig.Domain], Ipv4 = dnsConfigForDomain.Ipv4 });
+            }
+        }
+
+        return neededDnsLinesForApps;
+    }
+
+    /// <summary>
+    /// Determines whether the hosts file requires an update to include the specified DNS entries.
+    /// </summary>
+    /// <param name="neededDnsLinesForApps">A list of DNS hostnames that should be present in the hosts file. Each entry represents a canonical hostname to
+    /// check for.</param>
+    /// <returns>A result containing <see langword="true"/> if any of the specified DNS entries are missing from the hosts file;
+    /// otherwise, a result containing <see langword="false"/>. If an error occurs while accessing the hosts file, the
+    /// result contains the exception.</returns>
+    protected Result<bool> NeedsHostsFileUpdate(List<EtcHostFileEntry> neededDnsLinesForApps)
+    {
+        try
+        {
+            var file = Hosts.OpenHostsFile();
+
+            foreach (var subdomain in neededDnsLinesForApps)
+            {
+                if (!file.Entries.Any(x => subdomain.Domain.All(y => y.Equals(x.CanonicalHostname, StringComparison.InvariantCultureIgnoreCase))))
+                {
+                    return true.ToSuccess();
+                }
+            }
+
+            return false.ToSuccess();
+        }
+        catch (Exception ex)
+        {
+            return ex.ToFailure<bool>();
+        }
+    }
+
+    /// <summary>
+    /// Gets the full file path to the DNS configuration file based on the specified DNS configuration settings.
+    /// </summary>
+    /// <param name="config">The DNS configuration settings that specify the certificates directory used to construct the configuration file
+    /// path. Cannot be null.</param>
+    /// <returns>The full file path to the 'dns-config.json' file located within the certificates directory specified by the
+    /// configuration.</returns>
+    protected string GetConfigurationFilePath(DnsConfiguration2 config)
+    {
+        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
+        return Path.Combine(certsDir, "dns-config.json");
+    }
+
+    /// <summary>
+    /// Saves the specified DNS configuration to persistent storage.
+    /// </summary>
+    /// <remarks>If the target directory does not exist, it is created automatically. If an error occurs
+    /// during the save operation, the exception is logged and no exception is thrown to the caller.</remarks>
+    /// <param name="config">The DNS configuration to be saved. Cannot be null.</param>
+    protected void SaveConfiguration(DnsConfiguration2 config)
+    {
+        try
+        {
+            var configPath = GetConfigurationFilePath(config);
+            var directory = Path.GetDirectoryName(configPath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var json = config.ToJson().ObjectOrThrow();
+            File.WriteAllText(configPath, json);
+            _logger.LogInformation("✓ Configuration saved to {ConfigPath}", configPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to save configuration");
+        }
+    }
+
+    /// <summary>
+    /// Loads a previously saved DNS configuration from persistent storage based on the specified configuration
+    /// reference.
+    /// </summary>
+    /// <remarks>If the configuration file does not exist or cannot be loaded, the method logs an error and
+    /// returns a failure result. The returned result provides details about the failure, which can be inspected by the
+    /// caller.</remarks>
+    /// <param name="config">A reference configuration used to determine the location of the saved configuration file.</param>
+    /// <returns>A result containing the loaded DNS configuration if found and successfully deserialized; otherwise, a failure
+    /// result indicating the reason for the failure.</returns>
+    protected Result<DnsConfiguration2> LoadSavedConfiguration(DnsConfiguration2 config)
+    {
+        try
+        {
+            var configPath = GetConfigurationFilePath(config);
+            if (!File.Exists(configPath))
+            {
+                _logger.LogError("No saved configuration found at {ConfigPath}", configPath);
+                return Result<DnsConfiguration2>.Failure(b => b.Add("Configuration", "not found."));
+            }
+
+            return DnsConfiguration2.FromJson(File.ReadAllText(configPath));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load saved configuration");
+            return ex.ToFailure<DnsConfiguration2>();
+        }
+    }
+
+    /// <summary>
+    /// Determines whether the current DNS certificate configuration requires regeneration based on the provided
+    /// configuration.
+    /// </summary>
+    /// <remarks>Certificates require regeneration if there is no saved configuration or if the provided
+    /// configuration differs from the saved one.</remarks>
+    /// <param name="config">The DNS configuration to compare against the saved configuration.</param>
+    /// <returns>true if the certificates need to be regenerated; otherwise, false.</returns>
+    protected bool NeedsCertificateRegeneration(DnsConfiguration2 config)
+    {
+        var savedConfig = LoadSavedConfiguration(config);
+
+        if (savedConfig.IsFailure)
+        {
+            _logger.LogInformation("No saved configuration - certificates will be generated");
+            return true;
+        }
+
+        if (savedConfig.ObjectOrThrow().IsEqual(config))
+        {
+            _logger.LogWarning("Configuration has changed - certificates need regeneration");
+            return true;
+        }
+
+        _logger.LogInformation("Configuration unchanged - certificates are still valid");
+        return false;
+    }
+
+    /// <summary>
+    /// Ensures that mkcert is installed and properly configured, and generates SSL certificates for the specified DNS
+    /// configuration if necessary.
+    /// </summary>
+    /// <remarks>This method checks for the presence of mkcert, installs the local certificate authority if
+    /// needed, and manages SSL certificates for the configured domain and subdomains. Existing certificates are reused
+    /// unless regeneration is required due to configuration changes or the <paramref name="force"/> parameter being set
+    /// to <see langword="true"/>.</remarks>
+    /// <param name="dnsConfig">The DNS configuration specifying the domain, subdomains, and certificate directory for which SSL certificates
+    /// should be managed.</param>
+    /// <param name="force">If set to <see langword="true"/>, forces regeneration of SSL certificates even if valid certificates already
+    /// exist. If <see langword="false"/> or <see langword="null"/>, certificates are only generated if missing or if
+    /// the configuration has changed.</param>
+    /// <exception cref="InvalidOperationException">Thrown if mkcert is not installed on the system, or if certificate generation fails.</exception>
+    protected Result EnsureMkcertSetup(DnsConfiguration2 dnsConfig, AppsConfiguration2 apps, bool? force = false)
+    {
+        _logger.LogInformation("Checking mkcert installation...");
+
+        // Check if mkcert is installed
+        var mkcertCheck = ExecuteCommand("mkcert", "-help", out var output);
+        if (mkcertCheck.IsFailure)
+        {
+            throw new InvalidOperationException(
+                    "mkcert is not installed. Please install it:\n" +
+                    "Windows: choco install mkcert\n" +
+                    "macOS: brew install mkcert\n" +
+                    "Linux: See https://github.com/FiloSottile/mkcert#installation");
+        }
+
+        _logger.LogInformation("Installing mkcert local CA...");
+
+        // Install local CA if not already installed
+        ExecuteCommand("mkcert", "-install", out _);
+
+        // Generate certificates for all hosts
+        var certFile = GetCertificatePath(dnsConfig);
+        var keyFile = GetKeyPath(dnsConfig);
+
+        Directory.CreateDirectory(Path.GetDirectoryName(certFile) ?? throw new InvalidOperationException());
+        Directory.CreateDirectory(Path.GetDirectoryName(keyFile) ?? throw new InvalidOperationException());
+
+        bool shouldRegenerate = !File.Exists(certFile) || !File.Exists(keyFile) || NeedsCertificateRegeneration(dnsConfig) || (force ?? false);
+
+        if (!shouldRegenerate)
+        {
+            _logger.LogInformation("✓ Using existing certificates: {CertFile}", certFile);
+            return Result.Success();
+        }
+
+        if (force ?? false)
+        {
+            _logger.LogInformation("Force regeneration of SSL certificates...");
+        }
+        else if (!File.Exists(certFile) || !File.Exists(keyFile))
+        {
+            _logger.LogInformation("Generating SSL certificates...");
+        }
+        else
+        {
+            _logger.LogInformation("Configuration changed - regenerating SSL certificates...");
+        }
+
+        if (File.Exists(certFile)) File.Delete(certFile);
+        if (File.Exists(keyFile)) File.Delete(keyFile);
+
+        var domains = new List<string>();
+        foreach (var app in apps.Apps)
+        {
+            for (var i = 1; i < app.Value.Instances + 1; i++)
+            {
+                var dnsConfigForApp = dnsConfig.GetDomain(app.Key, i, app.Value.Zeroes);
+                domains.Add(dnsConfigForApp.ObjectOrThrow());
+            }
+        }
+
+        var hostsArg = string.Join(" ", domains);
+        var command = $"-cert-file \"{certFile}\" -key-file \"{keyFile}\" {hostsArg}";
+        _logger.LogDebug("Generating mkcert command: {command}", command);
+        var success = ExecuteCommand("mkcert", command, out var certOutput);
+
+        if (success.IsFailure)
+        {
+            return Result.Failure();
+        }
+
+        _logger.LogInformation("✓ Certificates generated: {CertFile}", certFile);
+
+        SaveConfiguration(dnsConfig);
+
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// Executes an external command with the specified arguments and captures its output.
+    /// </summary>
+    /// <remarks>If the process fails to start or an exception is thrown, the output parameter contains the
+    /// error message. The method waits for the process to exit before returning.</remarks>
+    /// <param name="command">The name or path of the executable file to run. Cannot be null or empty.</param>
+    /// <param name="arguments">The command-line arguments to pass to the executable. Can be an empty string if no arguments are required.</param>
+    /// <param name="output">When this method returns, contains the standard output or error output produced by the executed process.</param>
+    /// <returns>A Result<bool> indicating whether the command executed successfully. The value is <see langword="true"/> if the
+    /// process exits with code 0; otherwise, <see langword="false"/>. If the process fails to start or an exception
+    /// occurs, the result indicates failure.</returns>
+    protected Result<bool> ExecuteCommand(string command, string arguments, out string output)
+    {
+        try
+        {
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = command,
+                Arguments = arguments,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = Process.Start(processInfo);
+            if (process == null)
+            {
+                output = "Failed to start process";
+                return Result<bool>.Failure();
+            }
+
+            var outputBuilder = new System.Text.StringBuilder();
+            var errorBuilder = new System.Text.StringBuilder();
+
+            process.OutputDataReceived += (s, e) => { if (e.Data != null) outputBuilder.AppendLine(e.Data); };
+            process.ErrorDataReceived += (s, e) => { if (e.Data != null) errorBuilder.AppendLine(e.Data); };
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.WaitForExit();
+
+            output = outputBuilder.Length > 0 ? outputBuilder.ToString() : errorBuilder.ToString();
+            return Result<bool>.Success(process.ExitCode == 0);
+        }
+        catch (Exception ex)
+        {
+            output = ex.Message;
+            return Result<bool>.Failure(ex);
+        }
+    }
+
+    /// <summary>
+    /// Constructs the full file system path to the PEM certificate file for the specified DNS configuration.
+    /// </summary>
+    /// <param name="config">The DNS configuration containing the domain name and certificates directory used to build the certificate path.
+    /// Cannot be null.</param>
+    /// <returns>A string representing the absolute path to the PEM certificate file for the specified domain.</returns>
+    protected string GetCertificatePath(DnsConfiguration2 config)
+    {
+        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
+        return Path.Combine(certsDir, $"{config.Domain}.pem");
+    }
+
+    /// <summary>
+    /// Constructs the full file system path to the private key file for the specified DNS configuration.
+    /// </summary>
+    /// <remarks>The returned path is constructed by combining the application's base directory, the
+    /// certificates directory specified in the configuration, and the domain name with a '-key.pem' suffix. Ensure that
+    /// the configuration values are valid and that the resulting path is accessible.</remarks>
+    /// <param name="config">The DNS configuration containing the domain name and certificates directory used to build the key file path.
+    /// Cannot be null.</param>
+    /// <returns>A string representing the absolute path to the private key file associated with the specified DNS configuration.</returns>
+    protected string GetKeyPath(DnsConfiguration2 config)
+    {
+        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
+        return Path.Combine(certsDir, $"{config.Domain}-key.pem");
+    }
+
+    /// <summary>
+    /// Updates the system hosts file with the specified entries if they are not already present.
+    /// </summary>
+    /// <remarks>This method attempts to add missing entries to the system hosts file on both Windows and
+    /// Unix-based platforms. Administrative or elevated privileges are required to modify the hosts file. If the
+    /// process does not have sufficient permissions, the method logs a warning and does not perform the update. On
+    /// failure, the method logs instructions for manual update. Existing entries are not duplicated.</remarks>
+    /// <param name="entries">A list of host file entry strings to ensure are present in the system hosts file. Each entry should be formatted
+    /// as a valid hosts file line (e.g., IP address followed by hostname).</param>
+    /// <exception cref="InvalidOperationException">Thrown if the hosts file cannot be updated due to an unexpected error.</exception>
+    protected Result UpdateHostsFile(List<EtcHostFileEntry> entries)
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsRunningAsAdministrator().ObjectOrThrow())
+        {
+            _logger.LogError("⚠ Not running as Administrator. Cannot update hosts file.");
+            return Result.Failure();
+        }
+
+        try
+        {
+            _logger.LogInformation("Updating hosts file configuration...");
+
+            var hostsFile = hosts.net.Hosts.OpenHostsFile();
+
+            var hostnames = hostsFile.Entries.Where(x => x.IsValid && x.Type == hosts.net.Parsing.EntryType.Host);
+
+            foreach (var entry in entries)
+            {
+                var asIpv4 = IPAddress.Parse(entry.Ipv4);
+
+                foreach (var entryDomain in entry.Domain)
+                {
+                    if (hostnames.Any(x => x.Address.Address == asIpv4.Address && x.CanonicalHostname == entryDomain))
+                    {
+                        _logger.LogDebug("Hosts file already contains entry for {Domain} -> {IpAddress}", entryDomain, entry.Ipv4);
+                        continue;
+                    }
+                    _logger.LogDebug("Adding for {Domain} -> {IpAddress}", entryDomain, entry.Ipv4);
+                    hostsFile.AddBlankEntry().SetHost(asIpv4, entryDomain);
+                }
+            }
+
+            hostsFile.Write();
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "⚠ Warning: Could not update hosts file: {Message}", ex.Message);
+            _logger.LogError("Please add the DNS entries manually to your hosts file.");
+
+            return Result.Failure(ex);
+        }
+    }
+
+    /// <summary>
+    /// Ensures that self-signed SSL certificates are generated using C# X509 cryptography and installed in the local 
+    /// certificate store for browser acceptance.
+    /// </summary>
+    /// <remarks>This method creates a Certificate Authority (CA) certificate and domain-specific certificates 
+    /// signed by that CA. The CA certificate is installed in the Trusted Root Certification Authorities store so that 
+    /// browsers will trust certificates signed by it. Domain certificates are installed in the Personal (My) store. 
+    /// This method is an alternative to using mkcert and provides the same functionality using native .NET APIs.</remarks>
+    /// <param name="dnsConfig">The DNS configuration specifying the domain, subdomains, and certificate directory for which SSL certificates 
+    /// should be managed.</param>
+    /// <param name="apps">The application configuration specifying which applications and domains require certificates.</param>
+    /// <param name="force">If set to <see langword="true"/>, forces regeneration of SSL certificates even if valid certificates already 
+    /// exist. If <see langword="false"/> or <see langword="null"/>, certificates are only generated if missing or if 
+    /// the configuration has changed.</param>
+    /// <returns>A <see cref="Result"/> indicating success or failure of the certificate generation and installation process.</returns>
+    protected Result EnsureSelfSignedCertificateSetup(DnsConfiguration2 dnsConfig, AppsConfiguration2 apps, bool? force = false)
+    {
+        _logger.LogInformation("Checking self-signed certificate setup...");
+
+        var certFile = GetCertificatePath(dnsConfig);
+        var keyFile = GetKeyPath(dnsConfig);
+        var caFile = GetCaCertificatePath(dnsConfig);
+        var caKeyFile = GetCaKeyPath(dnsConfig);
+
+        Directory.CreateDirectory(Path.GetDirectoryName(certFile) ?? throw new InvalidOperationException());
+        Directory.CreateDirectory(Path.GetDirectoryName(keyFile) ?? throw new InvalidOperationException());
+
+        bool shouldRegenerate = !File.Exists(certFile)
+            || !File.Exists(keyFile)
+            || !File.Exists(caFile)
+            || !File.Exists(caKeyFile)
+            || NeedsCertificateRegeneration(dnsConfig)
+            || (force ?? false);
+
+        if (!shouldRegenerate)
+        {
+            _logger.LogInformation("✓ Using existing self-signed certificates: {CertFile}", certFile);
+            return Result.Success();
+        }
+
+        if (force ?? false)
+        {
+            _logger.LogInformation("Force regeneration of self-signed SSL certificates...");
+        }
+        else if (!File.Exists(certFile) || !File.Exists(keyFile))
+        {
+            _logger.LogInformation("Generating self-signed SSL certificates...");
+        }
+        else
+        {
+            _logger.LogInformation("Configuration changed - regenerating self-signed SSL certificates...");
+        }
+
+        try
+        {
+            // Clean up existing files
+            if (force ?? false)
+            {
+                if (File.Exists(certFile)) File.Delete(certFile);
+                if (File.Exists(keyFile)) File.Delete(keyFile);
+                if (File.Exists(caFile)) File.Delete(caFile);
+                if (File.Exists(caKeyFile)) File.Delete(caKeyFile);
+            }
+
+            // Step 1: Create or load CA certificate
+            X509Certificate2 caCertificate;
+            if (!TryLoadCaFromStore(dnsConfig, out caCertificate))
+            {
+                _logger.LogInformation("Creating new Certificate Authority...");
+                caCertificate = CreateCaCertificate(dnsConfig);
+
+                // Save CA certificate and key to files
+                SaveCertificateToPemFiles(caCertificate, caFile, caKeyFile);
+
+                // Install CA certificate to Trusted Root store
+                InstallCaToTrustedRoot(caCertificate);
+
+                _logger.LogInformation("✓ Certificate Authority created and installed");
+            }
+            else
+            {
+                _logger.LogInformation("✓ Using existing Certificate Authority from store");
+            }
+
+            // Step 2: Get all domains for which we need certificates
+            var domains = new List<string>();
+            foreach (var app in apps.Apps)
+            {
+                for (var i = 1; i < app.Value.Instances + 1; i++)
+                {
+                    var dnsConfigForApp = dnsConfig.GetDomain(app.Key, i, app.Value.Zeroes, "https");
+                    if (dnsConfigForApp.IsSuccess)
+                    {
+                        // Remove protocol prefix if present
+                        var domain = dnsConfigForApp.ObjectOrThrow().Replace("https://", "").Replace("http://", "");
+                        domains.Add(domain);
+                    }
+                }
+            }
+
+            // Add localhost and 127.0.0.1 for local development
+            if (!domains.Contains("localhost")) domains.Add("localhost");
+            if (!domains.Contains("127.0.0.1")) domains.Add("127.0.0.1");
+
+            _logger.LogInformation("Generating certificate for domains: {Domains}", string.Join(", ", domains));
+
+            // Step 3: Create domain certificate signed by CA
+            var domainCertificate = CreateDomainCertificate(dnsConfig, domains, caCertificate);
+
+            // Save domain certificate and key to files
+            SaveCertificateToPemFiles(domainCertificate, certFile, keyFile);
+
+            // Install domain certificate to Personal store
+            InstallCertificateToPersonalStore(domainCertificate);
+
+            dnsConfig.CertPath = certFile;
+            dnsConfig.KeyPath = keyFile;
+
+            _logger.LogInformation("✓ Self-signed certificates generated and installed: {CertFile}", certFile);
+
+            SaveConfiguration(dnsConfig);
+
+            // Cleanup: Dispose certificates
+            caCertificate.Dispose();
+            domainCertificate.Dispose();
+
+            return Result.Success();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate self-signed certificates");
+            return Result.Failure(ex);
+        }
+    }
+
+    /// <summary>
+    /// Attempts to load the Certificate Authority certificate from the Trusted Root certificate store.
+    /// </summary>
+    /// <param name="dnsConfig">The DNS configuration used to identify the CA certificate.</param>
+    /// <param name="caCertificate">When this method returns, contains the CA certificate if found; otherwise, null.</param>
+    /// <returns>true if the CA certificate was found and loaded; otherwise, false.</returns>
+    protected bool TryLoadCaFromStore(DnsConfiguration2 dnsConfig, out X509Certificate2 caCertificate)
+    {
+        caCertificate = null!;
+
+        try
+        {
+            var caSubjectName = $"CN=DevAppHost2 Local CA ({dnsConfig.Domain})";
+
+            using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+            store.Open(OpenFlags.ReadOnly);
+
+            var certificates = store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, caSubjectName, false);
+
+            if (certificates.Count > 0)
+            {
+                caCertificate = certificates[0];
+                _logger.LogDebug("Found existing CA certificate: {Subject}", caCertificate.Subject);
+                return true;
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not load CA from store");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Creates a new Certificate Authority certificate that can be used to sign domain certificates.
+    /// </summary>
+    /// <param name="dnsConfig">The DNS configuration containing the domain information.</param>
+    /// <returns>A new CA certificate with private key.</returns>
+    protected X509Certificate2 CreateCaCertificate(DnsConfiguration2 dnsConfig)
+    {
+        using var rsa = RSA.Create(4096);
+
+        var request = new CertificateRequest(
+            $"CN=DevAppHost2 Local CA ({dnsConfig.Domain})",
+            rsa,
+         HashAlgorithmName.SHA256,
+            RSASignaturePadding.Pkcs1);
+
+        // Add basic constraints for CA
+        request.CertificateExtensions.Add(
+  new X509BasicConstraintsExtension(
+         certificateAuthority: true,
+    hasPathLengthConstraint: true,
+      pathLengthConstraint: 0,
+    critical: true));
+
+        // Add key usage
+        request.CertificateExtensions.Add(
+ new X509KeyUsageExtension(
+     X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign | X509KeyUsageFlags.DigitalSignature,
+      critical: true));
+
+        // Add subject key identifier
+        request.CertificateExtensions.Add(
+         new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+
+        // Create self-signed CA certificate
+        var certificate = request.CreateSelfSigned(
+      DateTimeOffset.UtcNow.AddDays(-1),
+            DateTimeOffset.UtcNow.AddYears(10));
+
+        return certificate;
+    }
+
+    /// <summary>
+    /// Creates a domain certificate signed by the specified CA certificate.
+    /// </summary>
+    /// <param name="dnsConfig">The DNS configuration containing certificate directory information.</param>
+    /// <param name="domains">The list of domain names (including SANs) to include in the certificate.</param>
+    /// <param name="caCertificate">The CA certificate used to sign the domain certificate.</param>
+    /// <returns>A new domain certificate with private key, signed by the CA.</returns>
+    protected X509Certificate2 CreateDomainCertificate(DnsConfiguration2 dnsConfig, List<string> domains, X509Certificate2 caCertificate)
+    {
+        using var rsa = RSA.Create(2048);
+
+        var request = new CertificateRequest(
+                $"CN={domains[0]}",
+                   rsa,
+            HashAlgorithmName.SHA256,
+           RSASignaturePadding.Pkcs1);
+
+        // Add Subject Alternative Names (SANs)
+        var sanBuilder = new SubjectAlternativeNameBuilder();
+        foreach (var domain in domains)
+        {
+            if (IPAddress.TryParse(domain, out var ipAddress))
+            {
+                sanBuilder.AddIpAddress(ipAddress);
+            }
+            else
+            {
+                sanBuilder.AddDnsName(domain);
+            }
+        }
+        request.CertificateExtensions.Add(sanBuilder.Build());
+
+        // Add key usage
+        request.CertificateExtensions.Add(
+            new X509KeyUsageExtension(
+      X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment,
+      critical: true));
+
+        // Add enhanced key usage for TLS server authentication
+        request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection { new Oid("1.3.6.1.5.5.7.3.1") }, critical: true));
+
+        // Add subject key identifier
+        request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+
+        // Add authority key identifier (references CA)
+        request.CertificateExtensions.Add(
+        new X509Extension(new Oid("2.5.29.35"), // Authority Key Identifier
+            caCertificate.Extensions["2.5.29.14"]!.RawData, // Use CA's Subject Key Identifier
+            false));
+
+        // Generate serial number
+        var serialNumber = new byte[20];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(serialNumber);
+        }
+        serialNumber[0] &= 0x7F; // Ensure positive number
+
+        // Sign the certificate with CA
+        var certificate = request.Create(
+       caCertificate,
+               DateTimeOffset.UtcNow.AddDays(-1),
+                DateTimeOffset.UtcNow.AddYears(2),
+               serialNumber);
+
+        // Combine with private key
+        var certificateWithPrivateKey = certificate.CopyWithPrivateKey(rsa);
+
+        return certificateWithPrivateKey;
+    }
+
+    /// <summary>
+    /// Saves a certificate and its private key to PEM format files.
+    /// </summary>
+    /// <param name="certificate">The certificate to save (must include private key).</param>
+    /// <param name="certFilePath">The path where the certificate PEM file will be saved.</param>
+    /// <param name="keyFilePath">The path where the private key PEM file will be saved.</param>
+    protected void SaveCertificateToPemFiles(X509Certificate2 certificate, string certFilePath, string keyFilePath)
+    {
+        // Export certificate to PEM
+        var certPem = certificate.ExportCertificatePem();
+        File.WriteAllText(certFilePath, certPem);
+        _logger.LogDebug("Saved certificate to {CertFile}", certFilePath);
+
+        // Export private key to PEM
+        if (certificate.HasPrivateKey)
+        {
+            var keyPem = certificate.GetRSAPrivateKey()!.ExportRSAPrivateKeyPem();
+            File.WriteAllText(keyFilePath, keyPem);
+            _logger.LogDebug("Saved private key to {KeyFile}", keyFilePath);
+        }
+        else
+        {
+            _logger.LogWarning("Certificate does not have a private key to export");
+        }
+    }
+
+    /// <summary>
+    /// Installs the CA certificate to the Trusted Root Certification Authorities store.
+    /// </summary>
+    /// <param name="caCertificate">The CA certificate to install.</param>
+    protected void InstallCaToTrustedRoot(X509Certificate2 caCertificate)
+    {
+        try
+        {
+            using var store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+            store.Open(OpenFlags.ReadWrite);
+
+            // Check if certificate already exists
+            var existing = store.Certificates.Find(X509FindType.FindByThumbprint, caCertificate.Thumbprint, false);
+            if (existing.Count == 0)
+            {
+                store.Add(caCertificate);
+                _logger.LogInformation("✓ CA certificate installed to Trusted Root store");
+            }
+            else
+            {
+                _logger.LogDebug("CA certificate already exists in Trusted Root store");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to install CA certificate to Trusted Root store. You may need to run as administrator.");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Installs the domain certificate to the Personal certificate store.
+    /// </summary>
+    /// <param name="certificate">The domain certificate to install.</param>
+    protected void InstallCertificateToPersonalStore(X509Certificate2 certificate)
+    {
+        try
+        {
+            using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+            store.Open(OpenFlags.ReadWrite);
+
+            // Check if certificate already exists
+            var existing = store.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, false);
+            if (existing.Count == 0)
+            {
+                store.Add(certificate);
+                _logger.LogInformation("✓ Domain certificate installed to Personal store");
+            }
+            else
+            {
+                _logger.LogDebug("Domain certificate already exists in Personal store");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to install domain certificate to Personal store");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Gets the full file path to the CA certificate PEM file.
+    /// </summary>
+    /// <param name="config">The DNS configuration containing the certificates directory.</param>
+    /// <returns>The full path to the CA certificate file.</returns>
+    protected string GetCaCertificatePath(DnsConfiguration2 config)
+    {
+        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
+        return Path.Combine(certsDir, $"{config.Domain}-ca.pem");
+    }
+
+    /// <summary>
+    /// Gets the full file path to the CA private key PEM file.
+    /// </summary>
+    /// <param name="config">The DNS configuration containing the certificates directory.</param>
+    /// <returns>The full path to the CA private key file.</returns>
+    protected string GetCaKeyPath(DnsConfiguration2 config)
+    {
+        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
+        return Path.Combine(certsDir, $"{config.Domain}-ca-key.pem");
+    }
+}
+
+/// <summary>
+/// Provides extension methods for configuring and setting up development application hosting scenarios using
+/// DevAppHost2, including logger creation, DNS configuration, and resource setup for distributed applications.
+/// </summary>
+/// <remarks>These extension methods are intended to simplify the setup of development environments for
+/// distributed applications by providing streamlined configuration of logging, DNS, and HTTPS endpoints. The methods
+/// are designed for use with the distributed application builder and resource builder interfaces, enabling consistent
+/// and repeatable development setups.</remarks>
+public static class DevAppHost2Extensions
+{
+    /// <summary>
+    /// Ensures that the development application host is configured for the distributed application builder, adding it
+    /// if not already present.
+    /// </summary>
+    /// <remarks>If the development application host has already been added to the builder's services, this
+    /// method performs no action and returns the builder unchanged.</remarks>
+    /// <param name="builder">The distributed application builder to configure.</param>
+    /// <param name="dnsConfiguration">The DNS configuration to use for the development application host setup.</param>
+    /// <param name="logger">The logger used to record diagnostic and setup information.</param>
+    /// <param name="forceCertificateRegeneration">true to force regeneration of development certificates during setup; otherwise, false.</param>
+    /// <returns>The same distributed application builder instance, with the development application host ensured.</returns>
+    public static IDistributedApplicationBuilder EnsureSetup2(this IDistributedApplicationBuilder builder, DnsConfiguration2 dnsConfiguration, ILogger logger, bool forceCertificateRegeneration = false)
+    {
+        if (builder.Services.Any(s => s.ServiceType == typeof(IDevAppHost2)))
+        {
+            return builder;
+        }
+
+        new DevAppHost2(builder, logger).EnsureSetup2();
+
+        return builder;
+    }
+
+    public static IResourceBuilder<T> WithDevSetup2<T>(this IResourceBuilder<T> builder, string configuredAppName, DnsConfiguration2 dnsConfig, AppsConfiguration2 appsConfig, int instance, int port) where T : IResourceWithEndpoints, IResourceWithEnvironment
+    {
+        var url = "https://" + dnsConfig.GetDomain(configuredAppName, instance, appsConfig.Apps[configuredAppName].Zeroes).ObjectOrThrow();
+
+        builder
+            .WithHttpsEndpoint(port: port++, name: "https")
+            .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__Path", dnsConfig.CertPathOrDie())
+            .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__KeyPath", dnsConfig.KeyPathOrDie())
+            .WithUrl(url);
+
+
+        return builder;
+    }
+}
