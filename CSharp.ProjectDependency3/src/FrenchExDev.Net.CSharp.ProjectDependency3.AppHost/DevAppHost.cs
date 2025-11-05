@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using System.Text.Json;
 
 public class DevAppHost : IDevAppHost
 {
@@ -89,7 +88,7 @@ public class DevAppHost : IDevAppHost
 
     public string GetConfigurationFilePath(DnsConfiguration config)
     {
-   var certsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), config.CertificatesDirectory);
+        var certsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), config.CertificatesDirectory);
         return Path.Combine(certsDir, "dns-config.json");
     }
 
@@ -97,150 +96,150 @@ public class DevAppHost : IDevAppHost
     {
         try
         {
-   var configPath = GetConfigurationFilePath(config);
-   var directory = Path.GetDirectoryName(configPath);
-          if (!string.IsNullOrEmpty(directory))
-    {
-       Directory.CreateDirectory(directory);
-  }
-  
+            var configPath = GetConfigurationFilePath(config);
+            var directory = Path.GetDirectoryName(configPath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             var json = config.ToJson();
-   File.WriteAllText(configPath, json);
-          _logger.LogInformation("Configuration saved to {ConfigPath}", configPath);
-}
-  catch (Exception ex)
+            File.WriteAllText(configPath, json);
+            _logger.LogInformation("Configuration saved to {ConfigPath}", configPath);
+        }
+        catch (Exception ex)
         {
-_logger.LogWarning(ex, "Failed to save configuration");
-     }
+            _logger.LogWarning(ex, "Failed to save configuration");
+        }
     }
 
     public DnsConfiguration? LoadSavedConfiguration(DnsConfiguration config)
     {
-   try
-   {
+        try
+        {
             var configPath = GetConfigurationFilePath(config);
-          if (!File.Exists(configPath))
-   {
-           _logger.LogInformation("No saved configuration found at {ConfigPath}", configPath);
-        return null;
-    }
-        
-     var json = File.ReadAllText(configPath);
-      var savedConfig = DnsConfiguration.FromJson(json);
-   
+            if (!File.Exists(configPath))
+            {
+                _logger.LogInformation("No saved configuration found at {ConfigPath}", configPath);
+                return null;
+            }
+
+            var json = File.ReadAllText(configPath);
+            var savedConfig = DnsConfiguration.FromJson(json);
+
             if (savedConfig != null)
-  {
-         _logger.LogInformation("Loaded saved configuration from {ConfigPath}", configPath);
-   }
-     
-    return savedConfig;
+            {
+                _logger.LogInformation("Loaded saved configuration from {ConfigPath}", configPath);
+            }
+
+            return savedConfig;
         }
         catch (Exception ex)
         {
-    _logger.LogWarning(ex, "Failed to load saved configuration");
-    return null;
+            _logger.LogWarning(ex, "Failed to load saved configuration");
+            return null;
         }
     }
 
     public bool NeedsCertificateRegeneration(DnsConfiguration config)
     {
-     var savedConfig = LoadSavedConfiguration(config);
-        
+        var savedConfig = LoadSavedConfiguration(config);
+
         if (savedConfig == null)
         {
             _logger.LogInformation("No saved configuration - certificates will be generated");
-       return true;
-    }
-        
+            return true;
+        }
+
         var currentHash = config.CalculateConfigurationHash();
         var savedHash = savedConfig.CalculateConfigurationHash();
-        
-   if (currentHash != savedHash)
+
+        if (currentHash != savedHash)
         {
-       _logger.LogWarning("Configuration has changed - certificates need regeneration");
-          _logger.LogInformation("Current hash: {CurrentHash}", currentHash);
-      _logger.LogInformation("Saved hash: {SavedHash}", savedHash);
- return true;
+            _logger.LogWarning("Configuration has changed - certificates need regeneration");
+            _logger.LogInformation("Current hash: {CurrentHash}", currentHash);
+            _logger.LogInformation("Saved hash: {SavedHash}", savedHash);
+            return true;
         }
-        
-_logger.LogInformation("Configuration unchanged - certificates are still valid");
-      return false;
+
+        _logger.LogInformation("Configuration unchanged - certificates are still valid");
+        return false;
     }
 
     public void EnsureMkcertSetup(DnsConfiguration config, bool force)
     {
         try
         {
-  _logger.LogInformation("Checking mkcert installation...");
+            _logger.LogInformation("Checking mkcert installation...");
 
-       // Check if mkcert is installed
+            // Check if mkcert is installed
             var mkcertCheck = ExecuteCommand("mkcert", "-help", out var output);
- if (!mkcertCheck)
+            if (!mkcertCheck)
             {
-        throw new InvalidOperationException(
-              "mkcert is not installed. Please install it:\n" +
-"Windows: choco install mkcert\n" +
-       "macOS: brew install mkcert\n" +
-          "Linux: See https://github.com/FiloSottile/mkcert#installation");
-    }
+                throw new InvalidOperationException(
+                    "mkcert is not installed. Please install it:\n" +
+                    "Windows: choco install mkcert\n" +
+                    "macOS: brew install mkcert\n" +
+                    "Linux: See https://github.com/FiloSottile/mkcert#installation");
+            }
 
             _logger.LogInformation("Installing mkcert local CA...");
-     // Install local CA if not already installed
+            // Install local CA if not already installed
             ExecuteCommand("mkcert", "-install", out _);
 
             // Generate certificates for all hosts
-          var certsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), config.CertificatesDirectory);
-          Directory.CreateDirectory(certsDir);
+            var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
+            Directory.CreateDirectory(certsDir);
 
-   var certFile = Path.Combine(certsDir, $"{config.Domain}.pem");
-    var keyFile = Path.Combine(certsDir, $"{config.Domain}-key.pem");
+            var certFile = Path.Combine(certsDir, $"{config.Domain}.pem");
+            var keyFile = Path.Combine(certsDir, $"{config.Domain}-key.pem");
 
             bool shouldRegenerate = force || !File.Exists(certFile) || !File.Exists(keyFile) || NeedsCertificateRegeneration(config);
 
-   if (shouldRegenerate)
+            if (shouldRegenerate)
             {
-  if (force)
-            {
-    _logger.LogInformation("Force regeneration of SSL certificates...");
-         }
-   else if (!File.Exists(certFile) || !File.Exists(keyFile))
+                if (force)
                 {
-             _logger.LogInformation("Generating SSL certificates...");
-          }
-    else
-  {
-        _logger.LogInformation("Configuration changed - regenerating SSL certificates...");
-       }
-
-      // Delete old certificates if they exist
-           if (File.Exists(certFile)) File.Delete(certFile);
-       if (File.Exists(keyFile)) File.Delete(keyFile);
-
-   var hostsArg = string.Join(" ", config.GetAllHosts());
-            var command = $"-cert-file \"{certFile}\" -key-file \"{keyFile}\" {hostsArg}";
-
-      var success = ExecuteCommand("mkcert", command, out var certOutput);
-         if (success)
-      {
-            _logger.LogInformation("✓ Certificates generated: {CertFile}", certFile);
-         
-        // Save current configuration
-       SaveConfiguration(config);
+                    _logger.LogInformation("Force regeneration of SSL certificates...");
                 }
-           else
-         {
-       throw new InvalidOperationException($"Failed to generate certificates: {certOutput}");
+                else if (!File.Exists(certFile) || !File.Exists(keyFile))
+                {
+                    _logger.LogInformation("Generating SSL certificates...");
+                }
+                else
+                {
+                    _logger.LogInformation("Configuration changed - regenerating SSL certificates...");
+                }
+
+                // Delete old certificates if they exist
+                if (File.Exists(certFile)) File.Delete(certFile);
+                if (File.Exists(keyFile)) File.Delete(keyFile);
+
+                var hostsArg = string.Join(" ", config.GetAllHosts());
+                var command = $"-cert-file \"{certFile}\" -key-file \"{keyFile}\" {hostsArg}";
+
+                var success = ExecuteCommand("mkcert", command, out var certOutput);
+                if (success)
+                {
+                    _logger.LogInformation("✓ Certificates generated: {CertFile}", certFile);
+
+                    // Save current configuration
+                    SaveConfiguration(config);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Failed to generate certificates: {certOutput}");
+                }
             }
-            }
-else
-        {
-           _logger.LogInformation("✓ Using existing certificates: {CertFile}", certFile);
+            else
+            {
+                _logger.LogInformation("✓ Using existing certificates: {CertFile}", certFile);
             }
         }
         catch (Exception ex)
         {
             throw new InvalidOperationException($"Failed to setup mkcert: {ex.Message}", ex);
-      }
+        }
     }
 
     public void EnsureMkcertSetup(DnsConfiguration config)
@@ -291,164 +290,179 @@ else
 
     public void EnsureSetup(DnsConfiguration dnsConfig, bool forceCertificateRegeneration)
     {
-      // Check if running with elevated privileges on Windows
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        // Check if running with elevated privileges on Windows
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsRunningAsAdministrator())
         {
-if (!IsRunningAsAdministrator())
-            {
-            // Check if hosts file needs updating
-          if (NeedsHostsFileUpdate(dnsConfig))
-     {
- _logger.LogError("⚠ Administrator privileges required to update hosts file.");
-        _logger.LogError("Restarting application with elevated privileges...\n");
-
-    if (!RestartAsAdministrator())
-    {
-          _logger.LogError("Failed to restart with administrator privileges.");
-      _logger.LogError("Please run the application as Administrator or manually update the hosts file.");
- _logger.LogError("\nPress any key to exit...");
-       Console.ReadKey();
-          return;
-         }
-        return; // Exit this instance, elevated instance will continue
-       }
-    }
+            throw new InvalidOperationException("need admin rights");
         }
 
-  // Ensure mkcert is installed and certificates are generated
-    EnsureMkcertSetup(dnsConfig, forceCertificateRegeneration);
+        if (NeedsHostsFileUpdate(dnsConfig))
+        {
+            UpdateHostsFile(dnsConfig);
+        }
+
+        // Ensure mkcert is installed and certificates are generated
+        EnsureMkcertSetup(dnsConfig, forceCertificateRegeneration);
 
         // Get certificate paths
-   dnsConfig.CertPath = GetCertificatePath(dnsConfig);
-    dnsConfig.KeyPath = GetKeyPath(dnsConfig);
-
-        // Update /etc/hosts with local DNS entries
-   UpdateHostsFile(dnsConfig);
+        dnsConfig.CertPath = GetCertificatePath(dnsConfig);
+        dnsConfig.KeyPath = GetKeyPath(dnsConfig);
     }
 
     public void EnsureSetup(DnsConfiguration dnsConfig)
     {
-    EnsureSetup(dnsConfig, forceCertificateRegeneration: false);
+        EnsureSetup(dnsConfig, forceCertificateRegeneration: false);
     }
 
     public string GetCertificatePath(DnsConfiguration config)
     {
-  var certsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), config.CertificatesDirectory);
-return Path.Combine(certsDir, $"{config.Domain}.pem");
+        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
+        return Path.Combine(certsDir, $"{config.Domain}.pem");
     }
 
     public string GetKeyPath(DnsConfiguration config)
     {
-     var certsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), config.CertificatesDirectory);
+        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
         return Path.Combine(certsDir, $"{config.Domain}-key.pem");
     }
 
     public void UpdateHostsFile(DnsConfiguration config)
- {
+    {
         try
         {
-        _logger.LogInformation("Updating hosts file configuration...");
+            _logger.LogInformation("Updating hosts file configuration...");
 
-       var hostsFilePath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-          ? @"C:\Windows\System32\drivers\etc\hosts"
-             : "/etc/hosts";
+            var hostsFilePath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                   ? @"C:\Windows\System32\drivers\etc\hosts"
+                 : "/etc/hosts";
 
- var entries = config.GetHostsFileEntries().ToList();
-     var hostsContent = File.Exists(hostsFilePath) ? File.ReadAllText(hostsFilePath) : "";
-         var missingEntries = new List<string>();
+            var entries = config.GetHostsFileEntries().ToList();
+            var hostsContent = File.Exists(hostsFilePath) ? File.ReadAllText(hostsFilePath) : "";
+            var missingEntries = new List<string>();
 
-    foreach (var entry in entries)
-      {
-       if (!hostsContent.Contains(entry))
-    {
-              missingEntries.Add(entry);
-       }
-      }
-
-         if (missingEntries.Any())
-    {
-    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            foreach (var entry in entries)
+            {
+                if (!hostsContent.Contains(entry))
                 {
-     // On Windows with admin rights, update directly
-    if (IsRunningAsAdministrator())
-       {
-       _logger.LogInformation("Adding entries to hosts file...");
-
-        // Ensure there's a newline at the end of the file
-   var contentToAppend = hostsContent;
- if (!string.IsNullOrEmpty(hostsContent) && !hostsContent.EndsWith(Environment.NewLine))
-          {
-  contentToAppend += Environment.NewLine;
-          }
-
-         contentToAppend += Environment.NewLine;
-  contentToAppend += "# Added by FrenchExDev.Net.CSharp.ProjectDependency3" + Environment.NewLine;
-      foreach (var entry in missingEntries)
-        {
-          contentToAppend += entry + Environment.NewLine;
+                    missingEntries.Add(entry);
+                }
             }
 
-          File.WriteAllText(hostsFilePath, contentToAppend);
-_logger.LogInformation("✓ Hosts file updated successfully.");
-   }
-    else
-         {
-        _logger.LogWarning("⚠ Not running as Administrator. Cannot update hosts file.");
-  }
-    }
-     else
-       {
-      // Unix systems
-         _logger.LogInformation("Adding entries to {HostsFilePath}...", hostsFilePath);
+            if (missingEntries.Any())
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // On Windows with admin rights, update directly
+                    if (IsRunningAsAdministrator())
+                    {
+                        _logger.LogInformation("Adding entries to hosts file...");
 
-     try
-   {
-               var tempFile = Path.GetTempFileName();
-        var contentToWrite = Environment.NewLine + "# Added by FrenchExDev.Net.CSharp.ProjectDependency3" + Environment.NewLine;
-         contentToWrite += string.Join(Environment.NewLine, missingEntries) + Environment.NewLine;
- File.WriteAllText(tempFile, contentToWrite);
+                        // Ensure there's a newline at the end of the file
+                        var contentToAppend = hostsContent;
+                        if (!string.IsNullOrEmpty(hostsContent) && !hostsContent.EndsWith(Environment.NewLine))
+                        {
+                            contentToAppend += Environment.NewLine;
+                        }
 
-     var success = ExecuteCommand("sudo", $"sh -c 'cat {tempFile} >> {hostsFilePath}'", out var output);
+                        contentToAppend += Environment.NewLine;
+                        contentToAppend += "# Added by FrenchExDev.Net.CSharp.ProjectDependency3" + Environment.NewLine;
+                        foreach (var entry in missingEntries)
+                        {
+                            contentToAppend += entry + Environment.NewLine;
+                        }
 
-             File.Delete(tempFile);
+                        File.WriteAllText(hostsFilePath, contentToAppend);
+                        _logger.LogInformation("✓ Hosts file updated successfully.");
+                    }
+                    else
+                    {
+                        _logger.LogWarning("⚠ Not running as Administrator. Cannot update hosts file.");
+                    }
+                }
+                else
+                {
+                    // Unix systems
+                    _logger.LogInformation("Adding entries to {HostsFilePath}...", hostsFilePath);
 
-     if (success)
-     {
-             _logger.LogInformation("✓ Hosts file updated successfully.");
-             }
-              else
-     {
-             _logger.LogWarning("⚠ Could not automatically update hosts file: {Output}", output);
-         _logger.LogWarning("Please run: sudo nano /etc/hosts");
-    _logger.LogWarning("And add these entries:");
-       foreach (var entry in missingEntries)
-  {
-     _logger.LogWarning("  {Entry}", entry);
-   }
-     }
+                    try
+                    {
+                        var tempFile = Path.GetTempFileName();
+                        var contentToWrite = Environment.NewLine + "# Added by FrenchExDev.Net.CSharp.ProjectDependency3" + Environment.NewLine;
+                        contentToWrite += string.Join(Environment.NewLine, missingEntries) + Environment.NewLine;
+                        File.WriteAllText(tempFile, contentToWrite);
+
+                        var success = ExecuteCommand("sudo", $"sh -c 'cat {tempFile} >> {hostsFilePath}'", out var output);
+
+                        File.Delete(tempFile);
+
+                        if (success)
+                        {
+                            _logger.LogInformation("✓ Hosts file updated successfully.");
+                        }
+                        else
+                        {
+                            _logger.LogWarning("⚠ Could not automatically update hosts file: {Output}", output);
+                            _logger.LogWarning("Please run: sudo nano /etc/hosts");
+                            _logger.LogWarning("And add these entries:");
+                            foreach (var entry in missingEntries)
+                            {
+                                _logger.LogWarning("  {Entry}", entry);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "⚠ Could not automatically update hosts file: {Message}", ex.Message);
+                        _logger.LogWarning("Please run: sudo nano /etc/hosts");
+                        _logger.LogWarning("And add these entries:");
+                        foreach (var entry in missingEntries)
+                        {
+                            _logger.LogWarning("  {Entry}", entry);
+                        }
+                    }
+                }
             }
-               catch (Exception ex)
- {
-      _logger.LogWarning(ex, "⚠ Could not automatically update hosts file: {Message}", ex.Message);
-           _logger.LogWarning("Please run: sudo nano /etc/hosts");
-       _logger.LogWarning("And add these entries:");
-      foreach (var entry in missingEntries)
-     {
-     _logger.LogWarning("  {Entry}", entry);
-               }
-      }
-    }
-          }
             else
-   {
-      _logger.LogInformation("✓ All hosts file entries already exist.");
- }
-     }
-    catch (Exception ex)
+            {
+                _logger.LogInformation("✓ All hosts file entries already exist.");
+            }
+        }
+        catch (Exception ex)
         {
             _logger.LogWarning(ex, "⚠ Warning: Could not update hosts file: {Message}", ex.Message);
             _logger.LogWarning("Please add the DNS entries manually to your hosts file.");
-  }
+        }
+    }
+
+    /// <summary>
+    /// Configures Aspire project resources with custom domain bindings.
+    /// This method provides the configuration needed to bind Kestrel to specific domains
+    /// while still working with Aspire's service discovery.
+    /// </summary>
+    /// <param name="builder">The distributed application builder.</param>
+    /// <param name="projectName">The name of the project resource.</param>
+    /// <param name="fqdn">The fully qualified domain name (e.g., api.pd3i1.com).</param>
+    /// <param name="port">The port to listen on.</param>
+    /// <param name="dnsConfig">The DNS configuration containing certificate paths.</param>
+    /// <returns>Configuration instructions for the project.</returns>
+    public Dictionary<string, string> GetAspireEndpointConfiguration(
+        string projectName,
+        string fqdn,
+        int port,
+        DnsConfiguration dnsConfig)
+    {
+        return new Dictionary<string, string>
+        {
+            // Let Aspire manage the endpoint configuration
+            // We only provide certificate paths
+            ["ASPNETCORE_Kestrel__Certificates__Default__Path"] = dnsConfig.CertPathOrDie(),
+            ["ASPNETCORE_Kestrel__Certificates__Default__KeyPath"] = dnsConfig.KeyPathOrDie(),
+            ["ASPNETCORE_ENVIRONMENT"] = "Development",
+            
+            // Optional: Add custom domain for service-to-service communication
+            ["CustomDomain__Fqdn"] = fqdn,
+            ["CustomDomain__Port"] = port.ToString()
+        };
     }
 }
 

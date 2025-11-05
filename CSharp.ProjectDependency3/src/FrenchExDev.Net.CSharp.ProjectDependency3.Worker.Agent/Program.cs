@@ -11,19 +11,19 @@ using System.Text.Json;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Kestrel to use mkcert certificate if provided
-var certPath = builder.Configuration["ASPNETCORE_Kestrel__Certificates__Default__Path"];
-var keyPath = builder.Configuration["ASPNETCORE_Kestrel__Certificates__Default__KeyPath"];
+var certPath = builder.Configuration["Kestrel:Certificates:Default:Path"];
+var keyPath = builder.Configuration["Kestrel:Certificates:Default:KeyPath"];
 
 if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(keyPath) && File.Exists(certPath) && File.Exists(keyPath))
 {
     builder.WebHost.ConfigureKestrel(serverOptions =>
     {
         serverOptions.ConfigureHttpsDefaults(httpsOptions =>
- {
-  httpsOptions.ServerCertificate = X509Certificate2.CreateFromPemFile(certPath, keyPath);
- httpsOptions.ClientCertificateMode = ClientCertificateMode.NoCertificate;
+        {
+            httpsOptions.ServerCertificate = X509Certificate2.CreateFromPemFile(certPath, keyPath);
+            httpsOptions.ClientCertificateMode = ClientCertificateMode.NoCertificate;
         });
-  });
+    });
 }
 
 builder.Services.AddRouting();
@@ -65,10 +65,10 @@ app.Map("/ws/progress", async ctx =>
     if (!ctx.WebSockets.IsWebSocketRequest)
     {
         ctx.Response.StatusCode = 400;
-    return;
+        return;
     }
     var jobId = ctx.Request.Query["jobId"].ToString();
-  if (string.IsNullOrWhiteSpace(jobId))
+    if (string.IsNullOrWhiteSpace(jobId))
     {
         ctx.Response.StatusCode = 400;
         return;
@@ -78,19 +78,19 @@ app.Map("/ws/progress", async ctx =>
     lock (list) list.Add(ws);
     try
     {
-  var hello = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { type = "hello", message = "progress-connected", jobId }));
+        var hello = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { type = "hello", message = "progress-connected", jobId }));
         await ws.SendAsync(hello, WebSocketMessageType.Text, true, ctx.RequestAborted);
         var buff = new byte[4096];
         while (ws.State == WebSocketState.Open)
-    {
+        {
             var res = await ws.ReceiveAsync(buff, ctx.RequestAborted);
-      if (res.MessageType == WebSocketMessageType.Close) break;
+            if (res.MessageType == WebSocketMessageType.Close) break;
         }
         await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "bye", ctx.RequestAborted);
     }
     finally
     {
-    lock (list) list.Remove(ws);
+        lock (list) list.Remove(ws);
     }
 });
 
@@ -99,15 +99,15 @@ app.MapGet("/solutions", () =>
 {
     try
     {
-    var slns = Directory.EnumerateFiles(solutionsRoot, "*.sln", SearchOption.AllDirectories)
-            .Select(p => new { name = Path.GetFileName(p), path = p })
-   .ToArray();
+        var slns = Directory.EnumerateFiles(solutionsRoot, "*.sln", SearchOption.AllDirectories)
+                .Select(p => new { name = Path.GetFileName(p), path = p })
+       .ToArray();
 
         return Results.Ok(slns);
     }
     catch (Exception ex)
     {
- return Results.Problem(ex.Message);
+        return Results.Problem(ex.Message);
     }
 });
 
@@ -126,7 +126,7 @@ app.MapPost("/analyze", async (HttpContext http, AgentState state, IServiceProvi
 app.MapGet("/jobs/{jobId}", (string jobId, AgentState state) =>
 {
     if (!state.TryGetJob(jobId, out var job) || job is null) return Results.NotFound();
- return Results.Ok(job);
+    return Results.Ok(job);
 });
 
 app.MapGet("/artifacts/markdown", (HttpContext http, AgentState state, string sln) =>
@@ -148,41 +148,41 @@ async Task RunAnalysisAsync(string jobId, string sln, AgentState state, Concurre
     try
     {
         state.UpdateJob(jobId, "running", 0);
-      await BroadcastProgress(jobId, "running", 0, wsConns);
+        await BroadcastProgress(jobId, "running", 0, wsConns);
 
         using var scope = sp.CreateScope();
         var runner = scope.ServiceProvider.GetRequiredService<IAnalysisRunner>();
 
         var progressReporter = new Progress<AnalysisProgress>(p =>
   {
-     // Map phases to progress percentage ranges
-            var percent = p.Phase switch
-          {
-         "init" => 5,
-              "load" => 10 + p.ProgressPercent / 5,
-       "analyze" => 30 + (p.ProgressPercent * 40 / 100),
- "generate" => 70 + (p.ProgressPercent * 25 / 100),
-      "complete" => 100,
-    _ => p.ProgressPercent
-   };
-            state.UpdateJob(jobId, "running", percent);
-            _ = BroadcastProgress(jobId, "running", percent, wsConns, message: p.Message);
- });
+      // Map phases to progress percentage ranges
+      var percent = p.Phase switch
+      {
+          "init" => 5,
+          "load" => 10 + p.ProgressPercent / 5,
+          "analyze" => 30 + (p.ProgressPercent * 40 / 100),
+          "generate" => 70 + (p.ProgressPercent * 25 / 100),
+          "complete" => 100,
+          _ => p.ProgressPercent
+      };
+      state.UpdateJob(jobId, "running", percent);
+      _ = BroadcastProgress(jobId, "running", percent, wsConns, message: p.Message);
+  });
 
         var result = await runner.RunAsync(sln, progressReporter);
 
         if (result.IsSuccess)
         {
-  state.Upsert(sln, result.ObjectOrThrow().MarkdownContent);
-         state.UpdateJob(jobId, "completed", 100);
+            state.Upsert(sln, result.ObjectOrThrow().MarkdownContent);
+            state.UpdateJob(jobId, "completed", 100);
             await BroadcastProgress(jobId, "completed", 100, wsConns, message: "Analysis completed successfully");
-    }
+        }
         else
         {
-        state.UpdateJob(jobId, "failed", 0, result.FailuresOrThrow().First().Value.ToString());
+            state.UpdateJob(jobId, "failed", 0, result.FailuresOrThrow().First().Value.ToString());
             await BroadcastProgress(jobId, "failed", 0, wsConns, error: result.FailuresOrThrow().First().Value.ToString());
         }
-  }
+    }
     catch (Exception ex)
     {
         state.UpdateJob(jobId, "failed", 0, ex.Message);
@@ -201,9 +201,9 @@ async Task BroadcastProgress(string jobId, string status, int progress, Concurre
     {
         try
         {
-  if (ws.State == WebSocketState.Open)
-      await ws.SendAsync(bytes, WebSocketMessageType.Text, true, CancellationToken.None);
-     }
-      catch { }
+            if (ws.State == WebSocketState.Open)
+                await ws.SendAsync(bytes, WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+        catch { }
     }
 }

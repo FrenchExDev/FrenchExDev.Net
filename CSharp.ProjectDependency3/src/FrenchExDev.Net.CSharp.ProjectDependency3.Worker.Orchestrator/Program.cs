@@ -15,8 +15,8 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Kestrel to use mkcert certificate if provided
-var certPath = builder.Configuration["ASPNETCORE_Kestrel__Certificates__Default__Path"];
-var keyPath = builder.Configuration["ASPNETCORE_Kestrel__Certificates__Default__KeyPath"];
+var certPath = builder.Configuration["Kestrel:Certificates:Default:Path"];
+var keyPath = builder.Configuration["Kestrel:Certificates:Default:KeyPath"];
 
 if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(keyPath) && File.Exists(certPath) && File.Exists(keyPath))
 {
