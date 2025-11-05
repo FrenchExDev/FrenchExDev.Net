@@ -189,7 +189,6 @@ app.Map("/ws/progress", async (HttpContext ctx, IHttpClientFactory factory) =>
 });
 
 app.MapHealthChecks("/health");
-
 app.UseHealthChecks("/health");
 
 app.Run();

@@ -1,19 +1,24 @@
-using Aspire.Hosting;
 using FrenchExDev.Net.CSharp.ProjectDependency3.AppHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Projects;
 
-System.Environment.SetEnvironmentVariable("ASPIRE_ENVIRONMENT", "Development");
-System.Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", "Development");
-System.Environment.SetEnvironmentVariable("ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL", "https://devdash.pd3i1.com:21190");
-System.Environment.SetEnvironmentVariable("ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL", "https://devdash.pd3i1.com:22187");
-System.Environment.SetEnvironmentVariable("ASPNETCORE_URLS", "https://devdash.pd3i1.com:18443");
+var rootConfig = new ConfigurationBuilder()
+    .AddJsonFile("devapphost.json")
+    .AddEnvironmentVariables()
+    .Build();
+
+var dnsConfig = rootConfig.GetSection("DnsConfiguration").Get<DnsConfiguration>() ?? throw new InvalidOperationException("missing DnsConfiguration");
+
+System.Environment.SetEnvironmentVariable("ASPIRE_ENVIRONMENT", rootConfig["Environment"]);
+System.Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", rootConfig["Environment"]);
+System.Environment.SetEnvironmentVariable("ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL", dnsConfig.GetDashboardUrl(21190));
+System.Environment.SetEnvironmentVariable("ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL", dnsConfig.GetDashboardUrl(22187));
+System.Environment.SetEnvironmentVariable("ASPNETCORE_URLS", dnsConfig.GetDashboardUrl());
 
 var builder = DistributedApplication.CreateBuilder(args);
 var logger = LoggerFactory.Create(c => c.AddConsole()).CreateLogger("apphost");
 
-var dnsConfig = builder.Configuration.GetSection("DnsConfiguration").Get<DnsConfiguration>() ?? throw new InvalidOperationException("missing DnsConfiguration");
 builder.EnsureSetup(dnsConfig, logger);
 
 // Backend services (internal, localhost only)

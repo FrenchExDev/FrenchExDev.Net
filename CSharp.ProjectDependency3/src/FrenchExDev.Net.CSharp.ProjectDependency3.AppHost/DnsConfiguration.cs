@@ -29,7 +29,7 @@ public record DnsConfiguration
     public string GetGatewayUrl() => $"{(EnableHttps ? "https" : "http")}://{GetGatewayFqdn()}:{Ports.Gateway}";
     public string GetOrchestratorUrl() => $"{(EnableHttps ? "https" : "http")}://{GetOrchestratorFqdn()}:{Ports.Orchestrator}";
     public string GetWorkerUrl(int index) => $"{(EnableHttps ? "https" : "http")}://{GetWorkerFqdn(index)}:{Ports.WorkerBase + index - 1}";
-    public string GetDashboardUrl() => $"{(EnableHttps ? "https" : "http")}://{GetDashboardFqdn()}:{Ports.Dashboard}";
+    public string GetDashboardUrl(int? port = null) => $"{(EnableHttps ? "https" : "http")}://{GetDashboardFqdn()}:{port ?? Ports.Dashboard}";
     public string GetVizUrl() => $"{(EnableHttps ? "https" : "http")}://{GetVizFqdn()}:{Ports.Viz}";
     public string GetApiHostUrl() => $"{(EnableHttps ? "https" : "http")}://{GetApiHostFqdn()}:{Ports.Api}";
 
