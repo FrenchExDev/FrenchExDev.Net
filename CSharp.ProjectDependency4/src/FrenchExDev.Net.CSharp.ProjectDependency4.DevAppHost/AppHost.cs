@@ -31,9 +31,12 @@ devAppHost.EnsureUpdatedHosts(dnsConfig);
 
 builder.AddProject<Projects.FrenchExDev_Net_CSharp_ProjectDependency4_Viz>("viz")
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
+    .WithEnvironment("DOTNET_ENVIRONMENT", "Development")
     .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__Path", dnsConfig.CertPathOrDie())
     .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__KeyPath", dnsConfig.KeyPathOrDie())
-    .WithEnvironment("ASPNETCORE_URLS", "https://0.0.0.0:8443")
+    .WithEnvironment("ASPNETCORE_URLS", "https://0.0.0.0:8443;https://viz.pd4i1.com:8443")
+    .WithEnvironment("CustomDomain__Fqdn", "https://viz.pd4i1.com")
+    .WithEnvironment("CustomDomain__Port", 8443.ToString())
     .WithUrl($"https://viz.pd4i1.com:8443")
     ;
 
@@ -90,6 +93,8 @@ public record DnsConfiguration
         // Convert to hex string for readability and storage
         return hashCode.ToString("X8");
     }
+
+    internal object DomainOrDie() => Domain ?? throw new InvalidOperationException("Domain is not set in the configuration.");
 }
 public interface IDevAppHost
 {
@@ -296,8 +301,8 @@ public class DevAppHost : IDevAppHost
             var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, dnsConfig.CertificatesDirectory);
             Directory.CreateDirectory(certsDir);
 
-            var certFile = Path.Combine(certsDir, $"{dnsConfig.Domain}.pem");
-            var keyFile = Path.Combine(certsDir, $"{dnsConfig.Domain}-key.pem");
+            var certFile = Path.Combine(certsDir, $"{dnsConfig.DomainOrDie()}.pem");
+            var keyFile = Path.Combine(certsDir, $"{dnsConfig.DomainOrDie()}-key.pem");
 
             bool shouldRegenerate = (force ?? false) || !File.Exists(certFile) || !File.Exists(keyFile) || NeedsCertificateRegeneration(dnsConfig);
 
@@ -331,20 +336,20 @@ public class DevAppHost : IDevAppHost
             var command = $"-cert-file \"{certFile}\" -key-file \"{keyFile}\" {hostsArg}";
 
             var success = ExecuteCommand("mkcert", command, out var certOutput);
-            if (success)
+
+            if (!success)
             {
-                _logger.LogInformation("✓ Certificates generated: {CertFile}", certFile);
-
-                // Save current configuration
-                SaveConfiguration(dnsConfig);
-
-                // Get certificate paths
-                dnsConfig.CertPath = GetCertificatePath(dnsConfig);
-                dnsConfig.KeyPath = GetKeyPath(dnsConfig);
-
+                throw new InvalidOperationException($"Failed to generate certificates: {certOutput}");
             }
 
-            throw new InvalidOperationException($"Failed to generate certificates: {certOutput}");
+            _logger.LogInformation("✓ Certificates generated: {CertFile}", certFile);
+
+            // Save current configuration
+            SaveConfiguration(dnsConfig);
+
+            // Get certificate paths
+            dnsConfig.CertPath = GetCertificatePath(dnsConfig);
+            dnsConfig.KeyPath = GetKeyPath(dnsConfig);
         }
         catch (Exception ex)
         {
@@ -455,77 +460,7 @@ public class DevAppHost : IDevAppHost
 
             if (missingEntries.Any())
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    // On Windows with admin rights, update directly
-                    if (IsRunningAsAdministrator())
-                    {
-                        _logger.LogInformation("Adding entries to hosts file...");
-
-                        // Ensure there's a newline at the end of the file
-                        var contentToAppend = hostsContent;
-                        if (!string.IsNullOrEmpty(hostsContent) && !hostsContent.EndsWith(Environment.NewLine))
-                        {
-                            contentToAppend += Environment.NewLine;
-                        }
-
-                        contentToAppend += Environment.NewLine;
-                        contentToAppend += "# Added by FrenchExDev.Net.CSharp.ProjectDependency3" + Environment.NewLine;
-                        foreach (var entry in missingEntries)
-                        {
-                            contentToAppend += entry + Environment.NewLine;
-                        }
-
-                        File.WriteAllText(hostsFilePath, contentToAppend);
-                        _logger.LogInformation("✓ Hosts file updated successfully.");
-                    }
-                    else
-                    {
-                        _logger.LogWarning("⚠ Not running as Administrator. Cannot update hosts file.");
-                    }
-                }
-                else
-                {
-                    // Unix systems
-                    _logger.LogInformation("Adding entries to {HostsFilePath}...", hostsFilePath);
-
-                    try
-                    {
-                        var tempFile = Path.GetTempFileName();
-                        var contentToWrite = Environment.NewLine + "# Added by FrenchExDev.Net.CSharp.ProjectDependency4" + Environment.NewLine;
-                        contentToWrite += string.Join(Environment.NewLine, missingEntries) + Environment.NewLine;
-                        File.WriteAllText(tempFile, contentToWrite);
-
-                        var success = ExecuteCommand("sudo", $"sh -c 'cat {tempFile} >> {hostsFilePath}'", out var output);
-
-                        File.Delete(tempFile);
-
-                        if (success)
-                        {
-                            _logger.LogInformation("✓ Hosts file updated successfully.");
-                        }
-                        else
-                        {
-                            _logger.LogWarning("⚠ Could not automatically update hosts file: {Output}", output);
-                            _logger.LogWarning("Please run: sudo nano /etc/hosts");
-                            _logger.LogWarning("And add these entries:");
-                            foreach (var entry in missingEntries)
-                            {
-                                _logger.LogWarning("  {Entry}", entry);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "⚠ Could not automatically update hosts file: {Message}", ex.Message);
-                        _logger.LogWarning("Please run: sudo nano /etc/hosts");
-                        _logger.LogWarning("And add these entries:");
-                        foreach (var entry in missingEntries)
-                        {
-                            _logger.LogWarning("  {Entry}", entry);
-                        }
-                    }
-                }
+                DoUpdateEtcHostsFile(hostsFilePath, hostsContent, missingEntries);
             }
             else
             {
@@ -539,35 +474,79 @@ public class DevAppHost : IDevAppHost
         }
     }
 
-    /// <summary>
-    /// Configures Aspire project resources with custom domain bindings.
-    /// This method provides the configuration needed to bind Kestrel to specific domains
-    /// while still working with Aspire's service discovery.
-    /// </summary>
-    /// <param name="builder">The distributed application builder.</param>
-    /// <param name="projectName">The name of the project resource.</param>
-    /// <param name="fqdn">The fully qualified domain name (e.g., api.pd3i1.com).</param>
-    /// <param name="port">The port to listen on.</param>
-    /// <param name="dnsConfig">The DNS configuration containing certificate paths.</param>
-    /// <returns>Configuration instructions for the project.</returns>
-    public Dictionary<string, string> GetAspireEndpointConfiguration(
-        string projectName,
-        string fqdn,
-        int port,
-        DnsConfiguration dnsConfig)
+    private void DoUpdateEtcHostsFile(string hostsFilePath, string hostsContent, List<string> missingEntries)
     {
-        return new Dictionary<string, string>
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            // Let Aspire manage the endpoint configuration
-            // We only provide certificate paths
-            ["ASPNETCORE_Kestrel__Certificates__Default__Path"] = dnsConfig.CertPathOrDie(),
-            ["ASPNETCORE_Kestrel__Certificates__Default__KeyPath"] = dnsConfig.KeyPathOrDie(),
-            ["ASPNETCORE_ENVIRONMENT"] = "Development",
+            // On Windows with admin rights, update directly
+            if (IsRunningAsAdministrator())
+            {
+                _logger.LogInformation("Adding entries to hosts file...");
 
-            // Optional: Add custom domain for service-to-service communication
-            ["CustomDomain__Fqdn"] = fqdn,
-            ["CustomDomain__Port"] = port.ToString()
-        };
+                // Ensure there's a newline at the end of the file
+                var contentToAppend = hostsContent;
+                if (!string.IsNullOrEmpty(hostsContent) && !hostsContent.EndsWith(Environment.NewLine))
+                {
+                    contentToAppend += Environment.NewLine;
+                }
+
+                contentToAppend += Environment.NewLine;
+                contentToAppend += "# Added by FrenchExDev.Net.CSharp.ProjectDependency3" + Environment.NewLine;
+                foreach (var entry in missingEntries)
+                {
+                    contentToAppend += entry + Environment.NewLine;
+                }
+
+                File.WriteAllText(hostsFilePath, contentToAppend);
+                _logger.LogInformation("✓ Hosts file updated successfully.");
+            }
+            else
+            {
+                _logger.LogWarning("⚠ Not running as Administrator. Cannot update hosts file.");
+            }
+        }
+        else
+        {
+            // Unix systems
+            _logger.LogInformation("Adding entries to {HostsFilePath}...", hostsFilePath);
+
+            try
+            {
+                var tempFile = Path.GetTempFileName();
+                var contentToWrite = Environment.NewLine + "# Added by FrenchExDev.Net.CSharp.ProjectDependency4" + Environment.NewLine;
+                contentToWrite += string.Join(Environment.NewLine, missingEntries) + Environment.NewLine;
+                File.WriteAllText(tempFile, contentToWrite);
+
+                var success = ExecuteCommand("sudo", $"sh -c 'cat {tempFile} >> {hostsFilePath}'", out var output);
+
+                File.Delete(tempFile);
+
+                if (success)
+                {
+                    _logger.LogInformation("✓ Hosts file updated successfully.");
+                }
+                else
+                {
+                    _logger.LogWarning("⚠ Could not automatically update hosts file: {Output}", output);
+                    _logger.LogWarning("Please run: sudo nano /etc/hosts");
+                    _logger.LogWarning("And add these entries:");
+                    foreach (var entry in missingEntries)
+                    {
+                        _logger.LogWarning("  {Entry}", entry);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "⚠ Could not automatically update hosts file: {Message}", ex.Message);
+                _logger.LogWarning("Please run: sudo nano /etc/hosts");
+                _logger.LogWarning("And add these entries:");
+                foreach (var entry in missingEntries)
+                {
+                    _logger.LogWarning("  {Entry}", entry);
+                }
+            }
+        }
     }
 }
 

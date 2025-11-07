@@ -7,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+builder.Services.AddLogging();
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
@@ -21,8 +22,19 @@ if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(keyPath) && File.Ex
         // ? Configure HTTPS defaults without overriding Aspire's endpoint configuration
         serverOptions.ConfigureHttpsDefaults(httpsOptions =>
         {
+            //httpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
+            //httpsOptions.ServerCertificate =  X509Certificate2.CreateFromPemFile(certPath, keyPath);
+            //httpsOptions.ClientCertificateMode = ClientCertificateMode.NoCertificate;
+            
             httpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
-            httpsOptions.ServerCertificate = X509Certificate2.CreateFromPemFile(certPath, keyPath);
+            var pemCert = X509Certificate2.CreateFromPemFile(certPath, keyPath);
+            var pfxBytes = pemCert.Export(X509ContentType.Pfx);
+            var cert = new X509Certificate2(
+             pfxBytes,
+             (string?)null,
+             X509KeyStorageFlags.Exportable | X509KeyStorageFlags.UserKeySet);
+
+            httpsOptions.ServerCertificate = cert;
             httpsOptions.ClientCertificateMode = ClientCertificateMode.NoCertificate;
         });
     });
