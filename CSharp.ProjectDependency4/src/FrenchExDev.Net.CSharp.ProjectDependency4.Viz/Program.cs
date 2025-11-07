@@ -22,10 +22,6 @@ if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(keyPath) && File.Ex
         // ? Configure HTTPS defaults without overriding Aspire's endpoint configuration
         serverOptions.ConfigureHttpsDefaults(httpsOptions =>
         {
-            //httpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
-            //httpsOptions.ServerCertificate =  X509Certificate2.CreateFromPemFile(certPath, keyPath);
-            //httpsOptions.ClientCertificateMode = ClientCertificateMode.NoCertificate;
-            
             httpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
             var pemCert = X509Certificate2.CreateFromPemFile(certPath, keyPath);
             var pfxBytes = pemCert.Export(X509ContentType.Pfx);
