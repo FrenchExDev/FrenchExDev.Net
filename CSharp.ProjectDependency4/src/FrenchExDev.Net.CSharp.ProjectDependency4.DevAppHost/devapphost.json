@@ -1,0 +1,7 @@
+﻿{
+  "Environment": "Development",
+  "DnsConfiguration": {
+    "Domain": "pd4i1.com",
+    "CertificatesDirectory": ".aspire-certs"
+  }
+}

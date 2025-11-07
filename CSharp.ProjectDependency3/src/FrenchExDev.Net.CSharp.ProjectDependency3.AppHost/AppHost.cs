@@ -1,86 +1,66 @@
-using FrenchExDev.Net.Aspire.DevAppHost;
+using FrenchExDev.Net.CSharp.ProjectDependency3.AppHost;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Projects;
 
+var rootConfig = new ConfigurationBuilder()
+    .AddJsonFile("devapphost.json")
+    .AddEnvironmentVariables()
+    .Build();
+
+var dnsConfig = rootConfig.GetSection("DnsConfiguration").Get<DnsConfiguration>() ?? throw new InvalidOperationException("missing DnsConfiguration");
+
+System.Environment.SetEnvironmentVariable("ASPIRE_ENVIRONMENT", rootConfig["Environment"]);
+System.Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", rootConfig["Environment"]);
+System.Environment.SetEnvironmentVariable("ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL", dnsConfig.GetDashboardUrl(21190));
+System.Environment.SetEnvironmentVariable("ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL", dnsConfig.GetDashboardUrl(22187));
+System.Environment.SetEnvironmentVariable("ASPNETCORE_URLS", dnsConfig.GetDashboardUrl());
+
 var builder = DistributedApplication.CreateBuilder(args);
+var logger = LoggerFactory.Create(c => c.AddConsole()).CreateLogger("apphost");
 
-var logger = LoggerFactory.Create(c =>
+builder.EnsureSetup(dnsConfig, logger);
+
+// Backend services (internal, localhost only)
+var api = builder.AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Viz_Api>("viz-api-00")
+    .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
+    .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__Path", dnsConfig.CertPathOrDie())
+    .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__KeyPath", dnsConfig.KeyPathOrDie())
+    .WithEnvironment("ASPNETCORE_URLS", $"http://0.0.0.0:{dnsConfig.Ports.Api.ToString()}")
+    ;
+
+var orchestratorUrl = dnsConfig.GetOrchestratorUrl();
+var orchestrator = builder.AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Worker_Orchestrator>("orchestrator")
+    .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__Path", dnsConfig.CertPathOrDie())
+    .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__KeyPath", dnsConfig.KeyPathOrDie())
+    .WithEnvironment("ASPNETCORE_URLS", $"http://0.0.0.0:{dnsConfig.Ports.Orchestrator.ToString()}")
+    .WithEnvironment("RegistryApiUrl", dnsConfig.GetApiHostUrl())
+    ;
+
+logger.LogInformation($"Using Orchestrator URL: {orchestratorUrl}");
+
+var viz = builder.AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Viz>("viz")
+    .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__Path", dnsConfig.CertPathOrDie())
+    .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__KeyPath", dnsConfig.KeyPathOrDie())
+    .WithEnvironment("ASPNETCORE_URLS", $"http://0.0.0.0:{dnsConfig.Ports.Viz.ToString()}")
+    .WithEnvironment("RegistryApiUrl", dnsConfig.GetApiHostUrl())
+    ;
+
+// Add worker agents
+var workers = new List<IResourceBuilder<ProjectResource>>();
+
+for (int i = 1; i <= dnsConfig.WorkerCount; i++)
 {
-    c.SetMinimumLevel(LogLevel.Debug);
-    c.AddConsole(options =>
-    {
-        options.FormatterName = "simple";
-    });
-    c.AddSimpleConsole(options =>
-    {
-        options.SingleLine = true;
-        options.IncludeScopes = true;
-        options.TimestampFormat = "HH:mm:ss ";
-    });
-}).CreateLogger("apphost");
+    var workerPort = dnsConfig.Ports.WorkerBase + i - 1;
 
+    var worker = builder.AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Worker_Agent>($"worker-agent-{i}")
+        .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__Path", dnsConfig.CertPathOrDie())
+        .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__KeyPath", dnsConfig.KeyPathOrDie())
+        .WithEnvironment("ASPNETCORE_URLS", $"http://0.0.0.0:{workerPort.ToString()}")
+   ;
 
-var apps = new Dictionary<string, IResourceBuilder<ProjectResource>>();
-
-var dnsConfig = builder.Configuration.GetSection("DnsConfiguration").Get<DnsConfiguration>() ?? DnsConfiguration.Default();
-
-var workers = 0;
-var orchestrators = 0;
-
-foreach (var dnsRecord in dnsConfig.Subdomains)
-{
-    logger.LogInformation($"DNS Record: {dnsRecord.Key} -> {dnsRecord.Value.Domain}:{dnsRecord.Value.Port}");
-    switch (dnsRecord.Key)
-    {
-        case "dashboard": { } break;
-        case "orchestrator":
-            {
-                var dns = dnsConfig.GetDomain(dnsRecord.Value.Domain).ObjectOrThrow();
-                var instance = $"orchestrator-{orchestrators++}";
-                apps[instance] = builder
-                    .AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Worker_Orchestrator>(instance)
-                    .WithReference(apps["api"])
-                ;
-            }
-            break;
-        case "viz":
-            {
-                apps["viz"] = builder
-                    .AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Viz>("viz")
-                    .WithEnvironment("ApiUrl", dnsConfig.GetDomain("api").ObjectOrThrow())
-                    .WithReference(apps["api"])
-                ;
-            }
-            break;
-        case "api":
-            {
-                apps["api"] = builder
-                   .AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Viz_Api>("api")
-                   .WithReference(apps["orchestrator"])
-                   ;
-            }
-            break;
-        case "worker":
-            {
-                var dns = dnsConfig.GetDomain(dnsRecord.Value.Domain).ObjectOrThrow();
-                var instance = $"worker-{workers++}";
-                var project = builder.AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Worker_Agent>(instance)
-                    .WithEnvironment("ApiUrl", dnsConfig.GetDomain("api").ObjectOrThrow())
-                    .WithReference(apps["api"])
-                    ;
-                apps[instance] = project;
-                logger.LogInformation($"Using Worker {instance} URL: {dns}");
-            }
-            break;
-        default:
-            logger.LogWarning($"Unknown DNS record key: {dnsRecord.Key}");
-            break;
-    }
+    workers.Add(worker);
 }
 
-var app = builder.Build();
-
-await app.RunAsync();
+await builder.Build().RunAsync();
 

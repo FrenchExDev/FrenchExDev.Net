@@ -1,24 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
-		<!-- Session and client-side storage for per-user sessions -->
-		<PackageReference Include="Blazored.SessionStorage" />
-		<PackageReference Include="Blazored.LocalStorage" />
-		<!-- Markdown rendering for uploaded/generated markdown docs -->
-		<PackageReference Include="Markdig" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+		<ProjectReference Include="..\..\..\CSharp.ProjectDependency3\src\FrenchExDev.Net.CSharp.ProjectDependency3.ServiceDefaults\FrenchExDev.Net.CSharp.ProjectDependency3.ServiceDefaults.csproj" />
 	</ItemGroup>
 
 </Project>

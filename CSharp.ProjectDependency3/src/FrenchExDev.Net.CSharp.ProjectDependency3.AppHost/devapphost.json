@@ -1,0 +1,6 @@
+﻿{
+  "Environment": "Development",
+  "DnsConfiguration": {
+    "CertificatesDirectory": ".aspire-certs"
+  }
+}
