@@ -2,10 +2,8 @@
 
 public interface IDevAppHost
 {
-    void EnsureMkcertSetup(DnsConfiguration config);
-    void EnsureMkcertSetup(DnsConfiguration config, bool force);
-    void EnsureSetup(DnsConfiguration dnsConfig);
-    void EnsureSetup(DnsConfiguration dnsConfig, bool forceCertificateRegeneration);
+    void EnsureMkcertSetup(DnsConfiguration config, bool? force = false);
+    void EnsureSetup(DnsConfiguration dnsConfig, bool? forceCertificateRegeneration = false);
     bool ExecuteCommand(string command, string arguments, out string output);
     string GetCertificatePath(DnsConfiguration config);
     string GetKeyPath(DnsConfiguration config);
