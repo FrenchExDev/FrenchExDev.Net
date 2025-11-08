@@ -263,7 +263,7 @@ public class ClosedManagedDictionary<TKey, TValue> : ManagedDictionary<TKey, TVa
 /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
 public abstract class ManagedDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : notnull
 {
-    private readonly Dictionary<TKey, TValue> _initial = new();
+    private readonly Dictionary<TKey, TValue> _initial;
     private readonly OnAddList<TKey, TValue> _onAdd;
     private readonly OnRemoveList<TKey, TValue> _onRemove;
     private readonly OnClearList _onClear;
@@ -321,6 +321,7 @@ public abstract class ManagedDictionary<TKey, TValue> : IDictionary<TKey, TValue
         _onAdd = onAdd;
         _onRemove = onRemove;
         _onClear = onClear;
+        _initial = initial ?? new Dictionary<TKey, TValue>();
     }
 
     /// <summary>
@@ -340,6 +341,7 @@ public abstract class ManagedDictionary<TKey, TValue> : IDictionary<TKey, TValue
         _onAdd = onAdd;
         _onRemove = onRemove;
         _onClear = onClear;
+        _initial = new Dictionary<TKey, TValue>();
     }
 
     /// <summary>
@@ -483,7 +485,15 @@ public abstract class ManagedDictionary<TKey, TValue> : IDictionary<TKey, TValue
     /// <exception cref="NotImplementedException">Thrown in all cases, as this method is not implemented.</exception>
     public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
     {
-        throw new NotImplementedException();
+        if (array == null) throw new ArgumentNullException(nameof(array));
+        if (arrayIndex < 0 || arrayIndex > array.Length) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+        if ((array.Length - arrayIndex) < _initial.Count) throw new ArgumentException("The destination array has insufficient space.");
+
+        int i = arrayIndex;
+        foreach (var kv in _initial)
+        {
+            array[i++] = kv;
+        }
     }
 
     /// <summary>
