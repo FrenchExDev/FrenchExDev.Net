@@ -166,7 +166,7 @@ public class DevAppHost : IDevAppHost
         return false;
     }
 
-    public void EnsureMkcertSetup(DnsConfiguration config, bool force)
+    public void EnsureMkcertSetup(DnsConfiguration config, bool? force = false)
     {
         try
         {
@@ -194,11 +194,11 @@ public class DevAppHost : IDevAppHost
             var certFile = Path.Combine(certsDir, $"{config.Domain}.pem");
             var keyFile = Path.Combine(certsDir, $"{config.Domain}-key.pem");
 
-            bool shouldRegenerate = force || !File.Exists(certFile) || !File.Exists(keyFile) || NeedsCertificateRegeneration(config);
+            bool shouldRegenerate = force ?? false || !File.Exists(certFile) || !File.Exists(keyFile) || NeedsCertificateRegeneration(config);
 
             if (shouldRegenerate)
             {
-                if (force)
+                if (force ?? false)
                 {
                     _logger.LogInformation("Force regeneration of SSL certificates...");
                 }
@@ -288,7 +288,7 @@ public class DevAppHost : IDevAppHost
         }
     }
 
-    public void EnsureSetup(DnsConfiguration dnsConfig, bool forceCertificateRegeneration)
+    public void EnsureSetup(DnsConfiguration dnsConfig, bool? forceCertificateRegeneration = false)
     {
         // Check if running with elevated privileges on Windows
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsRunningAsAdministrator())

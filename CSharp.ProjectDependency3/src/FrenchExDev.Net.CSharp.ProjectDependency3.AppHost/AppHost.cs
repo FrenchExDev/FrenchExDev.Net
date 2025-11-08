@@ -19,7 +19,9 @@ System.Environment.SetEnvironmentVariable("ASPNETCORE_URLS", dnsConfig.GetDashbo
 var builder = DistributedApplication.CreateBuilder(args);
 var logger = LoggerFactory.Create(c => c.AddConsole()).CreateLogger("apphost");
 
-builder.EnsureSetup(dnsConfig, logger);
+var devAppHost = new DevAppHost(logger);
+devAppHost.EnsureSetup(dnsConfig, forceCertificateRegeneration: rootConfig.GetValue<bool>("ForceCertificateRegeneration"));
+
 
 // Backend services (internal, localhost only)
 var api = builder.AddProject<FrenchExDev_Net_CSharp_ProjectDependency3_Viz_Api>("viz-api-00")
