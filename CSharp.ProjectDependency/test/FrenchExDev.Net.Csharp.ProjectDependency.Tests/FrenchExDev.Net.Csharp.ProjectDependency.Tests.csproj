@@ -22,7 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Testing\FrenchExDev.Net.Dotnet.Project.Testing.csproj" />
+	  <ProjectReference Include="..\..\..\Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Testing\FrenchExDev.Net.Dotnet.Project.Testing.csproj" />
 	  <ProjectReference Include="..\..\src\FrenchExDev.Net.CSharp.ProjectDependency.Abstractions\FrenchExDev.Net.CSharp.ProjectDependency.Abstractions.csproj" />
 	  <ProjectReference Include="..\..\src\FrenchExDev.Net.CSharp.ProjectDependency\FrenchExDev.Net.CSharp.ProjectDependency.csproj" />
 	</ItemGroup>

@@ -5,10 +5,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Version>0.0.9</Version>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Description>Alpine Version in .NET</Description>
 		<Copyright>FrenchExDev</Copyright>
-		<PackageProjectUrl></PackageProjectUrl>
+		<PackageProjectUrl>https://www.github.com/FrenchExDev.Net/FrenchExDev.Net</PackageProjectUrl>
 		<RepositoryUrl>https://www.github.com/FrenchExDev.Net/FrenchExDev.Net</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>alpine version</PackageTags>

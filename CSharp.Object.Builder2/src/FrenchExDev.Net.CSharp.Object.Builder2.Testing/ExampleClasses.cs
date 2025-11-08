@@ -347,7 +347,7 @@ public class AddressBuilder : AbstractBuilder<Address>
         public CityCannotBeNullOrEmptyException() : base("City cannot be null or empty") { }
     }
 
-    protected new void ValidateInternal(VisitedObjectDictionary visited, FailuresDictionary failures)
+    protected override void ValidateInternal(VisitedObjectDictionary visited, FailuresDictionary failures)
     {
         AssertNotNullOrEmptyOrWhitespace(_street, nameof(_street), failures, (s) => new StreetCannotBeNullOrEmptyException());
         AssertNotNullOrEmptyOrWhitespace(_city, nameof(_city), failures, (s) => new CityCannotBeNullOrEmptyException());

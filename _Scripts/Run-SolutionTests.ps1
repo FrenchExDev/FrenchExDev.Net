@@ -3,6 +3,7 @@ param(
     [string]$SolutionPath = '',
     [string[]]$Include = @(),
     [string[]]$Exclude = @(),
+    [switch]$Parallel,
     [switch]$NoBuild,
     [switch]$NoRestore,
     [switch]$NoRun,
@@ -12,12 +13,18 @@ param(
     [switch]$GenerateMergedReport,
     [string]$MergedReportDir = '',
     [string[]]$ReportTypes = @('Html'),
-    [switch]$Parallel,
+    [int] $MaxParallel = 5,
+    [string]$RunOutputRoot = '',
     [switch]$WriteMergedCobertura,
-    [string]$MergedCoberturaPath = ''
-    ,[switch]$HaltOnError
-    ,[switch]$TableOnly
-    ,[switch]$VerboseRunnerOutput
+    [string]$MergedCoberturaPath = '',
+    [switch]$GenerateCoverageJson,
+    [switch]$GenerateCoverageHtml,
+    [string]$CoverageReportTitle = 'Code Coverage Report',
+    [switch]$Serve,
+    [int]$ServePort = 8080,
+    [switch]$HaltOnError,
+    [switch]$TableOnly,
+    [switch]$VerboseRunnerOutput
 )
 
 # Import module from _Scripts/Module
@@ -50,9 +57,9 @@ if ($NoRun) {
 Write-Host "Running solution tests (SolutionPath=$SolutionPath)" -ForegroundColor Green
 # honor -Verbose for more detailed logging
 $DetailedLogging = $PSBoundParameters.ContainsKey('Verbose')
-$res = Invoke-SolutionTests -SolutionPath $SolutionPath -Include $Include -Exclude $Exclude -NoBuild:$NoBuild -NoRestore:$NoRestore -Configuration $Configuration -UseMsBuildCoverlet:$UseMsBuildCoverlet -CoverageThreshold $CoverageThreshold -GenerateMergedReport:$GenerateMergedReport -MergedReportDir $MergedReportDir -ReportTypes $ReportTypes -Parallel:$Parallel -WriteMergedCobertura:$WriteMergedCobertura -MergedCoberturaPath $MergedCoberturaPath -HaltOnError:$HaltOnError -TableOnly:$TableOnly -VerboseRunnerOutput:$VerboseRunnerOutput -DetailedLogging:$DetailedLogging
+$res = Invoke-SolutionTests -SolutionPath $SolutionPath -Include $Include -Exclude $Exclude -NoBuild:$NoBuild -NoRestore:$NoRestore -Configuration $Configuration -UseMsBuildCoverlet:$UseMsBuildCoverlet -CoverageThreshold $CoverageThreshold -GenerateMergedReport:$GenerateMergedReport -MergedReportDir $MergedReportDir -ReportTypes $ReportTypes -Parallel:$Parallel -RunOutputRoot $RunOutputRoot -WriteMergedCobertura:$WriteMergedCobertura -MergedCoberturaPath $MergedCoberturaPath -GenerateCoverageJson:$GenerateCoverageJson -GenerateCoverageHtml:$GenerateCoverageHtml -CoverageReportTitle $CoverageReportTitle -Serve:$Serve -ServePort $ServePort -HaltOnError:$HaltOnError -TableOnly:$TableOnly -VerboseRunnerOutput:$VerboseRunnerOutput -DetailedLogging:$DetailedLogging -MaxParallel:$MaxParallel
 
-Write-Host "\nSummary: Total=$($res.Total) Passed=$($res.Passed) Failed=$($res.Failed)" -ForegroundColor Yellow
+Write-Host "Summary: Total=$($res.Total) Passed=$($res.Passed) Failed=$($res.Failed)" -ForegroundColor Yellow
 
 if ($res.Results) {
     foreach ($r in $res.Results) {

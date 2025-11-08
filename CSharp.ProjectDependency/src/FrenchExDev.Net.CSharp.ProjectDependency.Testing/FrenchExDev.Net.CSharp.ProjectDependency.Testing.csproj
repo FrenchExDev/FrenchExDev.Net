@@ -9,6 +9,6 @@
 		<PackageReference Include="Shouldly" />
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project\FrenchExDev.Net.Dotnet.Project.csproj" />
+	  <ProjectReference Include="..\..\..\Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project\FrenchExDev.Net.Dotnet.Project.csproj" />
 	</ItemGroup>
 </Project>

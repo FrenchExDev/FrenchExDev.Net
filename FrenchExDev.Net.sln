@@ -609,14 +609,23 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Proj
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Scripts", "_Scripts", "{F55160F0-57C8-A338-B3BC-ECC5451E8691}"
 	ProjectSection(SolutionItems) = preProject
-		_Scripts\Inspect-Coverage.ps1 = _Scripts\Inspect-Coverage.ps1
+		_Scripts\.PSScriptAnalyzer.settings.psd1 = _Scripts\.PSScriptAnalyzer.settings.psd1
+		_Scripts\ConvertTo-CoverageJson.ps1 = _Scripts\ConvertTo-CoverageJson.ps1
+		_Scripts\README.md = _Scripts\README.md
+		_Scripts\Run-Coverage.ps1 = _Scripts\Run-Coverage.ps1
+		_Scripts\Run-SolutionTests.ps1 = _Scripts\Run-SolutionTests.ps1
 		_Scripts\Run-TestProject.ps1 = _Scripts\Run-TestProject.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Module", "Module", "{75E6E35D-D15F-FC5D-48E6-3E1DB72B8F84}"
 	ProjectSection(SolutionItems) = preProject
+		_Scripts\Module\Resources\coverage-viewer.html = _Scripts\Module\Resources\coverage-viewer.html
+		_Scripts\Module\Format-StatusTable.ps1 = _Scripts\Module\Format-StatusTable.ps1
+		_Scripts\Module\Get-CoverageSummary.ps1 = _Scripts\Module\Get-CoverageSummary.ps1
+		_Scripts\Module\Get-SolutionTestProjects.ps1 = _Scripts\Module\Get-SolutionTestProjects.ps1
 		_Scripts\Module\Inspect-Coverage.ps1 = _Scripts\Module\Inspect-Coverage.ps1
 		_Scripts\Module\Module.psm1 = _Scripts\Module\Module.psm1
+		_Scripts\Module\Run-SolutionTests.ps1 = _Scripts\Module\Run-SolutionTests.ps1
 		_Scripts\Module\Run-TestProject.ps1 = _Scripts\Module\Run-TestProject.ps1
 	EndProjectSection
 EndProject

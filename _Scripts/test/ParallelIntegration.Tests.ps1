@@ -71,7 +71,7 @@ Describe 'Invoke-SolutionTests parallel throttling' {
 
         # Call the function under test with MaxParallel=2 and provide a JobRunner so tests run synchronously and deterministically
         $jobRunner = {
-            param($modulePath, $proj, $Configuration, $NoBuild, $NoRestore, $UseMsBuildCoverlet, $CoverageThreshold, $LogDir, $LogPrefix)
+            param($modulePath, $proj, $Configuration, $NoBuild, $NoRestore, $UseMsBuildCoverlet, $CoverageThreshold, $OutputDir, $LogDir, $LogPrefix)
             return [PSCustomObject]@{ Success = $true; ExitCode = 0; ProjectPath = $proj; CoverageFiles = @() }
         }
         $res = Invoke-SolutionTests -Parallel -MaxParallel 2 -JobRunner $jobRunner

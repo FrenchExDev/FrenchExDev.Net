@@ -138,26 +138,33 @@ if (-not (Test-Path $ReportDir)) {
     New-Item -ItemType Directory -Path $ReportDir | Out-Null
 }
 
-# Ensure ReportGenerator is available
+# Ensure ReportGenerator is available.
+# Prefer a repo-local tool (dotnet tool run) and attempt 'dotnet tool restore' if a tool manifest exists.
+# Do NOT attempt to install the global tool from this script; instead print guidance if missing.
 $rgAvailable = $false
+$useDotnetToolRun = $false
+
+# Try repo-local invocation first (works if tools were restored into the manifest)
 try {
-    & reportgenerator -version 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) { $rgAvailable = $true }
+    & dotnet tool run reportgenerator --version > $null 2>&1
+    if ($LASTEXITCODE -eq 0) { $rgAvailable = $true; $useDotnetToolRun = $true }
+} catch {}
+
+# Fallback: is reportgenerator on PATH (global tool or user installed)?
+if (-not $rgAvailable) {
+    if (Get-Command reportgenerator -ErrorAction SilentlyContinue) { $rgAvailable = $true; $useDotnetToolRun = $false }
 }
-catch {
-    $rgAvailable = $false
+
+# If still not available but a tool manifest exists, try 'dotnet tool restore' (idempotent)
+$toolManifest = Join-Path -Path (Get-Location) -ChildPath '.config\dotnet-tools.json'
+if (-not $rgAvailable -and (Test-Path $toolManifest)) {
+    Write-Host "Restoring dotnet tools from manifest..."
+    & dotnet tool restore
+    try { & dotnet tool run reportgenerator --version > $null 2>&1; if ($LASTEXITCODE -eq 0) { $rgAvailable = $true; $useDotnetToolRun = $true } } catch {}
 }
 
 if (-not $rgAvailable) {
-    Write-Host "ReportGenerator not found. Installing global tool 'dotnet-reportgenerator-globaltool'..."
-    & dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.1.4 2>&1 | Write-Host
-    if ($LASTEXITCODE -ne 0) {
-        Write-Warning "Failed to install reportgenerator global tool. You can install it manually with:`n  dotnet tool install --global dotnet-reportgenerator-globaltool`
-Continuing without ReportGenerator will still run tests and collect coverage XML."
-    }
-    else {
-        Write-Host "ReportGenerator installed."
-    }
+    Write-Warning "ReportGenerator not found. To enable coverage report generation either run:`n  dotnet tool restore (if this repo has a tool manifest) `nor`n  dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.1.4`nContinuing without ReportGenerator will still run tests and collect coverage XML."
 }
 
 # Run dotnet test with coverage collection

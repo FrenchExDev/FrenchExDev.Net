@@ -7,7 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\..\Alpine\src\FrenchExDev.Net.Alpine.Version\FrenchExDev.Net.Alpine.Version.csproj" />
+		<ProjectReference Include="..\..\..\Alpine.Version\src\FrenchExDev.Net.Alpine.Version\FrenchExDev.Net.Alpine.Version.csproj" />
 		<ProjectReference Include="..\..\..\Packer\src\FrenchExDev.Net.Packer.Abstractions\FrenchExDev.Net.Packer.Abstractions.csproj" />
 		<ProjectReference Include="..\..\..\Packer\src\FrenchExDev.Net.Packer.Bundle\FrenchExDev.Net.Packer.Bundle.csproj" />
 	</ItemGroup>
