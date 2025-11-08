@@ -73,9 +73,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Mm.Module.L
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Mm.Module.Library.Generator.Tests", "Mm\test\FrenchExDev.Net.Mm.Module.Library.Generator.Tests\FrenchExDev.Net.Mm.Module.Library.Generator.Tests.csproj", "{39692958-DB36-1523-2035-4E1BF9D61835}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project\FrenchExDev.Net.Dotnet.Project.csproj", "{B701EEAB-C141-3720-8D59-C5A534B4FDD9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project\FrenchExDev.Net.Dotnet.Project.csproj", "{B701EEAB-C141-3720-8D59-C5A534B4FDD9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Abstractions", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj", "{9FB153F5-C625-6F46-BBA2-B09B937B1D08}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Abstractions", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj", "{9FB153F5-C625-6F46-BBA2-B09B937B1D08}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Alpine.Version", "Alpine.Version", "{5052BB47-7C59-06AC-EC03-867B59B31F6F}"
 	ProjectSection(SolutionItems) = preProject
@@ -103,43 +103,43 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dotnet.NuGet", "Dotnet.NuGe
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dotnet.Solution", "Dotnet.Solution", "{C90B00D4-734E-5927-234F-582767C2E41C}"
 	ProjectSection(SolutionItems) = preProject
-		Dotnet\Solution\.projects.yaml = Dotnet\Solution\.projects.yaml
-		Dotnet\Solution\LICENSE = Dotnet\Solution\LICENSE
-		Dotnet\Solution\NuGet.config = Dotnet\Solution\NuGet.config
-		Dotnet\Solution\README.md = Dotnet\Solution\README.md
+		Dotnet.Solution\.projects.yaml = Dotnet.Solution\.projects.yaml
+		Dotnet.Solution\LICENSE = Dotnet.Solution\LICENSE
+		Dotnet.Solution\NuGet.config = Dotnet.Solution\NuGet.config
+		Dotnet.Solution\README.md = Dotnet.Solution\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dotnet.Project", "Dotnet.Project", "{FF5D5AD3-3FCD-C3F4-BC7F-506B8ED4CC43}"
 	ProjectSection(SolutionItems) = preProject
-		Dotnet\Project\.projects.yaml = Dotnet\Project\.projects.yaml
-		Dotnet\Project\LICENSE = Dotnet\Project\LICENSE
-		Dotnet\Project\NuGet.config = Dotnet\Project\NuGet.config
-		Dotnet\Project\README.md = Dotnet\Project\README.md
+		Dotnet.Project\.projects.yaml = Dotnet.Project\.projects.yaml
+		Dotnet.Project\LICENSE = Dotnet.Project\LICENSE
+		Dotnet.Project\NuGet.config = Dotnet.Project\NuGet.config
+		Dotnet.Project\README.md = Dotnet.Project\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Infrastructure", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Infrastructure\FrenchExDev.Net.Dotnet.Project.Infrastructure.csproj", "{08C4F66E-065A-F8B9-5901-E85A98777AF4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Infrastructure", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Infrastructure\FrenchExDev.Net.Dotnet.Project.Infrastructure.csproj", "{08C4F66E-065A-F8B9-5901-E85A98777AF4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Testing", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Testing\FrenchExDev.Net.Dotnet.Project.Testing.csproj", "{42D17C4D-4B0D-68C7-FA55-57723367CBBA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Testing", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Testing\FrenchExDev.Net.Dotnet.Project.Testing.csproj", "{42D17C4D-4B0D-68C7-FA55-57723367CBBA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{25DE01E2-1A93-332C-F16A-D7B630191B68}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E4A2F344-A2D6-A532-1680-5FC38962C65C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Tests", "Dotnet\Project\test\FrenchExDev.Net.Dotnet.Project.Tests\FrenchExDev.Net.Dotnet.Project.Tests.csproj", "{B45DC250-6F80-DDB7-6B34-0A0B8F382EB2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Tests", "Dotnet.Project\test\FrenchExDev.Net.Dotnet.Project.Tests\FrenchExDev.Net.Dotnet.Project.Tests.csproj", "{B45DC250-6F80-DDB7-6B34-0A0B8F382EB2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C4458FE1-714C-2F70-2A88-C900BDD8FCAC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{352540C3-6FDD-3062-1975-E832EB310E27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Solution", "Dotnet\Solution\src\FrenchExDev.Net.Dotnet.Solution\FrenchExDev.Net.Dotnet.Solution.csproj", "{958070D0-BE20-2412-8C63-9F4BAE1CE852}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Solution", "Dotnet.Solution\src\FrenchExDev.Net.Dotnet.Solution\FrenchExDev.Net.Dotnet.Solution.csproj", "{958070D0-BE20-2412-8C63-9F4BAE1CE852}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Solution.Abstractions", "Dotnet\Solution\src\FrenchExDev.Net.Dotnet.Solution.Abstractions\FrenchExDev.Net.Dotnet.Solution.Abstractions.csproj", "{D10BF6BF-AE07-303C-38DE-2B826A061DF3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Solution.Abstractions", "Dotnet.Solution\src\FrenchExDev.Net.Dotnet.Solution.Abstractions\FrenchExDev.Net.Dotnet.Solution.Abstractions.csproj", "{D10BF6BF-AE07-303C-38DE-2B826A061DF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Solution.Infrastructure", "Dotnet\Solution\src\FrenchExDev.Net.Dotnet.Solution.Infrastructure\FrenchExDev.Net.Dotnet.Solution.Infrastructure.csproj", "{80FE7207-883A-80DC-C022-C7A6A70520B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Solution.Infrastructure", "Dotnet.Solution\src\FrenchExDev.Net.Dotnet.Solution.Infrastructure\FrenchExDev.Net.Dotnet.Solution.Infrastructure.csproj", "{80FE7207-883A-80DC-C022-C7A6A70520B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Solution.Testing", "Dotnet\Solution\src\FrenchExDev.Net.Dotnet.Solution.Testing\FrenchExDev.Net.Dotnet.Solution.Testing.csproj", "{AC25ED61-85B7-710E-644D-EC5503932845}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Solution.Testing", "Dotnet.Solution\src\FrenchExDev.Net.Dotnet.Solution.Testing\FrenchExDev.Net.Dotnet.Solution.Testing.csproj", "{AC25ED61-85B7-710E-644D-EC5503932845}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Solution.Tests", "Dotnet\Solution\test\FrenchExDev.Net.Dotnet.Solution.Tests\FrenchExDev.Net.Dotnet.Solution.Tests.csproj", "{1710F820-EAD7-4C51-0545-837551F15899}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Solution.Tests", "Dotnet.Solution\test\FrenchExDev.Net.Dotnet.Solution.Tests\FrenchExDev.Net.Dotnet.Solution.Tests.csproj", "{1710F820-EAD7-4C51-0545-837551F15899}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BB1A9915-F70C-6051-828F-28F664B63ED2}"
 EndProject
@@ -199,11 +199,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Mm.App.Desk
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Mm.App.Desktop.Builder.Testing", "Mm\src\FrenchExDev.Net.Mm.App.Desktop.Builder.Testing\FrenchExDev.Net.Mm.App.Desktop.Builder.Testing.csproj", "{A713CFFF-5B7D-6CF1-55F8-8AF155AF77EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Alpine.Version", "Alpine\src\FrenchExDev.Net.Alpine.Version\FrenchExDev.Net.Alpine.Version.csproj", "{4236DC55-C07B-897D-1DD1-F58BC615EBF2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Alpine.Version", "Alpine.Version\src\FrenchExDev.Net.Alpine.Version\FrenchExDev.Net.Alpine.Version.csproj", "{4236DC55-C07B-897D-1DD1-F58BC615EBF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Alpine.Version.Testing", "Alpine\src\FrenchExDev.Net.Alpine.Version.Testing\FrenchExDev.Net.Alpine.Version.Testing.csproj", "{C908E7B2-73D6-C686-0FC6-F4469A61AB01}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Alpine.Version.Testing", "Alpine.Version\src\FrenchExDev.Net.Alpine.Version.Testing\FrenchExDev.Net.Alpine.Version.Testing.csproj", "{C908E7B2-73D6-C686-0FC6-F4469A61AB01}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Alpine.Version.Tests", "Alpine\test\FrenchExDev.Net.Alpine.Version.Tests\FrenchExDev.Net.Alpine.Version.Tests.csproj", "{0140FD42-C329-5D20-8545-43339B7ECA6B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Alpine.Version.Tests", "Alpine.Version\test\FrenchExDev.Net.Alpine.Version.Tests\FrenchExDev.Net.Alpine.Version.Tests.csproj", "{0140FD42-C329-5D20-8545-43339B7ECA6B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Packer.Alpine", "Packer.Alpine", "{6DE27727-E747-85D4-434E-4E723A6C5C4A}"
 	ProjectSection(SolutionItems) = preProject
@@ -349,77 +349,77 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Obje
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Model.Tests", "CSharp.Object.Model\test\FrenchExDev.Net.CSharp.Object.Model.Tests\FrenchExDev.Net.CSharp.Object.Model.Tests.csproj", "{19690DED-00F3-36BB-89C0-E867F4A18EAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.csproj", "{F6372C64-1925-787B-BE81-1BDEC9DF30CE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.csproj", "{F6372C64-1925-787B-BE81-1BDEC9DF30CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions.csproj", "{DC524CBB-F8D7-C7CE-7081-B305C63DB37F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions.csproj", "{DC524CBB-F8D7-C7CE-7081-B305C63DB37F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure.csproj", "{D7A45993-EF23-8B82-6240-D33F3E0D7D91}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure.csproj", "{D7A45993-EF23-8B82-6240-D33F3E0D7D91}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing.csproj", "{AC46BEE5-5C75-72BD-9DC0-EF5AF8D1F181}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing.csproj", "{AC46BEE5-5C75-72BD-9DC0-EF5AF8D1F181}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ClassProjectType", "ClassProjectType", "{C4F5F70E-0072-7B50-0030-FFAB7BC44B3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.CliProjectType", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.csproj", "{790A32CF-8140-DF96-8BFC-B6F8AE5B9A24}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.CliProjectType", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.csproj", "{790A32CF-8140-DF96-8BFC-B6F8AE5B9A24}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions.csproj", "{80D76F10-81B6-1769-C92A-5A6A6D4EC229}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions.csproj", "{80D76F10-81B6-1769-C92A-5A6A6D4EC229}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure.csproj", "{72FB9C74-08C0-379E-EC54-B671D6C4B316}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure.csproj", "{72FB9C74-08C0-379E-EC54-B671D6C4B316}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Testing", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Testing.csproj", "{E4E847F5-13D9-5A0C-C300-5F70A9A83EF1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Testing", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Testing.csproj", "{E4E847F5-13D9-5A0C-C300-5F70A9A83EF1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CliProjectType", "CliProjectType", "{A15D84E4-F16D-05D9-44BD-2BC734FA1E1B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.csproj", "{4177EFAE-C5B0-2CC8-0E79-4334B8189B4A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.csproj", "{4177EFAE-C5B0-2CC8-0E79-4334B8189B4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions.csproj", "{378995CF-64BA-99F3-048B-706C10983C60}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions.csproj", "{378995CF-64BA-99F3-048B-706C10983C60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure.csproj", "{3622166B-82E5-9EDF-EAEE-B02EF4C34DCD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure.csproj", "{3622166B-82E5-9EDF-EAEE-B02EF4C34DCD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Testing", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Testing.csproj", "{BEBC1C5B-3BD3-0850-88B1-AA7453F961C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Testing", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Testing.csproj", "{BEBC1C5B-3BD3-0850-88B1-AA7453F961C6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DesktopProjectType", "DesktopProjectType", "{3B612C17-B039-C8CC-129C-415580954506}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.LibraryProject", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.csproj", "{4A25AB39-8C1E-4D91-4735-C7B461C535AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.LibraryProject", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.csproj", "{4A25AB39-8C1E-4D91-4735-C7B461C535AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions.csproj", "{092803B0-2473-1AF8-3D80-0995A9AF8225}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions.csproj", "{092803B0-2473-1AF8-3D80-0995A9AF8225}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure.csproj", "{E5E01AFB-A2FE-0190-9936-3CA6751B8A8E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure.csproj", "{E5E01AFB-A2FE-0190-9936-3CA6751B8A8E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Testing", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Testing\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Testing.csproj", "{39F2C30D-AE73-63EE-ECAB-89D1243DDCDA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Testing", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Testing\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Testing.csproj", "{39F2C30D-AE73-63EE-ECAB-89D1243DDCDA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LibraryProjectType", "LibraryProjectType", "{FD4F0687-0DB3-0A3A-E9B5-F257B69649DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.csproj", "{5303CBC8-0379-BE76-DA58-08D2EC255F1C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.csproj", "{5303CBC8-0379-BE76-DA58-08D2EC255F1C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions.csproj", "{160F6490-0E23-8354-DCD2-9A0A0F8F2344}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions.csproj", "{160F6490-0E23-8354-DCD2-9A0A0F8F2344}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure.csproj", "{8F7745E4-4CC9-651C-6382-61845715F43A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure.csproj", "{8F7745E4-4CC9-651C-6382-61845715F43A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Testing", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Testing.csproj", "{49B9E242-5401-DE74-A732-BB3FA91072D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Testing", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Testing.csproj", "{49B9E242-5401-DE74-A732-BB3FA91072D7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApiProjectType", "WebApiProjectType", "{30B0FBFF-730A-9FC9-8B4B-41DAE2DBBAE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.csproj", "{98360A18-D635-5F78-FB51-2B56AD6CBB37}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.csproj", "{98360A18-D635-5F78-FB51-2B56AD6CBB37}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions.csproj", "{4BD45779-ED98-8013-CBC9-06B5FF2A3140}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions.csproj", "{4BD45779-ED98-8013-CBC9-06B5FF2A3140}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure.csproj", "{6C0847FF-574C-1FDD-7531-AA2930FEE5AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure.csproj", "{6C0847FF-574C-1FDD-7531-AA2930FEE5AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing", "Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing.csproj", "{1D5AB0F5-FA73-D704-F2AC-9FDFC8F85ADA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing", "Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing.csproj", "{1D5AB0F5-FA73-D704-F2AC-9FDFC8F85ADA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebWorkerProjectType", "WebWorkerProjectType", "{EFDA3F87-64F8-4C6B-EAFF-DCEB68000973}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Tests", "Dotnet\Project\test\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Tests\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Tests.csproj", "{0518A6CB-3CCD-7474-2678-73C91FABFB40}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Tests", "Dotnet.Project\test\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Tests\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Tests.csproj", "{0518A6CB-3CCD-7474-2678-73C91FABFB40}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Tests", "Dotnet\Project\test\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Tests\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Tests.csproj", "{FBC8E817-6ADC-C291-278B-E569180813F1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Tests", "Dotnet.Project\test\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Tests\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Tests.csproj", "{FBC8E817-6ADC-C291-278B-E569180813F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Tests", "Dotnet\Project\test\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Tests\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Tests.csproj", "{B489F3D1-B31A-EA41-BE8A-8AA079D6DAE1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Tests", "Dotnet.Project\test\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Tests\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Tests.csproj", "{B489F3D1-B31A-EA41-BE8A-8AA079D6DAE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Tests", "Dotnet\Project\test\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Tests\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Tests.csproj", "{0AA874CB-F688-D3F5-3876-2E5F7F5ECF64}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Tests", "Dotnet.Project\test\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Tests\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Tests.csproj", "{0AA874CB-F688-D3F5-3876-2E5F7F5ECF64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Tests", "Dotnet\Project\test\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Tests\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Tests.csproj", "{5AE31A61-1B08-6508-717D-760AC407B4C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Tests", "Dotnet.Project\test\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Tests\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Tests.csproj", "{5AE31A61-1B08-6508-717D-760AC407B4C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Tests", "Dotnet\Project\test\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Tests\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Tests.csproj", "{EDA818D9-9670-070C-E3E3-600C967AEACB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Tests", "Dotnet.Project\test\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Tests\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Tests.csproj", "{EDA818D9-9670-070C-E3E3-600C967AEACB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.VirtualBox.Version", "VirtualBox.Version\src\FrenchExDev.Net.VirtualBox.Version\FrenchExDev.Net.VirtualBox.Version.csproj", "{A6387451-4809-414F-BBB4-0BBCF6748CF7}"
 EndProject
@@ -609,7 +609,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Proj
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Scripts", "_Scripts", "{F55160F0-57C8-A338-B3BC-ECC5451E8691}"
 	ProjectSection(SolutionItems) = preProject
+		_Scripts\Inspect-Coverage.ps1 = _Scripts\Inspect-Coverage.ps1
 		_Scripts\Run-TestProject.ps1 = _Scripts\Run-TestProject.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Module", "Module", "{75E6E35D-D15F-FC5D-48E6-3E1DB72B8F84}"
+	ProjectSection(SolutionItems) = preProject
+		_Scripts\Module\Inspect-Coverage.ps1 = _Scripts\Module\Inspect-Coverage.ps1
+		_Scripts\Module\Module.psm1 = _Scripts\Module\Module.psm1
+		_Scripts\Module\Run-TestProject.ps1 = _Scripts\Module\Run-TestProject.ps1
 	EndProjectSection
 EndProject
 Global
@@ -3535,6 +3543,7 @@ Global
 		{881D6204-D665-4C62-AC46-73CAF7A46F77} = {AEE23783-83E2-670A-7536-E2FB4B6657EA}
 		{6D61A3D7-0EF6-0B2A-61F6-8AEDF58D73C0} = {AEE23783-83E2-670A-7536-E2FB4B6657EA}
 		{86D3B556-2696-667F-AD99-CA3BAD58A051} = {AEE23783-83E2-670A-7536-E2FB4B6657EA}
+		{75E6E35D-D15F-FC5D-48E6-3E1DB72B8F84} = {F55160F0-57C8-A338-B3BC-ECC5451E8691}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4BCE80FC-0AE1-4B5A-A6DA-D1999B8AA168}

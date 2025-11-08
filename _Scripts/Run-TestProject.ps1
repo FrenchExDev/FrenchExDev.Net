@@ -90,8 +90,8 @@ if (-not [string]::IsNullOrWhiteSpace($OutputDir)) {
 if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
     Write-Host "ProjectPath not provided. Searching for a test project (*.csproj) with 'Test' or 'Tests' in the path..."
     $found = Get-ChildItem -Path . -Recurse -Filter '*.csproj' -ErrorAction SilentlyContinue |
-             Where-Object { $_.FullName -match 'Test' -or $_.FullName -match 'Tests' } |
-             Select-Object -First 1
+    Where-Object { $_.FullName -match 'Test' -or $_.FullName -match 'Tests' } |
+    Select-Object -First 1
     if ($null -eq $found) {
         Write-Error "No test project found. Provide -ProjectPath parameter pointing to a .csproj file."
         exit 2
@@ -99,7 +99,8 @@ if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
 
     $ProjectPath = $found.FullName
     Write-Host "Discovered project: $ProjectPath"
-} else {
+}
+else {
     if (-not (Test-Path $ProjectPath)) {
         Write-Error "ProjectPath '$ProjectPath' does not exist."
         exit 3
@@ -123,7 +124,8 @@ if ([string]::IsNullOrWhiteSpace($OutputDir)) {
         if ($ReportDir -eq 'CoverageReport') { $ReportDir = Join-Path -Path $reportRoot -ChildPath 'CoverageReport' }
 
         Write-Host "Using standardized output root (two levels up): $reportRoot -> Results: $ResultsDir, Report: $ReportDir"
-    } catch {
+    }
+    catch {
         Write-Warning "Could not compute standardized output directory from ProjectPath: $_"
     }
 }
@@ -141,7 +143,8 @@ $rgAvailable = $false
 try {
     & reportgenerator -version 2>$null | Out-Null
     if ($LASTEXITCODE -eq 0) { $rgAvailable = $true }
-} catch {
+}
+catch {
     $rgAvailable = $false
 }
 
@@ -151,7 +154,8 @@ if (-not $rgAvailable) {
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "Failed to install reportgenerator global tool. You can install it manually with:`n  dotnet tool install --global dotnet-reportgenerator-globaltool`
 Continuing without ReportGenerator will still run tests and collect coverage XML."
-    } else {
+    }
+    else {
         Write-Host "ReportGenerator installed."
     }
 }
@@ -173,19 +177,23 @@ if ($UseMsBuildCoverlet) {
                 if ($addProc.ExitCode -ne 0) {
                     Write-Warning "Failed to add 'coverlet.msbuild' to project. Falling back to XPlat collector. See temp_out.txt and temp_err.txt for details."
                     $UseMsBuildCoverlet = $false
-                } else {
+                }
+                else {
                     Write-Host "'coverlet.msbuild' added to project successfully."
                 }
                 # cleanup temp files if exist
                 Remove-Item -Path temp_out.txt -ErrorAction SilentlyContinue
                 Remove-Item -Path temp_err.txt -ErrorAction SilentlyContinue
-            } else {
+            }
+            else {
                 Write-Host "'coverlet.msbuild' already referenced in project."
             }
-        } else {
+        }
+        else {
             Write-Warning "Could not resolve ProjectPath to verify packages. Proceeding assuming project references coverlet.msbuild."
         }
-    } catch {
+    }
+    catch {
         Write-Warning "Error while checking/adding coverlet.msbuild: $_. Falling back to collector."
         $UseMsBuildCoverlet = $false
     }
@@ -201,7 +209,8 @@ if ($UseMsBuildCoverlet) {
         $covOutDir = Resolve-Path -Path (Split-Path -Path $CoverageOutput -Parent) -ErrorAction SilentlyContinue
         if (-not $covOutDir) { New-Item -ItemType Directory -Path (Split-Path -Path $CoverageOutput -Parent) | Out-Null }
         $props += "/p:CoverletOutput=$CoverageOutput"
-    } else {
+    }
+    else {
         # default under ResultsDir
         $defaultCov = Join-Path -Path $ResultsDir -ChildPath 'coverage'
         if (-not (Test-Path $defaultCov)) { New-Item -ItemType Directory -Path $defaultCov | Out-Null }
@@ -215,7 +224,8 @@ if ($UseMsBuildCoverlet) {
     $dotnetTestArgs = @('test', "`"$ProjectPath`"", '--configuration', $Configuration)
     if ($NoBuild) { $dotnetTestArgs += '--no-build' }
     $dotnetTestArgs += $props
-} else {
+}
+else {
     # Default: use coverlet.collector via XPlat Code Coverage
     if ($UseMsBuildCoverlet) { Write-Warning "Falling back to collector due to previous errors." }
     $dotnetTestArgs = @('test', "`"$ProjectPath`"", '--configuration', $Configuration, '--logger', 'trx', '--results-directory', $ResultsDir, '--collect:"XPlat Code Coverage"')
@@ -232,12 +242,13 @@ if ($process.ExitCode -ne 0) {
 # Find coverage file(s)
 Write-Header "Locating coverage file(s)"
 $foundCoverageFiles = @()
-$searchPatterns = @('*coverage*.xml','*coverage*.cobertura.xml','*coverage*.opencover.xml','*coverage*.xml','coverage.*.xml')
+$searchPatterns = @('*coverage*.xml', '*coverage*.cobertura.xml', '*coverage*.opencover.xml', '*coverage*.xml', 'coverage.*.xml')
 
 if (-not [string]::IsNullOrWhiteSpace($CoverageOutput)) {
     if (Test-Path $CoverageOutput -PathType Leaf) {
         $foundCoverageFiles += (Resolve-Path $CoverageOutput).Path
-    } elseif (Test-Path $CoverageOutput -PathType Container) {
+    }
+    elseif (Test-Path $CoverageOutput -PathType Container) {
         foreach ($pat in $searchPatterns) {
             $foundCoverageFiles += Get-ChildItem -Path $CoverageOutput -Recurse -Filter $pat -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
         }
