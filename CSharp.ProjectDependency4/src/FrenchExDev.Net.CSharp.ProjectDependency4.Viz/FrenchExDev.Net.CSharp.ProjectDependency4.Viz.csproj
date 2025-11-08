@@ -10,8 +10,4 @@
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\..\CSharp.ProjectDependency3\src\FrenchExDev.Net.CSharp.ProjectDependency3.ServiceDefaults\FrenchExDev.Net.CSharp.ProjectDependency3.ServiceDefaults.csproj" />
-	</ItemGroup>
-
 </Project>

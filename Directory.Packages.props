@@ -46,10 +46,10 @@
     <PackageVersion Include="MediatR.Contracts" Version="2.0.1" />
     <PackageVersion Include="MediatR" Version="12.4.1" />
     <PackageVersion Include="Roslynator.Analyzers" Version="4.14.1" />
-    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="coverlet.collector" Version="3.2.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <PackageVersion Include="Shouldly" Version="4.3.0" />
+    <PackageVersion Include="Shouldly" Version="4.0.0" />
     <PackageVersion Include="YamlDotNet" Version="16.2.1" />
     <PackageVersion Include="ByteSize" Version="2.1.2" />
     <PackageVersion Include="Figgle" Version="0.6.5" />

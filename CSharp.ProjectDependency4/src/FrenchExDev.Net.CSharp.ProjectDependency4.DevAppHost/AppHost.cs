@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
@@ -13,7 +13,7 @@ var rootConfig = new ConfigurationBuilder()
     .Build();
 var dnsConfig = rootConfig.GetSection("DnsConfiguration").Get<DnsConfiguration>() ?? throw new InvalidOperationException("missing DnsConfiguration");
 
-devAppHost.EnsureMkcertSetup(dnsConfig);
+devAppHost.EnsureCertSetup(dnsConfig);
 
 System.Environment.SetEnvironmentVariable("ASPIRE_ENVIRONMENT", rootConfig["Environment"]);
 System.Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", rootConfig["Environment"]);
@@ -30,21 +30,32 @@ var builder = DistributedApplication.CreateBuilder(args);
 devAppHost.EnsureUpdatedHosts(dnsConfig);
 
 builder.AddProject<Projects.FrenchExDev_Net_CSharp_ProjectDependency4_Viz>("viz")
+    .WithEnvironment("DOTNET_LAUNCH_PROFILE", "local-dev-https")
     .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
     .WithEnvironment("DOTNET_ENVIRONMENT", "Development")
     .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__Path", dnsConfig.CertPathOrDie())
     .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__KeyPath", dnsConfig.KeyPathOrDie())
-    .WithEnvironment("ASPNETCORE_URLS", "https://0.0.0.0:8443;https://viz.pd4i1.com:8443")
+    .WithEnvironment("ASPNETCORE_URLS", "https://0.0.0.0:443;https://viz.pd4i1.com:443")
     .WithEnvironment("CustomDomain__Fqdn", "https://viz.pd4i1.com")
     .WithEnvironment("CustomDomain__Port", 8443.ToString())
-    .WithUrl($"https://viz.pd4i1.com:8443")
+    .WithUrl("https://viz.pd4i1.com:443")
+    ;
+
+builder.AddProject<Projects.FrenchExDev_Net_CSharp_ProjectDependency4_Viz_Api>("viz-api")
+    .WithEnvironment("DOTNET_LAUNCH_PROFILE", "local-dev-https")
+    .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
+    .WithEnvironment("DOTNET_ENVIRONMENT", "Development")
+    .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__Path", dnsConfig.CertPathOrDie())
+    .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__KeyPath", dnsConfig.KeyPathOrDie())
+    .WithEnvironment("ASPNETCORE_URLS", "https://0.0.0.0:8443;https://viz-api.pd4i1.com:8443")
+    .WithEnvironment("CustomDomain__Fqdn", "https://viz-api.pd4i1.com")
+    .WithEnvironment("CustomDomain__Port", 8443.ToString())
+    .WithUrl("https://viz-api.pd4i1.com:8443")
     ;
 
 var project = builder.Build();
 
-await project.StartAsync();
-
-await project.WaitForShutdownAsync();
+await project.RunAsync();
 
 public record DnsConfiguration
 {
@@ -59,6 +70,7 @@ public record DnsConfiguration
     {
         yield return "devdash.pd4i1.com";
         yield return "viz.pd4i1.com";
+        yield return "viz-api.pd4i1.com";
     }
     public IEnumerable<string> GetHostsFileEntries()
     {
@@ -96,22 +108,12 @@ public record DnsConfiguration
 
     internal object DomainOrDie() => Domain ?? throw new InvalidOperationException("Domain is not set in the configuration.");
 }
+
 public interface IDevAppHost
 {
-    void EnsureMkcertSetup(DnsConfiguration config, bool? force = false);
+    void EnsureCertSetup(DnsConfiguration config, bool? force = false);
     void EnsureUpdatedHosts(DnsConfiguration dnsConfig);
     void EnsureSetup(DnsConfiguration dnsConfig, bool? forceCertificateRegeneration = false);
-    bool ExecuteCommand(string command, string arguments, out string output);
-    string GetCertificatePath(DnsConfiguration config);
-    string GetKeyPath(DnsConfiguration config);
-    string GetConfigurationFilePath(DnsConfiguration config);
-    bool IsRunningAsAdministrator();
-    bool NeedsHostsFileUpdate(DnsConfiguration config);
-    bool NeedsCertificateRegeneration(DnsConfiguration config);
-    bool RestartAsAdministrator();
-    void SaveConfiguration(DnsConfiguration config);
-    DnsConfiguration? LoadSavedConfiguration(DnsConfiguration config);
-    void UpdateHostsFile(DnsConfiguration config);
 }
 
 public class DevAppHost : IDevAppHost
@@ -276,7 +278,7 @@ public class DevAppHost : IDevAppHost
         return false;
     }
 
-    public void EnsureMkcertSetup(DnsConfiguration dnsConfig, bool? force = false)
+    public void EnsureCertSetup(DnsConfiguration dnsConfig, bool? force = false)
     {
         try
         {
@@ -412,7 +414,7 @@ public class DevAppHost : IDevAppHost
         }
 
         // Ensure mkcert is installed and certificates are generated
-        EnsureMkcertSetup(dnsConfig, forceCertificateRegeneration);
+        EnsureCertSetup(dnsConfig, forceCertificateRegeneration);
 
     }
 

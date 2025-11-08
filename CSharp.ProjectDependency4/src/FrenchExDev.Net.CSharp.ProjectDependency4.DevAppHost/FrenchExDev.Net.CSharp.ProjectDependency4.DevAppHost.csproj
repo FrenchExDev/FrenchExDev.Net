@@ -21,6 +21,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\FrenchExDev.Net.CSharp.ProjectDependency4.Viz.Api\FrenchExDev.Net.CSharp.ProjectDependency4.Viz.Api.csproj" />
 	  <ProjectReference Include="..\FrenchExDev.Net.CSharp.ProjectDependency4.Viz\FrenchExDev.Net.CSharp.ProjectDependency4.Viz.csproj" />
 	</ItemGroup>
 

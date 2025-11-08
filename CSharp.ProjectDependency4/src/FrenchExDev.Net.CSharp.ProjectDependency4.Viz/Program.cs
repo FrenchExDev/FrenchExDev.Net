@@ -5,8 +5,6 @@ using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
-
 builder.Services.AddLogging();
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
@@ -37,8 +35,6 @@ if (!string.IsNullOrEmpty(certPath) && !string.IsNullOrEmpty(keyPath) && File.Ex
 }
 
 var app = builder.Build();
-
-app.MapDefaultEndpoints();
 
 app.MapControllers();
 

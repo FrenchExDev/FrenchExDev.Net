@@ -29,15 +29,23 @@ public class InvalidResultAccessException : ResultException { }
 public readonly struct Result : IResult
 {
     /// <summary>
-    /// Initializes a new instance of the Result class with the specified success state.
+    /// Creates a new <see cref="Result"/> instance representing a successful operation.
     /// </summary>
-    /// <param name="isSuccess">A value indicating whether the result represents a successful outcome. Specify <see langword="true"/> for
-    /// success; otherwise, <see langword="false"/>.</param>
-    private Result(bool isSuccess, Exception? exception)
-    {
-        IsSuccess = isSuccess;
-        Exception = exception;
-    }
+    /// <returns>A <see cref="Result"/> indicating success.</returns>
+    public static Result Success() => new(true, null);
+
+    /// <summary>
+    /// Creates a new <see cref="Result"/> instance representing a failed operation.
+    /// </summary>
+    /// <returns>A <see cref="Result"/> indicating failure.</returns>
+    public static Result Failure() => new(false, null);
+
+    /// <summary>
+    /// Creates a failed result that encapsulates the specified exception.
+    /// </summary>
+    /// <param name="ex">The exception that describes the reason for the failure. Cannot be null.</param>
+    /// <returns>A <see cref="Result"/> instance representing a failure, containing the provided exception.</returns>
+    public static Result Failure(Exception ex) => new(false, ex);
 
     /// <summary>
     /// Gets the exception that caused the current operation to fail, if any.
@@ -57,23 +65,83 @@ public readonly struct Result : IResult
     public bool IsFailure => !IsSuccess;
 
     /// <summary>
-    /// Creates a new <see cref="Result"/> instance representing a successful operation.
+    /// Initializes a new instance of the Result class with the specified success state.
     /// </summary>
-    /// <returns>A <see cref="Result"/> indicating success.</returns>
-    public static Result Success() => new(true, null);
+    /// <param name="isSuccess">A value indicating whether the result represents a successful outcome. Specify <see langword="true"/> for
+    /// success; otherwise, <see langword="false"/>.</param>
+    private Result(bool isSuccess, Exception? exception)
+    {
+        IsSuccess = isSuccess;
+        Exception = exception;
+    }
 
     /// <summary>
-    /// Creates a new <see cref="Result"/> instance representing a failed operation.
+    /// Invokes the specified action if the result represents a successful state.
     /// </summary>
-    /// <returns>A <see cref="Result"/> indicating failure.</returns>
-    public static Result Failure() => new(false, null);
+    /// <remarks>This method enables conditional execution of logic based on the success state of the result.
+    /// The action is only called if <see cref="IsSuccess"/> is <see langword="true"/>.</remarks>
+    /// <param name="action">The action to execute, receiving a value indicating whether the result is successful. Cannot be null.</param>
+    /// <returns>The current <see cref="Result"/> instance, allowing for method chaining.</returns>
+    public Result IfSuccess(Action<bool> action)
+    {
+        if (IsSuccess)
+        {
+            action(IsSuccess);
+        }
+        return this;
+    }
 
     /// <summary>
-    /// Creates a failed result that encapsulates the specified exception.
+    /// Invokes the specified asynchronous action if the current result represents a successful state.
     /// </summary>
-    /// <param name="ex">The exception that describes the reason for the failure. Cannot be null.</param>
-    /// <returns>A <see cref="Result"/> instance representing a failure, containing the provided exception.</returns>
-    public static Result Failure(Exception ex) => new(false, ex);
+    /// <remarks>The action is only invoked if the result is successful; otherwise, it is skipped. This method
+    /// enables chaining additional asynchronous operations based on the success of the result.</remarks>
+    /// <param name="action">A function to execute asynchronously if the result is successful. The function receives a Boolean indicating the
+    /// success state.</param>
+    /// <returns>A task that represents the asynchronous operation. The result of the task is the current <see cref="Result"/>
+    /// instance.</returns>
+    public async System.Threading.Tasks.Task<Result> IfSuccessAsync(Func<bool, System.Threading.Tasks.Task> action)
+    {
+        if (IsSuccess)
+        {
+            await action(IsSuccess);
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Invokes the specified action if the result represents a failure.
+    /// </summary>
+    /// <remarks>Use this method to perform custom error handling or logging when a failure occurs. The
+    /// provided action is only called if the result is in a failure state.</remarks>
+    /// <param name="action">An action to execute, receiving the associated exception if the result is a failure; otherwise, the action is
+    /// not invoked.</param>
+    /// <returns>The current <see cref="Result"/> instance, allowing for method chaining.</returns>
+    public Result IfFailure(Action<Exception?> action)
+    {
+        if (IsFailure)
+        {
+            action(Exception);
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Invokes the specified asynchronous action if the current result represents a failure.
+    /// </summary>
+    /// <remarks>Use this method to perform additional processing or logging when a failure occurs. The action
+    /// is not invoked if the result is successful.</remarks>
+    /// <param name="action">A function to execute asynchronously when the result is a failure. The function receives the associated
+    /// exception, or null if no exception is available.</param>
+    /// <returns>A task that represents the asynchronous operation. The result is the current <see cref="Result"/> instance.</returns>
+    public async System.Threading.Tasks.Task<Result> IfFailureAsync(Func<Exception?, System.Threading.Tasks.Task> action)
+    {
+        if (IsFailure)
+        {
+            await action(Exception);
+        }
+        return this;
+    }
 }
 
 /// <summary>
@@ -85,57 +153,6 @@ public readonly struct Result : IResult
 /// <typeparam name="T">The type of the object contained in the result.</typeparam>
 public readonly struct Result<T> : IResult where T : notnull
 {
-    /// <summary>
-    /// Stores the result object on success.
-    /// </summary>
-    private readonly T? _object;
-
-    /// <summary>
-    /// Gets a value indicating whether the result contains a valid object.
-    /// </summary>
-    public bool IsSuccess => _object is not null;
-
-    /// <summary>
-    /// Gets a value indicating whether the result represents a failure state.
-    /// </summary>
-    public bool IsFailure => !IsSuccess;
-
-    /// <summary>
-    /// Gets the value of the object contained by this instance.
-    /// </summary>
-    public T Object => _object is not null ? _object : throw new InvalidResultAccessException();
-
-    /// <summary>
-    /// Initializes a new instance of the Result class with the specified result value.
-    /// </summary>
-    /// <param name="result">The value to be stored in the result. May be null if the type T is nullable.</param>
-    private Result(T result)
-    {
-        _object = result;
-    }
-
-    /// <summary>
-    /// Holds failures
-    /// </summary>
-    public FailureDictionary? Failures { get; init; }
-
-    /// <summary>
-    /// Returns the collection of failures associated with the result, or throws an exception if no failures are
-    /// present.
-    /// </summary>
-    /// <returns>A <see cref="FailureDictionary"/> containing all failures for the result.</returns>
-    /// <exception cref="InvalidResultAccessException">Thrown if the result does not contain any failures.</exception>
-    public FailureDictionary FailuresOrThrow() => Failures ?? throw new InvalidResultAccessException();
-
-    /// <summary>
-    /// Initializes a new instance of the Result class with the specified collection of failures.
-    /// </summary>
-    /// <param name="failures">A dictionary containing failure details to associate with this result. Cannot be null.</param>
-    private Result(FailureDictionary failures)
-    {
-        Failures = failures;
-    }
-
     /// <summary>
     /// Returns a Success
     /// </summary>
@@ -193,17 +210,74 @@ public readonly struct Result<T> : IResult where T : notnull
     }
 
     /// <summary>
+    /// Gets a value indicating whether the result contains a valid object.
+    /// </summary>
+    public bool IsSuccess => _hasValue;
+
+    /// <summary>
+    /// Gets a value indicating whether the result represents a failure state.
+    /// </summary>
+    public bool IsFailure => !IsSuccess;
+
+    /// <summary>
+    /// Gets the value of the object contained by this instance.
+    /// </summary>
+    public T Object => _hasValue ? _object! : throw new InvalidResultAccessException();
+
+    /// <summary>
+    /// Holds failures
+    /// </summary>
+    public FailureDictionary? Failures { get; init; }
+
+    /// <summary>
+    /// Returns the collection of failures associated with the result, or throws an exception if no failures are
+    /// present.
+    /// </summary>
+    /// <returns>A <see cref="FailureDictionary"/> containing all failures for the result.</returns>
+    /// <exception cref="InvalidResultAccessException">Thrown if the result does not contain any failures.</exception>
+    public FailureDictionary FailuresOrThrow() => Failures ?? throw new InvalidResultAccessException();
+
+    /// <summary>
+    /// Stores the result object on success.
+    /// </summary>
+    private readonly T? _object;
+    // indicates whether this instance represents a successful value
+    private readonly bool _hasValue;
+
+    /// <summary>
+    /// Initializes a new instance of the Result class with the specified result value.
+    /// </summary>
+    /// <param name="result">The value to be stored in the result. May be null if the type T is nullable.</param>
+    private Result(T result)
+    {
+        _object = result;
+        _hasValue = true;
+        Failures = null;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the Result class with the specified collection of failures.
+    /// </summary>
+    /// <param name="failures">A dictionary containing failure details to associate with this result. Cannot be null.</param>
+    private Result(FailureDictionary failures)
+    {
+        Failures = failures;
+        _object = default;
+        _hasValue = false;
+    }
+
+    /// <summary>
     /// Returns the contained object if available; otherwise, returns null.
     /// </summary>
     /// <returns>The object of type T if present; otherwise, null.</returns>
-    public T? ObjectOrNull() => _object;
+    public T? ObjectOrNull() => _hasValue ? _object : default;
 
     /// <summary>
     /// Returns the contained object if it is available; otherwise, throws an exception.
     /// </summary>
     /// <returns>The object of type <typeparamref name="T"/> if it is present.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the object is not available.</exception>
-    public T ObjectOrThrow() => _object is not null ? _object : throw new InvalidOperationException("result is empty");
+    public T ObjectOrThrow() => _hasValue ? _object! : throw new InvalidOperationException("result is empty");
 
     /// <summary>
     /// Attempts to retrieve the successful result value if the operation completed successfully.
@@ -213,13 +287,13 @@ public readonly struct Result<T> : IResult where T : notnull
     /// <returns>true if the operation was successful and the result was retrieved; otherwise, false.</returns>
     public bool TryGetSuccess(out T result)
     {
-        if (_object is not null)
+        if (!_hasValue)
         {
-            result = _object;
-            return true;
+            result = default(T);
+            return false;
         }
-        result = default(T);
-        return false;
+        result = _object!;
+        return true;
     }
 
     /// <summary>
@@ -253,6 +327,74 @@ public readonly struct Result<T> : IResult where T : notnull
     public static Result<TResult> TryCatch<TResult>(Func<TResult> action) where TResult : notnull
     {
         try { return action().ToSuccess(); } catch (Exception ex) { return ex.ToFailure<TResult>(); }
+    }
+
+    /// <summary>
+    /// Invokes the specified action if the result represents a successful outcome.
+    /// </summary>
+    /// <remarks>Use this method to perform additional operations only when the result is successful. If the
+    /// result is not successful, the action is ignored and the original result is returned unchanged.</remarks>
+    /// <param name="action">The action to execute with the value of the successful result. The action is not invoked if the result is not
+    /// successful.</param>
+    /// <returns>The current <see cref="Result{T}"/> instance, allowing for method chaining.</returns>
+    public Result<T> IfSuccess(Action<T> action)
+    {
+        if (IsSuccess)
+        {
+            action(_object!);
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Invokes the specified asynchronous action if the result represents a successful outcome.
+    /// </summary>
+    /// <remarks>If the result is not successful, the action is not invoked and the method returns
+    /// immediately. The action is awaited before returning.</remarks>
+    /// <param name="action">A function to execute asynchronously if the result is successful. The function receives the successful value as
+    /// its argument.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is the current result instance.</returns>
+    public async System.Threading.Tasks.Task<Result<T>> IfSuccessAsync(Func<T, System.Threading.Tasks.Task> action)
+    {
+        if (IsSuccess)
+        {
+            await action(_object!);
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Invokes the specified action if the result represents a failure.
+    /// </summary>
+    /// <remarks>This method enables handling failure cases in a fluent manner. The action is not invoked if
+    /// the result is successful.</remarks>
+    /// <param name="action">An action to execute with the failure details if the result is a failure. The parameter provides a dictionary
+    /// containing failure information, or null if no details are available.</param>
+    /// <returns>The current <see cref="Result{T}"/> instance, allowing for method chaining.</returns>
+    public Result<T> IfFailure(Action<FailureDictionary?> action)
+    {
+        if (IsFailure)
+        {
+            action(Failures);
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Invokes the specified asynchronous action if the result represents a failure.
+    /// </summary>
+    /// <remarks>Use this method to perform additional processing or logging when a failure occurs. The action
+    /// is not invoked if the result is successful.</remarks>
+    /// <param name="action">A function to execute asynchronously when the result is a failure. The function receives the collection of
+    /// failures, or null if no failure details are available.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is the current result instance.</returns>
+    public async System.Threading.Tasks.Task<Result<T>> IfFailureAsync(Func<FailureDictionary?, System.Threading.Tasks.Task> action)
+    {
+        if (IsFailure)
+        {
+            await action(Failures);
+        }
+        return this;
     }
 }
 
@@ -292,7 +434,7 @@ public class FailureDictionary : Dictionary<string, List<object>>
     {
         if (!TryGetValue(name, out var list))
         {
-            list = [];
+            list = new List<object>();
             this[name] = list;
         }
 
@@ -306,9 +448,6 @@ public class FailureDictionary : Dictionary<string, List<object>>
 /// </summary>
 public class FailureDictionaryBuilder
 {
-    /// <summary>
-    /// Stores the internal.
-    /// </summary>
     private readonly Dictionary<string, List<object>> _internal = new();
 
     /// <summary>
@@ -323,7 +462,7 @@ public class FailureDictionaryBuilder
     {
         if (!_internal.TryGetValue(name, out var list))
         {
-            list = [];
+            list = new List<object>();
             _internal[name] = list;
         }
 
@@ -341,7 +480,13 @@ public class FailureDictionaryBuilder
     /// independent and will not reflect subsequent changes to the builder.</returns>
     public FailureDictionary Build()
     {
-        return new FailureDictionary(_internal);
+        // create a deep copy of the internal dictionary so the returned FailureDictionary is independent
+        var copy = new Dictionary<string, List<object>>();
+        foreach (var kv in _internal)
+        {
+            copy[kv.Key] = new List<object>(kv.Value);
+        }
+        return new FailureDictionary(copy);
     }
 }
 
@@ -378,7 +523,7 @@ public static class Extensions
     }
 
     /// <summary>
-    /// Creates a failed result for the specified subject, associating it with the provided failure value.
+    /// Creates a failed result containing the specified value.
     /// </summary>
     /// <remarks>The returned result will include both the failure value and the subject in its failure
     /// details. Use this method to conveniently create a failure result when you have an object and a corresponding

@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "https": {
+    "local-dev-https": {
       "commandName": "Project",
       "launchBrowser": true,
       "dotnetRunMessages": true,

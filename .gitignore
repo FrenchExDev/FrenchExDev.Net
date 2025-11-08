@@ -11,3 +11,4 @@ __Local_Nuget_Registry__/
 *..pubxml.user
 *.user
 doc/gen/
+test/reports/**
