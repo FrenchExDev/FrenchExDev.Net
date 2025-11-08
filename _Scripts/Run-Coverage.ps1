@@ -3,7 +3,8 @@ param(
     [string[]] $Solutions,
     [parameter(Mandatory = $true)] [string] $Title,
     [string] $OutputDirectory,
-    [int] $MaxParallel = 4
+    [int] $MaxParallel = 4,
+    [switch] $Serve
 )
 
 $OutputDirectory = if ([string]::IsNullOrWhiteSpace($OutputDirectory)) {
@@ -19,7 +20,7 @@ $RunSolutionTestsParams = @{
     GenerateCoverageHtml = $true
     CoverageReportTitle  = $Title
     RunOutputRoot        = $OutputDirectory
-    Serve                = $true
+    Serve                = $Serve
     MaxParallel          = $MaxParallel
     Parallel             = $true
 }

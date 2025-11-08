@@ -26,17 +26,18 @@
   - [FrenchExDev.Net.CSharp.Object.Result](#frenchexdevnetcsharpobjectresult)
   - [FrenchExDev.Net.CSharp.Object.Result.Testing](#frenchexdevnetcsharpobjectresulttesting)
   - [FrenchExDev.Net.CSharp.Object.Result.Tests](#frenchexdevnetcsharpobjectresulttests)
-  - [FrenchExDev.Net.CSharp.ProjectDependency](#frenchexdevnetcsharpprojectdependency)
-  - [FrenchExDev.Net.CSharp.ProjectDependency.Abstractions](#frenchexdevnetcsharpprojectdependencyabstractions)
-  - [FrenchExDev.Net.CSharp.ProjectDependency.Testing](#frenchexdevnetcsharpprojectdependencytesting)
-  - [FrenchExDev.Net.Csharp.ProjectDependency.Tests](#frenchexdevnetcsharpprojectdependencytests)
-  - [FrenchExDev.Net.CSharp.ProjectDependency2](#frenchexdevnetcsharpprojectdependency2)
-  - [FrenchExDev.Net.CSharp.ProjectDependency2.Testing](#frenchexdevnetcsharpprojectdependency2testing)
-  - [FrenchExDev.Net.CSharp.ProjectDependency2.Tests](#frenchexdevnetcsharpprojectdependency2tests)
   - [FrenchExDev.Net.CSharp.ProjectDependency3](#frenchexdevnetcsharpprojectdependency3)
   - [FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions](#frenchexdevnetcsharpprojectdependency3abstractions)
-  - [FrenchExDev.Net.CSharp.ProjectDependency3.Testing](#frenchexdevnetcsharpprojectdependency3testing)
+  - [FrenchExDev.Net.CSharp.ProjectDependency3.AppHost](#frenchexdevnetcsharpprojectdependency3apphost)
+  - [FrenchExDev.Net.CSharp.ProjectDependency3.ServiceDefaults](#frenchexdevnetcsharpprojectdependency3servicedefaults)
   - [FrenchExDev.Net.CSharp.ProjectDependency3.Tests](#frenchexdevnetcsharpprojectdependency3tests)
+  - [FrenchExDev.Net.CSharp.ProjectDependency3.Viz](#frenchexdevnetcsharpprojectdependency3viz)
+  - [FrenchExDev.Net.CSharp.ProjectDependency3.Viz.Api](#frenchexdevnetcsharpprojectdependency3vizapi)
+  - [FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Agent](#frenchexdevnetcsharpprojectdependency3workeragent)
+  - [FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Orchestrator](#frenchexdevnetcsharpprojectdependency3workerorchestrator)
+  - [FrenchExDev.Net.CSharp.ProjectDependency4.DevAppHost](#frenchexdevnetcsharpprojectdependency4devapphost)
+  - [FrenchExDev.Net.CSharp.ProjectDependency4.Viz](#frenchexdevnetcsharpprojectdependency4viz)
+  - [FrenchExDev.Net.CSharp.ProjectDependency4.Viz.Api](#frenchexdevnetcsharpprojectdependency4vizapi)
   - [FrenchExDev.Net.CSharp.SolutionEngineering](#frenchexdevnetcsharpsolutionengineering)
   - [FrenchExDev.Net.CSharp.SolutionEngineering.Testing](#frenchexdevnetcsharpsolutionengineeringtesting)
   - [FrenchExDev.Net.CSharp.SolutionEngineering.Tests](#frenchexdevnetcsharpsolutionengineeringtests)
@@ -170,10 +171,10 @@
 | FrenchExDev.Net.Alpine.Version | FrenchExDev.Net.HttpClient | HttpClient\src\FrenchExDev.Net.HttpClient\FrenchExDev.Net.HttpClient.csproj |
 | FrenchExDev.Net.Alpine.Version.Testing | FrenchExDev.Net.CSharp.Object.Builder2 | CSharp.Object.Builder2\src\FrenchExDev.Net.CSharp.Object.Builder2\FrenchExDev.Net.CSharp.Object.Builder2.csproj |
 | FrenchExDev.Net.Alpine.Version.Testing | FrenchExDev.Net.HttpClient.Testing | HttpClient\src\FrenchExDev.Net.HttpClient.Testing\FrenchExDev.Net.HttpClient.Testing.csproj |
-| FrenchExDev.Net.Alpine.Version.Testing | FrenchExDev.Net.Alpine.Version | Alpine\src\FrenchExDev.Net.Alpine.Version\FrenchExDev.Net.Alpine.Version.csproj |
+| FrenchExDev.Net.Alpine.Version.Testing | FrenchExDev.Net.Alpine.Version | Alpine.Version\src\FrenchExDev.Net.Alpine.Version\FrenchExDev.Net.Alpine.Version.csproj |
 | FrenchExDev.Net.Alpine.Version.Tests | FrenchExDev.Net.CSharp.Object.Builder2 | CSharp.Object.Builder2\src\FrenchExDev.Net.CSharp.Object.Builder2\FrenchExDev.Net.CSharp.Object.Builder2.csproj |
 | FrenchExDev.Net.Alpine.Version.Tests | FenchExDev.Net.Testing | Testing\src\FenchExDev.Net.Testing\FenchExDev.Net.Testing.csproj |
-| FrenchExDev.Net.Alpine.Version.Tests | FrenchExDev.Net.Alpine.Version.Testing | Alpine\src\FrenchExDev.Net.Alpine.Version.Testing\FrenchExDev.Net.Alpine.Version.Testing.csproj |
+| FrenchExDev.Net.Alpine.Version.Tests | FrenchExDev.Net.Alpine.Version.Testing | Alpine.Version\src\FrenchExDev.Net.Alpine.Version.Testing\FrenchExDev.Net.Alpine.Version.Testing.csproj |
 | FrenchExDev.Net.CSharp.ManagedDictionary | (none) | | 
 | FrenchExDev.Net.CSharp.ManagedDictionary.Testing | FrenchExDev.Net.CSharp.ManagedDictionary | CSharp.ManagedDictionary\src\FrenchExDev.Net.CSharp.ManagedDictionary\FrenchExDev.Net.CSharp.ManagedDictionary.csproj |
 | FrenchExDev.Net.CSharp.ManagedDictionary.Tests | FrenchExDev.Net.CSharp.ManagedDictionary.Testing | CSharp.ManagedDictionary\src\FrenchExDev.Net.CSharp.ManagedDictionary.Testing\FrenchExDev.Net.CSharp.ManagedDictionary.Testing.csproj |
@@ -195,73 +196,72 @@
 | FrenchExDev.Net.CSharp.Object.Result | (none) | | 
 | FrenchExDev.Net.CSharp.Object.Result.Testing | FrenchExDev.Net.CSharp.Object.Result | CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result\FrenchExDev.Net.CSharp.Object.Result.csproj |
 | FrenchExDev.Net.CSharp.Object.Result.Tests | FrenchExDev.Net.CSharp.Object.Result.Testing | CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result.Testing\FrenchExDev.Net.CSharp.Object.Result.Testing.csproj |
-| FrenchExDev.Net.CSharp.ProjectDependency | FrenchExDev.Net.CSharp.ManagedList | CSharp.ManagedList\src\FrenchExDev.Net.CSharp.ManagedList\FrenchExDev.Net.CSharp.ManagedList.csproj |
-| FrenchExDev.Net.CSharp.ProjectDependency | FrenchExDev.Net.CSharp.Object.Result | CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result\FrenchExDev.Net.CSharp.Object.Result.csproj |
-| FrenchExDev.Net.CSharp.ProjectDependency | FrenchExDev.Net.CSharp.ProjectDependency.Abstractions | CSharp.ProjectDependency\src\FrenchExDev.Net.CSharp.ProjectDependency.Abstractions\FrenchExDev.Net.CSharp.ProjectDependency.Abstractions.csproj |
-| FrenchExDev.Net.CSharp.ProjectDependency.Abstractions | FrenchExDev.Net.CSharp.ManagedDictionary | CSharp.ManagedDictionary\src\FrenchExDev.Net.CSharp.ManagedDictionary\FrenchExDev.Net.CSharp.ManagedDictionary.csproj |
-| FrenchExDev.Net.CSharp.ProjectDependency.Abstractions | FrenchExDev.Net.CSharp.ManagedList | CSharp.ManagedList\src\FrenchExDev.Net.CSharp.ManagedList\FrenchExDev.Net.CSharp.ManagedList.csproj |
-| FrenchExDev.Net.CSharp.ProjectDependency.Abstractions | FrenchExDev.Net.CSharp.Object.Result | CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result\FrenchExDev.Net.CSharp.Object.Result.csproj |
-| FrenchExDev.Net.CSharp.ProjectDependency.Testing | FrenchExDev.Net.Dotnet.Project | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project\FrenchExDev.Net.Dotnet.Project.csproj |
-| FrenchExDev.Net.Csharp.ProjectDependency.Tests | FrenchExDev.Net.Dotnet.Project.Testing | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Testing\FrenchExDev.Net.Dotnet.Project.Testing.csproj |
-| FrenchExDev.Net.Csharp.ProjectDependency.Tests | FrenchExDev.Net.CSharp.ProjectDependency.Abstractions | CSharp.ProjectDependency\src\FrenchExDev.Net.CSharp.ProjectDependency.Abstractions\FrenchExDev.Net.CSharp.ProjectDependency.Abstractions.csproj |
-| FrenchExDev.Net.Csharp.ProjectDependency.Tests | FrenchExDev.Net.CSharp.ProjectDependency | CSharp.ProjectDependency\src\FrenchExDev.Net.CSharp.ProjectDependency\FrenchExDev.Net.CSharp.ProjectDependency.csproj |
-| FrenchExDev.Net.CSharp.ProjectDependency2 | FrenchExDev.Net.CSharp.ManagedDictionary | CSharp.ManagedDictionary\src\FrenchExDev.Net.CSharp.ManagedDictionary\FrenchExDev.Net.CSharp.ManagedDictionary.csproj |
-| FrenchExDev.Net.CSharp.ProjectDependency2 | FrenchExDev.Net.CSharp.ManagedList | CSharp.ManagedList\src\FrenchExDev.Net.CSharp.ManagedList\FrenchExDev.Net.CSharp.ManagedList.csproj |
-| FrenchExDev.Net.CSharp.ProjectDependency2 | FrenchExDev.Net.CSharp.Object.Result | CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result\FrenchExDev.Net.CSharp.Object.Result.csproj |
-| FrenchExDev.Net.CSharp.ProjectDependency2.Testing | FrenchExDev.Net.CSharp.ProjectDependency2 | CSharp.ProjectDependency2\src\FrenchExDev.Net.CSharp.ProjectDependency2\FrenchExDev.Net.CSharp.ProjectDependency2.csproj |
-| FrenchExDev.Net.CSharp.ProjectDependency2.Tests | FrenchExDev.Net.CSharp.ProjectDependency2.Testing | CSharp.ProjectDependency2\src\FrenchExDev.Net.CSharp.ProjectDependency2.Testing\FrenchExDev.Net.CSharp.ProjectDependency2.Testing.csproj |
 | FrenchExDev.Net.CSharp.ProjectDependency3 | FrenchExDev.Net.CSharp.ManagedList | CSharp.ManagedList\src\FrenchExDev.Net.CSharp.ManagedList\FrenchExDev.Net.CSharp.ManagedList.csproj |
 | FrenchExDev.Net.CSharp.ProjectDependency3 | FrenchExDev.Net.CSharp.Object.Result | CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result\FrenchExDev.Net.CSharp.Object.Result.csproj |
 | FrenchExDev.Net.CSharp.ProjectDependency3 | FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions | CSharp.ProjectDependency3\src\FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions\FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions.csproj |
 | FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions | (none) | | 
-| FrenchExDev.Net.CSharp.ProjectDependency3.Testing | FrenchExDev.Net.CSharp.ProjectDependency3 | CSharp.ProjectDependency3\src\FrenchExDev.Net.CSharp.ProjectDependency3\FrenchExDev.Net.CSharp.ProjectDependency3.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency3.AppHost | FrenchExDev.Net.CSharp.ProjectDependency3.Viz.Api | CSharp.ProjectDependency3\src\FrenchExDev.Net.CSharp.ProjectDependency3.Viz.Api\FrenchExDev.Net.CSharp.ProjectDependency3.Viz.Api.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency3.AppHost | FrenchExDev.Net.CSharp.ProjectDependency3.Viz | CSharp.ProjectDependency3\src\FrenchExDev.Net.CSharp.ProjectDependency3.Viz\FrenchExDev.Net.CSharp.ProjectDependency3.Viz.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency3.AppHost | FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Agent | CSharp.ProjectDependency3\src\FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Agent\FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Agent.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency3.AppHost | FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Orchestrator | CSharp.ProjectDependency3\src\FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Orchestrator\FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Orchestrator.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency3.AppHost | FrenchExDev.Net.CSharp.ProjectDependency3.Viz | CSharp.ProjectDependency3\src\FrenchExDev.Net.CSharp.ProjectDependency3.Viz\FrenchExDev.Net.CSharp.ProjectDependency3.Viz.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency3.ServiceDefaults | (none) | | 
 | FrenchExDev.Net.CSharp.ProjectDependency3.Tests | FrenchExDev.Net.CSharp.ProjectDependency3.Testing | CSharp.ProjectDependency2\src\FrenchExDev.Net.CSharp.ProjectDependency3.Testing\FrenchExDev.Net.CSharp.ProjectDependency3.Testing.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency3.Viz | FrenchExDev.Net.CSharp.Object.Result | CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result\FrenchExDev.Net.CSharp.Object.Result.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency3.Viz.Api | FrenchExDev.Net.CSharp.ProjectDependency3.ServiceDefaults | CSharp.ProjectDependency3\src\FrenchExDev.Net.CSharp.ProjectDependency3.ServiceDefaults\FrenchExDev.Net.CSharp.ProjectDependency3.ServiceDefaults.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Agent | FrenchExDev.Net.CSharp.ProjectDependency3 | CSharp.ProjectDependency3\src\FrenchExDev.Net.CSharp.ProjectDependency3\FrenchExDev.Net.CSharp.ProjectDependency3.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Agent | FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions | CSharp.ProjectDependency3\src\FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions\FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Orchestrator | FrenchExDev.Net.CSharp.Object.Result | CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result\FrenchExDev.Net.CSharp.Object.Result.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency4.DevAppHost | FrenchExDev.Net.CSharp.ProjectDependency4.Viz.Api | CSharp.ProjectDependency4\src\FrenchExDev.Net.CSharp.ProjectDependency4.Viz.Api\FrenchExDev.Net.CSharp.ProjectDependency4.Viz.Api.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency4.DevAppHost | FrenchExDev.Net.CSharp.ProjectDependency4.Viz | CSharp.ProjectDependency4\src\FrenchExDev.Net.CSharp.ProjectDependency4.Viz\FrenchExDev.Net.CSharp.ProjectDependency4.Viz.csproj |
+| FrenchExDev.Net.CSharp.ProjectDependency4.Viz | (none) | | 
+| FrenchExDev.Net.CSharp.ProjectDependency4.Viz.Api | (none) | | 
 | FrenchExDev.Net.CSharp.SolutionEngineering | FrenchExDev.Net.CSharp.ManagedList | CSharp.ManagedList\src\FrenchExDev.Net.CSharp.ManagedList\FrenchExDev.Net.CSharp.ManagedList.csproj |
 | FrenchExDev.Net.CSharp.SolutionEngineering.Testing | FrenchExDev.Net.CSharp.SolutionEngineering | CSharp.SolutionEngineering\src\FrenchExDev.Net.CSharp.SolutionEngineering\FrenchExDev.Net.CSharp.SolutionEngineering.csproj |
 | FrenchExDev.Net.CSharp.SolutionEngineering.Tests | FrenchExDev.Net.CSharp.SolutionEngineering.Testing | CSharp.SolutionEngineering\src\FrenchExDev.Net.CSharp.SolutionEngineering.Testing\FrenchExDev.Net.CSharp.SolutionEngineering.Testing.csproj |
-| FrenchExDev.Net.Dotnet.Project | FrenchExDev.Net.Dotnet.Project.Infrastructure | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Infrastructure\FrenchExDev.Net.Dotnet.Project.Infrastructure.csproj |
+| FrenchExDev.Net.Dotnet.Project | FrenchExDev.Net.Dotnet.Project.Infrastructure | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Infrastructure\FrenchExDev.Net.Dotnet.Project.Infrastructure.csproj |
 | FrenchExDev.Net.Dotnet.Project.Abstractions | FrenchExDev.Net.CSharp.Object.Builder2 | CSharp.Object.Builder2\src\FrenchExDev.Net.CSharp.Object.Builder2\FrenchExDev.Net.CSharp.Object.Builder2.csproj |
 | FrenchExDev.Net.Dotnet.Project.Abstractions | FrenchExDev.Net.CSharp.Object.Model.Abstractions | CSharp.Object.Model\src\FrenchExDev.Net.CSharp.Object.Model.Abstractions\FrenchExDev.Net.CSharp.Object.Model.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Project.Infrastructure | FrenchExDev.Net.Dotnet.Project.Abstractions | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Project.Testing | FrenchExDev.Net.Dotnet.Project | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project\FrenchExDev.Net.Dotnet.Project.csproj |
+| FrenchExDev.Net.Dotnet.Project.Infrastructure | FrenchExDev.Net.Dotnet.Project.Abstractions | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Project.Testing | FrenchExDev.Net.Dotnet.Project | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project\FrenchExDev.Net.Dotnet.Project.csproj |
 | FrenchExDev.Net.Dotnet.Project.Tests | FrenchExDev.Net.CSharp.Object.Model.Infrastructure | CSharp.Object.Model\src\FrenchExDev.Net.CSharp.Object.Model.Infrastructure\FrenchExDev.Net.CSharp.Object.Model.Infrastructure.csproj |
-| FrenchExDev.Net.Dotnet.Project.Tests | FrenchExDev.Net.Dotnet.Project | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project\FrenchExDev.Net.Dotnet.Project.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType | FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions | FrenchExDev.Net.Dotnet.Project.Abstractions | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure | FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing | FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Tests | FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.CliProjectType | FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions | FrenchExDev.Net.Dotnet.Project.Abstractions | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure | FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Testing | FrenchExDev.Net.Dotnet.Project.Types.CliProjectType | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.csproj |
+| FrenchExDev.Net.Dotnet.Project.Tests | FrenchExDev.Net.Dotnet.Project | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project\FrenchExDev.Net.Dotnet.Project.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType | FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions | FrenchExDev.Net.Dotnet.Project.Abstractions | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Infrastructure | FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing | FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Tests | FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Testing.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.CliProjectType | FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions | FrenchExDev.Net.Dotnet.Project.Abstractions | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Infrastructure | FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Testing | FrenchExDev.Net.Dotnet.Project.Types.CliProjectType | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType\FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.csproj |
 | FrenchExDev.Net.Dotnet.Project.Types.CliProjectType.Tests | (none) | | 
-| FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType | FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType | FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions | FrenchExDev.Net.Dotnet.Project.Abstractions | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType | FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType | FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Abstractions | FrenchExDev.Net.Dotnet.Project.Abstractions | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj |
 | FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Infrastructure | (none) | | 
 | FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Testing | (none) | | 
 | FrenchExDev.Net.Dotnet.Project.Types.DesktopProjectType.Tests | (none) | | 
-| FrenchExDev.Net.Dotnet.Project.Types.LibraryProject | FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions | FrenchExDev.Net.Dotnet.Project.Abstractions | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure | FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Testing | FrenchExDev.Net.Dotnet.Project.Types.LibraryProject | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.LibraryProject | FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions | FrenchExDev.Net.Dotnet.Project.Abstractions | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Abstractions\FrenchExDev.Net.Dotnet.Project.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Infrastructure | FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Testing | FrenchExDev.Net.Dotnet.Project.Types.LibraryProject | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject\FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.csproj |
 | FrenchExDev.Net.Dotnet.Project.Types.LibraryProject.Tests | (none) | | 
-| FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType | FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType | FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure.csproj |
 | FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions | (none) | | 
-| FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure | FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Testing | FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Infrastructure | FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Testing | FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType\FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.csproj |
 | FrenchExDev.Net.Dotnet.Project.Types.WebApiProjectType.Tests | (none) | | 
-| FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType | FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType | FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure.csproj |
 | FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions | (none) | | 
-| FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure | FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing | FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.csproj |
-| FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Tests | FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing | Dotnet\Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing.csproj |
-| FrenchExDev.Net.Dotnet.Solution | FrenchExDev.Net.Dotnet.Solution.Abstractions | Dotnet\Solution\src\FrenchExDev.Net.Dotnet.Solution.Abstractions\FrenchExDev.Net.Dotnet.Solution.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Solution | FrenchExDev.Net.Dotnet.Solution.Infrastructure | Dotnet\Solution\src\FrenchExDev.Net.Dotnet.Solution.Infrastructure\FrenchExDev.Net.Dotnet.Solution.Infrastructure.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Infrastructure | FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing | FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.csproj |
+| FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Tests | FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing | Dotnet.Project\src\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing\FrenchExDev.Net.Dotnet.Project.Types.WebWorkerProjectType.Testing.csproj |
+| FrenchExDev.Net.Dotnet.Solution | FrenchExDev.Net.Dotnet.Solution.Abstractions | Dotnet.Solution\src\FrenchExDev.Net.Dotnet.Solution.Abstractions\FrenchExDev.Net.Dotnet.Solution.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Solution | FrenchExDev.Net.Dotnet.Solution.Infrastructure | Dotnet.Solution\src\FrenchExDev.Net.Dotnet.Solution.Infrastructure\FrenchExDev.Net.Dotnet.Solution.Infrastructure.csproj |
 | FrenchExDev.Net.Dotnet.Solution.Abstractions | (none) | | 
-| FrenchExDev.Net.Dotnet.Solution.Infrastructure | FrenchExDev.Net.Dotnet.Solution.Abstractions | Dotnet\Solution\src\FrenchExDev.Net.Dotnet.Solution.Abstractions\FrenchExDev.Net.Dotnet.Solution.Abstractions.csproj |
-| FrenchExDev.Net.Dotnet.Solution.Testing | FrenchExDev.Net.Dotnet.Solution | Dotnet\Solution\src\FrenchExDev.Net.Dotnet.Solution\FrenchExDev.Net.Dotnet.Solution.csproj |
+| FrenchExDev.Net.Dotnet.Solution.Infrastructure | FrenchExDev.Net.Dotnet.Solution.Abstractions | Dotnet.Solution\src\FrenchExDev.Net.Dotnet.Solution.Abstractions\FrenchExDev.Net.Dotnet.Solution.Abstractions.csproj |
+| FrenchExDev.Net.Dotnet.Solution.Testing | FrenchExDev.Net.Dotnet.Solution | Dotnet.Solution\src\FrenchExDev.Net.Dotnet.Solution\FrenchExDev.Net.Dotnet.Solution.csproj |
 | FrenchExDev.Net.Dotnet.Solution.Tests | (none) | | 
 | FrenchExDev.Net.HttpClient | (none) | | 
 | FrenchExDev.Net.HttpClient.Testing | FrenchExDev.Net.CSharp.Object.Builder2 | CSharp.Object.Builder2\src\FrenchExDev.Net.CSharp.Object.Builder2\FrenchExDev.Net.CSharp.Object.Builder2.csproj |
@@ -300,7 +300,7 @@
 | FrenchExDev.Net.Packer | (none) | | 
 | FrenchExDev.Net.Packer.Abstractions | FrenchExDev.Net.Packer.Bundle | Packer\src\FrenchExDev.Net.Packer.Bundle\FrenchExDev.Net.Packer.Bundle.csproj |
 | FrenchExDev.Net.Packer.Alpine | FrenchExDev.Net.Packer.Alpine.Abstractions | Packer.Alpine\src\FrenchExDev.Net.Packer.Alpine.Abstractions\FrenchExDev.Net.Packer.Alpine.Abstractions.csproj |
-| FrenchExDev.Net.Packer.Alpine.Abstractions | FrenchExDev.Net.Alpine.Version | Alpine\src\FrenchExDev.Net.Alpine.Version\FrenchExDev.Net.Alpine.Version.csproj |
+| FrenchExDev.Net.Packer.Alpine.Abstractions | FrenchExDev.Net.Alpine.Version | Alpine.Version\src\FrenchExDev.Net.Alpine.Version\FrenchExDev.Net.Alpine.Version.csproj |
 | FrenchExDev.Net.Packer.Alpine.Abstractions | FrenchExDev.Net.Packer.Abstractions | Packer\src\FrenchExDev.Net.Packer.Abstractions\FrenchExDev.Net.Packer.Abstractions.csproj |
 | FrenchExDev.Net.Packer.Alpine.Abstractions | FrenchExDev.Net.Packer.Bundle | Packer\src\FrenchExDev.Net.Packer.Bundle\FrenchExDev.Net.Packer.Bundle.csproj |
 | FrenchExDev.Net.Packer.Alpine.Docker | FrenchExDev.Net.Packer.Alpine.Docker.Infrastructure | Packer.Alpine.Docker\src\FrenchExDev.Net.Packer.Alpine.Docker.Infrastructure\FrenchExDev.Net.Packer.Alpine.Docker.Infrastructure.csproj |
@@ -471,26 +471,22 @@ graph LR
  FrenchExDevNetCSharpSolutionEngineeringTesting --> FrenchExDevNetCSharpSolutionEngineering
  FrenchExDevNetCSharpManagedDictionaryTesting --> FrenchExDevNetCSharpManagedDictionary
  FrenchExDevNetCSharpManagedDictionaryTests --> FrenchExDevNetCSharpManagedDictionaryTesting
- FrenchExDevNetCSharpProjectDependency --> FrenchExDevNetCSharpManagedList
- FrenchExDevNetCSharpProjectDependency --> FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCSharpProjectDependency --> FrenchExDevNetCSharpProjectDependencyAbstractions
- FrenchExDevNetCSharpProjectDependencyAbstractions --> FrenchExDevNetCSharpManagedDictionary
- FrenchExDevNetCSharpProjectDependencyAbstractions --> FrenchExDevNetCSharpManagedList
- FrenchExDevNetCSharpProjectDependencyAbstractions --> FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCSharpProjectDependencyTesting --> FrenchExDevNetDotnetProject
- FrenchExDevNetCsharpProjectDependencyTests --> FrenchExDevNetDotnetProjectTesting
- FrenchExDevNetCsharpProjectDependencyTests --> FrenchExDevNetCSharpProjectDependencyAbstractions
- FrenchExDevNetCsharpProjectDependencyTests --> FrenchExDevNetCSharpProjectDependency
- FrenchExDevNetCSharpProjectDependency2 --> FrenchExDevNetCSharpManagedDictionary
- FrenchExDevNetCSharpProjectDependency2 --> FrenchExDevNetCSharpManagedList
- FrenchExDevNetCSharpProjectDependency2 --> FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCSharpProjectDependency2Testing --> FrenchExDevNetCSharpProjectDependency2
- FrenchExDevNetCSharpProjectDependency2Tests --> FrenchExDevNetCSharpProjectDependency2Testing
  FrenchExDevNetCSharpProjectDependency3 --> FrenchExDevNetCSharpManagedList
  FrenchExDevNetCSharpProjectDependency3 --> FrenchExDevNetCSharpObjectResult
  FrenchExDevNetCSharpProjectDependency3 --> FrenchExDevNetCSharpProjectDependency3Abstractions
- FrenchExDevNetCSharpProjectDependency3Testing --> FrenchExDevNetCSharpProjectDependency3
  FrenchExDevNetCSharpProjectDependency3Tests --> FrenchExDevNetCSharpProjectDependency3Testing
+ FrenchExDevNetCSharpProjectDependency3AppHost --> FrenchExDevNetCSharpProjectDependency3VizApi
+ FrenchExDevNetCSharpProjectDependency3AppHost --> FrenchExDevNetCSharpProjectDependency3Viz
+ FrenchExDevNetCSharpProjectDependency3AppHost --> FrenchExDevNetCSharpProjectDependency3WorkerAgent
+ FrenchExDevNetCSharpProjectDependency3AppHost --> FrenchExDevNetCSharpProjectDependency3WorkerOrchestrator
+ FrenchExDevNetCSharpProjectDependency3AppHost --> FrenchExDevNetCSharpProjectDependency3Viz
+ FrenchExDevNetCSharpProjectDependency3Viz --> FrenchExDevNetCSharpObjectResult
+ FrenchExDevNetCSharpProjectDependency3WorkerAgent --> FrenchExDevNetCSharpProjectDependency3
+ FrenchExDevNetCSharpProjectDependency3WorkerAgent --> FrenchExDevNetCSharpProjectDependency3Abstractions
+ FrenchExDevNetCSharpProjectDependency3WorkerOrchestrator --> FrenchExDevNetCSharpObjectResult
+ FrenchExDevNetCSharpProjectDependency3VizApi --> FrenchExDevNetCSharpProjectDependency3ServiceDefaults
+ FrenchExDevNetCSharpProjectDependency4DevAppHost --> FrenchExDevNetCSharpProjectDependency4VizApi
+ FrenchExDevNetCSharpProjectDependency4DevAppHost --> FrenchExDevNetCSharpProjectDependency4Viz
  FrenchExDevNetMmModuleLibraryInfrastructure --> FrenchExDevNetMmModuleLibraryAbstractions
 ```
 
@@ -504,10 +500,10 @@ Reference: Afferent coupling (Ca), Efferent coupling (Ce) and Instability (I = C
 | FrenchExDev.Net.Alpine.Version | 2 | 1 | 0,333 |
 | FrenchExDev.Net.Alpine.Version.Testing | 1 | 3 | 0,75 |
 | FrenchExDev.Net.Alpine.Version.Tests | 0 | 3 | 1 |
-| FrenchExDev.Net.CSharp.ManagedDictionary | 3 | 0 | 0 |
+| FrenchExDev.Net.CSharp.ManagedDictionary | 1 | 0 | 0 |
 | FrenchExDev.Net.CSharp.ManagedDictionary.Testing | 1 | 1 | 0,5 |
 | FrenchExDev.Net.CSharp.ManagedDictionary.Tests | 0 | 1 | 1 |
-| FrenchExDev.Net.CSharp.ManagedList | 6 | 0 | 0 |
+| FrenchExDev.Net.CSharp.ManagedList | 3 | 0 | 0 |
 | FrenchExDev.Net.CSharp.ManagedList.Testing | 1 | 1 | 0,5 |
 | FrenchExDev.Net.CSharp.ManagedList.Tests | 0 | 1 | 1 |
 | FrenchExDev.Net.CSharp.Object.Biz | 1 | 1 | 0,5 |
@@ -521,27 +517,28 @@ Reference: Afferent coupling (Ca), Efferent coupling (Ce) and Instability (I = C
 | FrenchExDev.Net.CSharp.Object.Model.Infrastructure | 2 | 1 | 0,333 |
 | FrenchExDev.Net.CSharp.Object.Model.Testing | 1 | 1 | 0,5 |
 | FrenchExDev.Net.CSharp.Object.Model.Tests | 0 | 1 | 1 |
-| FrenchExDev.Net.CSharp.Object.Result | 7 | 0 | 0 |
+| FrenchExDev.Net.CSharp.Object.Result | 6 | 0 | 0 |
 | FrenchExDev.Net.CSharp.Object.Result.Testing | 1 | 1 | 0,5 |
 | FrenchExDev.Net.CSharp.Object.Result.Tests | 0 | 1 | 1 |
-| FrenchExDev.Net.CSharp.ProjectDependency | 1 | 3 | 0,75 |
-| FrenchExDev.Net.CSharp.ProjectDependency.Abstractions | 2 | 3 | 0,6 |
-| FrenchExDev.Net.CSharp.ProjectDependency.Testing | 0 | 1 | 1 |
-| FrenchExDev.Net.Csharp.ProjectDependency.Tests | 0 | 3 | 1 |
-| FrenchExDev.Net.CSharp.ProjectDependency2 | 1 | 3 | 0,75 |
-| FrenchExDev.Net.CSharp.ProjectDependency2.Testing | 1 | 1 | 0,5 |
-| FrenchExDev.Net.CSharp.ProjectDependency2.Tests | 0 | 1 | 1 |
 | FrenchExDev.Net.CSharp.ProjectDependency3 | 1 | 3 | 0,75 |
-| FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions | 1 | 0 | 0 |
-| FrenchExDev.Net.CSharp.ProjectDependency3.Testing | 1 | 1 | 0,5 |
-| FrenchExDev.Net.CSharp.ProjectDependency3.Tests | 0 | 1 | 1 |
+| FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions | 2 | 0 | 0 |
+| FrenchExDev.Net.CSharp.ProjectDependency3.AppHost | 0 | 4 | 1 |
+| FrenchExDev.Net.CSharp.ProjectDependency3.ServiceDefaults | 1 | 0 | 0 |
+| FrenchExDev.Net.CSharp.ProjectDependency3.Tests | 0 | 0 | 0 |
+| FrenchExDev.Net.CSharp.ProjectDependency3.Viz | 1 | 1 | 0,5 |
+| FrenchExDev.Net.CSharp.ProjectDependency3.Viz.Api | 1 | 1 | 0,5 |
+| FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Agent | 1 | 2 | 0,667 |
+| FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Orchestrator | 1 | 1 | 0,5 |
+| FrenchExDev.Net.CSharp.ProjectDependency4.DevAppHost | 0 | 2 | 1 |
+| FrenchExDev.Net.CSharp.ProjectDependency4.Viz | 1 | 0 | 0 |
+| FrenchExDev.Net.CSharp.ProjectDependency4.Viz.Api | 1 | 0 | 0 |
 | FrenchExDev.Net.CSharp.SolutionEngineering | 1 | 1 | 0,5 |
 | FrenchExDev.Net.CSharp.SolutionEngineering.Testing | 1 | 1 | 0,5 |
 | FrenchExDev.Net.CSharp.SolutionEngineering.Tests | 0 | 1 | 1 |
-| FrenchExDev.Net.Dotnet.Project | 3 | 1 | 0,25 |
+| FrenchExDev.Net.Dotnet.Project | 2 | 1 | 0,333 |
 | FrenchExDev.Net.Dotnet.Project.Abstractions | 5 | 2 | 0,286 |
 | FrenchExDev.Net.Dotnet.Project.Infrastructure | 1 | 1 | 0,5 |
-| FrenchExDev.Net.Dotnet.Project.Testing | 1 | 1 | 0,5 |
+| FrenchExDev.Net.Dotnet.Project.Testing | 0 | 1 | 1 |
 | FrenchExDev.Net.Dotnet.Project.Tests | 0 | 2 | 1 |
 | FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType | 1 | 1 | 0,5 |
 | FrenchExDev.Net.Dotnet.Project.Types.ClassProjectType.Abstractions | 1 | 1 | 0,5 |
@@ -774,26 +771,20 @@ graph LR
  FrenchExDevNetCSharpSolutionEngineeringTesting --> FrenchExDevNetCSharpSolutionEngineering
  FrenchExDevNetCSharpManagedDictionaryTesting --> FrenchExDevNetCSharpManagedDictionary
  FrenchExDevNetCSharpManagedDictionaryTests --> FrenchExDevNetCSharpManagedDictionaryTesting
- FrenchExDevNetCSharpProjectDependency --> FrenchExDevNetCSharpManagedList
- FrenchExDevNetCSharpProjectDependency --> FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCSharpProjectDependency --> FrenchExDevNetCSharpProjectDependencyAbstractions
- FrenchExDevNetCSharpProjectDependencyAbstractions --> FrenchExDevNetCSharpManagedDictionary
- FrenchExDevNetCSharpProjectDependencyAbstractions --> FrenchExDevNetCSharpManagedList
- FrenchExDevNetCSharpProjectDependencyAbstractions --> FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCSharpProjectDependencyTesting --> FrenchExDevNetDotnetProject
- FrenchExDevNetCsharpProjectDependencyTests --> FrenchExDevNetDotnetProjectTesting
- FrenchExDevNetCsharpProjectDependencyTests --> FrenchExDevNetCSharpProjectDependencyAbstractions
- FrenchExDevNetCsharpProjectDependencyTests --> FrenchExDevNetCSharpProjectDependency
- FrenchExDevNetCSharpProjectDependency2 --> FrenchExDevNetCSharpManagedDictionary
- FrenchExDevNetCSharpProjectDependency2 --> FrenchExDevNetCSharpManagedList
- FrenchExDevNetCSharpProjectDependency2 --> FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCSharpProjectDependency2Testing --> FrenchExDevNetCSharpProjectDependency2
- FrenchExDevNetCSharpProjectDependency2Tests --> FrenchExDevNetCSharpProjectDependency2Testing
  FrenchExDevNetCSharpProjectDependency3 --> FrenchExDevNetCSharpManagedList
  FrenchExDevNetCSharpProjectDependency3 --> FrenchExDevNetCSharpObjectResult
  FrenchExDevNetCSharpProjectDependency3 --> FrenchExDevNetCSharpProjectDependency3Abstractions
- FrenchExDevNetCSharpProjectDependency3Testing --> FrenchExDevNetCSharpProjectDependency3
- FrenchExDevNetCSharpProjectDependency3Tests --> FrenchExDevNetCSharpProjectDependency3Testing
+ FrenchExDevNetCSharpProjectDependency3AppHost --> FrenchExDevNetCSharpProjectDependency3VizApi
+ FrenchExDevNetCSharpProjectDependency3AppHost --> FrenchExDevNetCSharpProjectDependency3Viz
+ FrenchExDevNetCSharpProjectDependency3AppHost --> FrenchExDevNetCSharpProjectDependency3WorkerAgent
+ FrenchExDevNetCSharpProjectDependency3AppHost --> FrenchExDevNetCSharpProjectDependency3WorkerOrchestrator
+ FrenchExDevNetCSharpProjectDependency3Viz --> FrenchExDevNetCSharpObjectResult
+ FrenchExDevNetCSharpProjectDependency3WorkerAgent --> FrenchExDevNetCSharpProjectDependency3
+ FrenchExDevNetCSharpProjectDependency3WorkerAgent --> FrenchExDevNetCSharpProjectDependency3Abstractions
+ FrenchExDevNetCSharpProjectDependency3WorkerOrchestrator --> FrenchExDevNetCSharpObjectResult
+ FrenchExDevNetCSharpProjectDependency3VizApi --> FrenchExDevNetCSharpProjectDependency3ServiceDefaults
+ FrenchExDevNetCSharpProjectDependency4DevAppHost --> FrenchExDevNetCSharpProjectDependency4VizApi
+ FrenchExDevNetCSharpProjectDependency4DevAppHost --> FrenchExDevNetCSharpProjectDependency4Viz
  FrenchExDevNetMmModuleLibraryInfrastructure --> FrenchExDevNetMmModuleLibraryAbstractions
 ```
 
@@ -1018,13 +1009,13 @@ graph LR
 Tip: A -> B means A uses B.
 | Target B | Unique Types | Member Uses |
 |---|---:|---:|
-| FrenchExDev.Net.CSharp.Object.Builder2 | 3 | 5 |
-| FrenchExDev.Net.CSharp.Object.Builder2.Testing | 2 | 28 |
+| FrenchExDev.Net.CSharp.Object.Builder2 | 16 | 245 |
+| FrenchExDev.Net.CSharp.Object.Builder2.Testing | 2 | 60 |
 
 ```mermaid
 graph LR
- FrenchExDevNetCSharpObjectBuilder2Tests -->|3t/5m| FrenchExDevNetCSharpObjectBuilder2
- FrenchExDevNetCSharpObjectBuilder2Tests -->|2t/28m| FrenchExDevNetCSharpObjectBuilder2Testing
+ FrenchExDevNetCSharpObjectBuilder2Tests -->|16t/245m| FrenchExDevNetCSharpObjectBuilder2
+ FrenchExDevNetCSharpObjectBuilder2Tests -->|2t/60m| FrenchExDevNetCSharpObjectBuilder2Testing
 ```
 
 
@@ -1142,160 +1133,13 @@ graph LR
 Tip: A -> B means A uses B.
 | Target B | Unique Types | Member Uses |
 |---|---:|---:|
-| FrenchExDev.Net.CSharp.Object.Result | 0 | 0 |
+| FrenchExDev.Net.CSharp.Object.Result | 7 | 66 |
 | FrenchExDev.Net.CSharp.Object.Result.Testing | 0 | 0 |
 
 ```mermaid
 graph LR
- FrenchExDevNetCSharpObjectResultTests -->|0t/0m| FrenchExDevNetCSharpObjectResult
+ FrenchExDevNetCSharpObjectResultTests -->|7t/66m| FrenchExDevNetCSharpObjectResult
  FrenchExDevNetCSharpObjectResultTests -->|0t/0m| FrenchExDevNetCSharpObjectResultTesting
-```
-
-
-## FrenchExDev.Net.CSharp.ProjectDependency
-
-Tip: A -> B means A uses B.
-| Target B | Unique Types | Member Uses |
-|---|---:|---:|
-| FrenchExDev.Net.CSharp.ManagedDictionary | 0 | 0 |
-| FrenchExDev.Net.CSharp.ManagedList | 0 | 0 |
-| FrenchExDev.Net.CSharp.Object.Result | 3 | 6 |
-| FrenchExDev.Net.CSharp.ProjectDependency.Abstractions | 1 | 3 |
-
-```mermaid
-graph LR
- FrenchExDevNetCSharpProjectDependency -->|0t/0m| FrenchExDevNetCSharpManagedList
- FrenchExDevNetCSharpProjectDependency -->|3t/6m| FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCSharpProjectDependency -->|0t/0m| FrenchExDevNetCSharpManagedDictionary
- FrenchExDevNetCSharpProjectDependency -->|1t/3m| FrenchExDevNetCSharpProjectDependencyAbstractions
-```
-
-
-## FrenchExDev.Net.CSharp.ProjectDependency.Abstractions
-
-Tip: A -> B means A uses B.
-| Target B | Unique Types | Member Uses |
-|---|---:|---:|
-| FrenchExDev.Net.CSharp.ManagedDictionary | 1 | 6 |
-| FrenchExDev.Net.CSharp.ManagedList | 0 | 0 |
-| FrenchExDev.Net.CSharp.Object.Result | 5 | 34 |
-
-```mermaid
-graph LR
- FrenchExDevNetCSharpProjectDependencyAbstractions -->|0t/0m| FrenchExDevNetCSharpManagedList
- FrenchExDevNetCSharpProjectDependencyAbstractions -->|5t/34m| FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCSharpProjectDependencyAbstractions -->|1t/6m| FrenchExDevNetCSharpManagedDictionary
-```
-
-
-## FrenchExDev.Net.CSharp.ProjectDependency.Testing
-
-Tip: A -> B means A uses B.
-| Target B | Unique Types | Member Uses |
-|---|---:|---:|
-| FrenchExDev.Net.CSharp.Object.Builder2 | 0 | 0 |
-| FrenchExDev.Net.CSharp.Object.Model.Abstractions | 0 | 0 |
-| FrenchExDev.Net.Dotnet.Project | 0 | 0 |
-| FrenchExDev.Net.Dotnet.Project.Abstractions | 0 | 0 |
-| FrenchExDev.Net.Dotnet.Project.Infrastructure | 0 | 0 |
-
-```mermaid
-graph LR
- FrenchExDevNetCSharpProjectDependencyTesting -->|0t/0m| FrenchExDevNetDotnetProject
- FrenchExDevNetCSharpProjectDependencyTesting -->|0t/0m| FrenchExDevNetDotnetProjectAbstractions
- FrenchExDevNetCSharpProjectDependencyTesting -->|0t/0m| FrenchExDevNetDotnetProjectInfrastructure
- FrenchExDevNetCSharpProjectDependencyTesting -->|0t/0m| FrenchExDevNetCSharpObjectModelAbstractions
- FrenchExDevNetCSharpProjectDependencyTesting -->|0t/0m| FrenchExDevNetCSharpObjectBuilder2
-```
-
-
-## FrenchExDev.Net.Csharp.ProjectDependency.Tests
-
-Tip: A -> B means A uses B.
-| Target B | Unique Types | Member Uses |
-|---|---:|---:|
-| FrenchExDev.Net.CSharp.ManagedDictionary | 0 | 0 |
-| FrenchExDev.Net.CSharp.ManagedList | 0 | 0 |
-| FrenchExDev.Net.CSharp.Object.Builder2 | 0 | 0 |
-| FrenchExDev.Net.CSharp.Object.Model.Abstractions | 0 | 0 |
-| FrenchExDev.Net.CSharp.Object.Result | 1 | 1 |
-| FrenchExDev.Net.CSharp.ProjectDependency | 2 | 4 |
-| FrenchExDev.Net.CSharp.ProjectDependency.Abstractions | 4 | 9 |
-| FrenchExDev.Net.Dotnet.Project | 0 | 0 |
-| FrenchExDev.Net.Dotnet.Project.Abstractions | 0 | 0 |
-| FrenchExDev.Net.Dotnet.Project.Infrastructure | 0 | 0 |
-| FrenchExDev.Net.Dotnet.Project.Testing | 0 | 0 |
-
-```mermaid
-graph LR
- FrenchExDevNetCsharpProjectDependencyTests -->|0t/0m| FrenchExDevNetDotnetProject
- FrenchExDevNetCsharpProjectDependencyTests -->|0t/0m| FrenchExDevNetDotnetProjectAbstractions
- FrenchExDevNetCsharpProjectDependencyTests -->|0t/0m| FrenchExDevNetDotnetProjectInfrastructure
- FrenchExDevNetCsharpProjectDependencyTests -->|0t/0m| FrenchExDevNetDotnetProjectTesting
- FrenchExDevNetCsharpProjectDependencyTests -->|0t/0m| FrenchExDevNetCSharpObjectModelAbstractions
- FrenchExDevNetCsharpProjectDependencyTests -->|0t/0m| FrenchExDevNetCSharpObjectBuilder2
- FrenchExDevNetCsharpProjectDependencyTests -->|0t/0m| FrenchExDevNetCSharpManagedList
- FrenchExDevNetCsharpProjectDependencyTests -->|1t/1m| FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCsharpProjectDependencyTests -->|0t/0m| FrenchExDevNetCSharpManagedDictionary
- FrenchExDevNetCsharpProjectDependencyTests -->|2t/4m| FrenchExDevNetCSharpProjectDependency
- FrenchExDevNetCsharpProjectDependencyTests -->|4t/9m| FrenchExDevNetCSharpProjectDependencyAbstractions
-```
-
-
-## FrenchExDev.Net.CSharp.ProjectDependency2
-
-Tip: A -> B means A uses B.
-| Target B | Unique Types | Member Uses |
-|---|---:|---:|
-| FrenchExDev.Net.CSharp.ManagedDictionary | 1 | 4 |
-| FrenchExDev.Net.CSharp.ManagedList | 0 | 0 |
-| FrenchExDev.Net.CSharp.Object.Result | 8 | 58 |
-
-```mermaid
-graph LR
- FrenchExDevNetCSharpProjectDependency2 -->|0t/0m| FrenchExDevNetCSharpManagedList
- FrenchExDevNetCSharpProjectDependency2 -->|8t/58m| FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCSharpProjectDependency2 -->|1t/4m| FrenchExDevNetCSharpManagedDictionary
-```
-
-
-## FrenchExDev.Net.CSharp.ProjectDependency2.Testing
-
-Tip: A -> B means A uses B.
-| Target B | Unique Types | Member Uses |
-|---|---:|---:|
-| FrenchExDev.Net.CSharp.ManagedDictionary | 0 | 0 |
-| FrenchExDev.Net.CSharp.ManagedList | 0 | 0 |
-| FrenchExDev.Net.CSharp.Object.Result | 0 | 0 |
-| FrenchExDev.Net.CSharp.ProjectDependency2 | 0 | 0 |
-
-```mermaid
-graph LR
- FrenchExDevNetCSharpProjectDependency2Testing -->|0t/0m| FrenchExDevNetCSharpManagedList
- FrenchExDevNetCSharpProjectDependency2Testing -->|0t/0m| FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCSharpProjectDependency2Testing -->|0t/0m| FrenchExDevNetCSharpManagedDictionary
- FrenchExDevNetCSharpProjectDependency2Testing -->|0t/0m| FrenchExDevNetCSharpProjectDependency2
-```
-
-
-## FrenchExDev.Net.CSharp.ProjectDependency2.Tests
-
-Tip: A -> B means A uses B.
-| Target B | Unique Types | Member Uses |
-|---|---:|---:|
-| FrenchExDev.Net.CSharp.ManagedDictionary | 0 | 0 |
-| FrenchExDev.Net.CSharp.ManagedList | 0 | 0 |
-| FrenchExDev.Net.CSharp.Object.Result | 2 | 2 |
-| FrenchExDev.Net.CSharp.ProjectDependency2 | 5 | 18 |
-| FrenchExDev.Net.CSharp.ProjectDependency2.Testing | 0 | 0 |
-
-```mermaid
-graph LR
- FrenchExDevNetCSharpProjectDependency2Tests -->|0t/0m| FrenchExDevNetCSharpManagedList
- FrenchExDevNetCSharpProjectDependency2Tests -->|2t/2m| FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCSharpProjectDependency2Tests -->|0t/0m| FrenchExDevNetCSharpManagedDictionary
- FrenchExDevNetCSharpProjectDependency2Tests -->|5t/18m| FrenchExDevNetCSharpProjectDependency2
- FrenchExDevNetCSharpProjectDependency2Tests -->|0t/0m| FrenchExDevNetCSharpProjectDependency2Testing
 ```
 
 
@@ -1327,22 +1171,25 @@ graph LR
 ```
 
 
-## FrenchExDev.Net.CSharp.ProjectDependency3.Testing
+## FrenchExDev.Net.CSharp.ProjectDependency3.AppHost
 
 Tip: A -> B means A uses B.
 | Target B | Unique Types | Member Uses |
 |---|---:|---:|
-| FrenchExDev.Net.CSharp.ManagedList | 0 | 0 |
-| FrenchExDev.Net.CSharp.Object.Result | 0 | 0 |
-| FrenchExDev.Net.CSharp.ProjectDependency3 | 0 | 0 |
-| FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions | 0 | 0 |
 
 ```mermaid
 graph LR
- FrenchExDevNetCSharpProjectDependency3Testing -->|0t/0m| FrenchExDevNetCSharpManagedList
- FrenchExDevNetCSharpProjectDependency3Testing -->|0t/0m| FrenchExDevNetCSharpObjectResult
- FrenchExDevNetCSharpProjectDependency3Testing -->|0t/0m| FrenchExDevNetCSharpProjectDependency3
- FrenchExDevNetCSharpProjectDependency3Testing -->|0t/0m| FrenchExDevNetCSharpProjectDependency3Abstractions
+```
+
+
+## FrenchExDev.Net.CSharp.ProjectDependency3.ServiceDefaults
+
+Tip: A -> B means A uses B.
+| Target B | Unique Types | Member Uses |
+|---|---:|---:|
+
+```mermaid
+graph LR
 ```
 
 
@@ -1355,15 +1202,104 @@ Tip: A -> B means A uses B.
 | FrenchExDev.Net.CSharp.Object.Result | 1 | 1 |
 | FrenchExDev.Net.CSharp.ProjectDependency3 | 7 | 27 |
 | FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions | 0 | 0 |
-| FrenchExDev.Net.CSharp.ProjectDependency3.Testing | 0 | 0 |
 
 ```mermaid
 graph LR
  FrenchExDevNetCSharpProjectDependency3Tests -->|0t/0m| FrenchExDevNetCSharpManagedList
  FrenchExDevNetCSharpProjectDependency3Tests -->|1t/1m| FrenchExDevNetCSharpObjectResult
  FrenchExDevNetCSharpProjectDependency3Tests -->|7t/27m| FrenchExDevNetCSharpProjectDependency3
- FrenchExDevNetCSharpProjectDependency3Tests -->|0t/0m| FrenchExDevNetCSharpProjectDependency3Testing
  FrenchExDevNetCSharpProjectDependency3Tests -->|0t/0m| FrenchExDevNetCSharpProjectDependency3Abstractions
+```
+
+
+## FrenchExDev.Net.CSharp.ProjectDependency3.Viz
+
+Tip: A -> B means A uses B.
+| Target B | Unique Types | Member Uses |
+|---|---:|---:|
+| FrenchExDev.Net.CSharp.Object.Result | 2 | 19 |
+
+```mermaid
+graph LR
+ FrenchExDevNetCSharpProjectDependency3Viz -->|2t/19m| FrenchExDevNetCSharpObjectResult
+```
+
+
+## FrenchExDev.Net.CSharp.ProjectDependency3.Viz.Api
+
+Tip: A -> B means A uses B.
+| Target B | Unique Types | Member Uses |
+|---|---:|---:|
+| FrenchExDev.Net.CSharp.ProjectDependency3.ServiceDefaults | 1 | 2 |
+
+```mermaid
+graph LR
+ FrenchExDevNetCSharpProjectDependency3VizApi -->|1t/2m| FrenchExDevNetCSharpProjectDependency3ServiceDefaults
+```
+
+
+## FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Agent
+
+Tip: A -> B means A uses B.
+| Target B | Unique Types | Member Uses |
+|---|---:|---:|
+| FrenchExDev.Net.CSharp.ManagedList | 0 | 0 |
+| FrenchExDev.Net.CSharp.Object.Result | 3 | 9 |
+| FrenchExDev.Net.CSharp.ProjectDependency3 | 8 | 28 |
+| FrenchExDev.Net.CSharp.ProjectDependency3.Abstractions | 0 | 0 |
+
+```mermaid
+graph LR
+ FrenchExDevNetCSharpProjectDependency3WorkerAgent -->|0t/0m| FrenchExDevNetCSharpManagedList
+ FrenchExDevNetCSharpProjectDependency3WorkerAgent -->|3t/9m| FrenchExDevNetCSharpObjectResult
+ FrenchExDevNetCSharpProjectDependency3WorkerAgent -->|8t/28m| FrenchExDevNetCSharpProjectDependency3
+ FrenchExDevNetCSharpProjectDependency3WorkerAgent -->|0t/0m| FrenchExDevNetCSharpProjectDependency3Abstractions
+```
+
+
+## FrenchExDev.Net.CSharp.ProjectDependency3.Worker.Orchestrator
+
+Tip: A -> B means A uses B.
+| Target B | Unique Types | Member Uses |
+|---|---:|---:|
+| FrenchExDev.Net.CSharp.Object.Result | 2 | 27 |
+
+```mermaid
+graph LR
+ FrenchExDevNetCSharpProjectDependency3WorkerOrchestrator -->|2t/27m| FrenchExDevNetCSharpObjectResult
+```
+
+
+## FrenchExDev.Net.CSharp.ProjectDependency4.DevAppHost
+
+Tip: A -> B means A uses B.
+| Target B | Unique Types | Member Uses |
+|---|---:|---:|
+
+```mermaid
+graph LR
+```
+
+
+## FrenchExDev.Net.CSharp.ProjectDependency4.Viz
+
+Tip: A -> B means A uses B.
+| Target B | Unique Types | Member Uses |
+|---|---:|---:|
+
+```mermaid
+graph LR
+```
+
+
+## FrenchExDev.Net.CSharp.ProjectDependency4.Viz.Api
+
+Tip: A -> B means A uses B.
+| Target B | Unique Types | Member Uses |
+|---|---:|---:|
+
+```mermaid
+graph LR
 ```
 
 

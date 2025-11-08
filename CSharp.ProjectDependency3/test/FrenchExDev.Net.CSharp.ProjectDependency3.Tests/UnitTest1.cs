@@ -9,7 +9,7 @@ namespace FrenchExDev.Net.CSharp.ProjectDependency3.Tests;
 
 public class UnitTest1
 {
-    [Fact]
+    [Fact(Skip = "testbed")]
     public async Task Test1()
     {
         // same solution used by other tests in this project

@@ -21,6 +21,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\..\Testing\src\FenchExDev.Net.Testing\FenchExDev.Net.Testing.csproj" />
 	  <ProjectReference Include="..\..\src\FrenchExDev.Net.CSharp.Object.Builder2.Testing\FrenchExDev.Net.CSharp.Object.Builder2.Testing.csproj" />
 	</ItemGroup>
 
