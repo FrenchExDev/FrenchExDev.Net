@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="devapphost.json">
+    <Content Include="devapphost.Development.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\CSharp.Aspire.Dev\src\FrenchExDev.Net.CSharp.Aspire.Dev\FrenchExDev.Net.CSharp.Aspire.Dev.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\FrenchExDev.Net.CSharp.ProjectDependency5.Api\FrenchExDev.Net.CSharp.ProjectDependency5.Api.csproj" />
   </ItemGroup>
 
