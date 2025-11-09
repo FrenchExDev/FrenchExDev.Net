@@ -10,4 +10,13 @@
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\CSharp.Aspire.Dev\src\FrenchExDev.Net.CSharp.Aspire.Dev.WebApplication\FrenchExDev.Net.CSharp.Aspire.Dev.WebApplication.csproj" />
+	  <ProjectReference Include="..\FrenchExDev.Net.CSharp.ProjectDependency5.Core\FrenchExDev.Net.CSharp.ProjectDependency5.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Solution\" />
+	</ItemGroup>
+
 </Project>

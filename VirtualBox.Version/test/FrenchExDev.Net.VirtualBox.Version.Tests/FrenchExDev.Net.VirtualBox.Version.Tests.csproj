@@ -18,6 +18,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\..\Testing\src\FenchExDev.Net.Testing\FenchExDev.Net.Testing.csproj" />
 	  <ProjectReference Include="..\..\src\FrenchExDev.Net.VirtualBox.Version.Testing\FrenchExDev.Net.VirtualBox.Version.Testing.csproj" />
 	</ItemGroup>
 

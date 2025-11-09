@@ -1,4 +1,5 @@
-﻿using FrenchExDev.Net.VirtualBox.Version.Testing;
+﻿using FenchExDev.Net.Testing;
+using FrenchExDev.Net.VirtualBox.Version.Testing;
 using Shouldly;
 
 namespace FrenchExDev.Net.VirtualBox.Version.Tests;
@@ -10,8 +11,7 @@ namespace FrenchExDev.Net.VirtualBox.Version.Tests;
 /// <remarks>These tests require either an active internet connection or a local VirtualBox installation,
 /// depending on the scenario. They ensure that version discovery and checksum validation behave as expected under
 /// typical usage conditions.</remarks>
-[Trait("test", "unit")]
-[Trait("unit", "virtualbox.version.information.searcher")]
+[Feature(nameof(IVirtualBoxSystemVersionDiscoverer))]
 public class VirtualBoxVersionInformationSearcherTests
 {
     /// <summary>
@@ -24,7 +24,8 @@ public class VirtualBoxVersionInformationSearcherTests
     /// <param name="checksum">The expected SHA-256 checksum of the Additions ISO for the specified version.</param>
     /// <returns>A task that represents the asynchronous test operation.</returns>
     [Theory]
-    [Trait("needs", "internet")]
+    [Trait(Internet.Test, Internet.Online)]
+    [Trait(Integration.Test, Integration.InfrastructureIntegration)]
     [InlineData("7.1.4", "80c91d35742f68217cf47b13e5b50d53f54c22c485bacce41ad7fdc321649e61")]
     public async Task Can_Get_VersionInformation(string version, string checksum)
     {
@@ -46,7 +47,8 @@ public class VirtualBoxVersionInformationSearcherTests
     /// discovered version string is valid.</remarks>
     /// <returns></returns>
     [Fact]
-    [Trait("needs", "virtualbox")]
+    [Trait(Internet.Test, Internet.Offline)]
+    [Trait(Integration.Test, Integration.InfrastructureIntegration)]
     public async Task Can_Get_System_VirtualBoxVersion_Test()
     {
         var searcher = new VirtualBoxSystemVersionDiscoverer();

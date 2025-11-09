@@ -1,0 +1,65 @@
+using Microsoft.CodeAnalysis;
+using FrenchExDev.Net.CSharp.ProjectDependency5.Core;
+
+namespace FrenchExDev.Net.CSharp.ProjectDependency5.Core.Analysis;
+
+// Directional coupling intensity: per A->B, count used public types and members from B used in A
+public class DirectionalCouplingAnalyzer : IProjectAnalyzer
+{
+    public string Name => "DirectionalCoupling";
+
+    public async Task<IProjectAnalysisResult> AnalyzeAsync(Solution solution, CancellationToken cancellationToken = default)
+    {
+        var dict = new Dictionary<string, Dictionary<string, (int uniqueTypes, int memberUses)>>(StringComparer.OrdinalIgnoreCase);
+        var roslynSolution = solution.Code;
+        var projects = roslynSolution.Projects.ToList();
+
+        foreach (var pa in projects)
+        {
+            var compA = await pa.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
+            if (compA is null) continue;
+            var aEntry = dict[pa.Name] = new(StringComparer.OrdinalIgnoreCase);
+            var trees = compA.SyntaxTrees.ToList();
+            foreach (var pb in projects)
+            {
+                if (pb.Id == pa.Id) continue;
+                // quick structural filter: A references B assembly?
+                var hasRef = pa.ProjectReferences.Any(r => r.ProjectId == pb.Id)
+                || pa.MetadataReferences.Any(m => (m.Display ?? string.Empty).Contains(pb.AssemblyName ?? pb.Name, StringComparison.OrdinalIgnoreCase));
+                if (!hasRef) continue;
+                var targetAsm = pb.AssemblyName ?? pb.Name;
+                var types = new HashSet<string>(StringComparer.Ordinal);
+                var memberUses =0;
+                foreach (var tree in trees)
+                {
+                    var model = compA.GetSemanticModel(tree);
+                    var root = await tree.GetRootAsync(cancellationToken).ConfigureAwait(false);
+                    foreach (var node in root.DescendantNodes())
+                    {
+                        if (cancellationToken.IsCancellationRequested) break;
+                        ISymbol? sym = node switch
+                        {
+                            Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax inv => model.GetSymbolInfo(inv.Expression, cancellationToken).Symbol,
+                            Microsoft.CodeAnalysis.CSharp.Syntax.ObjectCreationExpressionSyntax oc => model.GetSymbolInfo(oc.Type, cancellationToken).Symbol,
+                            Microsoft.CodeAnalysis.CSharp.Syntax.AttributeSyntax at => model.GetSymbolInfo(at, cancellationToken).Symbol,
+                            _ => null
+                        };
+                        if (sym?.ContainingAssembly?.Name == targetAsm)
+                        {
+                            memberUses++;
+                            var t = sym.ContainingType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                            if (!string.IsNullOrEmpty(t)) types.Add(t!);
+                        }
+                    }
+                }
+                aEntry[pb.Name] = (types.Count, memberUses);
+            }
+        }
+        IProjectAnalysisResult res = new DirectionalCouplingResult(Name,
+        dict.ToDictionary(
+            kv => kv.Key,
+            kv => (IReadOnlyDictionary<string, (int UniqueTypes, int MemberUses)>) kv.Value.ToDictionary(p => p.Key, p => (p.Value.uniqueTypes, p.Value.memberUses))
+        ));
+        return res;
+    }
+}

@@ -324,9 +324,9 @@ public readonly struct Result<T> : IResult where T : notnull
     /// <param name="action">The function to execute. This delegate should return a value of type TResult when called.</param>
     /// <returns>A Result<TResult> that contains the value returned by the function if execution is successful; otherwise, a
     /// failure result containing the captured exception.</returns>
-    public static Result<TResult> TryCatch<TResult>(Func<TResult> action) where TResult : notnull
+    public static Result<TResult> TryCatch<TResult>(Func<Result<TResult>> action) where TResult : notnull
     {
-        try { return action().ToSuccess(); } catch (Exception ex) { return ex.ToFailure<TResult>(); }
+        try { return action(); } catch (Exception ex) { return ex.ToFailure<TResult>(); }
     }
 
     /// <summary>

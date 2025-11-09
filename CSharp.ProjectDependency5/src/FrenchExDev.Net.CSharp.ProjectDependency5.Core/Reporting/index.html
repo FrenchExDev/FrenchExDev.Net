@@ -1,0 +1,3109 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Code Graph</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --header-bg: #343a40;
+            --header-text: #ffffff;
+            --node-stroke: #495057;
+            --canvas-bg: #ffffff;
+            --input-bg: #ffffff;
+            --input-border: #ced4da;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #e9ecef;
+            --text-secondary: #adb5bd;
+            --border-color: #495057;
+            --header-bg: #000000;
+            --header-text: #ffffff;
+            --node-stroke: #6c757d;
+            --canvas-bg: #1a1a1a;
+            --input-bg: #2d2d2d;
+            --input-border: #495057;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: system-ui, -apple-system, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #app {
+            height: 100%;
+            display: grid;
+            grid-template-rows: auto 1fr;
+        }
+
+        header {
+            padding: 8px 12px;
+            background: var(--header-bg);
+            color: var(--header-text);
+            font-family: system-ui, sans-serif;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--header-text);
+            color: var(--header-text);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--header-text);
+            color: var(--header-bg);
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            height: 100%;
+        }
+
+        aside {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 12px;
+            overflow: auto;
+            font-family: system-ui, sans-serif;
+            color: var(--text-primary);
+        }
+
+        #canvas {
+            position: relative;
+            background: var(--canvas-bg);
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        #canvas:active {
+            cursor: grabbing;
+        }
+
+        .zoom-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 100;
+        }
+
+        .zoom-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .zoom-btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--node-stroke);
+        }
+
+        .zoom-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            padding: 4px 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            z-index: 100;
+        }
+
+        .control-section {
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .control-section:last-child {
+            border-bottom: none;
+        }
+
+        .control-section h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        label {
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        input[type="text"], select {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            outline: none;
+            margin-top: 4px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: var(--node-stroke);
+            transform: scale(1.1);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            background: var(--node-stroke);
+            transform: scale(1.1);
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .node circle {
+            stroke: var(--node-stroke);
+            stroke-width: 1.5px;
+            cursor: pointer;
+            transition: stroke-width 0.2s ease;
+        }
+
+        .node circle:hover {
+            stroke-width: 2.5px;
+        }
+
+        .node text {
+            font: 11px system-ui;
+            pointer-events: none;
+            fill: var(--text-primary);
+        }
+
+        .node-info {
+            position: absolute;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 12px;
+            color: var(--text-primary);
+            max-width: 400px;
+            min-width: 250px;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            display: none;
+            word-wrap: break-word;
+            word-break: break-all;
+            overflow-wrap: break-word;
+        }
+
+        .node-info h4 {
+            margin: 0 0 6px 0;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .node-info .info-row {
+            margin-bottom: 4px;
+        }
+
+        .node-info .label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .node-info .id-value {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 10px;
+            background: var(--bg-secondary);
+            padding: 2px 4px;
+            border-radius: 3px;
+            margin-top: 2px;
+            word-break: break-all;
+            line-height: 1.3;
+            border: 1px solid var(--border-color);
+        }
+
+        .link {
+            stroke-opacity: 0.7;
+        }
+
+        .deduced-link {
+            stroke-opacity: 0.8;
+            transition: stroke-width 0.2s ease, opacity 0.2s ease;
+        }
+
+        .deduced-link:hover {
+            stroke-width: 3px !important;
+            stroke-opacity: 1.0;
+            filter: drop-shadow(0 0 3px #ff6b35);
+        }
+
+        /* Dark mode link improvements */
+        [data-theme="dark"] .link {
+            stroke-opacity: 0.85;
+        }
+
+        [data-theme="dark"] .deduced-link {
+            stroke-opacity: 0.9;
+        }
+
+        [data-theme="dark"] .deduced-link:hover {
+            filter: drop-shadow(0 0 5px #ffb347);
+        }
+
+        .legend {
+            margin-bottom: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: var(--text-primary);
+        }
+
+        .swatch {
+            width: 14px;
+            height: 14px;
+            margin-right: 8px;
+            border: 1px solid var(--node-stroke);
+            border-radius: 2px;
+        }
+
+        .relation-switch {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            padding: 2px 0;
+        }
+
+        .relation-switch input[type="checkbox"] {
+            margin-right: 8px;
+            width: auto;
+        }
+
+        .relation-switch label {
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .relation-color {
+            width: 12px;
+            height: 3px;
+            margin-left: 8px;
+            border-radius: 1px;
+        }
+
+        /* Search result highlighting */
+        .node.search-match circle {
+            stroke: #ff6b6b !important;
+            stroke-width: 3px !important;
+            filter: drop-shadow(0 0 6px rgba(255, 107, 107, 0.6));
+        }
+
+        .node.search-related circle {
+            stroke: #4ecdc4 !important;
+            stroke-width: 2px !important;
+            filter: drop-shadow(0 0 4px rgba(78, 205, 196, 0.4));
+        }
+
+        .node.search-dimmed {
+            opacity: 0.3 !important;
+        }
+
+        .link.search-dimmed {
+            opacity: 0.1 !important;
+        }
+
+        .link.search-related {
+            opacity: 1 !important;
+            stroke-width: 3px !important;
+        }
+
+        #searchQuery {
+            margin-top: 4px;
+        }
+
+        .search-stats {
+            background: var(--bg-secondary);
+            padding: 4px 6px;
+            border-radius: 3px;
+            margin-top: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .search-term-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 6px;
+            margin: 2px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid;
+            background: var(--bg-secondary);
+            max-width: 150px;
+        }
+
+        .search-term-chip.include {
+            border-color: #28a745;
+            color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .search-term-chip.exclude {
+            border-color: #dc3545;
+            color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .search-term-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        .search-term-remove {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 0;
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+
+        .search-term-remove:hover {
+            opacity: 1;
+            background: currentColor;
+            color: white;
+        }
+
+        #searchTerms:empty::after {
+            content: "No search terms added";
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 11px;
+        }
+
+
+
+        .containment-link {
+            stroke: var(--border-color);
+            stroke-width: 1;
+            stroke-dasharray: 2,2;
+            opacity: 0.4;
+        }
+
+        .namespace-link {
+            stroke: #28a745;
+            stroke-width: 2;
+            opacity: 0.7;
+            cursor: pointer;
+        }
+
+        .namespace-link:hover {
+            stroke-width: 3;
+            opacity: 1;
+        }
+
+        .namespace-link.animated {
+            stroke-dasharray: 8,4;
+            animation: dash 2s linear infinite;
+        }
+
+        @keyframes dash {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 12; }
+        }
+
+        .namespace-usage-indicator {
+            fill: #28a745;
+            stroke: white;
+            stroke-width: 1;
+            opacity: 0.8;
+        }
+
+        .convex-hull {
+            fill: none;
+            stroke: var(--border-color);
+            stroke-width: 3;
+            stroke-dasharray: 8,4;
+            opacity: 0.9;
+            pointer-events: none;
+            filter: drop-shadow(0 0 4px rgba(0,0,0,0.3));
+        }
+
+        .convex-hull.namespace-hull {
+            stroke: #ff9800;
+            fill: rgba(255, 152, 0, 0.25);
+            stroke-width: 4;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 8px rgba(255, 152, 0, 0.4));
+        }
+
+        .convex-hull.project-hull {
+            stroke: #0077be;
+            fill: rgba(0, 119, 190, 0.2);
+            stroke-width: 5;
+            opacity: 0.85;
+            filter: drop-shadow(0 0 10px rgba(0, 119, 190, 0.5));
+        }
+
+        [data-theme="dark"] .convex-hull.namespace-hull {
+            stroke: #ffb347;
+            fill: rgba(255, 179, 71, 0.2);
+            filter: drop-shadow(0 0 8px rgba(255, 179, 71, 0.3));
+        }
+
+        [data-theme="dark"] .convex-hull.project-hull {
+            stroke: #4a8cc7;
+            fill: rgba(74, 140, 199, 0.18);
+            filter: drop-shadow(0 0 10px rgba(74, 140, 199, 0.4));
+        }
+
+        .hull-label {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 13px;
+            font-weight: 900;
+            text-anchor: middle;
+            pointer-events: none;
+            opacity: 1;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9), -1px -1px 2px rgba(0, 0, 0, 0.3);
+            stroke: rgba(255, 255, 255, 0.8);
+            stroke-width: 3;
+            paint-order: stroke fill;
+        }
+
+        [data-theme="dark"] .hull-label {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9), -1px -1px 2px rgba(255, 255, 255, 0.3);
+            stroke: rgba(0, 0, 0, 0.8);
+        }
+
+        .namespace-stats {
+            font-size: 10px;
+            fill: var(--text-secondary);
+            text-anchor: end;
+        }
+
+        /* Project-only view specific styles */
+        .project-only-indicator {
+            background: linear-gradient(45deg, #0077be, #4a8cc7);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0, 119, 190, 0.3);
+            margin-left: 8px;
+            display: inline-block;
+            animation: pulse-project 2s infinite;
+        }
+
+        @keyframes pulse-project {
+            0% { box-shadow: 0 2px 4px rgba(0, 119, 190, 0.3); }
+            50% { box-shadow: 0 2px 8px rgba(0, 119, 190, 0.6); }
+            100% { box-shadow: 0 2px 4px rgba(0, 119, 190, 0.3); }
+        }
+
+        .project-node-highlight {
+            stroke: #0077be !important;
+            stroke-width: 4px !important;
+            filter: drop-shadow(0 0 8px rgba(0, 119, 190, 0.6));
+        }
+
+        .control-section.project-only-active {
+            background: linear-gradient(135deg, rgba(0, 119, 190, 0.05), rgba(74, 140, 199, 0.05));
+            border: 1px solid rgba(0, 119, 190, 0.2);
+            border-radius: 8px;
+        }
+
+        [data-theme="dark"] .project-only-indicator {
+            background: linear-gradient(45deg, #4a8cc7, #74a8d3);
+            box-shadow: 0 2px 4px rgba(74, 140, 199, 0.4);
+        }
+
+        @keyframes pulse-project {
+            0% { box-shadow: 0 2px 4px rgba(74, 140, 199, 0.4); }
+            50% { box-shadow: 0 2px 8px rgba(74, 140, 199, 0.7); }
+            100% { box-shadow: 0 2px 4px rgba(74, 140, 199, 0.4); }
+        }
+
+        /* Container node styling */
+        .container-background {
+            stroke: var(--node-stroke);
+            stroke-width: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .container-background.project {
+            fill: rgba(0, 119, 190, 0.2);
+            stroke: #0077be;
+            stroke-opacity: 0.8;
+        }
+
+        .container-background.namespace {
+            fill: rgba(255, 152, 0, 0.2);
+            stroke: #ff9800;
+            stroke-opacity: 0.8;
+        }
+
+        .container-background:hover {
+            stroke-width: 3px;
+            filter: brightness(1.1);
+            stroke-opacity: 1.0;
+        }
+
+        .container-background.project:hover {
+            fill: rgba(0, 119, 190, 0.3);
+            stroke: #0099cc;
+        }
+
+        .container-background.namespace:hover {
+            fill: rgba(255, 152, 0, 0.3);
+            stroke: #ffaa00;
+        }
+
+        [data-theme="dark"] .container-background.project {
+            fill: rgba(74, 140, 199, 0.25);
+            stroke: #4a8cc7;
+            stroke-opacity: 0.9;
+        }
+
+        [data-theme="dark"] .container-background.namespace {
+            fill: rgba(255, 179, 71, 0.25);
+            stroke: #ffb347;
+            stroke-opacity: 0.9;
+        }
+
+        [data-theme="dark"] .container-background.project:hover {
+            fill: rgba(74, 140, 199, 0.4);
+            stroke: #66a3d9;
+            stroke-opacity: 1.0;
+        }
+
+        [data-theme="dark"] .container-background.namespace:hover {
+            fill: rgba(255, 179, 71, 0.4);
+            stroke: #ffc266;
+            stroke-opacity: 1.0;
+        }
+
+        /* Regular node styling */
+        circle.node-circle {
+            stroke: var(--node-stroke);
+            stroke-width: 2px;
+            fill-opacity: 0.8;
+            transition: all 0.2s ease;
+        }
+
+        circle.node-circle:hover {
+            stroke-width: 3px;
+            fill-opacity: 1.0;
+            filter: brightness(1.1);
+        }
+
+        /* Arrow marker styling */
+        marker path {
+            transition: fill 0.2s ease, stroke 0.2s ease;
+        }
+
+        /* Dark theme arrow adjustments */
+        [data-theme="dark"] #arrowhead path {
+            fill: #ccc;
+            stroke: #ccc;
+        }
+
+        [data-theme="dark"] #deduced-arrowhead path {
+            fill: #ff8c5a;
+            stroke: #ff8c5a;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>Code Graph<span id="projectOnlyIndicator" class="project-only-indicator" style="display: none;">Projects Only <span id="relationshipCount"></span></span></h1>
+            <button class="theme-toggle" id="themeToggle">🌙 Dark</button>
+        </header>
+        <main>
+            <aside>
+                <div class="control-section">
+                    <h3>Layout & View</h3>
+                    <div style="margin-bottom: 8px;">
+                        <label>
+                            <input type="checkbox" id="showContainment" checked style="width: auto; margin-right: 4px;" />
+                            <span style="font-size: 12px;">Show containment links</span>
+                        </label>
+                    </div>
+
+                    <div style="margin-bottom: 8px;">
+                        <label>
+                            <input type="checkbox" id="showNamespaceLinks" checked style="width: auto; margin-right: 4px;" />
+                            <span style="font-size: 12px;">Show namespace connections</span>
+                        </label>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <label>
+                            <input type="checkbox" id="animateNamespaceLinks" style="width: auto; margin-right: 4px;" />
+                            <span style="font-size: 12px;">Animate namespace links</span>
+                        </label>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <label>
+                            <input type="checkbox" id="showConvexHulls" style="width: auto; margin-right: 4px;" />
+                            <span style="font-size: 12px;">Show namespace hulls</span>
+                        </label>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <label>
+                            <input type="checkbox" id="showProjectHulls" style="width: auto; margin-right: 4px;" />
+                            <span style="font-size: 12px;">Show project hulls</span>
+                        </label>
+                    </div>
+                    <div style="margin-bottom: 8px; border-top: 1px solid var(--border-color); padding-top: 8px;">
+                        <label>
+                            <input type="checkbox" id="projectOnlyView" style="width: auto; margin-right: 4px;" />
+                            <span style="font-size: 12px; font-weight: bold;">Project-only view</span>
+                        </label>
+                        <div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px; margin-left: 20px;">
+                            Show only projects and their dependencies
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>Navigation</h3>
+                    <div style="margin-bottom: 8px; font-size: 11px; color: var(--text-secondary);">
+                        <strong>Mouse:</strong><br>
+                        • Wheel: Zoom in/out<br>
+                        • Drag: Pan around<br>
+                        • Click nodes: Show info<br>
+
+                        <strong>Keyboard:</strong><br>
+                        • +/- : Zoom in/out<br>
+                        • 0 : Reset zoom<br>
+                        • F : Fit to view<br>
+                        • Ctrl+F : Focus search<br>
+                        • Enter : Search<br>
+                        • Escape : Clear search<br><br>
+                        <strong>Controls:</strong> Use buttons →
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>Relationships</h3>
+                    <div style="margin-bottom: 8px; font-size: 11px; color: var(--text-secondary);">
+                        <strong>Arrows show direction:</strong><br>
+                        • A → B means "A uses B"<br>
+                        • <span style="color: #ff6b35;">Orange arrows</span>: Deduced project dependencies<br>
+                        • <span style="color: #999;">Gray arrows</span>: Direct relationships<br><br>
+                        
+                        <strong>Node sizing:</strong><br>
+                        Size: Larger = More relationships<br>
+                        Color: Blue = More incoming, Yellow = More outgoing
+                    </div>
+                    <div class="legend" id="nodeLegend"></div>
+                </div>
+
+                <div class="control-section">
+                    <h3>Search & Query</h3>
+                    <label for="searchQuery">Add search term:</label>
+                    <div style="display: flex; gap: 4px; margin-top: 4px;">
+                        <input type="text" id="searchQuery" placeholder="Enter term..." style="flex: 1;" />
+                        <select id="searchType" style="width: auto; min-width: 50px;">
+                            <option value="include">+</option>
+                            <option value="exclude">-</option>
+                        </select>
+                        <button id="addSearchTerm" style="font-size: 11px; padding: 3px 8px; width: auto;">Add</button>
+                    </div>
+                    
+                    <div id="searchTerms" style="margin-top: 8px;">
+                        <!-- Search terms will be added here -->
+                    </div>
+                    
+                    <div style="margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap;">
+                        <button id="clearAllSearchTerms" style="font-size: 11px; padding: 3px 8px; background: #6c757d;">Clear All</button>
+                    </div>
+                    
+                    <div style="margin-top: 6px;">
+                        <label>
+                            <input type="checkbox" id="searchRelated" checked style="width: auto; margin-right: 4px;" />
+                            <span style="font-size: 11px;">Include related nodes</span>
+                        </label>
+                    </div>
+                    <div style="margin-top: 6px;">
+                        <label>
+                            <input type="checkbox" id="isolateSearch" style="width: auto; margin-right: 4px;" />
+                            <span style="font-size: 11px;">Isolate search results</span>
+                        </label>
+                    </div>
+                    <div id="searchResults" style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);"></div>
+                </div>
+
+                <div class="control-section">
+                    <h3>Data Source</h3>
+                    <label>Data file:</label>
+                    <input type="text" id="dataFile" value="graph.json" />
+                    <button id="loadBtn">Load</button>
+                </div>
+
+                <div class="control-section">
+                    <h3>Node Filter</h3>
+                    <label for="kindFilter">Filter by type:</label>
+                    <select id="kindFilter">
+                        <option value="">(show all)</option>
+                    </select>
+                </div>
+
+                <div class="control-section">
+                    <h3>Relations</h3>
+                    <div id="relationControls"></div>
+                </div>
+
+                <div class="control-section">
+                    <h3>Force Parameters</h3>
+                    <div style="margin-bottom: 12px;">
+                        <label for="containmentDistance" style="font-size: 12px; margin-bottom: 4px; display: block;">
+                            Containment Distance: <span id="containmentDistanceValue">80</span>px
+                        </label>
+                        <input type="range" id="containmentDistance" min="20" max="200" value="80" style="width: 100%;" />
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="usageDistance" style="font-size: 12px; margin-bottom: 4px; display: block;">
+                            Usage Distance: <span id="usageDistanceValue">150</span>px
+                        </label>
+                        <input type="range" id="usageDistance" min="50" max="300" value="150" style="width: 100%;" />
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="generalDistance" style="font-size: 12px; margin-bottom: 4px; display: block;">
+                            General Distance: <span id="generalDistanceValue">120</span>px
+                        </label>
+                        <input type="range" id="generalDistance" min="50" max="250" value="120" style="width: 100%;" />
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="repulsionStrength" style="font-size: 12px; margin-bottom: 4px; display: block;">
+                            Repulsion Strength: <span id="repulsionStrengthValue">300</span>
+                        </label>
+                        <input type="range" id="repulsionStrength" min="100" max="800" value="300" style="width: 100%;" />
+                    </div>
+                </div>
+            </aside>
+            <div id="canvas">
+                <div class="zoom-controls">
+                    <button class="zoom-btn" id="zoomIn" title="Zoom In">+</button>
+                    <button class="zoom-btn" id="zoomOut" title="Zoom Out">−</button>
+                    <button class="zoom-btn" id="zoomReset" title="Reset Zoom">⌂</button>
+                </div>
+                <div class="zoom-info" id="zoomInfo">100%</div>
+            </div>
+            <div id="nodeInfo" class="node-info"></div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <script>
+        const nodeColorPalette = [
+            '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
+            '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
+        ];
+
+        const relationColorPalette = [
+            '#495057', '#dc3545', '#007bff', '#28a745', '#ffc107',
+            '#6f42c1', '#fd7e14', '#20c997', '#e83e8c', '#6c757d'
+        ];
+
+        // Theme-aware color palette for dark mode
+        const darkRelationColorPalette = [
+            '#adb5bd', '#f5c2c7', '#6ea8fe', '#75dd8c', '#ffda6a',
+            '#c29ffa', '#fd9e44', '#6edbd0', '#f7a8d4', '#adb5bd'
+        ];
+
+        function getThemeAwareRelationColors() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            return isDark ? darkRelationColorPalette : relationColorPalette;
+        }
+
+        let originalData = null;
+        let nodeTypes = {};
+        let relationTypes = {};
+        let nodeMetrics = {};
+        let currentZoom = null;
+        let svg = null;
+        let searchState = {
+            terms: [], // Array of {text: string, type: 'include'|'exclude', id: number}
+            matchedNodes: new Set(),
+            relatedNodes: new Set(),
+            active: false
+        };
+        let searchTermIdCounter = 0;
+        let containmentHierarchy = {};
+
+
+        // Theme management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+            updateThemeToggle(savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeToggle(newTheme);
+            
+            // Update relation colors for new theme
+            if (originalData) {
+                const relationKinds = [...new Set(originalData.links.map(link => link.Kind))];
+                const currentPalette = getThemeAwareRelationColors();
+                relationTypes = {};
+                relationKinds.forEach((kind, index) => {
+                    relationTypes[kind] = currentPalette[index % currentPalette.length];
+                });
+                
+                // Re-render graph to update colors
+                applyFiltersAndRender();
+            }
+        }
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        function updateThemeToggle(theme) {
+            const toggle = document.getElementById('themeToggle');
+            toggle.textContent = theme === 'light' ? '🌙 Dark' : '☀️ Light';
+        }
+
+        function buildNodeLegend() {
+            const container = document.getElementById('nodeLegend');
+            container.innerHTML = '';
+            
+            Object.entries(nodeTypes).forEach(([type, color]) => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                
+                const swatch = document.createElement('span');
+                swatch.className = 'swatch';
+                swatch.style.backgroundColor = color;
+                
+                const label = document.createElement('span');
+                label.textContent = type;
+                
+                item.appendChild(swatch);
+                item.appendChild(label);
+                container.appendChild(item);
+            });
+        }
+
+        function buildRelationControls() {
+            const container = document.getElementById('relationControls');
+            container.innerHTML = '';
+            
+            // Create a combined set of relation types
+            let allRelationTypes = { ...relationTypes };
+            
+            // Add deduced relationship if in project-only mode
+            const projectOnlyMode = document.getElementById('projectOnlyView')?.checked;
+            if (projectOnlyMode) {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                allRelationTypes['Deduced Project Dependency'] = isDark ? '#ffb347' : '#e55100'; // Darker orange for light mode
+            }
+            
+            Object.entries(allRelationTypes).forEach(([type, color]) => {
+                const switchDiv = document.createElement('div');
+                switchDiv.className = 'relation-switch';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `relation_${type.replace(/\s+/g, '_')}`;
+                checkbox.checked = true;
+                checkbox.addEventListener('change', applyFiltersAndRender);
+                
+                const label = document.createElement('label');
+                label.htmlFor = `relation_${type.replace(/\s+/g, '_')}`;
+                label.textContent = type;
+                
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'relation-color';
+                colorDiv.style.backgroundColor = color;
+                
+                label.appendChild(colorDiv);
+                switchDiv.appendChild(checkbox);
+                switchDiv.appendChild(label);
+                container.appendChild(switchDiv);
+            });
+        }
+
+        function buildKindFilter() {
+            const select = document.getElementById('kindFilter');
+            select.innerHTML = '<option value="">(show all)</option>';
+            
+            Object.keys(nodeTypes).sort().forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                select.appendChild(option);
+            });
+        }
+
+        function analyzeData(data) {
+            // Extract unique node types
+            const nodeKinds = [...new Set(data.nodes.map(node => node.Kind))];
+            nodeTypes = {};
+            nodeKinds.forEach((kind, index) => {
+                nodeTypes[kind] = nodeColorPalette[index % nodeColorPalette.length];
+            });
+
+            // Extract unique relation types
+            const relationKinds = [...new Set(data.links.map(link => link.Kind))];
+            relationTypes = {};
+            const currentPalette = getThemeAwareRelationColors();
+            relationKinds.forEach((kind, index) => {
+                relationTypes[kind] = currentPalette[index % currentPalette.length];
+            });
+
+            // Calculate node metrics for sizing and coloring
+            calculateNodeMetrics(data);
+            
+            // Build containment hierarchy
+            buildContainmentHierarchy(data);
+        }
+
+        function calculateNodeMetrics(data) {
+            nodeMetrics = {};
+            
+            // Initialize metrics for all nodes
+            data.nodes.forEach(node => {
+                nodeMetrics[node.Id] = {
+                    inRelations: 0,
+                    outRelations: 0,
+                    totalRelations: 0
+                };
+            });
+
+            // Count relationships
+            data.links.forEach(link => {
+                if (nodeMetrics[link.SourceId]) {
+                    nodeMetrics[link.SourceId].outRelations++;
+                    nodeMetrics[link.SourceId].totalRelations++;
+                }
+                if (nodeMetrics[link.TargetId]) {
+                    nodeMetrics[link.TargetId].inRelations++;
+                    nodeMetrics[link.TargetId].totalRelations++;
+                }
+            });
+        }
+
+        function getNodeSize(nodeId) {
+            const metrics = nodeMetrics[nodeId];
+            if (!metrics) return 8;
+            
+            // Base size + scaling based on total relationships
+            const baseSize = 8;
+            const scaleFactor = Math.min(metrics.totalRelations * 2, 20);
+            return baseSize + scaleFactor;
+        }
+
+        function getNodeColor(nodeId) {
+            const metrics = nodeMetrics[nodeId];
+            if (!metrics) return '#7f7f7f';
+            
+            const inCount = metrics.inRelations;
+            const outCount = metrics.outRelations;
+            
+            if (inCount === 0 && outCount === 0) {
+                return '#7f7f7f'; // Gray for isolated nodes
+            }
+            
+            // Calculate color based on relationship ratio
+            const total = inCount + outCount;
+            const inRatio = inCount / total;
+            const outRatio = outCount / total;
+            
+            // Blue component increases with incoming relationships
+            // Yellow component increases with outgoing relationships
+            const blueIntensity = Math.min(inRatio * 255, 255);
+            const yellowIntensity = Math.min(outRatio * 255, 255);
+            
+            // Create color mixing blue and yellow
+            if (inRatio > outRatio) {
+                // More incoming - blue dominant
+                const red = Math.floor(yellowIntensity * 0.3);
+                const green = Math.floor(yellowIntensity * 0.3 + blueIntensity * 0.2);
+                const blue = Math.floor(blueIntensity);
+                return `rgb(${red}, ${green}, ${blue})`;
+            } else if (outRatio > inRatio) {
+                // More outgoing - yellow dominant
+                const red = Math.floor(yellowIntensity);
+                const green = Math.floor(yellowIntensity);
+                const blue = Math.floor(blueIntensity * 0.3);
+                return `rgb(${red}, ${green}, ${blue})`;
+            } else {
+                // Equal - greenish mix
+                const red = Math.floor((yellowIntensity + blueIntensity) * 0.4);
+                const green = Math.floor((yellowIntensity + blueIntensity) * 0.6);
+                const blue = Math.floor((yellowIntensity + blueIntensity) * 0.4);
+                return `rgb(${red}, ${green}, ${blue})`;
+            }
+        }
+
+        async function loadAndRender(url) {
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                // Convert the data structure from {Nodes: [...], Links: [...]} to {nodes: [...], links: [...]}
+                originalData = {
+                    nodes: data.Nodes || data.nodes || [],
+                    links: data.Links || data.links || []
+                };
+
+                // Analyze data to build dynamic types and colors
+                analyzeData(originalData);
+
+                // Build UI components
+                buildNodeLegend();
+                buildRelationControls();
+                buildKindFilter();
+
+                // Render graph
+                applyFiltersAndRender();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Error loading graph data. Please check the file path.');
+            }
+        }
+
+        function deduceProjectRelationships(data, enabledRelations) {
+            console.log('🔍 DEBUGGING DEDUCED RELATIONSHIPS');
+            console.log('Enabled relations:', enabledRelations);
+            
+            // Build project-to-node mappings using containment relationships
+            const projectToNodes = new Map();
+            const nodeToProject = new Map();
+            
+            // Get all projects
+            const projects = data.nodes.filter(node => node.Kind === 'Project');
+            console.log('Found projects:', projects.length, projects.map(p => p.Name));
+            projects.forEach(project => {
+                projectToNodes.set(project.Id, new Set());
+            });
+            
+
+            
+            // Build containment hierarchy to map nodes to their projects
+            const containsLinks = data.links.filter(link => link.Kind === 'Contains');
+            
+            // First pass: direct containment (project -> namespace/class)
+            containsLinks.forEach(link => {
+                const sourceNode = data.nodes.find(n => n.Id === link.SourceId);
+                const targetNode = data.nodes.find(n => n.Id === link.TargetId);
+                
+                if (sourceNode && targetNode) {
+                    if (sourceNode.Kind === 'Project') {
+                        // Direct project containment
+                        projectToNodes.get(sourceNode.Id).add(targetNode.Id);
+                        nodeToProject.set(targetNode.Id, sourceNode.Id);
+                    }
+                }
+            });
+            
+            // Second pass: propagate containment (namespace -> class, etc.)
+            let changed = true;
+            while (changed) {
+                changed = false;
+                containsLinks.forEach(link => {
+                    const sourceNode = data.nodes.find(n => n.Id === link.SourceId);
+                    const targetNode = data.nodes.find(n => n.Id === link.TargetId);
+                    
+                    if (sourceNode && targetNode) {
+                        const sourceProject = nodeToProject.get(sourceNode.Id);
+                        if (sourceProject && !nodeToProject.has(targetNode.Id)) {
+                            // Propagate project membership down the containment hierarchy
+                            nodeToProject.set(targetNode.Id, sourceProject);
+                            projectToNodes.get(sourceProject).add(targetNode.Id);
+                            changed = true;
+                        }
+                    }
+                });
+            }
+            
+            // Now deduce project-to-project relationships from cross-project links
+            const projectRelationships = new Map();
+            const relationshipTypes = new Map();
+            
+            let processedLinks = 0;
+            let crossProjectLinks = 0;
+            data.links.forEach(link => {
+                // Skip containment links but be more permissive with other links
+                if (link.Kind === 'Contains') {
+                    return; // Skip containment (already processed)
+                }
+                
+                // Only check enabled relations if they exist, otherwise include all
+                if (enabledRelations.length > 0 && !enabledRelations.includes(link.Kind)) {
+                    return; // Skip disabled relations only if we have enabled relations
+                }
+                
+                processedLinks++;
+                
+                const sourceProject = nodeToProject.get(link.SourceId);
+                const targetProject = nodeToProject.get(link.TargetId);
+                
+                console.log(`🔗 Link: ${link.Kind} from ${sourceProject || 'unknown'} to ${targetProject || 'unknown'}`);
+                
+                // Only create project relationships for cross-project dependencies
+                if (sourceProject && targetProject && sourceProject !== targetProject) {
+                    crossProjectLinks++;
+                    console.log(`✅ Cross-project link found: ${sourceProject} -> ${targetProject} (${link.Kind})`);
+                    const relationKey = `${sourceProject}-${targetProject}`;
+                    
+                    if (!projectRelationships.has(relationKey)) {
+                        projectRelationships.set(relationKey, {
+                            SourceId: sourceProject,
+                            TargetId: targetProject,
+                            count: 0,
+                            types: new Set(),
+                            details: []
+                        });
+                    }
+                    
+                    const relationship = projectRelationships.get(relationKey);
+                    relationship.count++;
+                    relationship.types.add(link.Kind);
+                    relationship.details.push({
+                        sourceNode: data.nodes.find(n => n.Id === link.SourceId),
+                        targetNode: data.nodes.find(n => n.Id === link.TargetId),
+                        linkType: link.Kind
+                    });
+                    
+                    // Track most common relationship type for this project pair
+                    const typeKey = `${relationKey}-${link.Kind}`;
+                    const currentCount = relationshipTypes.get(typeKey) || 0;
+                    relationshipTypes.set(typeKey, currentCount + 1);
+                }
+            });
+            
+            console.log(`📊 Processed ${processedLinks} links, found ${crossProjectLinks} cross-project links`);
+            console.log(`📊 Found ${projectRelationships.size} unique project relationships`);
+            
+            // Convert to link format with the most common relationship type
+            const deducedLinks = [];
+            projectRelationships.forEach((relationship, key) => {
+                // Find the most frequent relationship type for this project pair
+                let dominantType = 'Usage'; // default
+                let maxCount = 0;
+                
+                relationship.types.forEach(type => {
+                    const count = relationshipTypes.get(`${key}-${type}`) || 0;
+                    if (count > maxCount) {
+                        maxCount = count;
+                        dominantType = type;
+                    }
+                });
+                
+                deducedLinks.push({
+                    SourceId: relationship.SourceId,
+                    TargetId: relationship.TargetId,
+                    Kind: dominantType,
+                    DeducedFromCount: relationship.count,
+                    DeducedFromTypes: Array.from(relationship.types),
+                    Details: relationship.details
+                });
+            });
+            
+            console.log(`📋 Project to nodes summary:`);
+            projectToNodes.forEach((nodes, projectId) => {
+                const project = data.nodes.find(n => n.Id === projectId);
+                console.log(`  📦 ${project?.Name}: ${nodes.size} nodes`);
+            });
+            
+            console.log(`✅ Generated ${deducedLinks.length} deduced project relationships:`);
+            deducedLinks.forEach(link => {
+                const sourceProj = data.nodes.find(n => n.Id === link.SourceId);
+                const targetProj = data.nodes.find(n => n.Id === link.TargetId);
+                console.log(`  📈 ${sourceProj?.Name} -> ${targetProj?.Name} (${link.Kind}, ${link.DeducedFromCount} underlying)`);
+            });
+            
+            return deducedLinks;
+        }
+
+        function getFilteredData() {
+            if (!originalData) return null;
+            
+            // Get enabled relations
+            const enabledRelations = [];
+            Object.keys(relationTypes).forEach(type => {
+                const checkbox = document.getElementById(`relation_${type}`);
+                if (checkbox && checkbox.checked) {
+                    enabledRelations.push(type);
+                }
+            });
+            
+            // Check for deduced relationships in project-only mode
+            let showDeducedRelations = false;
+            const deducedCheckbox = document.getElementById('relation_Deduced_Project_Dependency');
+            console.log('🔍 Checking deduced relations checkbox:', deducedCheckbox);
+            console.log('🔍 Deduced checkbox checked state:', deducedCheckbox?.checked);
+            if (deducedCheckbox && deducedCheckbox.checked) {
+                showDeducedRelations = true;
+            }
+            console.log('🔍 Show deduced relations final:', showDeducedRelations);
+
+            const kindFilter = document.getElementById('kindFilter').value;
+            const projectOnlyView = document.getElementById('projectOnlyView').checked;
+            
+            // Filter nodes by kind and project-only view
+            let filteredNodes = originalData.nodes;
+            if (projectOnlyView) {
+                // Only show project nodes in project-only view
+                filteredNodes = originalData.nodes.filter(node => node.Kind === 'Project');
+            } else if (kindFilter) {
+                filteredNodes = originalData.nodes.filter(node => node.Kind === kindFilter);
+            }
+
+            // Filter links by relation type and project-only view
+            const nodeIds = new Set(filteredNodes.map(node => node.Id));
+            let filteredLinks = originalData.links.filter(link => 
+                enabledRelations.includes(link.Kind) &&
+                nodeIds.has(link.SourceId) &&
+                nodeIds.has(link.TargetId)
+            );
+
+            // In project-only view, always deduce project-to-project relationships
+            if (projectOnlyView) {
+                console.log('🎯 PROJECT-ONLY MODE: Deducing relationships...');
+                console.log('Show deduced relations:', showDeducedRelations);
+                
+                let deducedLinks = deduceProjectRelationships(originalData, enabledRelations);
+                
+                // If no relationships found, try with all relationship types
+                if (deducedLinks.length === 0) {
+                    console.log('⚠️ No deduced links with enabled relations, trying with ALL relation types...');
+                    const allRelationTypes = [...new Set(originalData.links.map(link => link.Kind).filter(kind => kind !== 'Contains'))];
+                    console.log('All relation types (excluding Contains):', allRelationTypes);
+                    deducedLinks = deduceProjectRelationships(originalData, allRelationTypes);
+                }
+                
+                // If still no relationships, try with empty array (will include ALL links)
+                if (deducedLinks.length === 0) {
+                    console.log('⚠️ Still no deduced links, trying with NO filtering...');
+                    deducedLinks = deduceProjectRelationships(originalData, []);
+                }
+                
+                // Mark deduced links as such for special styling
+                deducedLinks.forEach(link => {
+                    link.isDeduced = true;
+                    link.underlyingConnections = link.DeducedFromCount || 1;
+                });
+                
+                // Update relationship count in UI
+                const countElement = document.getElementById('relationshipCount');
+                if (countElement) {
+                    countElement.textContent = `(${deducedLinks.length} relationships)`;
+                }
+                
+                if (showDeducedRelations) {
+                    console.log('✅ Adding deduced links to filtered links');
+                    console.log('Original filtered links:', filteredLinks.length);
+                    // Show both original project-to-project links AND deduced links
+                    filteredLinks = [...filteredLinks, ...deducedLinks];
+                    console.log('New filtered links total:', filteredLinks.length);
+                } else {
+                    console.log('❌ Deduced relations checkbox NOT checked');
+                    if (countElement) {
+                        countElement.textContent = `(${deducedLinks.length} available, enable "Deduced Project Dependency")`;
+                    }
+                    // Show only original project-to-project links (if any)
+                    // This will typically be empty, so user will see no connections
+                    // until they enable deduced relationships
+                }
+            } else {
+                // Clear relationship count when not in project-only mode
+                const countElement = document.getElementById('relationshipCount');
+                if (countElement) {
+                    countElement.textContent = '';
+                }
+            }
+
+            // Recalculate metrics for filtered data
+            const filteredData = {
+                nodes: filteredNodes,
+                links: filteredLinks
+            };
+            calculateNodeMetrics(filteredData);
+            buildContainmentHierarchy(filteredData);
+
+            return filteredData;
+        }
+
+        function buildContainmentHierarchy(data) {
+            containmentHierarchy = {
+                containers: new Map(),
+                rootNodes: [],
+                nodeToContainer: new Map(),
+                namespaceUsages: new Map(),
+                crossNamespaceLinks: []
+            };
+
+            // Find containment relationships
+            const containsLinks = data.links.filter(link => link.Kind === 'Contains');
+            
+            // Identify container types (Projects and Namespaces)
+            const containerTypes = ['Project', 'Namespace'];
+            
+            // Initialize containers
+            data.nodes.forEach(node => {
+                if (containerTypes.includes(node.Kind)) {
+                    containmentHierarchy.containers.set(node.Id, {
+                        node: node,
+                        children: [],
+                        childContainers: [],
+                        parent: null,
+                        level: 0,
+                        expanded: true,
+                        usages: new Set() // Track what this namespace uses
+                    });
+                }
+            });
+
+            // Build parent-child relationships for containers
+            containsLinks.forEach(link => {
+                const parent = containmentHierarchy.containers.get(link.SourceId);
+                const childContainer = containmentHierarchy.containers.get(link.TargetId);
+                const childNode = data.nodes.find(n => n.Id === link.TargetId);
+                
+                if (parent && childNode) {
+                    if (childContainer) {
+                        // Child is also a container
+                        parent.childContainers.push(childContainer);
+                        childContainer.parent = parent;
+                        childContainer.level = parent.level + 1;
+                    } else {
+                        // Child is a regular node
+                        parent.children.push(childNode);
+                        containmentHierarchy.nodeToContainer.set(childNode.Id, parent);
+                    }
+                }
+            });
+
+            // Find namespace usage patterns
+            const usageLinks = data.links.filter(link => link.Kind === 'Usage');
+            usageLinks.forEach(link => {
+                const sourceContainer = findContainerForNode(link.SourceId);
+                const targetContainer = findContainerForNode(link.TargetId);
+                
+                if (sourceContainer && targetContainer && 
+                    sourceContainer.node.Kind === 'Namespace' && 
+                    targetContainer.node.Kind === 'Namespace' &&
+                    sourceContainer.node.Id !== targetContainer.node.Id) {
+                    
+                    sourceContainer.usages.add(targetContainer.node.Id);
+                    
+                    // Create cross-namespace link
+                    const linkKey = `${sourceContainer.node.Id}-${targetContainer.node.Id}`;
+                    if (!containmentHierarchy.crossNamespaceLinks.find(l => l.key === linkKey)) {
+                        containmentHierarchy.crossNamespaceLinks.push({
+                            key: linkKey,
+                            source: sourceContainer.node,
+                            target: targetContainer.node,
+                            count: 1
+                        });
+                    } else {
+                        const existingLink = containmentHierarchy.crossNamespaceLinks.find(l => l.key === linkKey);
+                        existingLink.count++;
+                    }
+                }
+            });
+
+            // Find root containers (containers with no parent)
+            containmentHierarchy.containers.forEach(container => {
+                if (!container.parent) {
+                    container.level = 0;
+                }
+            });
+
+            // Find root nodes (nodes not contained in any container)
+            const containedNodeIds = new Set(containsLinks.map(link => link.TargetId));
+            data.nodes.forEach(node => {
+                if (!containedNodeIds.has(node.Id) && !containmentHierarchy.containers.has(node.Id)) {
+                    containmentHierarchy.rootNodes.push(node);
+                }
+            });
+
+            // Sort children for consistent layout
+            containmentHierarchy.containers.forEach(container => {
+                container.children.sort((a, b) => a.Name.localeCompare(b.Name));
+                container.childContainers.sort((a, b) => a.node.Name.localeCompare(b.node.Name));
+            });
+
+            function findContainerForNode(nodeId) {
+                // Check if node is directly a container
+                if (containmentHierarchy.containers.has(nodeId)) {
+                    return containmentHierarchy.containers.get(nodeId);
+                }
+                
+                // Find which container contains this node
+                return containmentHierarchy.nodeToContainer.get(nodeId);
+            }
+        }
+
+        // Search term management functions
+        function addSearchTerm() {
+            const query = document.getElementById('searchQuery').value.trim();
+            const type = document.getElementById('searchType').value;
+            
+            if (!query) return;
+            
+            // Check if term already exists
+            if (searchState.terms.some(term => term.text.toLowerCase() === query.toLowerCase() && term.type === type)) {
+                return; // Term already exists
+            }
+            
+            const termId = searchTermIdCounter++;
+            const searchTerm = {
+                id: termId,
+                text: query,
+                type: type
+            };
+            
+            searchState.terms.push(searchTerm);
+            document.getElementById('searchQuery').value = '';
+            
+            renderSearchTerms();
+            performMultiTermSearch();
+        }
+        
+        function removeSearchTerm(termId) {
+            searchState.terms = searchState.terms.filter(term => term.id !== termId);
+            renderSearchTerms();
+            performMultiTermSearch();
+        }
+        
+        function clearAllSearchTerms() {
+            searchState.terms = [];
+            renderSearchTerms();
+            clearSearch();
+        }
+        
+        function renderSearchTerms() {
+            const container = document.getElementById('searchTerms');
+            container.innerHTML = '';
+            
+            searchState.terms.forEach(term => {
+                const chip = document.createElement('div');
+                chip.className = `search-term-chip ${term.type}`;
+                
+                const prefix = document.createElement('span');
+                prefix.textContent = term.type === 'include' ? '+' : '-';
+                prefix.style.fontWeight = 'bold';
+                
+                const text = document.createElement('span');
+                text.className = 'search-term-text';
+                text.textContent = term.text;
+                text.title = term.text; // Full text on hover
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'search-term-remove';
+                removeBtn.textContent = '×';
+                removeBtn.onclick = () => removeSearchTerm(term.id);
+                
+                chip.appendChild(prefix);
+                chip.appendChild(text);
+                chip.appendChild(removeBtn);
+                container.appendChild(chip);
+            });
+        }
+
+        function performMultiTermSearch() {
+            if (searchState.terms.length === 0) {
+                clearSearch();
+                return;
+            }
+            
+            const includeRelated = document.getElementById('searchRelated').checked;
+            const isolateResults = document.getElementById('isolateSearch').checked;
+            
+            // Clear previous search state but keep terms
+            const currentTerms = searchState.terms;
+            searchState = {
+                terms: currentTerms,
+                matchedNodes: new Set(),
+                relatedNodes: new Set(),
+                active: true
+            };
+            
+            // Process each node against all search terms
+            currentData.nodes.forEach(node => {
+                let includeMatched = false;
+                let excludeMatched = false;
+                
+                const includeTerms = searchState.terms.filter(t => t.type === 'include');
+                const excludeTerms = searchState.terms.filter(t => t.type === 'exclude');
+                
+                // Check include terms - node must match at least one include term if any exist
+                if (includeTerms.length > 0) {
+                    includeMatched = includeTerms.some(term => 
+                        node.Name.toLowerCase().includes(term.text.toLowerCase()) ||
+                        node.Kind.toLowerCase().includes(term.text.toLowerCase())
+                    );
+                }
+                
+                // Check exclude terms - node must not match any exclude term
+                if (excludeTerms.length > 0) {
+                    excludeMatched = excludeTerms.some(term => 
+                        node.Name.toLowerCase().includes(term.text.toLowerCase()) ||
+                        node.Kind.toLowerCase().includes(term.text.toLowerCase())
+                    );
+                }
+                
+                // Include logic:
+                // - If there are include terms, node must match at least one
+                // - If there are exclude terms, node must not match any
+                // - If only exclude terms exist, include all nodes that don't match excludes
+                const shouldInclude = (includeTerms.length === 0 || includeMatched) && !excludeMatched;
+                
+                if (shouldInclude) {
+                    searchState.matchedNodes.add(node.Id);
+                }
+            });
+            
+            // Add related nodes if requested
+            if (includeRelated && searchState.matchedNodes.size > 0) {
+                currentData.links.forEach(link => {
+                    if (searchState.matchedNodes.has(link.SourceId)) {
+                        searchState.relatedNodes.add(link.TargetId);
+                    }
+                    if (searchState.matchedNodes.has(link.TargetId)) {
+                        searchState.relatedNodes.add(link.SourceId);
+                    }
+                });
+                
+                // Remove matched nodes from related nodes
+                searchState.matchedNodes.forEach(nodeId => {
+                    searchState.relatedNodes.delete(nodeId);
+                });
+            }
+            
+            // Update search results display
+            updateSearchResults();
+            
+            // Apply highlighting
+            applySearchHighlighting(isolateResults);
+            
+            if (isolateResults && (searchState.matchedNodes.size > 0 || searchState.relatedNodes.size > 0)) {
+                setTimeout(() => centerOnSearchResults(), 300);
+            }
+        }
+
+        function performSearch() {
+            const query = document.getElementById('searchQuery').value.trim().toLowerCase();
+            const includeRelated = document.getElementById('searchRelated').checked;
+            const isolateResults = document.getElementById('isolateSearch').checked;
+            
+            // Clear previous search state
+            searchState = {
+                query: query,
+                matchedNodes: new Set(),
+                relatedNodes: new Set(),
+                active: query.length > 0
+            };
+
+            if (!query) {
+                clearSearch();
+                return;
+            }
+
+            const data = getFilteredData();
+            if (!data) return;
+
+            // Find matching nodes
+            data.nodes.forEach(node => {
+                const matchesName = node.Name.toLowerCase().includes(query);
+                const matchesKind = node.Kind.toLowerCase().includes(query);
+                const matchesId = node.Id.toLowerCase().includes(query);
+                
+                if (matchesName || matchesKind || matchesId) {
+                    searchState.matchedNodes.add(node.Id);
+                }
+            });
+
+            // Find related nodes if option is enabled
+            if (includeRelated && searchState.matchedNodes.size > 0) {
+                data.links.forEach(link => {
+                    if (searchState.matchedNodes.has(link.SourceId)) {
+                        searchState.relatedNodes.add(link.TargetId);
+                    }
+                    if (searchState.matchedNodes.has(link.TargetId)) {
+                        searchState.relatedNodes.add(link.SourceId);
+                    }
+                });
+
+                // Remove matched nodes from related nodes to avoid duplication
+                searchState.matchedNodes.forEach(nodeId => {
+                    searchState.relatedNodes.delete(nodeId);
+                });
+            }
+
+            // Apply search highlighting
+            applySearchHighlighting(isolateResults);
+            
+            // Update search results display
+            updateSearchResults();
+
+            // Zoom to fit search results if isolating
+            if (isolateResults && (searchState.matchedNodes.size > 0 || searchState.relatedNodes.size > 0)) {
+                setTimeout(() => centerOnSearchResults(), 300);
+            }
+        }
+
+        function clearSearch() {
+            searchState = {
+                terms: [],
+                matchedNodes: new Set(),
+                relatedNodes: new Set(),
+                active: false
+            };
+
+            document.getElementById('searchQuery').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+            renderSearchTerms();
+
+            if (svg) {
+                // Remove all search-related classes
+                svg.selectAll('.node')
+                    .classed('search-match search-related search-dimmed', false);
+                svg.selectAll('.link')
+                    .classed('search-related search-dimmed', false);
+            }
+        }
+
+        function updateSearchResults() {
+            const resultsDiv = document.getElementById('searchResults');
+            const matchedCount = searchState.matchedNodes.size;
+            const relatedCount = searchState.relatedNodes.size;
+            const totalTerms = searchState.terms.length;
+            
+            if (totalTerms === 0) {
+                resultsDiv.innerHTML = '';
+                return;
+            }
+            
+            let resultText = `${matchedCount} direct matches`;
+            if (relatedCount > 0) {
+                resultText += `, ${relatedCount} related`;
+            }
+            resultText += ` (${totalTerms} search term${totalTerms !== 1 ? 's' : ''})`;
+            
+            resultsDiv.innerHTML = resultText;
+        }
+
+        function applySearchHighlighting(isolateResults) {
+            if (!svg) return;
+
+            // Reset all search classes
+            svg.selectAll('.node')
+                .classed('search-match search-related search-dimmed', false);
+            svg.selectAll('.link')
+                .classed('search-related search-dimmed', false);
+
+            if (!searchState.active) return;
+
+            // Highlight matched nodes
+            svg.selectAll('.node')
+                .filter(d => searchState.matchedNodes.has(d.Id))
+                .classed('search-match', true);
+
+            // Highlight related nodes
+            svg.selectAll('.node')
+                .filter(d => searchState.relatedNodes.has(d.Id))
+                .classed('search-related', true);
+
+            // Dim non-matching nodes if isolating
+            if (isolateResults) {
+                svg.selectAll('.node')
+                    .filter(d => !searchState.matchedNodes.has(d.Id) && !searchState.relatedNodes.has(d.Id))
+                    .classed('search-dimmed', true);
+
+                // Dim non-related links
+                svg.selectAll('.link')
+                    .filter(d => {
+                        const sourceId = d.source.Id || d.source;
+                        const targetId = d.target.Id || d.target;
+                        const isRelated = searchState.matchedNodes.has(sourceId) || searchState.matchedNodes.has(targetId) ||
+                                        searchState.relatedNodes.has(sourceId) || searchState.relatedNodes.has(targetId);
+                        return !isRelated;
+                    })
+                    .classed('search-dimmed', true);
+
+                // Highlight related links
+                svg.selectAll('.link')
+                    .filter(d => {
+                        const sourceId = d.source.Id || d.source;
+                        const targetId = d.target.Id || d.target;
+                        const isDirectlyRelated = (searchState.matchedNodes.has(sourceId) && 
+                                                 (searchState.matchedNodes.has(targetId) || searchState.relatedNodes.has(targetId))) ||
+                                                (searchState.matchedNodes.has(targetId) && 
+                                                 (searchState.matchedNodes.has(sourceId) || searchState.relatedNodes.has(sourceId)));
+                        return isDirectlyRelated;
+                    })
+                    .classed('search-related', true);
+            }
+        }
+
+        function updateSearchResults() {
+            const resultsDiv = document.getElementById('searchResults');
+            const matchCount = searchState.matchedNodes.size;
+            const relatedCount = searchState.relatedNodes.size;
+
+            if (!searchState.active) {
+                resultsDiv.innerHTML = '';
+                return;
+            }
+
+            let resultText = '';
+            if (matchCount === 0) {
+                resultText = '<div style="color: #dc3545;">No matches found</div>';
+            } else {
+                resultText = `<div class="search-stats">
+                    <div><strong>${matchCount}</strong> direct match${matchCount !== 1 ? 'es' : ''}</div>
+                    ${relatedCount > 0 ? `<div><strong>${relatedCount}</strong> related node${relatedCount !== 1 ? 's' : ''}</div>` : ''}
+                </div>`;
+            }
+
+            resultsDiv.innerHTML = resultText;
+        }
+
+        function centerOnSearchResults() {
+            if (!svg || (!searchState.matchedNodes.size && !searchState.relatedNodes.size)) return;
+
+            const canvas = document.getElementById('canvas');
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+
+            // Get positions of search result nodes
+            const relevantNodeIds = new Set([...searchState.matchedNodes, ...searchState.relatedNodes]);
+            const nodes = svg.selectAll('.node').nodes().filter(node => {
+                const nodeData = d3.select(node).datum();
+                return relevantNodeIds.has(nodeData.Id);
+            });
+
+            if (nodes.length === 0) return;
+
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+            nodes.forEach(node => {
+                const transform = d3.select(node).attr('transform');
+                if (transform) {
+                    const match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+                    if (match) {
+                        const x = parseFloat(match[1]);
+                        const y = parseFloat(match[2]);
+                        minX = Math.min(minX, x);
+                        minY = Math.min(minY, y);
+                        maxX = Math.max(maxX, x);
+                        maxY = Math.max(maxY, y);
+                    }
+                }
+            });
+
+            if (minX < maxX && minY < maxY) {
+                const padding = 50;
+                const graphWidth = maxX - minX + padding * 2;
+                const graphHeight = maxY - minY + padding * 2;
+                const centerX = (minX + maxX) / 2;
+                const centerY = (minY + maxY) / 2;
+
+                const scale = Math.min(
+                    (width * 0.8) / graphWidth,
+                    (height * 0.8) / graphHeight,
+                    3 // Maximum scale for search results
+                );
+
+                const translateX = width / 2 - centerX * scale;
+                const translateY = height / 2 - centerY * scale;
+
+                svg.transition().duration(750).call(
+                    currentZoom.transform,
+                    d3.zoomIdentity.translate(translateX, translateY).scale(scale)
+                );
+            }
+        }
+
+        function renderGraph(data) {
+            const canvas = document.getElementById('canvas');
+            const width = canvas.clientWidth || window.innerWidth - 320;
+            const height = canvas.clientHeight || window.innerHeight - 60;
+            
+            // Clear canvas but preserve zoom controls and info
+            d3.select('#canvas svg').remove();
+
+            // Create SVG with zoom and pan
+            svg = d3.select('#canvas').append('svg')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Add arrow markers for directional relationships
+            const defs = svg.append('defs');
+            
+            // Standard arrow marker for regular relationships
+            defs.append('marker')
+                .attr('id', 'arrowhead')
+                .attr('viewBox', '-0 -5 10 10')
+                .attr('refX', 10)
+                .attr('refY', 0)
+                .attr('orient', 'auto')
+                .attr('markerWidth', 10)
+                .attr('markerHeight', 10)
+                .attr('xoverflow', 'visible')
+                .append('svg:path')
+                .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+                .attr('fill', '#999')
+                .attr('stroke', '#999');
+            
+            // Orange arrow marker for deduced project relationships
+            defs.append('marker')
+                .attr('id', 'deduced-arrowhead')
+                .attr('viewBox', '-0 -6 12 12')
+                .attr('refX', 12)
+                .attr('refY', 0)
+                .attr('orient', 'auto')
+                .attr('markerWidth', 12)
+                .attr('markerHeight', 12)
+                .attr('xoverflow', 'visible')
+                .append('svg:path')
+                .attr('d', 'M 0,-6 L 12 ,0 L 0,6')
+                .attr('fill', '#ff6b35')
+                .attr('stroke', '#ff6b35')
+                .style('stroke-width', '1');
+
+            // Create zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 5])
+                .on('zoom', handleZoom);
+
+            // Apply zoom to SVG
+            svg.call(zoom);
+            currentZoom = zoom;
+
+            // Create main group for all graph elements
+            const g = svg.append('g').attr('class', 'main-group');
+
+            renderForceDirectedLayout(g, data, width, height);
+
+            // Initialize zoom level display
+            updateZoomInfo(1);
+        }
+
+
+
+        function renderForceDirectedLayout(g, data, width, height) {
+            
+            const linkGroup = g.append('g').attr('class', 'links');
+            const nodeGroup = g.append('g').attr('class', 'nodes');
+
+            // Set up links with proper source/target mapping
+            const showContainment = document.getElementById('showContainment').checked;
+            const processedLinks = data.links
+                .filter(link => showContainment || link.Kind !== 'Contains')
+                .map(link => ({
+                    source: link.SourceId,
+                    target: link.TargetId,
+                    Kind: link.Kind,
+                    isDeduced: link.isDeduced || false,
+                    underlyingConnections: link.underlyingConnections || 1
+                }));
+
+
+            // Get slider values for dynamic force parameters
+            const containmentDistance = parseInt(document.getElementById('containmentDistance').value);
+            const usageDistance = parseInt(document.getElementById('usageDistance').value);
+            const generalDistance = parseInt(document.getElementById('generalDistance').value);
+            const repulsionStrength = parseInt(document.getElementById('repulsionStrength').value);
+
+            // Enhanced force simulation with configurable parameters
+            const simulation = d3.forceSimulation(data.nodes)
+                .force('link', d3.forceLink(processedLinks).id(d => d.Id)
+                    .distance(d => {
+                        if (d.Kind === 'Contains') return containmentDistance;
+                        if (d.Kind === 'Usage') return usageDistance;
+                        return generalDistance;
+                    })
+                    .strength(d => {
+                        if (d.Kind === 'Contains') return 0.8;
+                        return 0.4;
+                    })
+                )
+                .force('charge', d3.forceManyBody().strength(d => {
+                    // Stronger repulsion for container nodes, scaled by repulsion strength
+                    const baseRepulsion = repulsionStrength;
+                    if (d.Kind === 'Project') return -(baseRepulsion * 1.67);
+                    if (d.Kind === 'Namespace') return -(baseRepulsion * 1.33);
+                    return -baseRepulsion;
+                }))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collide', d3.forceCollide(d => getNodeSize(d.Id) + 10));
+
+            // Render different types of links with distinct styles
+            const links = linkGroup.selectAll('line')
+                .data(processedLinks)
+                .join('line')
+                .attr('class', d => {
+                    let className = 'link';
+                    if (d.Kind === 'Contains') className += ' containment-link';
+                    if (d.isDeduced) className += ' deduced-link';
+                    return className;
+                })
+                .attr('stroke-width', d => {
+                    if (d.Kind === 'Contains') return 2;
+                    if (d.isDeduced) {
+                        // Thicker strokes for deduced links to make them more visible
+                        return Math.max(3, Math.log(d.underlyingConnections + 1) + 2);
+                    }
+                    if (d.Kind === 'Usage') return 1;
+                    return 2;
+                })
+                .attr('stroke', d => {
+                    if (d.Kind === 'Contains') {
+                        // Use CSS variable for theme-appropriate containment color
+                        return getComputedStyle(document.documentElement).getPropertyValue('--node-stroke').trim();
+                    }
+                    if (d.isDeduced) {
+                        // More visible colors for deduced relationships
+                        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                        return isDark ? '#ffb347' : '#e55100'; // Darker orange for light mode
+                    }
+                    return relationTypes[d.Kind] || (document.documentElement.getAttribute('data-theme') === 'dark' ? '#adb5bd' : '#666');
+                })
+                .style('stroke-dasharray', d => {
+                    if (d.Kind === 'Contains') return '5,5';
+                    if (d.isDeduced) return '3,3';
+                    return 'none';
+                })
+                .style('opacity', d => {
+                    if (d.Kind === 'Contains') return 0.5;
+                    if (d.isDeduced) {
+                        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                        // Higher opacity in light mode for better visibility
+                        const baseOpacity = isDark ? 0.8 : 0.9;
+                        return Math.min(0.95, baseOpacity + (d.underlyingConnections * 0.05));
+                    }
+                    return 0.7;
+                })
+                .attr('marker-end', d => {
+                    // Add directional arrows for non-containment relationships
+                    if (d.Kind === 'Contains') return null; // No arrows for containment
+                    if (d.isDeduced) return 'url(#deduced-arrowhead)'; // Orange arrows for deduced relationships
+                    return 'url(#arrowhead)'; // Standard arrows for regular relationships
+                });
+
+            // Add informative tooltips to links
+            links.append('title')
+                .text(d => {
+                    const sourceName = d.source.Name || d.source;
+                    const targetName = d.target.Name || d.target;
+                    
+                    if (d.isDeduced) {
+                        return `${sourceName} → ${targetName}\nDeduced ${d.Kind} relationship\nBased on ${d.underlyingConnections} underlying connection(s)`;
+                    } else if (d.Kind === 'Contains') {
+                        return `${sourceName} contains ${targetName}`;
+                    } else {
+                        return `${sourceName} → ${targetName}\n${d.Kind} relationship`;
+                    }
+                });
+
+            // Enhanced node rendering with container distinction
+            const nodes = nodeGroup.selectAll('g')
+                .data(data.nodes)
+                .join('g')
+                .attr('class', d => `node ${d.Kind.toLowerCase()}-node`)
+                .call(dragBehavior(simulation));
+
+            // Different rendering for container vs regular nodes
+            nodes.each(function(d) {
+                const node = d3.select(this);
+                
+                if (d.Kind === 'Project' || d.Kind === 'Namespace') {
+                    // Render containers as rectangles
+                    const nameLength = d.Name.length;
+                    const rectWidth = Math.max(nameLength * 7, 60);
+                    const rectHeight = 25;
+                    
+                    node.append('rect')
+                        .attr('x', -rectWidth/2)
+                        .attr('y', -rectHeight/2)
+                        .attr('width', rectWidth)
+                        .attr('height', rectHeight)
+                        .attr('rx', 4)
+                        .attr('class', `container-background ${d.Kind.toLowerCase()}`)
+                        .on('click', handleNodeClick)
+                        .on('mouseover', handleNodeMouseOver)
+                        .on('mouseout', handleNodeMouseOut);
+                    
+                    // Container text
+                    node.append('text')
+                        .text(d.Name)
+                        .attr('text-anchor', 'middle')
+                        .attr('dy', '0.35em')
+                        .style('font-size', '11px')
+                        .style('font-weight', 'bold')
+                        .style('pointer-events', 'none')
+                        .style('fill', 'var(--text-primary)');
+                    
+                    // Add usage indicator for namespaces
+                    if (d.Kind === 'Namespace') {
+                        const container = containmentHierarchy.containers.get(d.Id);
+                        if (container && container.usages.size > 0) {
+                            node.append('circle')
+                                .attr('class', 'namespace-usage-indicator')
+                                .attr('cx', rectWidth/2 - 8)
+                                .attr('cy', -rectHeight/2 + 8)
+                                .attr('r', 6)
+                                .append('title')
+                                .text(`Uses ${container.usages.size} other namespaces`);
+                            
+                            node.append('text')
+                                .attr('class', 'namespace-stats')
+                                .attr('x', rectWidth/2 - 8)
+                                .attr('y', -rectHeight/2 + 12)
+                                .attr('text-anchor', 'middle')
+                                .text(container.usages.size);
+                        }
+                    }
+                } else {
+                    // Regular nodes as circles
+                    node.append('circle')
+                        .attr('class', 'node-circle')
+                        .attr('r', d => getNodeSize(d.Id))
+                        .attr('fill', d => getNodeColor(d.Id))
+                        .on('click', handleNodeClick)
+                        .on('mouseover', handleNodeMouseOver)
+                        .on('mouseout', handleNodeMouseOut);
+
+                    node.append('text')
+                        .text(d.Name)
+                        .attr('x', d => getNodeSize(d.Id) + 4)
+                        .attr('y', '0.31em')
+                        .style('font-size', '10px')
+                        .style('pointer-events', 'none');
+                }
+            });
+
+            // Add tooltips
+            nodes.append('title')
+                .text(d => {
+                    const metrics = nodeMetrics[d.Id] || { inRelations: 0, outRelations: 0, totalRelations: 0 };
+                    let tooltip = `${d.Name} (${d.Kind})\nIn: ${metrics.inRelations}, Out: ${metrics.outRelations}, Total: ${metrics.totalRelations}`;
+                    
+                    if (d.Kind === 'Namespace') {
+                        const container = containmentHierarchy.containers.get(d.Id);
+                        if (container && container.usages.size > 0) {
+                            tooltip += `\nUses ${container.usages.size} other namespaces`;
+                        }
+                    }
+                    
+                    return tooltip;
+                });
+
+            // Helper function to calculate intersection point with rectangle edge
+            function getRectangleIntersection(centerX, centerY, width, height, targetX, targetY) {
+                const dx = targetX - centerX;
+                const dy = targetY - centerY;
+                
+                if (Math.abs(dx) === 0 && Math.abs(dy) === 0) {
+                    return { x: centerX, y: centerY };
+                }
+                
+                const halfWidth = width / 2;
+                const halfHeight = height / 2;
+                
+                // Calculate intersection with rectangle edges
+                const xIntersect = Math.sign(dx) * halfWidth;
+                const yIntersect = Math.sign(dy) * halfHeight;
+                
+                // Determine which edge is crossed first
+                const tX = Math.abs(dx) > 0 ? halfWidth / Math.abs(dx) : Infinity;
+                const tY = Math.abs(dy) > 0 ? halfHeight / Math.abs(dy) : Infinity;
+                
+                if (tX < tY) {
+                    // Crosses vertical edge first
+                    return {
+                        x: centerX + xIntersect,
+                        y: centerY + (dy * tX)
+                    };
+                } else {
+                    // Crosses horizontal edge first
+                    return {
+                        x: centerX + (dx * tY),
+                        y: centerY + yIntersect
+                    };
+                }
+            }
+
+            // Helper function to calculate link endpoints that don't overlap with nodes
+            function calculateLinkEndpoints(link) {
+                const source = link.source;
+                const target = link.target;
+                
+                // Calculate the vector from source to target
+                const dx = target.x - source.x;
+                const dy = target.y - source.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance === 0 || distance < 5) {
+                    return { x1: source.x, y1: source.y, x2: target.x, y2: target.y };
+                }
+                
+                const padding = 3; // Extra padding for arrow space
+                
+                let sourceEdge, targetEdge;
+                
+                // Calculate source edge point
+                if (source.Kind === 'Project' || source.Kind === 'Namespace') {
+                    // Rectangular node - calculate proper intersection
+                    const nameLength = source.Name.length;
+                    const rectWidth = Math.max(nameLength * 7, 60);
+                    const rectHeight = 25;
+                    sourceEdge = getRectangleIntersection(source.x, source.y, rectWidth, rectHeight, target.x, target.y);
+                } else {
+                    // Circular node
+                    const radius = getNodeSize(source.Id);
+                    const unitX = dx / distance;
+                    const unitY = dy / distance;
+                    sourceEdge = {
+                        x: source.x + unitX * radius,
+                        y: source.y + unitY * radius
+                    };
+                }
+                
+                // Calculate target edge point
+                if (target.Kind === 'Project' || target.Kind === 'Namespace') {
+                    // Rectangular node - calculate proper intersection
+                    const nameLength = target.Name.length;
+                    const rectWidth = Math.max(nameLength * 7, 60);
+                    const rectHeight = 25;
+                    targetEdge = getRectangleIntersection(target.x, target.y, rectWidth, rectHeight, source.x, source.y);
+                } else {
+                    // Circular node
+                    const radius = getNodeSize(target.Id);
+                    const unitX = dx / distance;
+                    const unitY = dy / distance;
+                    targetEdge = {
+                        x: target.x - unitX * radius,
+                        y: target.y - unitY * radius
+                    };
+                }
+                
+                // Add padding for arrow visibility
+                const linkUnitX = dx / distance;
+                const linkUnitY = dy / distance;
+                
+                return {
+                    x1: sourceEdge.x + linkUnitX * padding,
+                    y1: sourceEdge.y + linkUnitY * padding,
+                    x2: targetEdge.x - linkUnitX * padding,
+                    y2: targetEdge.y - linkUnitY * padding
+                };
+            }
+
+            simulation.on('tick', () => {
+                links.each(function(d) {
+                    const endpoints = calculateLinkEndpoints(d);
+                    d3.select(this)
+                        .attr('x1', endpoints.x1)
+                        .attr('y1', endpoints.y1)
+                        .attr('x2', endpoints.x2)
+                        .attr('y2', endpoints.y2);
+                });
+
+                nodes.attr('transform', d => `translate(${d.x},${d.y})`);
+
+                // Update namespace links if they exist
+                if (document.getElementById('showNamespaceLinks').checked) {
+                    updateNamespaceLinksInForceLayout();
+                }
+
+                // Update convex hulls if they exist
+                if (document.getElementById('showConvexHulls').checked) {
+                    updateConvexHulls('namespace');
+                }
+                
+                // Update project hulls if they exist
+                if (document.getElementById('showProjectHulls').checked) {
+                    updateConvexHulls('project');
+                }
+            });
+
+            // Add namespace links
+            if (document.getElementById('showNamespaceLinks').checked) {
+                addNamespaceLinksToForceLayout(g);
+            }
+
+            // Add convex hulls
+            if (document.getElementById('showConvexHulls').checked) {
+                addConvexHullsToForceLayout(g, data, 'namespace');
+            }
+            
+            // Add project hulls
+            if (document.getElementById('showProjectHulls').checked) {
+                addConvexHullsToForceLayout(g, data, 'project');
+            }
+
+            function dragBehavior(simulation) {
+                function dragstarted(event, d) {
+                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                    d.fx = d.x; d.fy = d.y;
+                }
+
+                function dragged(event, d) {
+                    d.fx = event.x; d.fy = event.y;
+                }
+
+                function dragended(event, d) {
+                    if (!event.active) simulation.alphaTarget(0);
+                    d.fx = null; d.fy = null;
+                }
+
+                return d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended);
+            }
+        }
+
+
+
+        function showNamespaceLinkInfo(linkData, x, y) {
+            const nodeInfo = document.getElementById('nodeInfo');
+            
+            nodeInfo.innerHTML = `
+                <h4>Namespace Usage</h4>
+                <div class="info-row"><span class="label">From:</span> ${linkData.source.Name}</div>
+                <div class="info-row"><span class="label">To:</span> ${linkData.target.Name}</div>
+                <div class="info-row"><span class="label">Usage Count:</span> ${linkData.count}</div>
+                <div class="info-row"><span class="label">Type:</span> Cross-namespace dependency</div>
+            `;
+            
+            const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+            
+            let left = x - canvasRect.left + 10;
+            let top = y - canvasRect.top + 10;
+            
+            if (left + 300 > canvasRect.width) {
+                left = x - canvasRect.left - 310;
+            }
+            
+            nodeInfo.style.left = left + 'px';
+            nodeInfo.style.top = top + 'px';
+            nodeInfo.style.display = 'block';
+        }
+
+        function addNamespaceLinksToForceLayout(g) {
+            if (!containmentHierarchy.crossNamespaceLinks.length) return;
+
+            const animate = document.getElementById('animateNamespaceLinks').checked;
+            const namespaceLinkGroup = g.append('g').attr('class', 'force-namespace-links');
+
+            // Add marker for arrows
+            const defs = g.append('defs');
+            defs.append('marker')
+                .attr('id', 'force-namespace-arrow')
+                .attr('viewBox', '0 -5 10 10')
+                .attr('refX', 8)
+                .attr('refY', 0)
+                .attr('markerWidth', 6)
+                .attr('markerHeight', 6)
+                .attr('orient', 'auto')
+                .append('path')
+                .attr('d', 'M0,-5L10,0L0,5')
+                .attr('fill', '#28a745');
+
+            const namespaceLinks = namespaceLinkGroup.selectAll('line')
+                .data(containmentHierarchy.crossNamespaceLinks)
+                .join('line')
+                .attr('class', d => `namespace-link ${animate ? 'animated' : ''}`)
+                .attr('stroke-width', d => Math.min(2 + d.count, 6))
+                .attr('marker-end', 'url(#force-namespace-arrow)')
+                .on('click', (event, d) => {
+                    showNamespaceLinkInfo(d, event.pageX, event.pageY);
+                })
+                .on('mouseover', function(event, d) {
+                    d3.select(this).style('stroke-width', Math.min(4 + d.count, 8));
+                })
+                .on('mouseout', function(event, d) {
+                    d3.select(this).style('stroke-width', Math.min(2 + d.count, 6));
+                });
+
+            namespaceLinks.append('title')
+                .text(d => `${d.source.Name} → ${d.target.Name}\n${d.count} usage${d.count > 1 ? 's' : ''}`);
+
+            // Store reference for updates
+            g.namespaceLinks = namespaceLinks;
+        }
+
+        function updateNamespaceLinksInForceLayout() {
+            const namespaceLinkGroup = svg.select('.force-namespace-links');
+            if (namespaceLinkGroup.empty()) return;
+
+            namespaceLinkGroup.selectAll('line')
+                .attr('x1', d => {
+                    const sourceNode = svg.selectAll('.node').data().find(n => n.Id === d.source.Id);
+                    return sourceNode ? sourceNode.x : 0;
+                })
+                .attr('y1', d => {
+                    const sourceNode = svg.selectAll('.node').data().find(n => n.Id === d.source.Id);
+                    return sourceNode ? sourceNode.y : 0;
+                })
+                .attr('x2', d => {
+                    const targetNode = svg.selectAll('.node').data().find(n => n.Id === d.target.Id);
+                    return targetNode ? targetNode.x : 0;
+                })
+                .attr('y2', d => {
+                    const targetNode = svg.selectAll('.node').data().find(n => n.Id === d.target.Id);
+                    return targetNode ? targetNode.y : 0;
+                });
+        }
+
+        function addConvexHullsToForceLayout(g, data, hullType = 'namespace') {
+            if (!containmentHierarchy.containers) return;
+            
+            const hullGroupClass = hullType === 'project' ? 'project-hulls' : 'convex-hulls';
+            let hullGroup = g.select(`.${hullGroupClass}`);
+            if (hullGroup.empty()) {
+                hullGroup = g.append('g').attr('class', hullGroupClass);
+            }
+            
+            // Group nodes by their container (namespace or project)
+            const containerGroups = new Map();
+            
+            data.nodes.forEach(node => {
+                const containerInfo = containmentHierarchy.nodeToContainer.get(node.Id);
+                if (containerInfo && containerInfo.node) {
+                    const container = containerInfo.node;
+                    // Filter by hull type
+                    if ((hullType === 'namespace' && container.Kind === 'Namespace') || 
+                        (hullType === 'project' && container.Kind === 'Project')) {
+                        const containerId = container.Id;
+                        if (!containerGroups.has(containerId)) {
+                            containerGroups.set(containerId, {
+                                container: container,
+                                nodes: []
+                            });
+                        }
+                        containerGroups.get(containerId).nodes.push(node);
+                    }
+                }
+            });
+            
+            // Create hulls for containers with multiple nodes
+            containerGroups.forEach((group, containerId) => {
+                if (group.nodes.length >= 3) { // Need at least 3 points for a meaningful hull
+                    createHullForGroup(hullGroup, group.container, group.nodes, hullType);
+                }
+            });
+        }
+        
+        function createHullForGroup(parentGroup, container, nodes, hullType = 'namespace') {
+            const hullId = `${hullType}-hull-${container.Id}`;
+            
+            // Create or update hull path
+            let hull = parentGroup.select(`#${hullId}`);
+            if (hull.empty()) {
+                hull = parentGroup.append('path')
+                    .attr('id', hullId)
+                    .attr('class', `convex-hull ${container.Kind.toLowerCase()}-hull`)
+                    .style('pointer-events', 'none');
+                    
+                // Add label for the hull
+                parentGroup.append('text')
+                    .attr('class', 'hull-label')
+                    .attr('id', `${hullId}-label`)
+                    .text(container.Name)
+                    .style('font-size', '11px')
+                    .style('font-weight', 'bold')
+                    .style('fill', container.Kind === 'Namespace' ? '#ff9800' : '#0077be')
+                    .style('text-anchor', 'middle')
+                    .style('pointer-events', 'none')
+                    .style('opacity', 0.8);
+            }
+            
+            updateHullPath(hull, parentGroup.select(`#${hullId}-label`), nodes);
+        }
+        
+        function updateHullPath(hullPath, hullLabel, nodes) {
+            // Get node positions
+            const points = nodes.map(node => [node.x || 0, node.y || 0]);
+            
+            if (points.length < 3) return;
+            
+            // Compute convex hull using D3's polygonHull
+            const hullPoints = d3.polygonHull(points);
+            
+            if (!hullPoints || hullPoints.length < 3) return;
+            
+            // Add padding around the hull
+            const padding = 20;
+            const expandedHull = expandHull(hullPoints, padding);
+            
+            // Create SVG path
+            const pathData = `M${expandedHull.map(p => p.join(',')).join('L')}Z`;
+            hullPath.attr('d', pathData);
+            
+            // Position label at centroid
+            const centroid = d3.polygonCentroid(hullPoints);
+            hullLabel
+                .attr('x', centroid[0])
+                .attr('y', centroid[1] - 5);
+        }
+        
+        function expandHull(hullPoints, padding) {
+            // Calculate centroid
+            const centroid = d3.polygonCentroid(hullPoints);
+            
+            // Expand each point away from centroid
+            return hullPoints.map(point => {
+                const dx = point[0] - centroid[0];
+                const dy = point[1] - centroid[1];
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance === 0) return point;
+                
+                const factor = (distance + padding) / distance;
+                return [
+                    centroid[0] + dx * factor,
+                    centroid[1] + dy * factor
+                ];
+            });
+        }
+        
+        function updateConvexHulls(hullType = 'namespace') {
+            const checkboxId = hullType === 'project' ? 'showProjectHulls' : 'showConvexHulls';
+            if (!document.getElementById(checkboxId).checked) return;
+            
+            const hullGroupClass = hullType === 'project' ? 'project-hulls' : 'convex-hulls';
+            const hullGroup = svg.select(`.${hullGroupClass}`);
+            if (hullGroup.empty()) return;
+            
+            // Update all existing hulls
+            hullGroup.selectAll('.convex-hull').each(function() {
+                const hull = d3.select(this);
+                const hullId = hull.attr('id');
+                const containerId = hullId.replace(`${hullType}-hull-`, '');
+                
+                // Find nodes for this container
+                const containerNodes = svg.selectAll('.node').data()
+                    .filter(node => {
+                        const containerInfo = containmentHierarchy.nodeToContainer.get(node.Id);
+                        if (!containerInfo || !containerInfo.node) return false;
+                        
+                        const container = containerInfo.node;
+                        return container.Id === containerId && 
+                               ((hullType === 'namespace' && container.Kind === 'Namespace') ||
+                                (hullType === 'project' && container.Kind === 'Project'));
+                    });
+                
+                if (containerNodes.length >= 3) {
+                    const label = hullGroup.select(`#${hullId}-label`);
+                    updateHullPath(hull, label, containerNodes);
+                }
+            });
+        }
+
+        function handleZoom(event) {
+            const { transform } = event;
+            svg.select('.main-group').attr('transform', transform);
+            updateZoomInfo(transform.k);
+        }
+
+        function updateZoomInfo(scale) {
+            const percentage = Math.round(scale * 100);
+            document.getElementById('zoomInfo').textContent = `${percentage}%`;
+        }
+
+        function zoomIn() {
+            if (currentZoom && svg) {
+                svg.transition().duration(300).call(
+                    currentZoom.scaleBy, 1.5
+                );
+            }
+        }
+
+        function zoomOut() {
+            if (currentZoom && svg) {
+                svg.transition().duration(300).call(
+                    currentZoom.scaleBy, 1 / 1.5
+                );
+            }
+        }
+
+        function resetZoom() {
+            if (currentZoom && svg) {
+                svg.transition().duration(500).call(
+                    currentZoom.transform,
+                    d3.zoomIdentity
+                );
+            }
+        }
+
+        function centerOnGraph() {
+            if (svg) {
+                const canvas = document.getElementById('canvas');
+                const width = canvas.clientWidth;
+                const height = canvas.clientHeight;
+                
+                // Get bounds of all nodes
+                const nodes = svg.selectAll('.node').nodes();
+                if (nodes.length === 0) return;
+                
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                
+                nodes.forEach(node => {
+                    const transform = d3.select(node).attr('transform');
+                    if (transform) {
+                        const match = transform.match(/translate\(([^,]+),([^)]+)\)/);
+                        if (match) {
+                            const x = parseFloat(match[1]);
+                            const y = parseFloat(match[2]);
+                            minX = Math.min(minX, x);
+                            minY = Math.min(minY, y);
+                            maxX = Math.max(maxX, x);
+                            maxY = Math.max(maxY, y);
+                        }
+                    }
+                });
+                
+                if (minX < maxX && minY < maxY) {
+                    const graphWidth = maxX - minX;
+                    const graphHeight = maxY - minY;
+                    const centerX = (minX + maxX) / 2;
+                    const centerY = (minY + maxY) / 2;
+                    
+                    const scale = Math.min(
+                        (width * 0.8) / graphWidth,
+                        (height * 0.8) / graphHeight,
+                        2 // Maximum scale
+                    );
+                    
+                    const translateX = width / 2 - centerX * scale;
+                    const translateY = height / 2 - centerY * scale;
+                    
+                    svg.transition().duration(750).call(
+                        currentZoom.transform,
+                        d3.zoomIdentity.translate(translateX, translateY).scale(scale)
+                    );
+                }
+            }
+        }
+
+        function handleNodeClick(event, d) {
+            event.stopPropagation();
+            
+            // Toggle node info display
+            const nodeInfo = document.getElementById('nodeInfo');
+            const isVisible = nodeInfo.style.display === 'block';
+            
+            if (isVisible) {
+                hideNodeInfo();
+            } else {
+                showNodeInfo(d, event.pageX, event.pageY);
+            }
+        }
+
+        function handleNodeMouseOver(event, d) {
+            // Highlight connected nodes and edges
+            const nodeId = d.Id;
+            
+            // Fade all nodes and links
+            svg.selectAll('.node circle').attr('opacity', 0.3);
+            svg.selectAll('.link').attr('opacity', 0.1);
+            svg.selectAll('.node text').attr('opacity', 0.3);
+            
+            // Highlight current node
+            d3.select(event.target).attr('opacity', 1);
+            d3.select(event.target.parentNode).select('text').attr('opacity', 1);
+            
+            // Highlight connected nodes and links
+            const filteredData = getFilteredData();
+            filteredData.links.forEach(link => {
+                if (link.SourceId === nodeId || link.TargetId === nodeId) {
+                    // Highlight the link
+                    svg.selectAll('.link')
+                        .filter(l => (l.source.Id || l.source) === link.SourceId && (l.target.Id || l.target) === link.TargetId)
+                        .attr('opacity', 0.8);
+                    
+                    // Highlight connected nodes
+                    const connectedNodeId = link.SourceId === nodeId ? link.TargetId : link.SourceId;
+                    svg.selectAll('.node')
+                        .filter(n => n.Id === connectedNodeId)
+                        .selectAll('circle')
+                        .attr('opacity', 0.7);
+                    
+                    svg.selectAll('.node')
+                        .filter(n => n.Id === connectedNodeId)
+                        .selectAll('text')
+                        .attr('opacity', 0.7);
+                }
+            });
+        }
+
+        function handleNodeMouseOut(event, d) {
+            // Restore all nodes and links opacity
+            if (svg) {
+                svg.selectAll('.node circle').attr('opacity', 1);
+                svg.selectAll('.link').attr('opacity', 0.7);
+                svg.selectAll('.node text').attr('opacity', 1);
+            }
+        }
+
+        function showNodeInfo(node, x, y) {
+            const nodeInfo = document.getElementById('nodeInfo');
+            const metrics = nodeMetrics[node.Id] || { inRelations: 0, outRelations: 0, totalRelations: 0 };
+            const isProjectOnlyView = document.getElementById('projectOnlyView').checked;
+            
+            // Get connected nodes information
+            const filteredData = getFilteredData();
+            const incomingNodes = [];
+            const outgoingNodes = [];
+            
+            filteredData.links.forEach(link => {
+                if (link.TargetId === node.Id) {
+                    const sourceNode = filteredData.nodes.find(n => n.Id === link.SourceId);
+                    if (sourceNode) {
+                        incomingNodes.push({ 
+                            node: sourceNode, 
+                            relation: link.Kind,
+                            deducedInfo: link.DeducedFromCount ? {
+                                count: link.DeducedFromCount,
+                                types: link.DeducedFromTypes,
+                                details: link.Details
+                            } : null
+                        });
+                    }
+                }
+                if (link.SourceId === node.Id) {
+                    const targetNode = filteredData.nodes.find(n => n.Id === link.TargetId);
+                    if (targetNode) {
+                        outgoingNodes.push({ 
+                            node: targetNode, 
+                            relation: link.Kind,
+                            deducedInfo: link.DeducedFromCount ? {
+                                count: link.DeducedFromCount,
+                                types: link.DeducedFromTypes,
+                                details: link.Details
+                            } : null
+                        });
+                    }
+                }
+            });
+            
+            let infoHtml = `
+                <h4>${node.Name}</h4>
+                <div class="info-row"><span class="label">Type:</span> ${node.Kind}</div>
+                <div class="info-row">
+                    <span class="label">ID:</span>
+                    <div class="id-value">${node.Id}</div>
+                </div>
+            `;
+            
+            if (isProjectOnlyView && node.Kind === 'Project') {
+                infoHtml += `<div class="info-row"><span class="label">View:</span> Project Dependencies</div>`;
+            }
+            
+            infoHtml += `
+                <div class="info-row"><span class="label">Incoming Relations:</span> ${metrics.inRelations}</div>
+                <div class="info-row"><span class="label">Outgoing Relations:</span> ${metrics.outRelations}</div>
+                <div class="info-row"><span class="label">Total Relations:</span> ${metrics.totalRelations}</div>
+            `;
+            
+            if (incomingNodes.length > 0) {
+                infoHtml += `<div class="info-row"><div class="label">Incoming from:</div>`;
+                incomingNodes.forEach(item => {
+                    if (item.deducedInfo && isProjectOnlyView) {
+                        infoHtml += `
+                            <div style="margin-left: 10px; font-size: 11px; border-left: 3px solid #0077be; padding-left: 8px; margin: 4px 0 4px 10px;">
+                                <div><strong>${item.node.Name}</strong> (${item.relation})</div>
+                                <div style="font-size: 10px; color: var(--text-secondary);">
+                                    Deduced from ${item.deducedInfo.count} relationships
+                                </div>
+                                <div style="font-size: 10px; color: var(--text-secondary);">
+                                    Types: ${item.deducedInfo.types.join(', ')}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        infoHtml += `<div style="margin-left: 10px; font-size: 11px;">${item.node.Name} (${item.relation})</div>`;
+                    }
+                });
+                infoHtml += `</div>`;
+            }
+            
+            if (outgoingNodes.length > 0) {
+                infoHtml += `<div class="info-row"><div class="label">Outgoing to:</div>`;
+                outgoingNodes.forEach(item => {
+                    if (item.deducedInfo && isProjectOnlyView) {
+                        infoHtml += `
+                            <div style="margin-left: 10px; font-size: 11px; border-left: 3px solid #28a745; padding-left: 8px; margin: 4px 0 4px 10px;">
+                                <div><strong>${item.node.Name}</strong> (${item.relation})</div>
+                                <div style="font-size: 10px; color: var(--text-secondary);">
+                                    Deduced from ${item.deducedInfo.count} relationships
+                                </div>
+                                <div style="font-size: 10px; color: var(--text-secondary);">
+                                    Types: ${item.deducedInfo.types.join(', ')}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        infoHtml += `<div style="margin-left: 10px; font-size: 11px;">${item.node.Name} (${item.relation})</div>`;
+                    }
+                });
+                infoHtml += `</div>`;
+            }
+            
+            nodeInfo.innerHTML = infoHtml;
+            
+            // Position the info panel
+            const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+            const infoRect = nodeInfo.getBoundingClientRect();
+            
+            let left = x - canvasRect.left + 10;
+            let top = y - canvasRect.top + 10;
+            
+            // Adjust position if it would go outside the canvas
+            if (left + 420 > canvasRect.width) {
+                left = x - canvasRect.left - 430;
+            }
+            if (top + infoRect.height > canvasRect.height) {
+                top = y - canvasRect.top - infoRect.height - 10;
+            }
+            
+            nodeInfo.style.left = left + 'px';
+            nodeInfo.style.top = top + 'px';
+            nodeInfo.style.display = 'block';
+        }
+
+        function hideNodeInfo() {
+            document.getElementById('nodeInfo').style.display = 'none';
+        }
+
+        // Hide node info when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.node') && !event.target.closest('.node-info')) {
+                hideNodeInfo();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (event) => {
+            // Don't interfere with input fields unless it's a special key
+            const isInputFocused = event.target.tagName === 'INPUT' || event.target.tagName === 'SELECT';
+            
+            // Allow Ctrl+F even in input fields
+            if (event.ctrlKey && (event.key === 'f' || event.key === 'F')) {
+                event.preventDefault();
+                document.getElementById('searchQuery').focus();
+                document.getElementById('searchQuery').select();
+                return;
+            }
+
+            if (isInputFocused && event.target.id !== 'searchQuery') return;
+            
+            switch(event.key) {
+                case '+':
+                case '=':
+                    if (!isInputFocused) {
+                        event.preventDefault();
+                        zoomIn();
+                    }
+                    break;
+                case '-':
+                    if (!isInputFocused) {
+                        event.preventDefault();
+                        zoomOut();
+                    }
+                    break;
+                case '0':
+                    if (!isInputFocused) {
+                        event.preventDefault();
+                        resetZoom();
+                        setTimeout(centerOnGraph, 100);
+                    }
+                    break;
+                case 'f':
+                case 'F':
+                    if (!isInputFocused && !event.ctrlKey) {
+                        event.preventDefault();
+                        if (searchState.active && (searchState.matchedNodes.size > 0 || searchState.relatedNodes.size > 0)) {
+                            centerOnSearchResults();
+                        } else {
+                            centerOnGraph();
+                        }
+                    }
+                    break;
+            }
+        });
+
+        function applyFiltersAndRender() {
+            hideNodeInfo(); // Hide node info when re-rendering
+            const filteredData = getFilteredData();
+            if (filteredData) {
+                renderGraph(filteredData);
+                
+                // Reapply search highlighting if there's an active search
+                if (searchState.active) {
+                    const isolateResults = document.getElementById('isolateSearch').checked;
+                    setTimeout(() => {
+                        applySearchHighlighting(isolateResults);
+                    }, 100);
+                }
+            }
+        }
+
+        // Event listeners
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        document.getElementById('loadBtn').addEventListener('click', () => {
+            const url = document.getElementById('dataFile').value;
+            loadAndRender(url);
+        });
+        document.getElementById('kindFilter').addEventListener('change', applyFiltersAndRender);
+        
+        // Zoom control listeners
+        document.getElementById('zoomIn').addEventListener('click', zoomIn);
+        document.getElementById('zoomOut').addEventListener('click', zoomOut);
+        document.getElementById('zoomReset').addEventListener('click', () => {
+            resetZoom();
+            setTimeout(centerOnGraph, 100); // Center after reset
+        });
+
+        // Search functionality listeners
+        document.getElementById('addSearchTerm').addEventListener('click', addSearchTerm);
+        document.getElementById('clearAllSearchTerms').addEventListener('click', clearAllSearchTerms);
+        document.getElementById('searchQuery').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addSearchTerm();
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                clearAllSearchTerms();
+            }
+        });
+        
+        // Search options change listeners
+        document.getElementById('searchRelated').addEventListener('change', () => {
+            if (searchState.active) performMultiTermSearch();
+        });
+        
+        document.getElementById('isolateSearch').addEventListener('change', () => {
+            if (searchState.active) {
+                const isolateResults = document.getElementById('isolateSearch').checked;
+                applySearchHighlighting(isolateResults);
+                if (isolateResults) {
+                    setTimeout(() => centerOnSearchResults(), 300);
+                }
+            }
+        });
+
+        // Layout control listeners
+        document.getElementById('showContainment').addEventListener('change', applyFiltersAndRender);
+        document.getElementById('showNamespaceLinks').addEventListener('change', applyFiltersAndRender);
+        document.getElementById('animateNamespaceLinks').addEventListener('change', applyFiltersAndRender);
+        document.getElementById('showConvexHulls').addEventListener('change', applyFiltersAndRender);
+        document.getElementById('showProjectHulls').addEventListener('change', applyFiltersAndRender);
+        document.getElementById('projectOnlyView').addEventListener('change', function() {
+            const isProjectOnly = this.checked;
+            const indicator = document.getElementById('projectOnlyIndicator');
+            const layoutSection = this.closest('.control-section');
+            
+            // Show/hide project-only indicator
+            indicator.style.display = isProjectOnly ? 'inline-block' : 'none';
+            
+            // Add/remove visual styling to the Layout & View section
+            if (isProjectOnly) {
+                layoutSection.classList.add('project-only-active');
+            } else {
+                layoutSection.classList.remove('project-only-active');
+            }
+            
+            // Disable/enable related controls based on project-only view
+            const namespaceLinkCheckbox = document.getElementById('showNamespaceLinks');
+            const animateNamespaceCheckbox = document.getElementById('animateNamespaceLinks');
+            const hullCheckbox = document.getElementById('showConvexHulls');
+            const kindFilterSelect = document.getElementById('kindFilter');
+            
+            if (isProjectOnly) {
+                // Disable namespace-specific features in project-only view
+                if (namespaceLinkCheckbox.checked) namespaceLinkCheckbox.click();
+                if (animateNamespaceCheckbox.checked) animateNamespaceCheckbox.click();
+                if (hullCheckbox.checked) hullCheckbox.click();
+                
+                namespaceLinkCheckbox.disabled = true;
+                animateNamespaceCheckbox.disabled = true;
+                hullCheckbox.disabled = true;
+                kindFilterSelect.disabled = true;
+                
+                // Update visual styling for disabled controls
+                [namespaceLinkCheckbox, animateNamespaceCheckbox, hullCheckbox].forEach(cb => {
+                    cb.parentElement.style.opacity = '0.5';
+                    cb.parentElement.style.pointerEvents = 'none';
+                });
+                kindFilterSelect.parentElement.style.opacity = '0.5';
+                kindFilterSelect.parentElement.style.pointerEvents = 'none';
+            } else {
+                // Re-enable controls when exiting project-only view
+                namespaceLinkCheckbox.disabled = false;
+                animateNamespaceCheckbox.disabled = false;
+                hullCheckbox.disabled = false;
+                kindFilterSelect.disabled = false;
+                
+                [namespaceLinkCheckbox, animateNamespaceCheckbox, hullCheckbox].forEach(cb => {
+                    cb.parentElement.style.opacity = '1';
+                    cb.parentElement.style.pointerEvents = 'auto';
+                });
+                kindFilterSelect.parentElement.style.opacity = '1';
+                kindFilterSelect.parentElement.style.pointerEvents = 'auto';
+            }
+            
+            // Rebuild relation controls to include/exclude deduced relationships
+            buildRelationControls();
+            
+            // Auto-enable deduced project relationships when entering project-only mode
+            if (isProjectOnly) {
+                console.log('🔄 PROJECT-ONLY: Auto-enabling deduced relationships...');
+                // Wait for buildRelationControls to finish creating the checkbox
+                setTimeout(() => {
+                    const deducedCheckbox = document.getElementById('relation_Deduced_Project_Dependency');
+                    console.log('Deduced checkbox element:', deducedCheckbox);
+                    console.log('Deduced checkbox checked:', deducedCheckbox?.checked);
+                    
+                    if (deducedCheckbox && !deducedCheckbox.checked) {
+                        console.log('✅ AUTO-ENABLING deduced relationships checkbox');
+                        deducedCheckbox.checked = true;
+                        applyFiltersAndRender();
+                    } else if (!deducedCheckbox) {
+                        console.log('❌ Deduced checkbox not found, applying filters anyway');
+                        applyFiltersAndRender();
+                    } else {
+                        console.log('✅ Deduced checkbox already checked');
+                        applyFiltersAndRender();
+                    }
+                }, 10);
+            } else {
+                applyFiltersAndRender();
+            }
+        });
+
+        // Force parameter slider listeners
+        document.getElementById('containmentDistance').addEventListener('input', function(e) {
+            document.getElementById('containmentDistanceValue').textContent = e.target.value;
+            applyFiltersAndRender();
+        });
+        
+        document.getElementById('usageDistance').addEventListener('input', function(e) {
+            document.getElementById('usageDistanceValue').textContent = e.target.value;
+            applyFiltersAndRender();
+        });
+        
+        document.getElementById('generalDistance').addEventListener('input', function(e) {
+            document.getElementById('generalDistanceValue').textContent = e.target.value;
+            applyFiltersAndRender();
+        });
+        
+        document.getElementById('repulsionStrength').addEventListener('input', function(e) {
+            document.getElementById('repulsionStrengthValue').textContent = e.target.value;
+            applyFiltersAndRender();
+        });
+
+        // Initialize
+        initTheme();
+        renderSearchTerms(); // Initialize empty search terms display
+        loadAndRender('graph.json');
+    </script>
+</body>
+</html>

@@ -12,4 +12,9 @@
 		<PackageReference Include="Aspire.Hosting.AppHost" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result\FrenchExDev.Net.CSharp.Object.Result.csproj" IsAspireProjectResource="false" />
+		<ProjectReference Include="..\FrenchExDev.Net.CSharp.Aspire.App\FrenchExDev.Net.CSharp.Aspire.App.csproj" IsAspireProjectResource="false" />
+	</ItemGroup>
+
 </Project>

@@ -1,9 +1,29 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="Reporting\index.html">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
+		<PackageReference Include="Microsoft.Build.Locator" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
+		<PackageReference Include="Microsoft.CSharp" />
+		<PackageReference Include="Roslynator.Analyzers" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\CSharp.ManagedList\src\FrenchExDev.Net.CSharp.ManagedList\FrenchExDev.Net.CSharp.ManagedList.csproj" />
+		<ProjectReference Include="..\..\..\CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result\FrenchExDev.Net.CSharp.Object.Result.csproj" />
+	</ItemGroup>
 
 </Project>

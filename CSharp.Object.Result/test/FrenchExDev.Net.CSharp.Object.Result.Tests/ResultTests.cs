@@ -109,7 +109,7 @@ public class ResultTests
     [Fact]
     public void TryCatch_converts_exceptions_to_failure_and_returns_success_on_ok()
     {
-        var ok = Result<int>.TryCatch(() => 42);
+        var ok = Result<int>.TryCatch(() => 42.ToSuccess());
         ok.IsSuccess.ShouldBeTrue();
         ok.Object.ShouldBe(42);
 

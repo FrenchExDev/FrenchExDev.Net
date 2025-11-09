@@ -2,19 +2,18 @@
   "Environment": "Development",
   "DnsConfiguration": {
     "Domain": "pd5i1.com",
-    "Domains": [ "api", "devdash" ],
-    "CertificatesDirectory": ".aspire-certs",
     "Ports": {
       "devdash-oltp": 21190,
       "devdash-services": 21191,
       "devdash": 18443,
-      "api": 18444
+      "api": 18444,
+      "viz": 18445
     },
     "AspNetCoreUrls": {
       "devdash": "https://0.0.0.0:#port#;https://#subdomain#.#domain#:#port#",
-      "api": "https://0.0.0.0:#port#;https://#subdomain#.#domain#:#port#"
+      "api": "https://0.0.0.0:#port#;https://#subdomain#.#domain#:#port#",
+      "viz": "https://0.0.0.0:#port#;https://#subdomain#.#domain#:#port#"
     },
-    "SslGenerator": "C#",
     "SslPassword": "04aa0919-4fd3-4f8d-9c6c-3d6edc83617c"
   },
   "LaunchSettingsProfile": "local-dev-https"

@@ -20,6 +20,7 @@ public static class Kind
     public const string Functional = "Functional";
     public const string Integration = "Integration";
 }
+
 public static class Integration
 {
     public const string Test = "integration-kind";

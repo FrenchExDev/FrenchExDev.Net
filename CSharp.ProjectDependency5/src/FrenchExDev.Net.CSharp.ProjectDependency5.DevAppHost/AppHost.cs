@@ -8,5 +8,9 @@ await DevAppHost.Default(
         resourceBuilder: (builder) => builder.AddProject<Projects.FrenchExDev_Net_CSharp_ProjectDependency5_Api>("api"),
         name: "api"
     )
+    .WithProjectInstance(
+        resourceBuilder: (builder) => builder.AddProject<Projects.FrenchExDev_Net_CSharp_ProjectDependency5_Viz>("viz"),
+        name: "viz"
+    )
     .Build()
     .RunAsync();

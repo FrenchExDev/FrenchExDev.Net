@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FrenchExDev.Net.CSharp.Object.Result;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -20,25 +21,117 @@ namespace FrenchExDev.Net.CSharp.Aspire.Dev;
 /// configuration throughout your application.</remarks>
 public record DnsConfiguration
 {
-    public string SslPassword { get; set; }
-    public string SslGenerator { get; set; }
-    public string CertificatesDirectory { get; set; }
-    public string CertPath { get; set; }
-    public string KeyPath { get; set; }
-    public string Domain { get; set; }
-    public string[] Domains { get; set; }
-    public Dictionary<string, int> Ports { get; set; }
+    /// <summary>
+    /// Gets or sets the password used to access the SSL certificate for secure connections.
+    /// </summary>
+    /// <remarks>If the SSL certificate is password-protected, this property must be set to the correct
+    /// password before establishing a secure connection. The password should be stored and handled securely to prevent
+    /// unauthorized access.</remarks>
+    public string SslPassword { get;  set; }
 
-    public Dictionary<string, string> AspNetCoreUrls { get; set; }
+    /// <summary>
+    /// Gets or sets the name of the SSL certificate generator to use for secure connections.
+    /// </summary>
+    public string SslGenerator { get;  set; }
 
+    /// <summary>
+    /// Gets or sets the directory path where certificate files are stored.
+    /// </summary>
+    public string CertificatesDirectory { get;  set; }
+
+    /// <summary>
+    /// Gets or sets the file system path to the certificate used for authentication.
+    /// </summary>
+    public string CertPath { get;  set; }
+
+    /// <summary>
+    /// Gets or sets the file system path to the private key associated with the certificate.
+    /// </summary>
+    public string KeyPath { get;  set; }
+
+    /// <summary>
+    /// Sets the file system paths for the certificate and private key used by the instance.
+    /// </summary>
+    /// <param name="certPath">The file path to the certificate file. Cannot be null or empty.</param>
+    /// <param name="keyPath">The file path to the private key file. Cannot be null or empty.</param>
+    public void SetupCertAndKeyPaths(string certPath, string keyPath)
+    {
+        CertPath = certPath;
+        KeyPath = keyPath;
+    }
+
+    /// <summary>
+    /// Gets or sets the domain name associated with the current instance.
+    /// </summary>
+    public string Domain { get;  set; }
+
+    /// <summary>
+    /// Gets the list of domain names associated with the current instance.
+    /// </summary>
+    public string[] Domains { get;  set; }
+
+    /// <summary>
+    /// Gets the collection of named ports and their corresponding port numbers for the current instance.
+    /// </summary>
+    /// <remarks>The dictionary maps port names to their assigned integer values. Modifications to this
+    /// collection affect the available ports for the instance. This property is protected set; it can only be modified
+    /// within derived classes.</remarks>
+    public Dictionary<string, int> Ports { get;  set; }
+
+    /// <summary>
+    /// Gets or sets the collection of ASP.NET Core endpoint URLs mapped by their names.
+    /// </summary>
+    /// <remarks>Each entry in the dictionary represents a named endpoint and its corresponding URL. This
+    /// property can be used to configure or retrieve the URLs for different ASP.NET Core services within the
+    /// application.</remarks>
+    public Dictionary<string, string> AspNetCoreUrls { get;  set; }
+
+    /// <summary>
+    /// Generates the ASP.NET Core URL for the specified domain by replacing template placeholders with the
+    /// corresponding port and domain values.
+    /// </summary>
+    /// <remarks>The returned URL is constructed by replacing the placeholders '#port#', '#subdomain#', and
+    /// '#domain#' in the template with the appropriate values for the given domain. Ensure that the domain exists in
+    /// the internal mappings before calling this method.</remarks>
+    /// <param name="domain">The domain name for which to generate the ASP.NET Core URL. Must correspond to a key in the internal URL and
+    /// port mappings.</param>
+    /// <returns>A string containing the fully constructed ASP.NET Core URL for the specified domain.</returns>
+    /// <exception cref="InvalidDataException">Thrown if the specified domain does not exist in the internal URL mapping or if the required data is missing.</exception>
     public string GetAspNetCoreUrl(string domain) => AspNetCoreUrls != null && AspNetCoreUrls.ContainsKey(domain) ? AspNetCoreUrls[domain].Replace("#port#", Ports[domain].ToString()).Replace("#subdomain#", domain).Replace("#domain#", Domain) : throw new InvalidDataException();
 
+    /// <summary>
+    /// Constructs a complete HTTPS URL for the specified domain, including the port number if one is configured.
+    /// </summary>
+    /// <remarks>If a port is configured for the specified domain, it is appended to the URL. Otherwise, the
+    /// default HTTPS port is assumed.</remarks>
+    /// <param name="domain">The domain name for which to generate the URL. Cannot be null or empty.</param>
+    /// <returns>A string containing the full HTTPS URL for the specified domain, including the port number if available.</returns>
     public string GetCompleteUrl(string domain) => "https://" + domain + "." + Domain + (Ports != null && Ports.ContainsKey(domain) ? ":" + Ports[domain] : string.Empty);
 
+    /// <summary>
+    /// Constructs a secure URL using the specified domain and optional port number.
+    /// </summary>
+    /// <param name="domain">The subdomain or domain name to include in the URL. Cannot be null or empty.</param>
+    /// <param name="port">The port number to append to the URL. If null, the default HTTPS port is used.</param>
+    /// <returns>A string containing the constructed HTTPS URL with the specified domain and port.</returns>
     public string GetUrl(string domain, int? port = null) => "https://" + domain + "." + Domain + (port is not null ? ":" + port : string.Empty);
 
-    public string GetDashboardUrl(int? port = null) => GetCompleteUrl("devdash");
+    /// <summary>
+    /// Returns the complete URL for the specified dashboard instance.
+    /// </summary>
+    /// <param name="name">The name of the dashboard instance. If null or omitted, defaults to "devdash".</param>
+    /// <param name="port">The port number to use for the dashboard URL. If null, the default port is used.</param>
+    /// <returns>A string containing the full URL of the dashboard instance.</returns>
+    public string GetDashboardUrl(string? name = "devdash", int? port = null) => GetCompleteUrl(name ?? "devdash");
 
+    /// <summary>
+    /// Returns an enumerable collection of fully qualified host names constructed from the configured domain entries.
+    /// </summary>
+    /// <remarks>Each host name is generated by appending the configured domain suffix to each entry in the
+    /// domain list. The returned collection is evaluated lazily; host names are generated as the collection is
+    /// enumerated.</remarks>
+    /// <returns>An <see cref="IEnumerable{String}"/> containing the full host names for each entry in the domain list. The
+    /// collection will be empty if no domains are configured.</returns>
     public IEnumerable<string> GetAllHosts()
     {
         foreach (var entry in Domains)
@@ -46,6 +139,13 @@ public record DnsConfiguration
             yield return $"{entry}.{Domain}";
         }
     }
+
+    /// <summary>
+    /// Generates a sequence of hosts file entry strings for all known hosts using the specified IPv4 address.
+    /// </summary>
+    /// <param name="ipv4">The IPv4 address to associate with each host entry. If null or not specified, defaults to "127.0.0.1".</param>
+    /// <returns>An enumerable collection of strings, each representing a hosts file entry in the format "<IPv4> <host>" for
+    /// every host returned by GetAllHosts().</returns>
     public IEnumerable<string> GetHostsFileEntries(string? ipv4 = "127.0.0.1")
     {
         foreach (var host in GetAllHosts())
@@ -54,8 +154,18 @@ public record DnsConfiguration
         }
     }
 
+    /// <summary>
+    /// Gets the file system path to the certificate. Throws an exception if the certificate has not been initialized.
+    /// </summary>
+    /// <returns>The file system path to the certificate.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the certificate has not been initialized. Call EnsureSetup before accessing this property.</exception>
     public string CertPathOrDie() => CertPath ?? throw new InvalidOperationException("Certificates not initialized. Call EnsureSetup first.");
 
+    /// <summary>
+    /// Returns the file system path to the certificate key if the certificates have been initialized.
+    /// </summary>
+    /// <returns>The file system path to the certificate key.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the certificates have not been initialized. Call EnsureSetup before invoking this method.</exception>
     public string KeyPathOrDie() => KeyPath ?? throw new InvalidOperationException("Certificates not initialized. Call EnsureSetup first.");
 
     public ReadOnlySpan<char> ToJson()
@@ -63,9 +173,9 @@ public record DnsConfiguration
         return System.Text.Json.JsonSerializer.Serialize(this).AsSpan();
     }
 
-    public static DnsConfiguration? FromJson(string json)
+    public static Result<DnsConfiguration> FromJson(string json)
     {
-        return System.Text.Json.JsonSerializer.Deserialize<DnsConfiguration>(json);
+        return Result<DnsConfiguration>.TryCatch<DnsConfiguration>(() => System.Text.Json.JsonSerializer.Deserialize<DnsConfiguration>(json)!.ToSuccess<DnsConfiguration>());
     }
 
     public DnsConfiguration Neutral()
@@ -83,31 +193,92 @@ public record DnsConfiguration
         return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
     }
 
-    internal object DomainOrDie() => Domain ?? throw new InvalidOperationException("Domain is not set in the configuration.");
+    public string DomainOrDie() => Domain ?? throw new InvalidOperationException("Domain is not set in the configuration.");
 }
 
+/// <summary>
+/// Defines methods for configuring and building a development application host, including certificate setup, host file
+/// configuration, launch settings, and project resource integration.
+/// </summary>
+/// <remarks>Implementations of this interface provide a fluent API for preparing a development environment for
+/// distributed applications. Methods allow for incremental setup of certificates, host entries, launch settings, and
+/// project resources before building the final application model. This interface is typically used in scenarios where
+/// automated or programmatic setup of development infrastructure is required.</remarks>
 public interface IDevAppHost
 {
-    IDevAppHost EnsureCertSetup(DnsConfiguration config, bool? force = false);
-    IDevAppHost EnsureHostsSetup(DnsConfiguration dnsConfig);
-    IDevAppHost EnsureSetup(DnsConfiguration dnsConfig, bool? forceCertificateRegeneration = false);
-    IDevAppHost EnsureSystemSetup(IConfiguration configuration, DnsConfiguration dnsConfiguration);
+    /// <summary>
+    /// Ensures that the development application host is properly set up and ready for use. Optionally forces
+    /// regeneration of the development certificate.
+    /// </summary>
+    /// <param name="forceCertificateRegeneration">If <see langword="true"/>, forces the regeneration of the development certificate even if one already exists; if
+    /// <see langword="false"/>, uses the existing certificate if available. If <see langword="null"/>, the default
+    /// behavior is applied.</param>
+    /// <returns>An <see cref="IDevAppHost"/> instance representing the configured development application host.</returns>
+    IDevAppHost EnsureSetup(bool? forceCertificateRegeneration = false);
+
+    /// <summary>
+    /// Ensures that launch settings are configured for the specified application and returns a host instance
+    /// representing the setup.
+    /// </summary>
+    /// <param name="name">The name of the application for which to configure launch settings. Cannot be null or empty.</param>
+    /// <param name="launchSettingsFilePath">The file path to the launch settings configuration file. Must refer to an existing file; cannot be null or
+    /// empty.</param>
+    /// <returns>An <see cref="IDevAppHost"/> instance representing the application with launch settings configured.</returns>
+    IDevAppHost EnsureLaunchSettingsSetup(string name, string launchSettingsFilePath);
+
+    /// <summary>
+    /// Creates a new application host instance configured with a project resource built using the specified resource
+    /// builder and name.
+    /// </summary>
+    /// <param name="resourceBuilder">A delegate that receives an <see cref="IDistributedApplicationBuilder"/> and returns a resource builder for the
+    /// project resource to be added. Cannot be null.</param>
+    /// <param name="name">The name to assign to the project resource. Must be non-empty and unique within the application host.</param>
+    /// <returns>An <see cref="IDevAppHost"/> instance that includes the configured project resource.</returns>
     IDevAppHost WithProjectInstance(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name);
 
+    /// <summary>
+    /// Builds and returns a configured distributed application instance based on the current settings.
+    /// </summary>
+    /// <returns>A <see cref="DistributedApplication"/> representing the finalized distributed application configuration.</returns>
     DistributedApplication Build();
 }
 
+/// <summary>
+/// Provides functionality for configuring and hosting a distributed development application, including DNS,
+/// certificate, and environment setup for local development scenarios.
+/// </summary>
+/// <remarks>DevAppHost manages the setup of development infrastructure such as DNS configuration, SSL
+/// certificates, hosts file entries, and launch settings to enable secure and consistent local development
+/// environments. It supports both self-signed and mkcert-generated certificates, and can update system files as needed.
+/// The class is intended for use in development and testing scenarios, and may require elevated privileges for certain
+/// operations (such as updating the hosts file on Windows). Thread safety is not guaranteed. For typical usage, call
+/// EnsureSetup() to initialize the environment before building or launching application resources.</remarks>
 public class DevAppHost : IDevAppHost
 {
     private readonly ILogger _logger;
     private readonly IConfiguration _configuration;
     private readonly IDistributedApplicationBuilder _builder;
 
+    /// <summary>
+    /// Creates a new instance of the DevAppHost using the specified distributed application builder, logger name,
+    /// configuration file, and environment.
+    /// </summary>
+    /// <remarks>The configuration file path can include the placeholder "#Env#", which will be replaced with
+    /// the specified environment name. This allows for environment-specific configuration files.</remarks>
+    /// <param name="builder">A delegate that returns an IDistributedApplicationBuilder used to configure the distributed application.</param>
+    /// <param name="loggerName">The name of the logger to use for application logging. If null, an exception is thrown. Defaults to "apphost".</param>
+    /// <param name="jsonFile">The path to the JSON configuration file. The string "#Env#" will be replaced with the value of <paramref
+    /// name="environment"/>. If null, an exception is thrown. Defaults to "devapphost.#Env#.json".</param>
+    /// <param name="environment">The environment name to use for configuration. This value replaces "#Env#" in <paramref name="jsonFile"/>.
+    /// Defaults to "Development".</param>
+    /// <returns>A DevAppHost instance configured with the specified builder, logger, and configuration.</returns>
+    /// <exception cref="InvalidDataException">Thrown if <paramref name="loggerName"/> or <paramref name="jsonFile"/> is null.</exception>
     public static DevAppHost Default(Func<IDistributedApplicationBuilder> builder, string? loggerName = "apphost", string? jsonFile = "devapphost.#Env#.json", string? environment = "Development")
     {
         var logger = LoggerFactory.Create(c => c.AddConsole()).CreateLogger(loggerName ?? throw new InvalidDataException("missing loggerName"));
 
         var rootConfig = new ConfigurationBuilder()
+            .AddJsonFile("devapphost.json")
             .AddJsonFile(jsonFile?.Replace("#Env#", environment) ?? throw new InvalidDataException("missing jsonFile"))
             .Build();
 
@@ -116,8 +287,41 @@ public class DevAppHost : IDevAppHost
         return devAppHost;
     }
 
-    public IConfiguration Configuration => _configuration;
-    public DnsConfiguration DnsConfiguration => _dnsConfiguration ?? throw new InvalidOperationException("_dnsConfiguration is null. Please EnsureSetup() before.");
+    /// <summary>
+    /// Ensures that the development application host is properly configured and ready for use. This includes validating
+    /// DNS configuration and performing necessary setup steps.
+    /// </summary>
+    /// <param name="force">If <see langword="true"/>, forces re-setup of certificates and related configuration even if setup has already
+    /// been performed; otherwise, setup is performed only if required. If <see langword="null"/>, the default behavior
+    /// is used.</param>
+    /// <returns>The current instance of <see cref="IDevAppHost"/> after setup is complete.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the DNS configuration section is missing or invalid in the application configuration.</exception>
+    public IDevAppHost EnsureSetup(bool? force = false)
+    {
+        _dnsConfiguration = DevAppHostConfiguration.GetSection("DnsConfiguration").Get<DnsConfiguration>() ?? throw new InvalidOperationException("missing DnsConfiguration");
+
+        EnsureCertSetup(force);
+        EnsureHostsSetup();
+        EnsureLaunchSettingsSetup("devdash", DevAppHostLaunchSettingsPath());
+        EnsureHostsSetup();
+
+        return this;
+    }
+
+    /// <summary>
+    /// Gets the apphost' application's configuration settings.
+    /// </summary>
+    /// <remarks>Use this property to access configuration values such as connection strings, application
+    /// options, and environment-specific settings. The returned <see cref="IConfiguration"/> instance provides
+    /// hierarchical access to configuration data from multiple sources.</remarks>
+    public IConfiguration DevAppHostConfiguration => _configuration;
+
+    /// <summary>
+    /// Gets the current DNS configuration for the service.
+    /// </summary>
+    /// <remarks>Accessing this property before the setup process is complete will result in an exception.
+    /// Ensure that the service has been properly initialized before retrieving the DNS configuration.</remarks>
+    public DnsConfiguration DnsConfiguration => _dnsConfiguration ?? throw new InvalidOperationException("_DnsConfigurationuration is null. Please EnsureSetup() before.");
 
     private DnsConfiguration? _dnsConfiguration;
     private DevAppHost(Func<IDistributedApplicationBuilder> builder, ILogger logger, IConfiguration configuration)
@@ -127,41 +331,48 @@ public class DevAppHost : IDevAppHost
         _configuration = configuration;
     }
 
-    public DevAppHost EnsureSetup()
+    protected string DevAppHostLaunchSettingsPath() => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../..", "Properties", "launchSettings.json");
+
+    /// <summary>
+    /// Ensures that the launch settings file is configured with the required environment variables for the specified
+    /// application host.
+    /// </summary>
+    /// <remarks>This method updates the specified launch settings file with environment variables necessary
+    /// for ASP.NET Core and related services. The caller must ensure that the provided file path is accessible and that
+    /// the configuration contains the required values.</remarks>
+    /// <param name="name">The name of the application host for which to set up launch settings. This value is used to determine
+    /// environment variable values and endpoint configuration.</param>
+    /// <param name="launchSettingsFilePath">The file path to the launch settings JSON file to be updated. Must refer to a valid file location.</param>
+    /// <returns>An <see cref="IDevAppHost"/> instance representing the configured application host.</returns>
+    /// <exception cref="InvalidDataException">Thrown if the required 'LaunchSettingsProfile' configuration value is missing.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the required 'Environment' configuration value is missing.</exception>
+    public IDevAppHost EnsureLaunchSettingsSetup(string name, string launchSettingsFilePath)
     {
-        _dnsConfiguration = Configuration.GetSection("DnsConfiguration").Get<DnsConfiguration>() ?? throw new InvalidOperationException("missing DnsConfiguration");
-
-        EnsureCertSetup(_dnsConfiguration);
-        EnsureHostsSetup(_dnsConfiguration);
-        EnsureSystemSetup(Configuration, _dnsConfiguration);
-        EnsureHostsSetup(_dnsConfiguration);
-
-        return this;
-    }
-
-    public IDevAppHost EnsureSystemSetup(IConfiguration rootConfig, DnsConfiguration dnsConfig)
-    {
-        LaunchSettingsHelper.AddOrUpdateEnvironmentVariables(
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../..", "Properties", "launchSettings.json"),
-            rootConfig["LaunchSettingsProfile"] ?? "IIS Express",
+        LaunchSettingsHelper.AddOrUpdateEnvironmentVariables(launchSettingsFilePath,
+            DevAppHostConfiguration["LaunchSettingsProfile"] ?? throw new InvalidDataException("missing LaunchSettingsProfile"),
             new Dictionary<string, string>
             {
-                { "ASPNETCORE_Kestrel__Certificates__Default__Path", dnsConfig.CertPathOrDie() },
-                { "ASPNETCORE_Kestrel__Certificates__Default__KeyPath", dnsConfig.KeyPathOrDie() },
-                { "ASPNETCORE_URLS", dnsConfig.GetAspNetCoreUrl("devdash") },
-                { "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL", dnsConfig.GetUrl("devdash", dnsConfig.Ports["devdash-oltp"]) },
-                { "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL", dnsConfig.GetUrl("devdash", dnsConfig.Ports["devdash-services"]) },
-                { "ASPIRE_ENVIRONMENT", rootConfig["Environment"] ?? throw new InvalidOperationException() },
-                { "DOTNET_ENVIRONMENT", rootConfig["Environment"]?? throw new InvalidOperationException() },
-                { "CustomDomain__Fqdn", dnsConfig.GetUrl("devdash") },
-                { "CustomDomain__Port", dnsConfig.Ports["devdash"].ToString() }
+                { "ASPNETCORE_Kestrel__Certificates__Default__Path", DnsConfiguration.CertPathOrDie() },
+                { "ASPNETCORE_Kestrel__Certificates__Default__KeyPath", DnsConfiguration.KeyPathOrDie() },
+                { "ASPNETCORE_URLS", DnsConfiguration.GetAspNetCoreUrl(name) },
+                { "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL", DnsConfiguration.GetUrl(name, DnsConfiguration.Ports[$"{name}-oltp"]) },
+                { "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL", DnsConfiguration.GetUrl(name, DnsConfiguration.Ports[$"{name}-services"]) },
+                { "ASPIRE_ENVIRONMENT", DevAppHostConfiguration["Environment"] ?? throw new InvalidOperationException() },
+                { "DOTNET_ENVIRONMENT", DevAppHostConfiguration["Environment"]?? throw new InvalidOperationException() },
+                { "CustomDomain__Fqdn", DnsConfiguration.GetUrl(name) },
+                { "CustomDomain__Port", DnsConfiguration.Ports[name].ToString() }
             });
 
         return this;
     }
 
-
-    public bool IsRunningAsAdministrator()
+    /// <summary>
+    /// Determines whether the current process is running with administrator privileges on a Windows operating system.
+    /// </summary>
+    /// <remarks>On non-Windows platforms, this method always returns false. If the administrator status
+    /// cannot be determined due to an error, the method also returns false.</remarks>
+    /// <returns>true if the process is running as an administrator on Windows; otherwise, false.</returns>
+    protected bool IsRunningAsAdministrator()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             return false;
@@ -178,7 +389,15 @@ public class DevAppHost : IDevAppHost
         }
     }
 
-    public bool NeedsHostsFileUpdate(DnsConfiguration config)
+    /// <summary>
+    /// Determines whether the system hosts file requires updating to include all entries specified in the provided DNS
+    /// configuration.
+    /// </summary>
+    /// <remarks>If the hosts file cannot be read or accessed, the method assumes an update is needed and
+    /// returns true. The method checks the standard hosts file location for the current operating system.</remarks>
+    /// <param name="config">The DNS configuration containing the hosts file entries to check for presence in the system hosts file.</param>
+    /// <returns>true if the hosts file is missing or does not contain all required entries; otherwise, false.</returns>
+    protected bool NeedsHostsFileUpdate(DnsConfiguration config)
     {
         try
         {
@@ -207,51 +426,34 @@ public class DevAppHost : IDevAppHost
         }
     }
 
-    public bool RestartAsAdministrator()
+    /// <summary>
+    /// Gets the full file path to the DNS configuration file based on the specified configuration settings.
+    /// </summary>
+    /// <param name="config">The DNS configuration settings used to determine the certificates directory location.</param>
+    /// <returns>A string containing the absolute path to the 'dns-config.json' file within the user's certificates directory.</returns>
+    protected string GetConfigurationFilePath()
     {
-        try
-        {
-            var processModule = Process.GetCurrentProcess().MainModule;
-            if (processModule?.FileName == null)
-                return false;
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = processModule.FileName,
-                Arguments = string.Join(" ", Environment.GetCommandLineArgs().Skip(1)),
-                UseShellExecute = true,
-                Verb = "runas", // Request elevation
-                WorkingDirectory = Environment.CurrentDirectory
-            };
-
-            Process.Start(startInfo);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to restart with elevation: {Message}", ex.Message);
-            return false;
-        }
-    }
-
-    public string GetConfigurationFilePath(DnsConfiguration config)
-    {
-        var certsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), config.CertificatesDirectory);
+        var certsDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), DnsConfiguration.CertificatesDirectory);
         return Path.Combine(certsDir, "dns-config.json");
     }
 
-    public void SaveConfiguration(DnsConfiguration config)
+    /// <summary>
+    /// Saves the specified DNS configuration to persistent storage.
+    /// </summary>
+    /// <remarks>If the target directory does not exist, it will be created automatically. If an error occurs
+    /// during saving, the method logs a warning and does not throw an exception.</remarks>
+    protected void SaveConfiguration()
     {
         try
         {
-            var configPath = GetConfigurationFilePath(config);
+            var configPath = GetConfigurationFilePath();
             var directory = Path.GetDirectoryName(configPath);
             if (!string.IsNullOrEmpty(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            var json = config.ToJson();
+            var json = DnsConfiguration.ToJson();
             File.WriteAllText(configPath, json);
             _logger.LogInformation("Configuration saved to {ConfigPath}", configPath);
         }
@@ -261,46 +463,46 @@ public class DevAppHost : IDevAppHost
         }
     }
 
-    public DnsConfiguration? LoadSavedConfiguration(DnsConfiguration config)
+    /// <summary>
+    /// Loads the saved DNS configuration from persistent storage, if available.
+    /// </summary>
+    /// <remarks>If no saved configuration file is found or if loading fails, the method returns <see
+    /// langword="null"/> and logs a warning. The provided <paramref name="config"/> parameter is not used to modify the
+    /// loaded configuration.</remarks>
+    /// <param name="config">The DNS configuration to use as a reference when loading the saved configuration. This parameter is not
+    /// modified.</param>
+    /// <returns>A <see cref="DnsConfiguration"/> instance representing the saved configuration if one exists and can be loaded;
+    /// otherwise, <see langword="null"/>.</returns>
+    protected Result<DnsConfiguration> LoadSavedConfiguration(DnsConfiguration config)
     {
-        try
+        return Result<DnsConfiguration>.TryCatch<DnsConfiguration>(() =>
         {
-            var configPath = GetConfigurationFilePath(config);
+            var configPath = GetConfigurationFilePath();
             if (!File.Exists(configPath))
             {
-                _logger.LogInformation("No saved configuration found at {ConfigPath}", configPath);
-                return null;
+                _logger.LogWarning("No saved configuration found at {ConfigPath}", configPath);
+                return Result<DnsConfiguration>.Failure(body: d => d.Add("File.NotFound", configPath));
             }
 
             var json = File.ReadAllText(configPath);
-            var savedConfig = DnsConfiguration.FromJson(json);
+            var savedConfig = DnsConfiguration.FromJson(json).ObjectOrThrow();
 
-            if (savedConfig != null)
-            {
-                _logger.LogInformation("Loaded saved configuration from {ConfigPath}", configPath);
-            }
-
-            return savedConfig;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to load saved configuration");
-            return null;
-        }
+            return savedConfig.ToSuccess();
+        });
     }
 
-    public bool NeedsCertificateRegeneration(DnsConfiguration config)
+    protected bool NeedsCertificateRegeneration(DnsConfiguration config)
     {
         var savedConfig = LoadSavedConfiguration(config);
 
-        if (savedConfig == null)
+        if (savedConfig.IsFailure)
         {
             _logger.LogInformation("No saved configuration - certificates will be generated");
             return true;
         }
 
         var currentHash = config.CalculateConfigurationHash();
-        var savedHash = savedConfig.CalculateConfigurationHash();
+        var savedHash = savedConfig.ObjectOrThrow().CalculateConfigurationHash();
 
         if (currentHash != savedHash)
         {
@@ -314,45 +516,44 @@ public class DevAppHost : IDevAppHost
         return false;
     }
 
-    public IDevAppHost EnsureCertSetup(DnsConfiguration dnsConfig, bool? force = false)
+    protected IDevAppHost EnsureCertSetup(bool? force = false)
     {
-        switch (dnsConfig.SslGenerator)
+        switch (DnsConfiguration.SslGenerator)
         {
             case "C#":
-                return EnsureCertSetupUsingGeneratedCerts(dnsConfig, force);
+                return EnsureCertSetupUsingGeneratedCerts(force);
             case "mkcert":
-                return EnsureCertSetupUsingMkCert(dnsConfig, force);
-            default: throw new NotImplementedException(dnsConfig.SslGenerator);
+                return EnsureCertSetupUsingMkCert(force);
+            default: throw new NotImplementedException(DnsConfiguration.SslGenerator);
         }
     }
 
-    public IDevAppHost EnsureCertSetupUsingGeneratedCerts(DnsConfiguration dnsConfig, bool? force = false)
+    protected IDevAppHost EnsureCertSetupUsingGeneratedCerts(bool? force = false)
     {
         try
         {
             _logger.LogInformation("Checking generated certificate availability...");
 
-            var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, dnsConfig.CertificatesDirectory);
+            var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DnsConfiguration.CertificatesDirectory);
             Directory.CreateDirectory(certsDir);
 
-            var certPemFile = Path.Combine(certsDir, $"{dnsConfig.DomainOrDie()}.pem");
-            var keyPemFile = Path.Combine(certsDir, $"{dnsConfig.DomainOrDie()}-key.pem");
-            var pfxFile = Path.Combine(certsDir, $"{dnsConfig.DomainOrDie()}.pfx");
+            var certPemFile = Path.Combine(certsDir, $"{DnsConfiguration.DomainOrDie()}.pem");
+            var keyPemFile = Path.Combine(certsDir, $"{DnsConfiguration.DomainOrDie()}-key.pem");
+            var pfxFile = Path.Combine(certsDir, $"{DnsConfiguration.DomainOrDie()}.pfx");
 
-            bool shouldRegenerate = (force ?? false) || !File.Exists(certPemFile) || !File.Exists(keyPemFile) || NeedsCertificateRegeneration(dnsConfig);
+            bool shouldRegenerate = (force ?? false) || !File.Exists(certPemFile) || !File.Exists(keyPemFile) || NeedsCertificateRegeneration(DnsConfiguration);
 
             if (!shouldRegenerate)
             {
                 _logger.LogInformation("✓ Using existing generated PEM certificate and key: {CertPem} / {KeyPem}", certPemFile, keyPemFile);
-                dnsConfig.CertPath = certPemFile;
-                dnsConfig.KeyPath = keyPemFile;
+                DnsConfiguration.SetupCertAndKeyPaths(certPemFile, keyPemFile);
                 return this;
             }
 
-            _logger.LogInformation("Generating self-signed certificate (PEM) for domain {Domain}...", dnsConfig.DomainOrDie());
+            _logger.LogInformation("Generating self-signed certificate (PEM) for domain {Domain}...", DnsConfiguration.DomainOrDie());
 
             using var rsa = RSA.Create(2048);
-            var subjectName = new X500DistinguishedName($"CN={dnsConfig.DomainOrDie()}");
+            var subjectName = new X500DistinguishedName($"CN={DnsConfiguration.DomainOrDie()}");
 
             var req = new CertificateRequest(subjectName, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             req.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, false));
@@ -360,12 +561,12 @@ public class DevAppHost : IDevAppHost
             req.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection { new Oid("1.3.6.1.5.5.7.3.1") }, false));
 
             var sanBuilder = new SubjectAlternativeNameBuilder();
-            foreach (var host in dnsConfig.GetAllHosts())
+            foreach (var host in DnsConfiguration.GetAllHosts())
             {
                 sanBuilder.AddDnsName(host);
             }
             // include bare domain as well
-            if (!string.IsNullOrEmpty(dnsConfig.Domain)) sanBuilder.AddDnsName(dnsConfig.Domain);
+            if (!string.IsNullOrEmpty(DnsConfiguration.Domain)) sanBuilder.AddDnsName(DnsConfiguration.Domain);
             req.CertificateExtensions.Add(sanBuilder.Build());
 
             var notBefore = DateTimeOffset.UtcNow.AddDays(-1);
@@ -420,7 +621,7 @@ public class DevAppHost : IDevAppHost
             _logger.LogInformation("✓ PEM certificate and key saved: {CertPem} / {KeyPem}", certPemFile, keyPemFile);
 
             // Export PFX with password and import with Exportable flag so OS/browser can use the private key
-            var pfxPassword = string.IsNullOrEmpty(dnsConfig.SslPassword) ? Guid.NewGuid().ToString("N") : dnsConfig.SslPassword;
+            var pfxPassword = string.IsNullOrEmpty(DnsConfiguration.SslPassword) ? Guid.NewGuid().ToString("N") : DnsConfiguration.SslPassword;
             var pfxBytes = certWithKey.Export(X509ContentType.Pfx, pfxPassword);
             File.WriteAllBytes(pfxFile, pfxBytes);
 
@@ -479,7 +680,7 @@ public class DevAppHost : IDevAppHost
                 // Try to add certificate to system CA store (Debian/Ubuntu style)
                 try
                 {
-                    var targetPath = $"/usr/local/share/ca-certificates/{dnsConfig.DomainOrDie()}.crt";
+                    var targetPath = $"/usr/local/share/ca-certificates/{DnsConfiguration.DomainOrDie()}.crt";
                     var tempCert = certPemFile;
 
                     // copy cert to target and update CA (requires sudo)
@@ -530,11 +731,9 @@ public class DevAppHost : IDevAppHost
                 certWithKey.Dispose();
             }
 
-            dnsConfig.CertPath = certPemFile;
-            dnsConfig.KeyPath = keyPemFile;
+            DnsConfiguration.SetupCertAndKeyPaths(certPemFile, keyPemFile);
 
-            // Persist configuration
-            SaveConfiguration(dnsConfig);
+            SaveConfiguration();
         }
         catch (Exception ex)
         {
@@ -544,90 +743,79 @@ public class DevAppHost : IDevAppHost
         return this;
     }
 
-    public IDevAppHost EnsureCertSetupUsingMkCert(DnsConfiguration dnsConfig, bool? force = false)
+    protected IDevAppHost EnsureCertSetupUsingMkCert(bool? force = false)
     {
-        try
+        _logger.LogInformation("Checking mkcert installation...");
+
+        // Check if mkcert is installed
+        var mkcertCheck = ExecuteCommand("mkcert", "-help", out var output);
+        if (!mkcertCheck)
         {
-            _logger.LogInformation("Checking mkcert installation...");
+            throw new InvalidOperationException(
+                "mkcert is not installed. Please install it:\n" +
+                "Windows: choco install mkcert\n" +
+                "macOS: brew install mkcert\n" +
+                "Linux: See https://github.com/FiloSottile/mkcert#installation");
+        }
 
-            // Check if mkcert is installed
-            var mkcertCheck = ExecuteCommand("mkcert", "-help", out var output);
-            if (!mkcertCheck)
-            {
-                throw new InvalidOperationException(
-                    "mkcert is not installed. Please install it:\n" +
-                    "Windows: choco install mkcert\n" +
-                    "macOS: brew install mkcert\n" +
-                    "Linux: See https://github.com/FiloSottile/mkcert#installation");
-            }
+        _logger.LogInformation("Installing mkcert local CA...");
+        // Install local CA if not already installed
+        ExecuteCommand("mkcert", "-install", out _);
 
-            _logger.LogInformation("Installing mkcert local CA...");
-            // Install local CA if not already installed
-            ExecuteCommand("mkcert", "-install", out _);
+        // Generate certificates for all hosts
+        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DnsConfiguration.CertificatesDirectory);
+        Directory.CreateDirectory(certsDir);
 
-            // Generate certificates for all hosts
-            var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, dnsConfig.CertificatesDirectory);
-            Directory.CreateDirectory(certsDir);
+        var certFile = Path.Combine(certsDir, $"{DnsConfiguration.DomainOrDie()}.pem");
+        var keyFile = Path.Combine(certsDir, $"{DnsConfiguration.DomainOrDie()}-key.pem");
 
-            var certFile = Path.Combine(certsDir, $"{dnsConfig.DomainOrDie()}.pem");
-            var keyFile = Path.Combine(certsDir, $"{dnsConfig.DomainOrDie()}-key.pem");
+        bool shouldRegenerate = (force ?? false) || !File.Exists(certFile) || !File.Exists(keyFile) || NeedsCertificateRegeneration(DnsConfiguration);
 
-            bool shouldRegenerate = (force ?? false) || !File.Exists(certFile) || !File.Exists(keyFile) || NeedsCertificateRegeneration(dnsConfig);
-
-            if (!shouldRegenerate)
-            {
-                _logger.LogInformation("✓ Using existing certificates: {CertFile}", certFile);
-                // Get certificate paths
-                dnsConfig.CertPath = GetCertificatePath(dnsConfig);
-                dnsConfig.KeyPath = GetKeyPath(dnsConfig);
-                return this;
-            }
-
-            if (force ?? false)
-            {
-                _logger.LogInformation("Force regeneration of SSL certificates...");
-            }
-            else if (!File.Exists(certFile) || !File.Exists(keyFile))
-            {
-                _logger.LogInformation("Generating SSL certificates...");
-            }
-            else
-            {
-                _logger.LogInformation("Configuration changed - regenerating SSL certificates...");
-            }
-
-            // Delete old certificates if they exist
-            if (File.Exists(certFile)) File.Delete(certFile);
-            if (File.Exists(keyFile)) File.Delete(keyFile);
-
-            var hostsArg = string.Join(" ", dnsConfig.GetAllHosts());
-            var command = $"-cert-file \"{certFile}\" -key-file \"{keyFile}\" {hostsArg}";
-
-            var success = ExecuteCommand("mkcert", command, out var certOutput);
-
-            if (!success)
-            {
-                throw new InvalidOperationException($"Failed to generate certificates: {certOutput}");
-            }
-
-            _logger.LogInformation("✓ Certificates generated: {CertFile}", certFile);
-
-            // Save current configuration
-            SaveConfiguration(dnsConfig);
-
+        if (!shouldRegenerate)
+        {
+            _logger.LogInformation("✓ Using existing certificates: {CertFile}", certFile);
             // Get certificate paths
-            dnsConfig.CertPath = GetCertificatePath(dnsConfig);
-            dnsConfig.KeyPath = GetKeyPath(dnsConfig);
+            DnsConfiguration.SetupCertAndKeyPaths(GetCertificatePath(), GetKeyPath());
+            return this;
         }
-        catch (Exception ex)
+
+        if (force ?? false)
         {
-            throw new InvalidOperationException($"Failed to setup mkcert: {ex.Message}", ex);
+            _logger.LogInformation("Force regeneration of SSL certificates...");
         }
+        else if (!File.Exists(certFile) || !File.Exists(keyFile))
+        {
+            _logger.LogInformation("Generating SSL certificates...");
+        }
+        else
+        {
+            _logger.LogInformation("Configuration changed - regenerating SSL certificates...");
+        }
+
+        // Delete old certificates if they exist
+        if (File.Exists(certFile)) File.Delete(certFile);
+        if (File.Exists(keyFile)) File.Delete(keyFile);
+
+        var hostsArg = string.Join(" ", DnsConfiguration.GetAllHosts());
+        var command = $"-cert-file \"{certFile}\" -key-file \"{keyFile}\" {hostsArg}";
+
+        var success = ExecuteCommand("mkcert", command, out var certOutput);
+
+        if (!success)
+        {
+            throw new InvalidOperationException($"Failed to generate certificates: {certOutput}");
+        }
+
+        _logger.LogInformation("✓ Certificates generated: {CertFile}", certFile);
+
+        SaveConfiguration();
+
+        DnsConfiguration.SetupCertAndKeyPaths(GetCertificatePath(), GetKeyPath());
 
         return this;
     }
 
-    public bool ExecuteCommand(string command, string arguments, out string output)
+    protected bool ExecuteCommand(string command, string arguments, out string output)
     {
         try
         {
@@ -668,7 +856,7 @@ public class DevAppHost : IDevAppHost
         }
     }
 
-    public IDevAppHost EnsureSetup(DnsConfiguration dnsConfig, bool? forceCertificateRegeneration = false)
+    public IDevAppHost EnsureSetup(DnsConfiguration DnsConfiguration, bool? forceCertificateRegeneration = false)
     {
         // Check if running with elevated privileges on Windows
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !IsRunningAsAdministrator())
@@ -676,13 +864,13 @@ public class DevAppHost : IDevAppHost
             throw new InvalidOperationException("need admin rights");
         }
 
-        if (NeedsHostsFileUpdate(dnsConfig))
+        if (NeedsHostsFileUpdate(DnsConfiguration))
         {
-            UpdateHostsFile(dnsConfig);
+            UpdateHostsFile(DnsConfiguration);
         }
 
         // Ensure mkcert is installed and certificates are generated
-        EnsureCertSetup(dnsConfig, forceCertificateRegeneration);
+        EnsureCertSetup(forceCertificateRegeneration);
 
         return this;
 
@@ -691,28 +879,27 @@ public class DevAppHost : IDevAppHost
     /// <summary>
     /// Ensures that the hosts file is configured according to the specified DNS settings, updating it if necessary.
     /// </summary>
-    /// <param name="dnsConfig">The DNS configuration to apply to the hosts file. Cannot be null.</param>
     /// <returns>The current instance of <see cref="IDevAppHost"/> after ensuring the hosts file is set up.</returns>
-    public IDevAppHost EnsureHostsSetup(DnsConfiguration dnsConfig)
+    protected IDevAppHost EnsureHostsSetup()
     {
-        if (NeedsHostsFileUpdate(dnsConfig))
+        if (NeedsHostsFileUpdate(DnsConfiguration))
         {
-            UpdateHostsFile(dnsConfig);
+            UpdateHostsFile(DnsConfiguration);
         }
 
         return this;
     }
 
-    public string GetCertificatePath(DnsConfiguration config)
+    public string GetCertificatePath()
     {
-        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
-        return Path.Combine(certsDir, $"{config.Domain}.pem");
+        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DnsConfiguration.CertificatesDirectory);
+        return Path.Combine(certsDir, $"{DnsConfiguration.Domain}.pem");
     }
 
-    public string GetKeyPath(DnsConfiguration config)
+    public string GetKeyPath()
     {
-        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, config.CertificatesDirectory);
-        return Path.Combine(certsDir, $"{config.Domain}-key.pem");
+        var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DnsConfiguration.CertificatesDirectory);
+        return Path.Combine(certsDir, $"{DnsConfiguration.Domain}-key.pem");
     }
 
     public void UpdateHostsFile(DnsConfiguration config)
@@ -852,8 +1039,7 @@ public class DevAppHost : IDevAppHost
     }
 }
 
-// Helper to modify launchSettings.json dynamically using JSONPath-like selection
-internal static class LaunchSettingsHelper
+public static class LaunchSettingsHelper
 {
     /// <summary>
     /// Adds or updates a single environment variable in the specified launchSettings.json profile.

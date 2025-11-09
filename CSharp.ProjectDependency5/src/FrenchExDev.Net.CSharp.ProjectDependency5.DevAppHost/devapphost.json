@@ -1,0 +1,8 @@
+﻿{
+  "DnsConfiguration": {
+    "Domains": [ "devdash", "api", "viz" ],
+    "CertificatesDirectory": ".aspire-certs",
+    "SslGenerator": "C#",
+  },
+  "LaunchSettingsProfile": "local-dev-https"
+}
