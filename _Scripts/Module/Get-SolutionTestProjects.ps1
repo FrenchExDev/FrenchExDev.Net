@@ -52,8 +52,18 @@ function Get-SolutionTestProjects {
         }
     }
 
-    # Filter to test projects (name or path containing 'Test' or 'Tests')
-    $testProjects = $projects | Where-Object { $_ -match 'Test' -or $_ -match 'Tests' }
+    # Filter by projects that reference the Microsoft.NET.Test.Sdk package
+    $testProjects = @()
+    foreach ($project in $projects) {
+        try {
+            $projectContent = Get-Content -Path $project -Raw -ErrorAction Stop
+            if ($projectContent -match '<\s*PackageReference\s+Include\s*=\s*"Microsoft\.NET\.Test\.Sdk"') {
+                $testProjects += [System.IO.Path]::GetFullPath($project)
+            }
+        } catch {
+            # ignore unreadable project files
+        }
+    }
 
     if ($IncludePatterns.Length -gt 0) {
         $incRegex = ($IncludePatterns | ForEach-Object { [regex]::Escape($_) }) -join '|'

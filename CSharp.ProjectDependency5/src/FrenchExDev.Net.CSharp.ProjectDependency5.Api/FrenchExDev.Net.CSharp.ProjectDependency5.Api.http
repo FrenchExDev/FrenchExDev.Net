@@ -1,0 +1,6 @@
+@FrenchExDev.Net.CSharp.ProjectDependency5.Api_HostAddress = http://localhost:5294
+
+GET {{FrenchExDev.Net.CSharp.ProjectDependency5.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
