@@ -10,7 +10,14 @@ using System.Security.Principal;
 
 namespace FrenchExDev.Net.CSharp.Aspire.Dev;
 
-
+/// <summary>
+/// Represents the configuration settings for DNS and SSL certificate management, including domain information,
+/// certificate paths, port mappings, and ASP.NET Core URL templates.
+/// </summary>
+/// <remarks>This record provides properties and methods for managing DNS-related configuration in applications
+/// that require SSL certificates and domain mapping. It includes support for multiple domains, port assignments, and
+/// dynamic URL generation for ASP.NET Core endpoints. Use this type to centralize and access DNS and certificate
+/// configuration throughout your application.</remarks>
 public record DnsConfiguration
 {
     public string SslPassword { get; set; }
@@ -85,15 +92,16 @@ public interface IDevAppHost
     IDevAppHost EnsureHostsSetup(DnsConfiguration dnsConfig);
     IDevAppHost EnsureSetup(DnsConfiguration dnsConfig, bool? forceCertificateRegeneration = false);
     IDevAppHost EnsureSystemSetup(IConfiguration configuration, DnsConfiguration dnsConfiguration);
-    IDevAppHost SetupProject(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name);
+    IDevAppHost WithProjectInstance(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name);
+
+    DistributedApplication Build();
 }
 
 public class DevAppHost : IDevAppHost
 {
     private readonly ILogger _logger;
     private readonly IConfiguration _configuration;
-    private IDistributedApplicationBuilder? _builder;
-    private Func<IDistributedApplicationBuilder> _builderProvider;
+    private readonly IDistributedApplicationBuilder _builder;
 
     public static DevAppHost Default(Func<IDistributedApplicationBuilder> builder, string? loggerName = "apphost", string? jsonFile = "devapphost.#Env#.json", string? environment = "Development")
     {
@@ -114,13 +122,12 @@ public class DevAppHost : IDevAppHost
     private DnsConfiguration? _dnsConfiguration;
     private DevAppHost(Func<IDistributedApplicationBuilder> builder, ILogger logger, IConfiguration configuration)
     {
-        _builderProvider = builder;
-        _builder = BuilderOrDie();
+        _builder = builder();
         _logger = logger;
         _configuration = configuration;
     }
 
-    public void EnsureSetup()
+    public DevAppHost EnsureSetup()
     {
         _dnsConfiguration = Configuration.GetSection("DnsConfiguration").Get<DnsConfiguration>() ?? throw new InvalidOperationException("missing DnsConfiguration");
 
@@ -128,6 +135,8 @@ public class DevAppHost : IDevAppHost
         EnsureHostsSetup(_dnsConfiguration);
         EnsureSystemSetup(Configuration, _dnsConfiguration);
         EnsureHostsSetup(_dnsConfiguration);
+
+        return this;
     }
 
     public IDevAppHost EnsureSystemSetup(IConfiguration rootConfig, DnsConfiguration dnsConfig)
@@ -819,9 +828,7 @@ public class DevAppHost : IDevAppHost
         }
     }
 
-    protected IDistributedApplicationBuilder BuilderOrDie() => _builderProvider() ?? throw new InvalidOperationException("Builder not initialized. Call SetupBuilder first.");
-
-    public IDevAppHost SetupProject(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name)
+    public IDevAppHost WithProjectInstance(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name)
     {
         var aspNetCoreUrl = DnsConfiguration.GetAspNetCoreUrl(name);
 
