@@ -6,8 +6,8 @@
       "dotnetRunMessages": true,
       "applicationUrl": "https://devdash.pd5i1.com:18443",
       "environmentVariables": {
-        "ASPNETCORE_Kestrel__Certificates__Default__Path": "C:\\code\\FrenchExDev.Net\\FrenchExDev.Net_i2\\FrenchExDev.Net\\CSharp.ProjectDependency5\\src\\FrenchExDev.Net.CSharp.ProjectDependency5.DevAppHost\\bin\\Debug\\net10.0\\.aspire-certs\\pd5i1.com.pem",
-        "ASPNETCORE_Kestrel__Certificates__Default__KeyPath": "C:\\code\\FrenchExDev.Net\\FrenchExDev.Net_i2\\FrenchExDev.Net\\CSharp.ProjectDependency5\\src\\FrenchExDev.Net.CSharp.ProjectDependency5.DevAppHost\\bin\\Debug\\net10.0\\.aspire-certs\\pd5i1.com-key.pem",
+        "ASPNETCORE_Kestrel__Certificates__Default__Path": "C:\\code\\FrenchExDev.Net\\FrenchExDev.Net_i2\\FrenchExDev.Net\\CSharp.ProjectDependency5\\src\\FrenchExDev.Net.CSharp.ProjectDependency5.DevAppHost\\bin\\Debug\\net9.0\\.aspire-certs\\pd5i1.com.pem",
+        "ASPNETCORE_Kestrel__Certificates__Default__KeyPath": "C:\\code\\FrenchExDev.Net\\FrenchExDev.Net_i2\\FrenchExDev.Net\\CSharp.ProjectDependency5\\src\\FrenchExDev.Net.CSharp.ProjectDependency5.DevAppHost\\bin\\Debug\\net9.0\\.aspire-certs\\pd5i1.com-key.pem",
         "ASPNETCORE_URLS": "https://0.0.0.0:18443;https://devdash.pd5i1.com:18443",
         "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "https://devdash.pd5i1.com:21190",
         "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "https://devdash.pd5i1.com:21191",

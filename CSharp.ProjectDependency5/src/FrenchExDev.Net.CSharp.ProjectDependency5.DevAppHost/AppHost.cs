@@ -9,7 +9,7 @@ await DevAppHost.Default(
         name: "api"
     )
     .WithProjectInstance(
-        resourceBuilder: (builder) => builder.AddProject<Projects.FrenchExDev_Net_CSharp_ProjectDependency5_Viz>("viz"),
+        resourceBuilder: (builder) => builder.AddProject<Projects.FrenchExDev_Net_CSharp_ProjectDependency5_Viz2>("viz"),
         name: "viz"
     )
     .Build()
