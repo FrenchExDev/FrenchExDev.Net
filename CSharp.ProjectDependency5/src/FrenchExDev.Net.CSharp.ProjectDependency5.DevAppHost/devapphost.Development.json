@@ -2,6 +2,7 @@
   "Environment": "Development",
   "DnsConfiguration": {
     "Domain": "pd5i1.com",
+    "DashboardAppName": "devdash",
     "Ports": {
       "devdash-oltp": 21190,
       "devdash-services": 21191,
