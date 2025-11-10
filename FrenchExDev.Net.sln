@@ -450,6 +450,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Packer.Bundle.Tests", "Packer\test\FrenchExDev.Net.Packer.Bundle.Tests\FrenchExDev.Net.Packer.Bundle.Tests.csproj", "{0EBB3C78-C7E5-40F0-A3D6-643638F3E8EF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSharp.Object.Builder2", "CSharp.Object.Builder2", "{F5CE9E1E-762E-4FC1-9EFA-792A1D064E2C}"
+	ProjectSection(SolutionItems) = preProject
+		CSharp.Object.Builder2\.projects.yaml = CSharp.Object.Builder2\.projects.yaml
+		CSharp.Object.Builder2\LICENSE = CSharp.Object.Builder2\LICENSE
+		CSharp.Object.Builder2\README.md = CSharp.Object.Builder2\README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2607C592-CB36-488C-811E-4BE453FCF420}"
 EndProject
@@ -613,6 +618,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{F67DDCF2-299
 	ProjectSection(SolutionItems) = preProject
 		CSharp.Object.Result\doc\ARCHITECTURE.md = CSharp.Object.Result\doc\ARCHITECTURE.md
 		CSharp.Object.Result\doc\RESULT-PATTERN.md = CSharp.Object.Result\doc\RESULT-PATTERN.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{3429C9E8-1293-82F1-25BB-F87EF2E58181}"
+	ProjectSection(SolutionItems) = preProject
+		CSharp.Object.Builder2\doc\ARCHITECTURE.md = CSharp.Object.Builder2\doc\ARCHITECTURE.md
+		CSharp.Object.Builder2\doc\BUILDER-PATTERN.md = CSharp.Object.Builder2\doc\BUILDER-PATTERN.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{DA068E29-98CC-3218-A4F1-1DC434684AAA}"
+	ProjectSection(SolutionItems) = preProject
+		Object.Biz\doc\ARCHITECTURE.md = Object.Biz\doc\ARCHITECTURE.md
+		Object.Biz\doc\FACETTED-OBJECT-PATTERN.md = Object.Biz\doc\FACETTED-OBJECT-PATTERN.md
 	EndProjectSection
 EndProject
 Global
@@ -3367,6 +3384,8 @@ Global
 		{907A78F9-E3D3-B635-1883-9D6BC4BF525F} = {51D6A356-769F-C71B-91D4-5C471F7AD33E}
 		{BCA9A28D-B653-1D95-70BF-A434281B1935} = {46022802-2018-1B43-FCF3-D8C33C6BFE84}
 		{F67DDCF2-2995-3111-C3D2-F1A908204884} = {F5E619E2-99F2-4B98-A899-1AA5999448E5}
+		{3429C9E8-1293-82F1-25BB-F87EF2E58181} = {F5CE9E1E-762E-4FC1-9EFA-792A1D064E2C}
+		{DA068E29-98CC-3218-A4F1-1DC434684AAA} = {E48C0A0C-528B-496B-9F81-2AE5BB0F9907}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4BCE80FC-0AE1-4B5A-A6DA-D1999B8AA168}
