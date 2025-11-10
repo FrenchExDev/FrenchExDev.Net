@@ -504,6 +504,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.ManagedList.Testing", "CSharp.ManagedList\src\FrenchExDev.Net.CSharp.ManagedList.Testing\FrenchExDev.Net.CSharp.ManagedList.Testing.csproj", "{8CABF4D2-2F75-4D74-867C-D17A9A2FC7C9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSharp.Object.Result", "CSharp.Object.Result", "{F5E619E2-99F2-4B98-A899-1AA5999448E5}"
+	ProjectSection(SolutionItems) = preProject
+		CSharp.Object.Result\README.md = CSharp.Object.Result\README.md
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AB0ED051-9B74-47F0-9741-4ADDE354DA81}"
 EndProject
@@ -595,6 +598,22 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.ProjectDependency5.Viz2.Client", "CSharp.ProjectDependency5\src\FrenchExDev.Net.CSharp.ProjectDependency5.Viz2\FrenchExDev.Net.CSharp.ProjectDependency5.Viz2.Client\FrenchExDev.Net.CSharp.ProjectDependency5.Viz2.Client.csproj", "{7B38870D-CBA8-1E52-D491-6BC86ADC7ABC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.ProjectDependency5.Worker3", "CSharp.ProjectDependency5\src\FrenchExDev.Net.CSharp.ProjectDependency5.Worker3\FrenchExDev.Net.CSharp.ProjectDependency5.Worker3.csproj", "{0DD9D406-BDDF-A221-1E64-C5ACD41056D5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{907A78F9-E3D3-B635-1883-9D6BC4BF525F}"
+	ProjectSection(SolutionItems) = preProject
+		CSharp.ProjectDependency5\doc\ARCHITECTURE.md = CSharp.ProjectDependency5\doc\ARCHITECTURE.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{BCA9A28D-B653-1D95-70BF-A434281B1935}"
+	ProjectSection(SolutionItems) = preProject
+		CSharp.Aspire.Dev\doc\ARCHITECTURE.md = CSharp.Aspire.Dev\doc\ARCHITECTURE.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{F67DDCF2-2995-3111-C3D2-F1A908204884}"
+	ProjectSection(SolutionItems) = preProject
+		CSharp.Object.Result\doc\ARCHITECTURE.md = CSharp.Object.Result\doc\ARCHITECTURE.md
+		CSharp.Object.Result\doc\RESULT-PATTERN.md = CSharp.Object.Result\doc\RESULT-PATTERN.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -3345,6 +3364,9 @@ Global
 		{00E75951-4759-841B-CCB9-C7AAAC2BAFED} = {CF06A13D-457A-9ED8-390D-21517DB51F08}
 		{7B38870D-CBA8-1E52-D491-6BC86ADC7ABC} = {CF06A13D-457A-9ED8-390D-21517DB51F08}
 		{0DD9D406-BDDF-A221-1E64-C5ACD41056D5} = {CF06A13D-457A-9ED8-390D-21517DB51F08}
+		{907A78F9-E3D3-B635-1883-9D6BC4BF525F} = {51D6A356-769F-C71B-91D4-5C471F7AD33E}
+		{BCA9A28D-B653-1D95-70BF-A434281B1935} = {46022802-2018-1B43-FCF3-D8C33C6BFE84}
+		{F67DDCF2-2995-3111-C3D2-F1A908204884} = {F5E619E2-99F2-4B98-A899-1AA5999448E5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4BCE80FC-0AE1-4B5A-A6DA-D1999B8AA168}
