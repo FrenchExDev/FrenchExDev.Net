@@ -53,10 +53,10 @@ graph TD
     Tests -.->|xUnit| TestFramework[xUnit Test Framework]
     Tests -.->|Shouldly| Assertions[Shouldly Assertions]
     
-    style Core fill:#4a90e2,stroke:#2d5a8c,stroke-width:3px,color:#fff
-    style Testing fill:#7cb342,stroke:#558b2f,stroke-width:2px
-    style Tests fill:#fb8c00,stroke:#e65100,stroke-width:2px
-    style Result fill:#9c27b0,stroke:#6a1b9a,stroke-width:2px
+    style Core fill:#4a90e2,stroke:#2d5a8c,stroke-width:3px,color:#000
+    style Testing fill:#7cb342,stroke:#558b2f,stroke-width:2px,color:#000
+    style Tests fill:#fb8c00,stroke:#e65100,stroke-width:2px,color:#000
+    style Result fill:#9c27b0,stroke:#6a1b9a,stroke-width:2px,color:#000
 ```
 
 ### Type Hierarchy
@@ -173,6 +173,7 @@ classDiagram
 ### Adding and Retrieving Facets
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f4f4f4','tertiaryColor':'#f4f4f4','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#000','actorTextColor':'#000','actorLineColor':'#000','signalColor':'#000','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#000','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#000','activationBkgColor':'#f4f4f4','sequenceNumberColor':'#000'}}}%%
 sequenceDiagram
     participant Client
     participant Car as Car Object
@@ -185,14 +186,14 @@ sequenceDiagram
     
     Client->>ElectricFacet: new ElectricCarFacet(car)
     
-    rect rgb(200, 255, 220)
+    rect rgb(220, 255, 235)
     Note over Client,FacetDict: Adding Facet
     Client->>Car: Facet(electricFacet)
     Car->>FacetDict: ["ElectricCarFacet"] = electricFacet
     Car-->>Client: Return Car (fluent)
     end
     
-    rect rgb(200, 220, 255)
+    rect rgb(220, 235, 255)
     Note over Client,Result: Retrieving Facet
     Client->>Car: Facet<ElectricCarFacet>()
     Car->>FacetDict: TryGetValue("ElectricCarFacet")
@@ -204,7 +205,7 @@ sequenceDiagram
     Result-->>Client: ElectricCarFacet instance
     end
     
-    rect rgb(255, 220, 220)
+    rect rgb(255, 235, 235)
     Note over Client,Result: Facet Not Found
     Client->>Car: Facet<LuxuryCarFacet>()
     Car->>FacetDict: TryGetValue("LuxuryCarFacet")
@@ -217,6 +218,7 @@ sequenceDiagram
 ### Checking Facet Existence
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f4f4f4','tertiaryColor':'#f4f4f4','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#000','actorTextColor':'#000','actorLineColor':'#000','signalColor':'#000','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#000','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#000','activationBkgColor':'#f4f4f4','sequenceNumberColor':'#000'}}}%%
 sequenceDiagram
     participant Client
     participant Car as Car Object
@@ -236,12 +238,13 @@ sequenceDiagram
 ### Generic vs Non-Generic Usage
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f4f4f4','tertiaryColor':'#f4f4f4','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#000','actorTextColor':'#000','actorLineColor':'#000','signalColor':'#000','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#000','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#000','activationBkgColor':'#f4f4f4','sequenceNumberColor':'#000'}}}%%
 sequenceDiagram
     participant Client
     participant GenericCar as FacetObject~Car,ICarFacet~
     participant NonGenericCar as FacetObject
     
-    rect rgb(200, 255, 220)
+    rect rgb(220, 255, 235)
     Note over Client,GenericCar: Generic FacetObject
     Client->>GenericCar: new Car() : FacetObject~Car,ICarFacet~
     Client->>GenericCar: Facet(carFacet: ICarFacet)
@@ -249,7 +252,7 @@ sequenceDiagram
     GenericCar-->>Client: Type-safe ICarFacet
     end
     
-    rect rgb(220, 220, 255)
+    rect rgb(235, 235, 255)
     Note over Client,NonGenericCar: Non-Generic FacetObject
     Client->>NonGenericCar: new FacetObject()
     Client->>NonGenericCar: Facet<ICarFacet>(carFacet)

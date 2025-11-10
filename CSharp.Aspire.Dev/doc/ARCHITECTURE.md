@@ -36,6 +36,7 @@ CSharp.Aspire.Dev is a .NET 9 development infrastructure library that simplifies
 ### DevAppHost Setup Sequence
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f4f4f4','tertiaryColor':'#f4f4f4','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#000','actorTextColor':'#000','actorLineColor':'#000','signalColor':'#000','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#000','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#000','activationBkgColor':'#f4f4f4','sequenceNumberColor':'#000'}}}%%
 sequenceDiagram
     participant Dev as Developer
     participant Program as Program.cs
@@ -52,7 +53,7 @@ sequenceDiagram
     
     Program->>DevAppHost: EnsureSetup(force: false)
     
-    rect rgb(200, 220, 255)
+    rect rgb(220, 235, 255)
     Note over DevAppHost,CertMgr: Certificate Setup Phase
     DevAppHost->>DnsConfig: Load DnsConfiguration
     DevAppHost->>DevAppHost: NeedsCertificateRegeneration()
@@ -91,7 +92,7 @@ sequenceDiagram
     DevAppHost->>DevAppHost: SaveConfiguration()
     end
     
-    rect rgb(255, 230, 200)
+    rect rgb(255, 245, 220)
     Note over DevAppHost,HostsFile: Hosts File Setup Phase
     DevAppHost->>DevAppHost: EnsureHostsSetup()
     DevAppHost->>DevAppHost: NeedsHostsFileUpdate()
@@ -105,7 +106,7 @@ sequenceDiagram
     end
     end
     
-    rect rgb(200, 255, 220)
+    rect rgb(220, 255, 235)
     Note over DevAppHost,LaunchSettings: Launch Settings Setup Phase
     DevAppHost->>DevAppHost: EnsureLaunchSettingsSetup()
     DevAppHost->>LaunchSettings: AddOrUpdateEnvironmentVariables()
@@ -117,7 +118,7 @@ sequenceDiagram
     
     DevAppHost-->>Program: IDevAppHost
     
-    rect rgb(255, 220, 255)
+    rect rgb(255, 235, 245)
     Note over Program,Aspire: Project Registration Phase
     Program->>DevAppHost: WithProjectInstance(api, "api")
     DevAppHost->>Aspire: Configure API project resource
@@ -201,10 +202,10 @@ graph TB
     Viz2 -->|HTTP Requests| API
     API -->|Commands| Worker3
     
-    style DevAppHost fill:#4a90e2,stroke:#2d5a8c,stroke-width:3px,color:#fff
-    style DnsConfig fill:#7cb342,stroke:#558b2f,stroke-width:2px
-    style CertManager fill:#fb8c00,stroke:#e65100,stroke-width:2px
-    style AspireBuilder fill:#ab47bc,stroke:#7b1fa2,stroke-width:2px
+    style DevAppHost fill:#4a90e2,stroke:#2d5a8c,stroke-width:3px,color:#000
+    style DnsConfig fill:#7cb342,stroke:#558b2f,stroke-width:2px,color:#000
+    style CertManager fill:#fb8c00,stroke:#e65100,stroke-width:2px,color:#000
+    style AspireBuilder fill:#ab47bc,stroke:#7b1fa2,stroke-width:2px,color:#000
 ```
 
 ### Certificate Generation Flow
@@ -257,11 +258,11 @@ flowchart TD
     
     SetPaths --> End([Certificate Setup Complete])
     
-    style Start fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
-    style End fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
-    style ThrowError fill:#f44336,stroke:#c62828,stroke-width:2px,color:#fff
-    style GenMkcert fill:#2196f3,stroke:#1565c0,stroke-width:2px
-    style SelfSign fill:#2196f3,stroke:#1565c0,stroke-width:2px
+    style Start fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#000
+    style End fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#000
+    style ThrowError fill:#f44336,stroke:#c62828,stroke-width:2px,color:#000
+    style GenMkcert fill:#2196f3,stroke:#1565c0,stroke-width:2px,color:#000
+    style SelfSign fill:#2196f3,stroke:#1565c0,stroke-width:2px,color:#000
 ```
 
 ## Core Components
