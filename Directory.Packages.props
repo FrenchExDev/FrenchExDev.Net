@@ -58,5 +58,7 @@
 		<PackageVersion Include="Blazored.SessionStorage" Version="2.4.0" />
 		<PackageVersion Include="Blazored.LocalStorage" Version="4.5.0" />
 		<PackageVersion Include="Markdig" Version="0.43.0" />
+		<!-- Fluent UI for Blazor WebAssembly client projects -->
+		<PackageVersion Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.13.1" />
 	</ItemGroup>
 </Project>
