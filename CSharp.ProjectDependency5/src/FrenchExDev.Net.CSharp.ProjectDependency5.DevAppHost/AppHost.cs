@@ -12,5 +12,9 @@ await DevAppHost.Default(
         resourceBuilder: (builder) => builder.AddProject<Projects.FrenchExDev_Net_CSharp_ProjectDependency5_Viz2>("viz"),
         name: "viz"
     )
+    .WithProjectInstance(
+        resourceBuilder: (builder) => builder.AddProject<Projects.FrenchExDev_Net_CSharp_ProjectDependency5_Worker3>("worker"),
+        name: "worker"
+    )
     .Build()
     .RunAsync();

@@ -226,14 +226,17 @@ public interface IDevAppHost
     IDevAppHost EnsureLaunchSettingsSetup(string appName, string launchSettingName, string launchSettingsFilePath);
 
     /// <summary>
-    /// Creates a new application host instance configured with a project resource built using the specified resource
-    /// builder and name.
+    /// Adds a project resource to the distributed application host using the specified resource builder and
+    /// configuration.
     /// </summary>
-    /// <param name="resourceBuilder">A delegate that receives an <see cref="IDistributedApplicationBuilder"/> and returns a resource builder for the
-    /// project resource to be added. Cannot be null.</param>
-    /// <param name="name">The name to assign to the project resource. Must be non-empty and unique within the application host.</param>
-    /// <returns>An <see cref="IDevAppHost"/> instance that includes the configured project resource.</returns>
-    IDevAppHost WithProjectInstance(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name);
+    /// <remarks>Use this method to programmatically add and configure a project resource as part of the
+    /// distributed application. The resource name must be unique within the application to avoid conflicts.</remarks>
+    /// <param name="resourceBuilder">A delegate that creates a resource builder for the project resource, using the provided distributed application
+    /// builder.</param>
+    /// <param name="name">The unique name to assign to the project resource within the application. Cannot be null or empty.</param>
+    /// <param name="configuration">An optional delegate to further configure the project resource builder before the resource is added.</param>
+    /// <returns>An updated distributed application host instance that includes the configured project resource.</returns>
+    IDevAppHost WithProjectInstance(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name, Action<IResourceBuilder<ProjectResource>>? configuration = null);
 
     /// <summary>
     /// Builds and returns a configured distributed application instance based on the current settings.

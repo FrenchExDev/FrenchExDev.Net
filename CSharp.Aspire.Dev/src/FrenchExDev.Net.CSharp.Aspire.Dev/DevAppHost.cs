@@ -259,6 +259,14 @@ public class DevAppHost : IDevAppHost
         });
     }
 
+    /// <summary>
+    /// Determines whether the DNS certificate should be regenerated based on changes in the provided configuration.
+    /// </summary>
+    /// <remarks>Certificate regeneration is triggered if there is no saved configuration or if the
+    /// configuration has changed since the last save. This method does not modify any state or perform certificate
+    /// generation itself.</remarks>
+    /// <param name="config">The DNS configuration to evaluate for certificate regeneration. Cannot be null.</param>
+    /// <returns>true if the certificate needs to be regenerated due to missing or changed configuration; otherwise, false.</returns>
     protected bool NeedsCertificateRegeneration(DnsConfiguration config)
     {
         var savedConfig = LoadSavedConfiguration(config);
@@ -284,6 +292,16 @@ public class DevAppHost : IDevAppHost
         return false;
     }
 
+    /// <summary>
+    /// Ensures that SSL certificate setup is performed according to the configured SSL generator and returns an
+    /// application host instance with the certificate applied.
+    /// </summary>
+    /// <param name="force">Specifies whether to force certificate setup even if it has already been performed. If <see langword="true"/>,
+    /// the setup is forced; if <see langword="false"/> or <see langword="null"/>, setup may be skipped if already
+    /// completed.</param>
+    /// <returns>An <see cref="IDevAppHost"/> instance configured with the appropriate SSL certificate based on the current SSL
+    /// generator setting.</returns>
+    /// <exception cref="NotImplementedException">Thrown if the configured SSL generator is not supported.</exception>
     protected IDevAppHost EnsureCertSetup(bool? force = false)
     {
         switch (DnsConfiguration.SslGenerator)
@@ -296,6 +314,19 @@ public class DevAppHost : IDevAppHost
         }
     }
 
+    /// <summary>
+    /// Ensures that self-signed certificates are generated and configured for the current domain, installing them into
+    /// the appropriate certificate stores if necessary.
+    /// </summary>
+    /// <remarks>On Windows, the certificate is installed into the CurrentUser\My and trusted root stores,
+    /// preferring LocalMachine\Root if running as administrator. On Linux and macOS, the method attempts to add the
+    /// certificate to the system trust store using platform-specific commands, which may require elevated privileges.
+    /// Existing certificates are reused unless regeneration is requested or required. This method logs progress and
+    /// warnings for installation steps and potential issues.</remarks>
+    /// <param name="force">If <see langword="true"/>, forces regeneration and installation of certificates even if valid certificates
+    /// already exist; otherwise, certificates are only generated if missing or outdated.</param>
+    /// <returns>The current <see cref="IDevAppHost"/> instance with certificate setup completed.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if certificate generation or private key export fails.</exception>
     protected IDevAppHost EnsureCertSetupUsingGeneratedCerts(bool? force = false)
     {
         try
@@ -511,6 +542,17 @@ public class DevAppHost : IDevAppHost
         return this;
     }
 
+    /// <summary>
+    /// Ensures that SSL certificates are set up for development hosts using mkcert, generating new certificates if
+    /// necessary.
+    /// </summary>
+    /// <remarks>This method requires mkcert to be installed and accessible on the system. It installs the
+    /// local certificate authority if needed and generates certificates for all configured hosts. Existing certificates
+    /// are reused unless regeneration is forced or configuration changes are detected.</remarks>
+    /// <param name="force">If <see langword="true"/>, forces regeneration of SSL certificates even if valid certificates already exist;
+    /// otherwise, certificates are only generated if missing or outdated.</param>
+    /// <returns>An <see cref="IDevAppHost"/> instance with SSL certificates configured for the current development environment.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if mkcert is not installed or if certificate generation fails.</exception>
     protected IDevAppHost EnsureCertSetupUsingMkCert(bool? force = false)
     {
         _logger.LogInformation("Checking mkcert installation...");
@@ -583,6 +625,17 @@ public class DevAppHost : IDevAppHost
         return this;
     }
 
+    /// <summary>
+    /// Executes an external command with the specified arguments and captures its output.
+    /// </summary>
+    /// <remarks>This method starts the specified process without creating a window and redirects both
+    /// standard output and standard error. If the process fails to start or an exception occurs, the output parameter
+    /// will contain an error message. The method blocks until the process exits.</remarks>
+    /// <param name="command">The name or path of the executable file to run. Cannot be null or empty.</param>
+    /// <param name="arguments">The command-line arguments to pass to the executable. Can be an empty string if no arguments are required.</param>
+    /// <param name="output">When this method returns, contains the standard output of the process if available; otherwise, contains the
+    /// standard error or an error message if the process fails to start.</param>
+    /// <returns>true if the command executes successfully and returns an exit code of 0; otherwise, false.</returns>
     protected bool ExecuteCommand(string command, string arguments, out string output)
     {
         try
@@ -639,18 +692,41 @@ public class DevAppHost : IDevAppHost
         return this;
     }
 
+    /// <summary>
+    /// Gets the full file system path to the PEM-encoded certificate for the configured DNS domain.
+    /// </summary>
+    /// <remarks>The returned path is constructed using the application's base directory and the certificate
+    /// directory specified in the DNS configuration. The file is expected to have a ".pem" extension and be named after
+    /// the configured domain.</remarks>
+    /// <returns>A string containing the absolute path to the certificate file for the current DNS domain.</returns>
     public string GetCertificatePath()
     {
         var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DnsConfiguration.CertificatesDirectory);
         return Path.Combine(certsDir, $"{DnsConfiguration.Domain}.pem");
     }
 
+    /// <summary>
+    /// Gets the full file system path to the private key file for the configured domain.
+    /// </summary>
+    /// <remarks>The returned path is constructed using the application's base directory and the configured
+    /// certificates directory. The file is expected to be named in the format "{Domain}-key.pem". Ensure that the
+    /// domain and certificates directory are correctly configured in <see cref="DnsConfiguration"/> before calling this
+    /// method.</remarks>
+    /// <returns>A string containing the absolute path to the private key file for the current domain.</returns>
     public string GetKeyPath()
     {
         var certsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DnsConfiguration.CertificatesDirectory);
         return Path.Combine(certsDir, $"{DnsConfiguration.Domain}-key.pem");
     }
 
+    /// <summary>
+    /// Updates the system hosts file with DNS entries specified in the provided configuration.
+    /// </summary>
+    /// <remarks>This method attempts to add any missing DNS entries from the configuration to the system
+    /// hosts file. If the update cannot be performed (for example, due to insufficient permissions), a warning is
+    /// logged and manual intervention may be required. The method determines the hosts file path based on the operating
+    /// system.</remarks>
+    /// <param name="config">The DNS configuration containing the hosts file entries to be added. Cannot be null.</param>
     public void UpdateHostsFile(DnsConfiguration config)
     {
         try
@@ -689,6 +765,19 @@ public class DevAppHost : IDevAppHost
         }
     }
 
+    /// <summary>
+    /// Updates the system hosts file by appending the specified entries, ensuring that missing host mappings are added
+    /// for local development or network configuration.
+    /// </summary>
+    /// <remarks>This method requires administrative privileges to modify the hosts file. On Windows, the
+    /// process must be running as an administrator; on Unix-based systems, 'sudo' is used to append entries. If
+    /// automatic update fails, manual intervention may be required. The method appends a comment indicating the source
+    /// of the changes for traceability.</remarks>
+    /// <param name="hostsFilePath">The full path to the hosts file to update. On Windows, this is typically
+    /// 'C:\Windows\System32\drivers\etc\hosts'; on Unix-based systems, it is usually '/etc/hosts'.</param>
+    /// <param name="hostsContent">The existing content of the hosts file, used as the base to which new entries will be appended. May be empty if
+    /// the file does not exist or is being created.</param>
+    /// <param name="missingEntries">A list of host entry strings that are not currently present in the hosts file and need to be added.</param>
     private void DoUpdateEtcHostsFile(string hostsFilePath, string hostsContent, List<string> missingEntries)
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -764,11 +853,26 @@ public class DevAppHost : IDevAppHost
         }
     }
 
-    public IDevAppHost WithProjectInstance(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name)
+    /// <summary>
+    /// Configures the application host to use a project resource instance with the specified name and optional
+    /// configuration.
+    /// </summary>
+    /// <remarks>This method sets several environment variables and URLs for the project resource instance,
+    /// including development environment settings and certificate paths. It is typically used to prepare the
+    /// application host for local development scenarios.</remarks>
+    /// <param name="resourceBuilder">A delegate that creates a project resource builder using the distributed application builder. The returned
+    /// resource builder is used to configure the project resource instance.</param>
+    /// <param name="name">The name of the project resource instance. This value is used to set environment variables and URLs for the
+    /// resource.</param>
+    /// <param name="configuration">An optional action to further configure the project resource builder before finalizing the resource instance. If
+    /// not specified, no additional configuration is applied.</param>
+    /// <returns>The current <see cref="IDevAppHost"/> instance with the project resource instance configured.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the distributed application builder is not initialized.</exception>
+    public IDevAppHost WithProjectInstance(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name, Action<IResourceBuilder<ProjectResource>>? configuration = null)
     {
         var aspNetCoreUrl = DnsConfiguration.GetAspNetCoreUrl(name);
 
-        resourceBuilder(_builder ?? throw new InvalidOperationException("_builder is null"))
+        IResourceBuilder<ProjectResource> r = resourceBuilder(_builder ?? throw new InvalidOperationException("_builder is null"))
             .WithEnvironment("DOTNET_LAUNCH_PROFILE", "local-dev-https")
             .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
             .WithEnvironment("DOTNET_ENVIRONMENT", "Development")
@@ -779,9 +883,17 @@ public class DevAppHost : IDevAppHost
             .WithEnvironment("CustomDomain__Port", DnsConfiguration.Ports[name].ToString())
             .WithUrl(DnsConfiguration.GetUrl(name, DnsConfiguration.Ports[name]));
 
+        configuration?.Invoke(r);
+
         return this;
     }
 
+    /// <summary>
+    /// Builds and returns a configured instance of the distributed application.
+    /// </summary>
+    /// <returns>A <see cref="DistributedApplication"/> instance representing the configured distributed application.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the internal builder is not initialized. Ensure that BuilderOrDie() has been called before invoking
+    /// this method.</exception>
     public DistributedApplication Build()
     {
         return _builder?.Build() ?? throw new InvalidOperationException("_buidler is null. Call BuilderOrDie().");

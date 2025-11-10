@@ -8,12 +8,14 @@
       "devdash-services": 21191,
       "devdash": 18443,
       "api": 18444,
-      "viz": 18445
+      "viz": 18445,
+      "worker":  18446
     },
     "AspNetCoreUrls": {
       "devdash": "https://0.0.0.0:#port#;https://#subdomain#.#domain#:#port#",
       "api": "https://0.0.0.0:#port#;https://#subdomain#.#domain#:#port#",
-      "viz": "https://0.0.0.0:#port#;https://#subdomain#.#domain#:#port#"
+      "viz": "https://0.0.0.0:#port#;https://#subdomain#.#domain#:#port#",
+      "worker": "https://0.0.0.0:#port#;https://#subdomain#.#domain#:#port#"
     },
     "SslPassword": "04aa0919-4fd3-4f8d-9c6c-3d6edc83617c"
   },

@@ -1,6 +1,6 @@
 ﻿{
   "DnsConfiguration": {
-    "Domains": [ "devdash", "api", "viz" ],
+    "Domains": [ "devdash", "api", "viz", "worker" ],
     "CertificatesDirectory": ".aspire-certs",
     "SslGenerator": "C#",
   },
