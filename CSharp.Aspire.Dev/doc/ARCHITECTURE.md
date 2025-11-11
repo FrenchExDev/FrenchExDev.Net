@@ -36,7 +36,7 @@ CSharp.Aspire.Dev is a .NET 9 development infrastructure library that simplifies
 ### DevAppHost Setup Sequence
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f4f4f4','tertiaryColor':'#f4f4f4','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#000','actorTextColor':'#000','actorLineColor':'#000','signalColor':'#000','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#000','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#000','activationBkgColor':'#f4f4f4','sequenceNumberColor':'#000'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#ffffcc','noteBorderColor':'#333','actorBkg':'#fff','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#fff','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#f4f4f4','sequenceNumberColor':'#fff','altLabelBkgColor':'#fff','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Dev as Developer
     participant Program as Program.cs
