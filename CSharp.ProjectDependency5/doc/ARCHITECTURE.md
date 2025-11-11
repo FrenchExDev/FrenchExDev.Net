@@ -50,7 +50,7 @@
 ### System Overview - Aspire DevAppHost Sequence
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#666','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#666','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#000','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Developer
     participant DevAppHost
@@ -60,17 +60,18 @@ sequenceDiagram
     participant Viz2
     participant Worker3
 
+    rect rgb(230, 245, 255)
+    Note over Developer,DevAppHost: Application Initialization Phase
     Developer->>DevAppHost: dotnet run
     DevAppHost->>DevAppHost: CreateBuilder(args)
     DevAppHost->>CertMgr: EnsureSetup()
     
     alt Certificate Setup Required
-        rect rgb(230, 245, 255)
-        Note over CertMgr,CertMgr: Certificate Configuration Phase
+        Note over CertMgr: Certificate Configuration
         CertMgr->>CertMgr: Generate/Load Dev Certificates
         CertMgr->>CertMgr: Configure HTTPS Endpoints
         CertMgr-->>DevAppHost: Setup Complete
-        end
+    end
     end
     
     rect rgb(255, 245, 230)
@@ -93,9 +94,9 @@ sequenceDiagram
     Aspire->>API: Launch on configured port
     Aspire->>Viz2: Launch on configured port
     Aspire->>Worker3: Launch on configured port
-    end
     
     Aspire-->>Developer: Dashboard URL (https://localhost:port)
+    end
     
     Note over Developer,Worker3: All services running with HTTPS dev certificates
 ```
@@ -103,7 +104,7 @@ sequenceDiagram
 ### Key Actors Interaction - Analysis Workflow
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#666','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#666','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#000','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant User
     participant Viz2 as Viz2 (Blazor UI)
@@ -175,7 +176,7 @@ sequenceDiagram
 ### Component Interaction - Create Session & Analyze
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#666','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#666','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#000','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Viz2
     participant API
@@ -238,6 +239,92 @@ sequenceDiagram
     API-->>Viz2: Graph JSON
     
     Viz2->>Viz2: Render Visualization
+    end
+```
+
+### Certificate Generation Flow
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#666','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#666','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#000','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
+sequenceDiagram
+    participant DevAppHost
+    participant CertMgr as Certificate Manager
+    participant Config as Configuration
+    participant CertStore as Certificate Store
+    participant FileSystem
+
+    rect rgb(230, 245, 255)
+    Note over DevAppHost,Config: Certificate Setup Initialization
+    DevAppHost->>CertMgr: EnsureCertSetup()
+    CertMgr->>Config: Check SSL Generator Type
+    CertMgr->>FileSystem: Check Existing Certificates
+    
+    alt Certificates Exist and Valid
+        FileSystem-->>CertMgr: Certificate Files Found
+        CertMgr->>Config: Load Configuration Hash
+        Config-->>CertMgr: Hash Matches
+        CertMgr-->>DevAppHost: Use Existing Certificates
+    end
+    end
+    
+    rect rgb(255, 245, 230)
+    Note over CertMgr,FileSystem: C# Self-Signed Certificate Generation
+    alt Using C# Generator
+        CertMgr->>CertMgr: Generate RSA 2048-bit Key Pair
+        CertMgr->>CertMgr: Create Certificate Request
+        CertMgr->>CertMgr: Add Subject Alternative Names (SAN)
+        CertMgr->>CertMgr: Self-Sign Certificate (2-year validity)
+        
+        CertMgr->>FileSystem: Export Certificate to PEM
+        CertMgr->>FileSystem: Export Private Key to PEM
+        CertMgr->>FileSystem: Export to PFX with Password
+        
+        alt Windows Platform
+            alt Administrator Rights
+                CertMgr->>CertStore: Install to LocalMachine\Root
+            else Non-Admin
+                CertMgr->>CertStore: Install to CurrentUser\Root
+            end
+        else Linux Platform
+            CertMgr->>FileSystem: Copy to /usr/local/share/ca-certificates/
+            CertMgr->>CertStore: sudo update-ca-certificates
+        else macOS Platform
+            CertMgr->>CertStore: sudo security add-trusted-cert
+        end
+        
+        CertMgr->>Config: Save Configuration Hash
+        CertMgr-->>DevAppHost: Certificate Setup Complete
+    end
+    end
+    
+    rect rgb(245, 255, 230)
+    Note over CertMgr,FileSystem: mkcert Certificate Generation
+    alt Using mkcert Generator
+        CertMgr->>CertMgr: Check mkcert Installation
+        
+        alt mkcert Not Installed
+            CertMgr-->>DevAppHost: Error: Install mkcert
+        else mkcert Installed
+            CertMgr->>CertStore: mkcert -install (Install CA)
+            CertStore-->>CertMgr: CA Installed
+            
+            loop For Each Domain
+                CertMgr->>FileSystem: mkcert generate certificate
+                FileSystem-->>CertMgr: .pem and -key.pem files
+            end
+            
+            CertMgr->>Config: Save Configuration Hash
+            CertMgr-->>DevAppHost: Certificate Setup Complete
+        end
+    end
+    end
+    
+    rect rgb(255, 235, 245)
+    Note over DevAppHost,Config: Certificate Path Configuration
+    DevAppHost->>Config: SetupCertAndKeyPaths()
+    Config->>Config: Set ASPNETCORE_Kestrel__Certificates__Default__Path
+    Config->>Config: Set ASPNETCORE_Kestrel__Certificates__Default__KeyPath
+    Config-->>DevAppHost: Paths Configured
     end
 ```
 

@@ -36,7 +36,7 @@ CSharp.Aspire.Dev is a .NET 9 development infrastructure library that simplifies
 ### DevAppHost Setup Sequence
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#666','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#666','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#000','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Dev as Developer
     participant Program as Program.cs
@@ -47,13 +47,16 @@ sequenceDiagram
     participant LaunchSettings
     participant Aspire as .NET Aspire Builder
 
+    rect rgb(230, 245, 255)
+    Note over Dev,DevAppHost: Application Initialization Phase
     Dev->>Program: dotnet run
     Program->>DevAppHost: Default(builder, "apphost", "devapphost.Development.json")
     DevAppHost->>DevAppHost: Load Configuration
     
     Program->>DevAppHost: EnsureSetup(force: false)
+    end
     
-    rect rgb(230, 245, 255)
+    rect rgb(255, 245, 230)
     Note over DevAppHost,CertMgr: Certificate Setup Phase
     DevAppHost->>DnsConfig: Load DnsConfiguration
     DevAppHost->>DevAppHost: NeedsCertificateRegeneration()
@@ -92,7 +95,7 @@ sequenceDiagram
     DevAppHost->>DevAppHost: SaveConfiguration()
     end
     
-    rect rgb(255, 245, 230)
+    rect rgb(245, 255, 230)
     Note over DevAppHost,HostsFile: Hosts File Setup Phase
     DevAppHost->>DevAppHost: EnsureHostsSetup()
     DevAppHost->>DevAppHost: NeedsHostsFileUpdate()
@@ -106,7 +109,7 @@ sequenceDiagram
     end
     end
     
-    rect rgb(245, 255, 230)
+    rect rgb(255, 235, 245)
     Note over DevAppHost,LaunchSettings: Launch Settings Setup Phase
     DevAppHost->>DevAppHost: EnsureLaunchSettingsSetup()
     DevAppHost->>LaunchSettings: AddOrUpdateEnvironmentVariables()
@@ -114,11 +117,11 @@ sequenceDiagram
     LaunchSettings->>LaunchSettings: Set ASPNETCORE_URLS
     LaunchSettings->>LaunchSettings: Set ASPIRE_* endpoints
     LaunchSettings->>LaunchSettings: Set CustomDomain__*
-    end
     
     DevAppHost-->>Program: IDevAppHost
+    end
     
-    rect rgb(255, 235, 245)
+    rect rgb(230, 255, 245)
     Note over Program,Aspire: Project Registration Phase
     Program->>DevAppHost: WithProjectInstance(api, "api")
     DevAppHost->>Aspire: Configure API project resource
@@ -132,6 +135,8 @@ sequenceDiagram
     DevAppHost->>Aspire: Configure Worker project resource
     end
     
+    rect rgb(255, 250, 230)
+    Note over Program,Dev: Application Build & Run Phase
     Program->>DevAppHost: Build()
     DevAppHost->>Aspire: Build distributed application
     Aspire-->>Program: DistributedApplication
@@ -139,6 +144,7 @@ sequenceDiagram
     Program->>Aspire: RunAsync()
     Aspire->>Aspire: Start all registered projects
     Aspire-->>Dev: Dashboard URL + Service URLs
+    end
 ```
 
 ### Key Actors and Component Interaction
@@ -331,15 +337,18 @@ Configuration record that holds all DNS and certificate-related settings.
 The `LaunchSettingsHelper` class provides utilities for manipulating `launchSettings.json`:
 
 **Environment Variables Set:**
-- `ASPNETCORE_Kestrel__Certificates__Default__Path`
-- `ASPNETCORE_Kestrel__Certificates__Default__KeyPath`
-- `ASPNETCORE_URLS`
-- `ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL`
-- `ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL`
-- `ASPIRE_ENVIRONMENT`
-- `DOTNET_ENVIRONMENT`
-- `CustomDomain__Fqdn`
-- `CustomDomain__Port`
+
+| Environment Variable | Description |
+|---------------------|-------------|
+| `ASPNETCORE_Kestrel__Certificates__Default__Path` | Path to the PEM certificate file for Kestrel HTTPS configuration |
+| `ASPNETCORE_Kestrel__Certificates__Default__KeyPath` | Path to the PEM private key file for Kestrel HTTPS configuration |
+| `ASPNETCORE_URLS` | Semicolon-separated list of HTTPS URLs the application listens on (e.g., `https://api.dev.local:5000`) |
+| `ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL` | OpenTelemetry Protocol endpoint URL for Aspire Dashboard telemetry collection |
+| `ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL` | Aspire resource service endpoint for orchestration and management |
+| `ASPIRE_ENVIRONMENT` | Aspire-specific environment name (e.g., `Development`, `Production`) |
+| `DOTNET_ENVIRONMENT` | .NET runtime environment name (e.g., `Development`, `Production`) |
+| `CustomDomain__Fqdn` | Fully Qualified Domain Name for the service (e.g., `api.dev.local`) |
+| `CustomDomain__Port` | Port number for the custom domain (e.g., `5000`) |
 
 ### WebApplication Extensions
 
