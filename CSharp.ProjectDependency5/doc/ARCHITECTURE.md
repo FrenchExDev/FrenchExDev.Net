@@ -2,7 +2,7 @@
 
 ## Overview
 
-CSharp.ProjectDependency5 is a .NET 9 solution analyzer that visualizes and analyzes C# project dependencies using Roslyn and MSBuild. The system uses .NET Aspire for orchestration and provides a Blazor-based web interface for interactive dependency visualization.
+`CSharp.ProjectDependency5` is a .NET 9 solution analyzer that visualizes and analyzes C# project dependencies using Roslyn and MSBuild. The system uses .NET Aspire for orchestration and provides a Blazor-based web interface for interactive dependency visualization.
 
 ## Solution Structure
 
@@ -50,6 +50,7 @@ CSharp.ProjectDependency5 is a .NET 9 solution analyzer that visualizes and anal
 ### System Overview - Aspire DevAppHost Sequence
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Developer
     participant DevAppHost
@@ -64,11 +65,16 @@ sequenceDiagram
     DevAppHost->>CertMgr: EnsureSetup()
     
     alt Certificate Setup Required
+        rect rgb(230, 245, 255)
+        Note over CertMgr,CertMgr: Certificate Configuration Phase
         CertMgr->>CertMgr: Generate/Load Dev Certificates
         CertMgr->>CertMgr: Configure HTTPS Endpoints
         CertMgr-->>DevAppHost: Setup Complete
+        end
     end
     
+    rect rgb(255, 245, 230)
+    Note over DevAppHost,Aspire: Service Registration Phase
     DevAppHost->>Aspire: WithProjectInstance(api)
     Aspire-->>DevAppHost: API Resource Registered
     
@@ -77,13 +83,17 @@ sequenceDiagram
     
     DevAppHost->>Aspire: WithProjectInstance(worker)
     Aspire-->>DevAppHost: Worker3 Resource Registered
+    end
     
+    rect rgb(245, 255, 230)
+    Note over DevAppHost,Worker3: Application Startup Phase
     DevAppHost->>Aspire: Build()
     DevAppHost->>Aspire: RunAsync()
     
     Aspire->>API: Launch on configured port
     Aspire->>Viz2: Launch on configured port
     Aspire->>Worker3: Launch on configured port
+    end
     
     Aspire-->>Developer: Dashboard URL (https://localhost:port)
     
@@ -93,6 +103,7 @@ sequenceDiagram
 ### Key Actors Interaction - Analysis Workflow
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant User
     participant Viz2 as Viz2 (Blazor UI)
@@ -101,17 +112,25 @@ sequenceDiagram
     participant Roslyn as Roslyn/MSBuild
     participant FileSystem
 
+    rect rgb(230, 245, 255)
+    Note over User,API: Session Initialization Phase
     User->>Viz2: Navigate to Analysis Page
     Viz2->>API: POST /sessions/create
     API->>API: Generate Session ID
     API-->>Viz2: Session ID
+    end
 
+    rect rgb(255, 245, 230)
+    Note over User,Viz2: Solution Selection Phase
     User->>Viz2: Select Solution Path
     Viz2->>API: POST /analyze
     Note over API: Create analysis job
     API->>Worker3: Queue Analysis Task
     API-->>Viz2: Job ID
+    end
 
+    rect rgb(245, 255, 230)
+    Note over Worker3,FileSystem: Analysis Execution Phase
     Worker3->>FileSystem: Read Solution File (.sln)
     Worker3->>Roslyn: Open Solution
     Roslyn->>FileSystem: Load Project Files (.csproj)
@@ -124,14 +143,20 @@ sequenceDiagram
         Worker3->>Worker3: Run Analyzer
         Note over Worker3: StructuralCouplingAnalyzer<br/>ClassicalCouplingAnalyzer<br/>DirectionalCouplingAnalyzer<br/>CodeGraphAnalyzer
     end
+    end
     
+    rect rgb(255, 235, 245)
+    Note over Worker3,API: Report Generation Phase
     Worker3->>Worker3: Generate Reports
     Worker3->>Worker3: Create Markdown Document
     Worker3->>Worker3: Generate Graph JSON
     
     Worker3-->>API: Analysis Complete
     API-->>Viz2: Job Status: Completed
+    end
     
+    rect rgb(230, 255, 245)
+    Note over Viz2,Worker3: Result Retrieval Phase
     Viz2->>API: GET /artifacts/markdown
     API->>Worker3: Fetch Markdown
     Worker3-->>API: Markdown Content
@@ -144,11 +169,13 @@ sequenceDiagram
     
     Viz2->>Viz2: Render Graph (D3.js)
     Viz2->>User: Display Results
+    end
 ```
 
 ### Component Interaction - Create Session & Analyze
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Viz2
     participant API
@@ -156,7 +183,7 @@ sequenceDiagram
     participant SessionMgr as Session Manager
     participant AnalysisEngine
 
-    rect rgb(200, 220, 255)
+    rect rgb(230, 245, 255)
     Note over Viz2,SessionMgr: Session Creation Phase
     Viz2->>API: POST /sessions/create
     API->>SessionMgr: CreateSession()
@@ -166,7 +193,7 @@ sequenceDiagram
     API-->>Viz2: {sessionId, workerUrl}
     end
 
-    rect rgb(255, 230, 200)
+    rect rgb(255, 245, 230)
     Note over Viz2,AnalysisEngine: Solution Selection Phase
     Viz2->>Worker3: GET /solutions
     Worker3->>Worker3: Scan Solutions Directory
@@ -174,7 +201,7 @@ sequenceDiagram
     Viz2->>Viz2: User selects solution
     end
 
-    rect rgb(200, 255, 220)
+    rect rgb(245, 255, 230)
     Note over Viz2,AnalysisEngine: Analysis Execution Phase
     Viz2->>API: POST /analyze {solutionPath}
     API->>Worker3: POST /analyze {solutionPath}
@@ -198,7 +225,7 @@ sequenceDiagram
     API-->>Viz2: Job Completed
     end
 
-    rect rgb(255, 220, 255)
+    rect rgb(255, 235, 245)
     Note over Viz2,Worker3: Result Retrieval Phase
     Viz2->>API: GET /artifacts/markdown?sln={path}
     API->>Worker3: Proxy Request

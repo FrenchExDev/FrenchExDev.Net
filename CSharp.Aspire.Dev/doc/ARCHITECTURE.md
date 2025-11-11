@@ -36,7 +36,7 @@ CSharp.Aspire.Dev is a .NET 9 development infrastructure library that simplifies
 ### DevAppHost Setup Sequence
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#ffffcc','noteBorderColor':'#333','actorBkg':'#fff','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#fff','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#f4f4f4','sequenceNumberColor':'#fff','altLabelBkgColor':'#fff','altLabelBorderColor':'#333'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Dev as Developer
     participant Program as Program.cs
@@ -53,7 +53,7 @@ sequenceDiagram
     
     Program->>DevAppHost: EnsureSetup(force: false)
     
-    rect rgb(220, 235, 255)
+    rect rgb(230, 245, 255)
     Note over DevAppHost,CertMgr: Certificate Setup Phase
     DevAppHost->>DnsConfig: Load DnsConfiguration
     DevAppHost->>DevAppHost: NeedsCertificateRegeneration()
@@ -92,7 +92,7 @@ sequenceDiagram
     DevAppHost->>DevAppHost: SaveConfiguration()
     end
     
-    rect rgb(255, 245, 220)
+    rect rgb(255, 245, 230)
     Note over DevAppHost,HostsFile: Hosts File Setup Phase
     DevAppHost->>DevAppHost: EnsureHostsSetup()
     DevAppHost->>DevAppHost: NeedsHostsFileUpdate()
@@ -106,7 +106,7 @@ sequenceDiagram
     end
     end
     
-    rect rgb(220, 255, 235)
+    rect rgb(245, 255, 230)
     Note over DevAppHost,LaunchSettings: Launch Settings Setup Phase
     DevAppHost->>DevAppHost: EnsureLaunchSettingsSetup()
     DevAppHost->>LaunchSettings: AddOrUpdateEnvironmentVariables()

@@ -141,13 +141,14 @@ classDiagram
 ### Result Pattern Flow
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Client
     participant Operation
     participant Result as Result<T>
     participant Handler as Error Handler
     
-    rect rgb(200, 255, 200)
+    rect rgb(230, 255, 245)
     Note over Client,Result: Success Path
     Client->>Operation: Execute operation
     Operation->>Operation: Perform work
@@ -159,7 +160,7 @@ sequenceDiagram
     Result-->>Client: Return value
     end
     
-    rect rgb(255, 200, 200)
+    rect rgb(255, 240, 240)
     Note over Client,Handler: Failure Path
     Client->>Operation: Execute operation
     Operation->>Operation: Perform work (fails)
@@ -172,7 +173,7 @@ sequenceDiagram
     Result-->>Client: Throw InvalidOperationException
     end
     
-    rect rgb(200, 220, 255)
+    rect rgb(230, 245, 255)
     Note over Client,Handler: TryCatch Pattern
     Client->>Operation: TryCatch(() => riskyOperation())
     Operation->>Operation: Execute risky code
@@ -216,15 +217,16 @@ flowchart TD
     AccessFailures --> InspectFailures[Inspect failure details]
     InspectFailures --> End
     
-    style Start fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
-    style End fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
-    style Builder fill:#2196f3,stroke:#1565c0,stroke-width:2px
-    style BuildDict fill:#ff9800,stroke:#e65100,stroke-width:2px
+    style Start fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#000
+    style End fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#000
+    style Builder fill:#2196f3,stroke:#1565c0,stroke-width:2px,color:#000
+    style BuildDict fill:#ff9800,stroke:#e65100,stroke-width:2px,color:#000
 ```
 
 ### Async Result Pattern
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Client
     participant AsyncOp as Async Operation
@@ -236,19 +238,25 @@ sequenceDiagram
     AsyncOp->>AsyncOp: Perform async work
     
     alt Success
+        rect rgb(230, 255, 245)
+        Note over AsyncOp,SuccessHandler: Success Path - Async Handling
         AsyncOp->>Result: Create Success(value)
         Result-->>Client: Task<Result<T>> (success)
         Client->>Result: await result.IfSuccessAsync(async handler)
         Result->>SuccessHandler: await handler(value)
         SuccessHandler-->>Result: Completed
         Result-->>Client: Same Result<T>
+        end
     else Failure
+        rect rgb(255, 240, 240)
+        Note over AsyncOp,FailureHandler: Failure Path - Async Handling
         AsyncOp->>Result: Create Failure(failures)
         Result-->>Client: Task<Result<T>> (failure)
         Client->>Result: await result.IfFailureAsync(async handler)
         Result->>FailureHandler: await handler(failures)
         FailureHandler-->>Result: Completed
         Result-->>Client: Same Result<T>
+        end
     end
     
     Client->>Client: Continue with result

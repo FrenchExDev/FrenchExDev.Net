@@ -168,6 +168,7 @@ classDiagram
 ### Build Process Sequence
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Client
     participant Builder as PersonBuilder
@@ -183,7 +184,7 @@ sequenceDiagram
     
     Client->>Builder: Build()
     
-    rect rgb(200, 220, 255)
+    rect rgb(230, 245, 255)
     Note over Builder,Validator: Validation Phase
     Builder->>Builder: Check BuildStatus
     Builder->>Builder: Create VisitedObjectDictionary
@@ -207,7 +208,7 @@ sequenceDiagram
     end
     end
     
-    rect rgb(200, 255, 220)
+    rect rgb(245, 255, 230)
     Note over Builder,Instance: Build Phase
     Builder->>Builder: BuildInternal(visited)
     Builder->>Builder: Build nested builders

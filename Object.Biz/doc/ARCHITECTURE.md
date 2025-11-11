@@ -173,7 +173,7 @@ classDiagram
 ### Adding and Retrieving Facets
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f4f4f4','tertiaryColor':'#f4f4f4','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#000','actorTextColor':'#000','actorLineColor':'#000','signalColor':'#000','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#000','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#000','activationBkgColor':'#f4f4f4','sequenceNumberColor':'#000'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Client
     participant Car as Car Object
@@ -186,14 +186,14 @@ sequenceDiagram
     
     Client->>ElectricFacet: new ElectricCarFacet(car)
     
-    rect rgb(220, 255, 235)
+    rect rgb(245, 255, 230)
     Note over Client,FacetDict: Adding Facet
     Client->>Car: Facet(electricFacet)
     Car->>FacetDict: ["ElectricCarFacet"] = electricFacet
     Car-->>Client: Return Car (fluent)
     end
     
-    rect rgb(220, 235, 255)
+    rect rgb(230, 245, 255)
     Note over Client,Result: Retrieving Facet
     Client->>Car: Facet<ElectricCarFacet>()
     Car->>FacetDict: TryGetValue("ElectricCarFacet")
@@ -205,7 +205,7 @@ sequenceDiagram
     Result-->>Client: ElectricCarFacet instance
     end
     
-    rect rgb(255, 235, 235)
+    rect rgb(255, 240, 240)
     Note over Client,Result: Facet Not Found
     Client->>Car: Facet<LuxuryCarFacet>()
     Car->>FacetDict: TryGetValue("LuxuryCarFacet")
@@ -218,7 +218,7 @@ sequenceDiagram
 ### Checking Facet Existence
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f4f4f4','tertiaryColor':'#f4f4f4','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#000','actorTextColor':'#000','actorLineColor':'#000','signalColor':'#000','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#000','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#000','activationBkgColor':'#f4f4f4','sequenceNumberColor':'#000'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Client
     participant Car as Car Object
@@ -238,13 +238,13 @@ sequenceDiagram
 ### Generic vs Non-Generic Usage
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#000','lineColor':'#000','secondaryColor':'#f4f4f4','tertiaryColor':'#f4f4f4','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#000','actorTextColor':'#000','actorLineColor':'#000','signalColor':'#000','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#000','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#000','activationBkgColor':'#f4f4f4','sequenceNumberColor':'#000'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant Client
     participant GenericCar as FacetObject~Car,ICarFacet~
     participant NonGenericCar as FacetObject
     
-    rect rgb(220, 255, 235)
+    rect rgb(230, 255, 245)
     Note over Client,GenericCar: Generic FacetObject
     Client->>GenericCar: new Car() : FacetObject~Car,ICarFacet~
     Client->>GenericCar: Facet(carFacet: ICarFacet)
@@ -252,7 +252,7 @@ sequenceDiagram
     GenericCar-->>Client: Type-safe ICarFacet
     end
     
-    rect rgb(235, 235, 255)
+    rect rgb(255, 245, 235)
     Note over Client,NonGenericCar: Non-Generic FacetObject
     Client->>NonGenericCar: new FacetObject()
     Client->>NonGenericCar: Facet<ICarFacet>(carFacet)
