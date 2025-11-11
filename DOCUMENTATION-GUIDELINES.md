@@ -58,7 +58,7 @@ All sequence diagrams MUST use this Mermaid theme configuration for consistent t
   'primaryColor':'#fff',
   'primaryTextColor':'#000',
   'primaryBorderColor':'#333',
-  'lineColor':'#333',
+  'lineColor':'#666',
   'secondaryColor':'#fff',
   'tertiaryColor':'#fff',
   'noteTextColor':'#000',
@@ -68,15 +68,15 @@ All sequence diagrams MUST use this Mermaid theme configuration for consistent t
   'actorBorder':'#333',
   'actorTextColor':'#000',
   'actorLineColor':'#333',
-  'signalColor':'#333',
-  'signalTextColor':'#fff',        // WHITE for messages on dark arrows
+  'signalColor':'#666',
+  'signalTextColor':'#000',        // BLACK for messages on gray arrows
   'labelBoxBkgColor':'#f4f4f4',
   'labelBoxBorderColor':'#333',
   'labelTextColor':'#000',
   'loopTextColor':'#000',
   'activationBorderColor':'#333',
   'activationBkgColor':'#e8e8e8',
-  'sequenceNumberColor':'#fff',     // WHITE for sequence numbers
+  'sequenceNumberColor':'#000',     // BLACK for sequence numbers
   'altLabelBkgColor':'#f4f4f4',
   'altLabelBorderColor':'#333'
 }}}%%
@@ -84,17 +84,23 @@ All sequence diagrams MUST use this Mermaid theme configuration for consistent t
 
 ### Text Visibility Rules
 
-#### WHITE TEXT (`#fff`) - Used for:
-- **Arrow messages** - Signal text on dark arrow lines
-- **Sequence numbers** - Numbers on arrows
-- **Any text on dark backgrounds** - Ensures readability
-
 #### BLACK TEXT (`#000`) - Used for:
+- **Arrow messages** - Signal text on dark gray arrow lines
+- **Sequence numbers** - Numbers on arrows
 - **Participant names** - Actor/participant labels
 - **Note text** - Content inside note boxes
 - **Alt/Opt labels** - Control flow labels
 - **Loop labels** - Iteration labels
 - **Text in rect sections** - Phase descriptions on light backgrounds
+
+#### DARK GRAY ARROWS (`#666`) - Used for:
+- **Arrow lines** - Provides good contrast with black text
+- **Connection lines** - Between participants
+
+**Important:** Use `#666` (dark gray) for arrows and `#000` (black) for all text. This ensures:
+- Dark, clearly visible arrows
+- Black text that is readable on arrows and all backgrounds
+- Excellent contrast in both light and dark mode
 
 ### Colored Rect Sections
 
@@ -124,7 +130,7 @@ end
 ### Example Workflow
 
 \`\`\`mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#666','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#666','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#000','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 sequenceDiagram
     participant User
     participant System
@@ -160,13 +166,14 @@ sequenceDiagram
 
 Before finalizing a sequence diagram, verify:
 
-? **Arrow messages** - White text visible on dark arrows (e.g., "Execute command")  
+? **Arrow messages** - Black text visible on dark gray arrows (e.g., "Execute command")  
 ? **Participant names** - Black text visible on light gray boxes  
-? **Note content** - Black text visible on white/light yellow backgrounds  
+? **Note content** - Black text visible on white/light backgrounds  
 ? **Rect section notes** - Black text visible on light pastel backgrounds  
 ? **Alt/Opt labels** - Black text visible on light gray labels  
 ? **Loop labels** - Black text visible  
-? **Sequence numbers** - White text visible on arrows  
+? **Sequence numbers** - Black text visible on arrows  
+? **Arrow lines** - Dark gray (#666) clearly visible  
 
 ---
 
@@ -481,8 +488,8 @@ Step-by-step explanation of the workflow.
 
 ### Sequence Diagrams
 
-1. **White text on arrows** - For messages and sequence numbers
-2. **Black text in boxes** - For participants, notes, labels
+1. **Black text everywhere** - For messages, sequence numbers, participants, notes, labels
+2. **Dark gray arrows** - For maximum visibility (#666)
 3. **Light pastel rect backgrounds** - For workflow phases
 4. **Semantic color coding** - Consistent colors for similar phases
 5. **Descriptive note titles** - Clear phase descriptions
@@ -510,7 +517,7 @@ Step-by-step explanation of the workflow.
 ### Mermaid Theme (Copy-Paste Ready)
 
 ```
-%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#333','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#333','signalTextColor':'#fff','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#fff','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'fontFamily':'arial','fontSize':'14px','primaryColor':'#fff','primaryTextColor':'#000','primaryBorderColor':'#333','lineColor':'#666','secondaryColor':'#fff','tertiaryColor':'#fff','noteTextColor':'#000','noteBkgColor':'#fff','noteBorderColor':'#333','actorBkg':'#f4f4f4','actorBorder':'#333','actorTextColor':'#000','actorLineColor':'#333','signalColor':'#666','signalTextColor':'#000','labelBoxBkgColor':'#f4f4f4','labelBoxBorderColor':'#333','labelTextColor':'#000','loopTextColor':'#000','activationBorderColor':'#333','activationBkgColor':'#e8e8e8','sequenceNumberColor':'#000','altLabelBkgColor':'#f4f4f4','altLabelBorderColor':'#333'}}}%%
 ```
 
 ### Class Diagram Style (Example)
@@ -548,7 +555,7 @@ Before finalizing documentation, verify:
 ### Architecture Document Checklist
 - [ ] Architecture diagrams present
 - [ ] Sequence diagrams use correct theme
-- [ ] All text is readable (white on dark, black on light)
+- [ ] All text is readable (black on light or gray backgrounds)
 - [ ] Colored rect sections have semantic meaning
 - [ ] Component descriptions complete
 - [ ] Design decisions documented
@@ -556,10 +563,11 @@ Before finalizing documentation, verify:
 
 ### Diagram Checklist
 - [ ] Theme configuration applied
-- [ ] Arrow messages in white
-- [ ] Participant names in black
-- [ ] Note text in black on light backgrounds
+- [ ] Arrow messages in black (#000)
+- [ ] Participant names in black (#000)
+- [ ] Note text in black (#000) on light backgrounds
 - [ ] Rect sections use light pastel colors
+- [ ] Arrows are dark gray (#666) for visibility
 - [ ] All text is readable in both light and dark mode
 - [ ] Semantic color coding applied
 - [ ] No default Mermaid styling visible
@@ -570,19 +578,25 @@ Before finalizing documentation, verify:
 
 ### Excellent Examples to Follow
 
-1. **CSharp.Aspire.Dev/doc/ARCHITECTURE.md**
+1. **Alpine.Version/doc/ARCHITECTURE.md**
+   - Comprehensive architecture documentation
+   - Well-structured sequence diagrams with proper theme
+   - Dark gray arrows with black text for perfect visibility
+   - Semantic rect coloring for workflow phases
+
+2. **CSharp.Aspire.Dev/doc/ARCHITECTURE.md**
    - Comprehensive architecture documentation
    - Well-structured sequence diagrams
    - Proper theme configuration
    - Semantic rect coloring
 
-2. **Object.Biz/doc/ARCHITECTURE.md**
+3. **Object.Biz/doc/ARCHITECTURE.md**
    - Detailed pattern documentation
    - Clear class diagrams
    - Usage examples
    - Best practices section
 
-3. **_Scripts/README.md**
+4. **_Scripts/README.md**
    - Complete TOC with links
    - Multiple sequence diagrams
    - Class diagram
@@ -607,7 +621,7 @@ Before finalizing documentation, verify:
 
 ---
 
-**Version:** 1.0  
+**Version:** 2.0  
 **Last Updated:** January 2025  
 **Maintained By:** FrenchExDev.Net Team  
 **Repository:** https://github.com/FrenchExDev/FrenchExDev.Net
