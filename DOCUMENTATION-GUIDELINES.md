@@ -377,7 +377,6 @@ See main repository [CONTRIBUTING.md](../CONTRIBUTING.md)
 - [Overview](#overview)
 - [Architecture Diagrams](#architecture-diagrams)
 - [Core Components](#core-components)
-- [Sequence Diagrams](#sequence-diagrams)
 - [Design Decisions](#design-decisions)
 - [Best Practices](#best-practices)
 
@@ -391,13 +390,27 @@ Comprehensive architectural overview with key design principles.
 
 ## Architecture Diagrams
 
-### Component Architecture
+**Important:** Always start with the component/class diagram to show the static structure before presenting dynamic workflows.
 
-[Class diagram showing main components]
+### Component Architecture - Key Actors and Relations
 
-### System Context
+[Class diagram or component diagram showing all actors, their relationships, and interactions]
 
-[Diagram showing external interactions]
+**Key Relationships:**
+- List and explain the main relationships between components
+- Describe data flow and dependencies
+- Highlight key architectural patterns used
+
+### [Workflow Name] - [Description]
+
+[Sequence diagram showing specific workflow with proper theme and colors]
+
+**Description:**
+Step-by-step explanation of the workflow.
+
+### [Additional Workflow Name] - [Description]
+
+[Another sequence diagram if needed]
 
 ---
 
@@ -419,17 +432,6 @@ public interface IComponent
     Task<Result> Method2Async();
 }
 \`\`\`
-
----
-
-## Sequence Diagrams
-
-### Workflow 1: [Name]
-
-[Sequence diagram with proper theme and colors]
-
-**Description:**
-Step-by-step explanation of the workflow.
 
 ---
 
@@ -466,6 +468,44 @@ Step-by-step explanation of the workflow.
 **Target Framework:** .NET 9
 ```
 
+### Diagram Organization Best Practices
+
+1. **Start with Static Structure**
+   - Always begin the Architecture Diagrams section with a component/class diagram
+   - This shows the "what" before the "how"
+   - Provides readers with architectural context
+
+2. **Then Show Dynamic Workflows**
+   - Follow with sequence diagrams that show how components interact
+   - Each sequence diagram should focus on a specific workflow
+   - Use semantic rect coloring to show workflow phases
+
+3. **Diagram Ordering Rationale**
+   - **Component/Class Diagram First** - Establishes architectural understanding
+   - **Main Workflow Second** - Shows the primary use case
+   - **Supporting Workflows Next** - Shows additional scenarios
+   - **Detailed Process Diagrams Last** - Drills into specific subsystems
+
+4. **Example Structure**
+   ```markdown
+   ## Architecture Diagrams
+   
+   ### Component Architecture - Key Actors and Relations
+   [Component/class diagram showing all actors and relationships]
+   
+   ### Main Setup Workflow
+   [Sequence diagram showing primary initialization flow]
+   
+   ### Data Processing Workflow
+   [Sequence diagram showing main business logic]
+   
+   ### Error Handling Flow
+   [Sequence diagram showing error scenarios]
+   
+   ### Certificate Generation Detail
+   [Flowchart or detailed sequence for specific subsystem]
+   ```
+
 ---
 
 ## Best Practices
@@ -485,6 +525,7 @@ Step-by-step explanation of the workflow.
 3. **Use semantic colors** - Colors should convey meaning
 4. **Add descriptive notes** - Explain what's happening in each phase
 5. **Keep diagrams focused** - One workflow per diagram
+6. **Start with static architecture** - Component/class diagrams first
 
 ### Sequence Diagrams
 
@@ -493,6 +534,7 @@ Step-by-step explanation of the workflow.
 3. **Light pastel rect backgrounds** - For workflow phases
 4. **Semantic color coding** - Consistent colors for similar phases
 5. **Descriptive note titles** - Clear phase descriptions
+6. **All arrows inside rect sections** - Ensures proper background visibility
 
 ### Class Diagrams
 
@@ -501,6 +543,7 @@ Step-by-step explanation of the workflow.
 3. **Dark text always** - Maximum readability
 4. **Clear relationships** - Use appropriate arrow types
 5. **Style all classes** - Don't leave default styling
+6. **Add relationship descriptions** - Explain key connections after diagram
 
 ### Code Examples
 
@@ -553,9 +596,12 @@ Before finalizing documentation, verify:
 - [ ] Testing instructions included
 
 ### Architecture Document Checklist
+- [ ] **Component/class diagram is FIRST** in Architecture Diagrams section
+- [ ] Component diagram includes relationship descriptions
 - [ ] Architecture diagrams present
 - [ ] Sequence diagrams use correct theme
 - [ ] All text is readable (black on light or gray backgrounds)
+- [ ] All arrows are inside colored rect sections
 - [ ] Colored rect sections have semantic meaning
 - [ ] Component descriptions complete
 - [ ] Design decisions documented
@@ -571,6 +617,7 @@ Before finalizing documentation, verify:
 - [ ] All text is readable in both light and dark mode
 - [ ] Semantic color coding applied
 - [ ] No default Mermaid styling visible
+- [ ] All sequence arrows are inside rect sections
 
 ---
 
@@ -578,25 +625,33 @@ Before finalizing documentation, verify:
 
 ### Excellent Examples to Follow
 
-1. **Alpine.Version/doc/ARCHITECTURE.md**
+1. **CSharp.Aspire.Dev/doc/ARCHITECTURE.md**
+   - ? Component diagram FIRST showing all actors and relations
+   - Comprehensive architecture documentation
+   - Well-structured sequence diagrams with proper theme
+   - Dark gray arrows with black text for perfect visibility
+   - Semantic rect coloring for workflow phases
+   - All arrows inside colored rect sections
+
+2. **CSharp.ProjectDependency5/doc/ARCHITECTURE.md**
+   - Comprehensive architecture documentation
+   - Well-structured sequence diagrams
+   - Proper theme configuration
+   - Certificate generation flow as detailed diagram
+
+3. **Alpine.Version/doc/ARCHITECTURE.md**
    - Comprehensive architecture documentation
    - Well-structured sequence diagrams with proper theme
    - Dark gray arrows with black text for perfect visibility
    - Semantic rect coloring for workflow phases
 
-2. **CSharp.Aspire.Dev/doc/ARCHITECTURE.md**
-   - Comprehensive architecture documentation
-   - Well-structured sequence diagrams
-   - Proper theme configuration
-   - Semantic rect coloring
-
-3. **Object.Biz/doc/ARCHITECTURE.md**
+4. **Object.Biz/doc/ARCHITECTURE.md**
    - Detailed pattern documentation
    - Clear class diagrams
    - Usage examples
    - Best practices section
 
-4. **_Scripts/README.md**
+5. **_Scripts/README.md**
    - Complete TOC with links
    - Multiple sequence diagrams
    - Class diagram
@@ -621,7 +676,7 @@ Before finalizing documentation, verify:
 
 ---
 
-**Version:** 2.0  
+**Version:** 3.0  
 **Last Updated:** January 2025  
 **Maintained By:** FrenchExDev.Net Team  
 **Repository:** https://github.com/FrenchExDev/FrenchExDev.Net

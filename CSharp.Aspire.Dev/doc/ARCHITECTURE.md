@@ -33,6 +33,84 @@ CSharp.Aspire.Dev is a .NET 9 development infrastructure library that simplifies
 
 ## Architecture Diagrams
 
+### Component Architecture - Key Actors and Relations
+
+```mermaid
+graph TB
+    subgraph "Development Environment"
+        Dev[Developer]
+        IDE[IDE/Terminal]
+    end
+    
+    subgraph "CSharp.Aspire.Dev Library"
+        DevAppHost[DevAppHost<br/>Main Orchestrator]
+        DnsConfig[DnsConfiguration<br/>Domain & Port Mapping]
+        CertManager[Certificate Manager<br/>SSL Setup]
+        LaunchHelper[LaunchSettingsHelper<br/>Config Manager]
+    end
+    
+    subgraph "System Resources"
+        HostsFile[Hosts File<br/>/etc/hosts or C:\Windows\System32\drivers\etc\hosts]
+        CertStore[Certificate Store<br/>System Trust Store]
+        LaunchSettings[launchSettings.json<br/>Project Configuration]
+    end
+    
+    subgraph ".NET Aspire Infrastructure"
+        AspireBuilder[DistributedApplicationBuilder<br/>Service Orchestrator]
+        Dashboard[Aspire Dashboard<br/>Monitoring UI]
+    end
+    
+    subgraph "Application Projects"
+        API[API Service<br/>REST Endpoints]
+        Viz2[Viz2 Service<br/>Blazor UI]
+        Worker3[Worker3 Service<br/>Background Worker]
+    end
+    
+    Dev -->|1. dotnet run| IDE
+    IDE -->|2. Execute| DevAppHost
+    
+    DevAppHost -->|3. Load Config| DnsConfig
+    DevAppHost -->|4. Setup Certificates| CertManager
+    CertManager -->|5. Install| CertStore
+    
+    DevAppHost -->|6. Update DNS| HostsFile
+    DevAppHost -->|7. Configure| LaunchHelper
+    LaunchHelper -->|8. Write| LaunchSettings
+    
+    DevAppHost -->|9. Register Projects| AspireBuilder
+    AspireBuilder -->|10. Start Services| API
+    AspireBuilder -->|10. Start Services| Viz2
+    AspireBuilder -->|10. Start Services| Worker3
+    
+    AspireBuilder -->|11. Launch| Dashboard
+    Dashboard -.->|Monitor| API
+    Dashboard -.->|Monitor| Viz2
+    Dashboard -.->|Monitor| Worker3
+    
+    API -->|HTTPS| DnsConfig
+    Viz2 -->|HTTPS| DnsConfig
+    Worker3 -->|HTTPS| DnsConfig
+    
+    Viz2 -->|HTTP Requests| API
+    API -->|Commands| Worker3
+    
+    style DevAppHost fill:#4a90e2,stroke:#2d5a8c,stroke-width:3px,color:#000
+    style DnsConfig fill:#7cb342,stroke:#558b2f,stroke-width:2px,color:#000
+    style CertManager fill:#fb8c00,stroke:#e65100,stroke-width:2px,color:#000
+    style AspireBuilder fill:#ab47bc,stroke:#7b1fa2,stroke-width:2px,color:#000
+```
+
+**Key Relationships:**
+- **Developer** initiates the workflow through the IDE/Terminal
+- **DevAppHost** orchestrates all setup activities as the main coordinator
+- **DnsConfiguration** manages domain mappings and certificate paths
+- **Certificate Manager** handles SSL certificate generation and installation
+- **LaunchSettingsHelper** updates launchSettings.json with environment variables
+- **System Resources** (hosts file, certificate store, launch settings) are modified during setup
+- **Aspire Builder** receives registered projects and manages their lifecycle
+- **Application Projects** (API, Viz2, Worker3) are configured with HTTPS URLs and started
+- **Aspire Dashboard** monitors all running services
+
 ### DevAppHost Setup Sequence
 
 ```mermaid
@@ -145,73 +223,6 @@ sequenceDiagram
     Aspire->>Aspire: Start all registered projects
     Aspire-->>Dev: Dashboard URL + Service URLs
     end
-```
-
-### Key Actors and Component Interaction
-
-```mermaid
-graph TB
-    subgraph "Development Environment"
-        Dev[Developer]
-        IDE[IDE/Terminal]
-    end
-    
-    subgraph "CSharp.Aspire.Dev Library"
-        DevAppHost[DevAppHost<br/>Main Orchestrator]
-        DnsConfig[DnsConfiguration<br/>Domain & Port Mapping]
-        CertManager[Certificate Manager<br/>SSL Setup]
-        LaunchHelper[LaunchSettingsHelper<br/>Config Manager]
-    end
-    
-    subgraph "System Resources"
-        HostsFile[Hosts File<br/>/etc/hosts or C:\Windows\System32\drivers\etc\hosts]
-        CertStore[Certificate Store<br/>System Trust Store]
-        LaunchSettings[launchSettings.json<br/>Project Configuration]
-    end
-    
-    subgraph ".NET Aspire Infrastructure"
-        AspireBuilder[DistributedApplicationBuilder<br/>Service Orchestrator]
-        Dashboard[Aspire Dashboard<br/>Monitoring UI]
-    end
-    
-    subgraph "Application Projects"
-        API[API Service<br/>REST Endpoints]
-        Viz2[Viz2 Service<br/>Blazor UI]
-        Worker3[Worker3 Service<br/>Background Worker]
-    end
-    
-    Dev -->|1. dotnet run| IDE
-    IDE -->|2. Execute| DevAppHost
-    
-    DevAppHost -->|3. Load Config| DnsConfig
-    DevAppHost -->|4. Setup Certificates| CertManager
-    CertManager -->|5. Install| CertStore
-    
-    DevAppHost -->|6. Update DNS| HostsFile
-    DevAppHost -->|7. Configure| LaunchHelper
-    LaunchHelper -->|8. Write| LaunchSettings
-    
-    DevAppHost -->|9. Register Projects| AspireBuilder
-    AspireBuilder -->|10. Start Services| API
-    AspireBuilder -->|10. Start Services| Viz2
-    AspireBuilder -->|10. Start Services| Worker3
-    
-    AspireBuilder -->|11. Launch| Dashboard
-    Dashboard -.->|Monitor| API
-    Dashboard -.->|Monitor| Viz2
-    Dashboard -.->|Monitor| Worker3
-    
-    API -->|HTTPS| DnsConfig
-    Viz2 -->|HTTPS| DnsConfig
-    Worker3 -->|HTTPS| DnsConfig
-    
-    Viz2 -->|HTTP Requests| API
-    API -->|Commands| Worker3
-    
-    style DevAppHost fill:#4a90e2,stroke:#2d5a8c,stroke-width:3px,color:#000
-    style DnsConfig fill:#7cb342,stroke:#558b2f,stroke-width:2px,color:#000
-    style CertManager fill:#fb8c00,stroke:#e65100,stroke-width:2px,color:#000
-    style AspireBuilder fill:#ab47bc,stroke:#7b1fa2,stroke-width:2px,color:#000
 ```
 
 ### Certificate Generation Flow
