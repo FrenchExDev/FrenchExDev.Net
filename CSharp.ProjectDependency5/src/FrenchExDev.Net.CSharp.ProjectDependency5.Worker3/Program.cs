@@ -29,5 +29,5 @@ await app.RunAsync();
 [ApiController]
 public class IndexController : ControllerBase
 {
-    [HttpGet("/")] public IActionResult Index() => Ok("hello");
+    [HttpGet("/")] public IActionResult Index() => Ok("hello from " + Environment.GetEnvironmentVariable("ASPIRE_INSTANCE_ID"));
 }

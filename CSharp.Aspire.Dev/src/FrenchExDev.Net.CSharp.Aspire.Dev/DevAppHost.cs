@@ -868,22 +868,22 @@ public class DevAppHost : IDevAppHost
     /// not specified, no additional configuration is applied.</param>
     /// <returns>The current <see cref="IDevAppHost"/> instance with the project resource instance configured.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the distributed application builder is not initialized.</exception>
-    public IDevAppHost WithProjectInstance(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name, Action<IResourceBuilder<ProjectResource>>? configuration = null)
+    public IDevAppHost WithProjectInstance(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name, Action<IResourceBuilder<ProjectResource>>? configuration = null, int? replicas = 1)
     {
-        var aspNetCoreUrl = DnsConfiguration.GetAspNetCoreUrl(name);
+        IResourceBuilder<ProjectResource> resource = resourceBuilder(_builder ?? throw new InvalidOperationException("_builder is null"));
 
-        IResourceBuilder<ProjectResource> r = resourceBuilder(_builder ?? throw new InvalidOperationException("_builder is null"))
+        resource.WithReplicas(replicas ?? 1);
+
+        configuration?.Invoke(resource);
+
+        resource
             .WithEnvironment("DOTNET_LAUNCH_PROFILE", "local-dev-https")
             .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development")
             .WithEnvironment("DOTNET_ENVIRONMENT", "Development")
             .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__Path", DnsConfiguration.CertPathOrDie())
             .WithEnvironment("ASPNETCORE_Kestrel__Certificates__Default__KeyPath", DnsConfiguration.KeyPathOrDie())
-            .WithEnvironment("ASPNETCORE_URLS", aspNetCoreUrl)
-            .WithEnvironment("CustomDomain__Fqdn", DnsConfiguration.GetUrl(name))
-            .WithEnvironment("CustomDomain__Port", DnsConfiguration.Ports[name].ToString())
-            .WithUrl(DnsConfiguration.GetUrl(name, DnsConfiguration.Ports[name]));
-
-        configuration?.Invoke(r);
+            .WithUrl($"https://{name}.{DnsConfiguration.Domain}")
+            ;
 
         return this;
     }

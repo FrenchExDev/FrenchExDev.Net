@@ -1,8 +1,16 @@
 ﻿using FrenchExDev.Net.CSharp.Object.Result;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace FrenchExDev.Net.CSharp.Aspire.Dev;
+
+public record DnsConfiguration2
+{
+    public string Domain { get; set; }
+
+    public string GetInstanceUrl(string appName, int instance)
+    {
+        return $"https://{appName}-instance{instance}.{Domain}";
+    }
+}
 
 /// <summary>
 /// Represents the configuration settings for DNS and SSL certificate management, including domain information,
@@ -236,7 +244,7 @@ public interface IDevAppHost
     /// <param name="name">The unique name to assign to the project resource within the application. Cannot be null or empty.</param>
     /// <param name="configuration">An optional delegate to further configure the project resource builder before the resource is added.</param>
     /// <returns>An updated distributed application host instance that includes the configured project resource.</returns>
-    IDevAppHost WithProjectInstance(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name, Action<IResourceBuilder<ProjectResource>>? configuration = null);
+    IDevAppHost WithProjectInstance(Func<IDistributedApplicationBuilder, IResourceBuilder<ProjectResource>> resourceBuilder, string name, Action<IResourceBuilder<ProjectResource>>? configuration = null, int? replicas = 1);
 
     /// <summary>
     /// Builds and returns a configured distributed application instance based on the current settings.
