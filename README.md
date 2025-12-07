@@ -1,10 +1,10 @@
-# FrenchExDev.Net
+﻿# FrenchExDev.Net
 
 A collection of .NET libraries for building robust, type-safe applications with explicit error handling and object construction patterns.
 
-## ?? Projects
+## Projects
 
-### CSharp.Object.Builder
+### 🎯 CSharp.Object.Builder
 
 A lightweight .NET library implementing the **Builder pattern** with built-in validation, deferred reference resolution, and failure tracking.
 
@@ -28,11 +28,11 @@ if (result.IsSuccess<Person>())
 }
 ```
 
-?? [Full Documentation](./CSharp.Object.Builder/README.md) | ?? [License](./CSharp.Object.Builder/LICENSE.md)
+[Full Documentation](./CSharp.Object.Builder/README.md) | [License](./CSharp.Object.Builder/LICENSE.md)
 
 ---
 
-### CSharp.Object.Result
+### 🎯 CSharp.Object.Result
 
 A lightweight .NET library for representing operation outcomes as `Result` and `Result<T>` types, enabling explicit handling of success and failure states without throwing exceptions.
 
@@ -58,26 +58,26 @@ success
 string? valueOrNull = success.ObjectOrNull();
 ```
 
-?? [Full Documentation](./CSharp.Object.Result/README.md) | ?? [License](./CSharp.Object.Result/LICENSE.md)
+[Full Documentation](./CSharp.Object.Result/README.md) | [License](./CSharp.Object.Result/LICENSE.md)
 
 ---
 
-## ??? Requirements
+## Requirements
 
 - .NET 10.0 or later
 
-## ?? Licensing
+## Licensing
 
 Both projects are licensed under the same terms:
 
-### Educational Use ?
+### Educational Use
 Free to use for:
 - Reading and studying the source code
 - Academic projects
 - Personal learning and experimentation
 - Referencing in educational materials
 
-### Production Use ??
+### Production Use
 **Requires a separate license agreement.** Contact the author for:
 - Production environment deployments
 - Commercial products or services
@@ -91,27 +91,26 @@ For production licensing inquiries:
 
 ---
 
-## ?? Repository Structure
+## 📦 Repository Structure
 
 ```
 FrenchExDev.Net/
-??? CSharp.Object.Builder/
-?   ??? src/
-?   ?   ??? FrenchExDev.Net.CSharp.Object.Builder/          # Core library
-?   ?   ??? FrenchExDev.Net.CSharp.Object.Builder.Testing/  # Testing utilities
-?   ??? test/
-?   ?   ??? FrenchExDev.Net.CSharp.Object.Builder.Tests/    # Unit tests
-?   ??? README.md
-?   ??? LICENSE.md
-?
-??? CSharp.Object.Result/
-?   ??? src/
-?   ?   ??? FrenchExDev.Net.CSharp.Object.Result/           # Core library
-?   ?   ??? FrenchExDev.Net.CSharp.Object.Result.Testing/   # Testing utilities
-?   ??? test/
-?   ?   ??? FrenchExDev.Net.CSharp.Object.Result.Tests/     # Unit tests
-?   ??? README.md
-?   ??? LICENSE.md
-?
-??? README.md
-```
++-- CSharp.Object.Builder/
+|   +-- src/
+|   |   +-- FrenchExDev.Net.CSharp.Object.Builder/          # Core library
+|   |   +-- FrenchExDev.Net.CSharp.Object.Builder.Testing/  # Testing utilities
+|   +-- test/
+|   |   +-- FrenchExDev.Net.CSharp.Object.Builder.Tests/    # Unit tests
+|   +-- README.md
+|   +-- LICENSE.md
+|
++-- CSharp.Object.Result/
+|   +-- src/
+|   |   +-- FrenchExDev.Net.CSharp.Object.Result/           # Core library
+|   |   +-- FrenchExDev.Net.CSharp.Object.Result.Testing/   # Testing utilities
+|   +-- test/
+|   |   +-- FrenchExDev.Net.CSharp.Object.Result.Tests/     # Unit tests
+|   +-- README.md
+|   +-- LICENSE.md
+|
++-- README.md
