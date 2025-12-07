@@ -1,4 +1,5 @@
 ﻿# Packer
+[![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 
 A comprehensive .NET solution for working with [HashiCorp Packer](https://www.packer.io/) - the open-source tool for creating identical machine images for multiple platforms from a single source configuration.
 

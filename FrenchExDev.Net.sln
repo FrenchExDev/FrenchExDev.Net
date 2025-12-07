@@ -67,8 +67,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{843A965C-9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{29A9C378-A74D-F554-8D0B-3165323AE136}"
 	ProjectSection(SolutionItems) = preProject
-		CSharp.Object.Builder\README.md = CSharp.Object.Builder\README.md
 		CSharp.Object.Builder\LICENSE.md = CSharp.Object.Builder\LICENSE.md
+		CSharp.Object.Builder\README.md = CSharp.Object.Builder\README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Builder", "CSharp.Object.Builder\src\FrenchExDev.Net.CSharp.Object.Builder\FrenchExDev.Net.CSharp.Object.Builder.csproj", "{8B2DFE86-057B-4D06-8AA2-B57FCD52C737}"
@@ -100,6 +100,24 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Packer.Bundle.Tests", "Packer\test\FrenchExDev.Net.Packer.Bundle.Tests\FrenchExDev.Net.Packer.Bundle.Tests.csproj", "{97A9E63A-BC97-451C-9734-B140481521CA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Packer.Testing", "Packer\src\FrenchExDev.Net.Packer.Testing\FrenchExDev.Net.Packer.Testing.csproj", "{7201B447-334A-4EE5-A9A8-FC248CA35EDA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Vagrant", "Vagrant", "{34F12BB8-6D95-3872-7811-274C7BE05DA9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E4A57414-6963-C637-9618-3BDCE8D9D6B1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{9C911C38-6A80-7882-815C-A9A9A66E41C8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{DAA42968-1BAF-78F1-9999-9ACA106EFEE1}"
+	ProjectSection(SolutionItems) = preProject
+		Vagrant\LICENSE.md = Vagrant\LICENSE.md
+		Vagrant\README.md = Vagrant\README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Vagrant", "Vagrant\src\FrenchExDev.Net.Vagrant\FrenchExDev.Net.Vagrant.csproj", "{E241E5A0-366C-46D2-B995-CF4BB4D4801D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Vagrant.Tests", "Vagrant\test\FrenchExDev.Net.Vagrant.Tests\FrenchExDev.Net.Vagrant.Tests.csproj", "{8476AA9D-7FE4-428B-9FEE-677659A7EC2D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Vagrant.Testing", "Vagrant\src\FrenchExDev.Net.Vagrant.Testing\FrenchExDev.Net.Vagrant.Testing.csproj", "{73915BC8-377B-49EE-936D-4E045CF772E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -155,6 +173,18 @@ Global
 		{7201B447-334A-4EE5-A9A8-FC248CA35EDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7201B447-334A-4EE5-A9A8-FC248CA35EDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7201B447-334A-4EE5-A9A8-FC248CA35EDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E241E5A0-366C-46D2-B995-CF4BB4D4801D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E241E5A0-366C-46D2-B995-CF4BB4D4801D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E241E5A0-366C-46D2-B995-CF4BB4D4801D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E241E5A0-366C-46D2-B995-CF4BB4D4801D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8476AA9D-7FE4-428B-9FEE-677659A7EC2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8476AA9D-7FE4-428B-9FEE-677659A7EC2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8476AA9D-7FE4-428B-9FEE-677659A7EC2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8476AA9D-7FE4-428B-9FEE-677659A7EC2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73915BC8-377B-49EE-936D-4E045CF772E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73915BC8-377B-49EE-936D-4E045CF772E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73915BC8-377B-49EE-936D-4E045CF772E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73915BC8-377B-49EE-936D-4E045CF772E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -183,6 +213,12 @@ Global
 		{085AAACB-282F-49F3-988F-02C8C575885D} = {FF13334C-99B5-34AE-80FB-6C1C2942C1E0}
 		{97A9E63A-BC97-451C-9734-B140481521CA} = {FF13334C-99B5-34AE-80FB-6C1C2942C1E0}
 		{7201B447-334A-4EE5-A9A8-FC248CA35EDA} = {42F313A5-7F0B-6B53-7D78-A8EE1E0FF7D9}
+		{E4A57414-6963-C637-9618-3BDCE8D9D6B1} = {34F12BB8-6D95-3872-7811-274C7BE05DA9}
+		{9C911C38-6A80-7882-815C-A9A9A66E41C8} = {34F12BB8-6D95-3872-7811-274C7BE05DA9}
+		{DAA42968-1BAF-78F1-9999-9ACA106EFEE1} = {34F12BB8-6D95-3872-7811-274C7BE05DA9}
+		{E241E5A0-366C-46D2-B995-CF4BB4D4801D} = {E4A57414-6963-C637-9618-3BDCE8D9D6B1}
+		{8476AA9D-7FE4-428B-9FEE-677659A7EC2D} = {9C911C38-6A80-7882-815C-A9A9A66E41C8}
+		{73915BC8-377B-49EE-936D-4E045CF772E2} = {E4A57414-6963-C637-9618-3BDCE8D9D6B1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B19F9886-3230-4113-8025-DBBEC1B42A98}

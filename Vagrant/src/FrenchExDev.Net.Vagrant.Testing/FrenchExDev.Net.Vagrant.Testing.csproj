@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Shouldly" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\FrenchExDev.Net.Vagrant\FrenchExDev.Net.Vagrant.csproj" />
+		<ProjectReference Include="..\..\..\CSharp.Object.Builder\src\FrenchExDev.Net.CSharp.Object.Builder.Testing\FrenchExDev.Net.CSharp.Object.Builder.Testing.csproj" />
+	</ItemGroup>
+
+</Project>
