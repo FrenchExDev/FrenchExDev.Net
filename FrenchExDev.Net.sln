@@ -1,0 +1,135 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11222.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSharp.Object.Result", "CSharp.Object.Result", "{287F0B50-4C5C-1CC2-B026-749EC2F74D97}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSharp.Object.Builder", "CSharp.Object.Builder", "{01123BFA-39F8-82AA-BEE2-C8590ADC3BCE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C57C9E2B-4250-3CA3-3578-EEE9B58894AA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CC85DE59-291D-C490-5A3E-9B0AE6EDB7AC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Result", "CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result\FrenchExDev.Net.CSharp.Object.Result.csproj", "{5032CBC4-2415-4781-A940-6C5FD1A49697}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Result.Tests", "CSharp.Object.Result\test\FrenchExDev.Net.CSharp.Object.Result.Tests\FrenchExDev.Net.CSharp.Object.Result.Tests.csproj", "{50312124-E029-44F8-A07E-9AA489400B12}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Éléments de solution", ".Éléments de solution", "{BBCF478E-18F2-8C9E-2792-4CFE78E54314}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		Directory.Builds.props = Directory.Builds.props
+		Directory.Packages.props = Directory.Packages.props
+		dotnet-tools.json = dotnet-tools.json
+		global.json = global.json
+		LICENSE.md = LICENSE.md
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Result.Testing", "CSharp.Object.Result\src\FrenchExDev.Net.CSharp.Object.Result.Testing\FrenchExDev.Net.CSharp.Object.Result.Testing.csproj", "{791B3C44-3E6D-42E5-B42B-AFDFF6E9591B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{AB1F3F57-E2A7-329F-4462-1A9F46EDC1C1}"
+	ProjectSection(SolutionItems) = preProject
+		CSharp.Object.Result\LICENSE.md = CSharp.Object.Result\LICENSE.md
+		CSharp.Object.Result\README.md = CSharp.Object.Result\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Scripts", ".Scripts", "{8B32C715-B0AF-2D68-DEAA-FC746BCA2AE5}"
+	ProjectSection(SolutionItems) = preProject
+		.Scripts\.PSScriptAnalyzer.settings.psd1 = .Scripts\.PSScriptAnalyzer.settings.psd1
+		.Scripts\Analyze-LatestCoverage.ps1 = .Scripts\Analyze-LatestCoverage.ps1
+		.Scripts\ConvertTo-CoverageJson.ps1 = .Scripts\ConvertTo-CoverageJson.ps1
+		.Scripts\Parse-LowestCoverage.ps1 = .Scripts\Parse-LowestCoverage.ps1
+		.Scripts\README.md = .Scripts\README.md
+		.Scripts\Run-Coverage.ps1 = .Scripts\Run-Coverage.ps1
+		.Scripts\Run-SolutionTests.ps1 = .Scripts\Run-SolutionTests.ps1
+		.Scripts\Run-TestProject.ps1 = .Scripts\Run-TestProject.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Module", "Module", "{A2792646-DCC4-F332-B13C-87E9C84B180B}"
+	ProjectSection(SolutionItems) = preProject
+		.Scripts\Module\Format-StatusTable.ps1 = .Scripts\Module\Format-StatusTable.ps1
+		.Scripts\Module\Get-CoverageSummary.ps1 = .Scripts\Module\Get-CoverageSummary.ps1
+		.Scripts\Module\Get-SolutionTestProjects.ps1 = .Scripts\Module\Get-SolutionTestProjects.ps1
+		.Scripts\Module\Inspect-Coverage.ps1 = .Scripts\Module\Inspect-Coverage.ps1
+		.Scripts\Module\Module.psm1 = .Scripts\Module\Module.psm1
+		.Scripts\Module\Run-SolutionTests.ps1 = .Scripts\Module\Run-SolutionTests.ps1
+		.Scripts\Module\Run-TestProject.ps1 = .Scripts\Module\Run-TestProject.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{0D17FFF5-DB56-D4A5-256B-D955B63B770D}"
+	ProjectSection(SolutionItems) = preProject
+		.Scripts\Module\Resources\coverage-viewer.html = .Scripts\Module\Resources\coverage-viewer.html
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{40ECD2B9-FB8F-E79E-EA28-2CABC16EE4FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{843A965C-9324-C5FF-D3FF-3DB2970E0061}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{29A9C378-A74D-F554-8D0B-3165323AE136}"
+	ProjectSection(SolutionItems) = preProject
+		CSharp.Object.Builder\README.md = CSharp.Object.Builder\README.md
+		CSharp.Object.Builder\LICENSE.md = CSharp.Object.Builder\LICENSE.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Builder", "CSharp.Object.Builder\src\FrenchExDev.Net.CSharp.Object.Builder\FrenchExDev.Net.CSharp.Object.Builder.csproj", "{8B2DFE86-057B-4D06-8AA2-B57FCD52C737}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Builder.Testing", "CSharp.Object.Builder\src\FrenchExDev.Net.CSharp.Object.Builder.Testing\FrenchExDev.Net.CSharp.Object.Builder.Testing.csproj", "{4C03C673-6B98-488C-A0FE-DE0B17E6789C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Builder.Tests", "CSharp.Object.Builder\test\FrenchExDev.Net.CSharp.Object.Builder.Tests\FrenchExDev.Net.CSharp.Object.Builder.Tests.csproj", "{E9C8FAE0-AC26-48F6-AE31-E855080B3E06}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5032CBC4-2415-4781-A940-6C5FD1A49697}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5032CBC4-2415-4781-A940-6C5FD1A49697}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5032CBC4-2415-4781-A940-6C5FD1A49697}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5032CBC4-2415-4781-A940-6C5FD1A49697}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50312124-E029-44F8-A07E-9AA489400B12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50312124-E029-44F8-A07E-9AA489400B12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50312124-E029-44F8-A07E-9AA489400B12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50312124-E029-44F8-A07E-9AA489400B12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{791B3C44-3E6D-42E5-B42B-AFDFF6E9591B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{791B3C44-3E6D-42E5-B42B-AFDFF6E9591B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{791B3C44-3E6D-42E5-B42B-AFDFF6E9591B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{791B3C44-3E6D-42E5-B42B-AFDFF6E9591B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B2DFE86-057B-4D06-8AA2-B57FCD52C737}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B2DFE86-057B-4D06-8AA2-B57FCD52C737}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B2DFE86-057B-4D06-8AA2-B57FCD52C737}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B2DFE86-057B-4D06-8AA2-B57FCD52C737}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C03C673-6B98-488C-A0FE-DE0B17E6789C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C03C673-6B98-488C-A0FE-DE0B17E6789C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C03C673-6B98-488C-A0FE-DE0B17E6789C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C03C673-6B98-488C-A0FE-DE0B17E6789C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9C8FAE0-AC26-48F6-AE31-E855080B3E06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9C8FAE0-AC26-48F6-AE31-E855080B3E06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9C8FAE0-AC26-48F6-AE31-E855080B3E06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9C8FAE0-AC26-48F6-AE31-E855080B3E06}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C57C9E2B-4250-3CA3-3578-EEE9B58894AA} = {287F0B50-4C5C-1CC2-B026-749EC2F74D97}
+		{CC85DE59-291D-C490-5A3E-9B0AE6EDB7AC} = {287F0B50-4C5C-1CC2-B026-749EC2F74D97}
+		{5032CBC4-2415-4781-A940-6C5FD1A49697} = {C57C9E2B-4250-3CA3-3578-EEE9B58894AA}
+		{50312124-E029-44F8-A07E-9AA489400B12} = {CC85DE59-291D-C490-5A3E-9B0AE6EDB7AC}
+		{791B3C44-3E6D-42E5-B42B-AFDFF6E9591B} = {C57C9E2B-4250-3CA3-3578-EEE9B58894AA}
+		{AB1F3F57-E2A7-329F-4462-1A9F46EDC1C1} = {287F0B50-4C5C-1CC2-B026-749EC2F74D97}
+		{A2792646-DCC4-F332-B13C-87E9C84B180B} = {8B32C715-B0AF-2D68-DEAA-FC746BCA2AE5}
+		{0D17FFF5-DB56-D4A5-256B-D955B63B770D} = {A2792646-DCC4-F332-B13C-87E9C84B180B}
+		{40ECD2B9-FB8F-E79E-EA28-2CABC16EE4FD} = {01123BFA-39F8-82AA-BEE2-C8590ADC3BCE}
+		{843A965C-9324-C5FF-D3FF-3DB2970E0061} = {01123BFA-39F8-82AA-BEE2-C8590ADC3BCE}
+		{29A9C378-A74D-F554-8D0B-3165323AE136} = {01123BFA-39F8-82AA-BEE2-C8590ADC3BCE}
+		{8B2DFE86-057B-4D06-8AA2-B57FCD52C737} = {40ECD2B9-FB8F-E79E-EA28-2CABC16EE4FD}
+		{4C03C673-6B98-488C-A0FE-DE0B17E6789C} = {40ECD2B9-FB8F-E79E-EA28-2CABC16EE4FD}
+		{E9C8FAE0-AC26-48F6-AE31-E855080B3E06} = {843A965C-9324-C5FF-D3FF-3DB2970E0061}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B19F9886-3230-4113-8025-DBBEC1B42A98}
+	EndGlobalSection
+EndGlobal
