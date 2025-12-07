@@ -3,7 +3,6 @@ using System.Diagnostics;
 
 namespace FrenchExDev.Net.CSharp.Object.Builder;
 
-
 /// <summary>
 /// Lightweight wrapper for a validation/build failure payload (exception, nested dictionary, message, etc.).
 /// </summary>

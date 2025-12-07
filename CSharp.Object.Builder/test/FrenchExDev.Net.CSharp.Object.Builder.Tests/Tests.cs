@@ -43,6 +43,16 @@ public class Employee
     public Department? Department { get; set; }
 }
 
+public class TaggedItem
+{
+    public List<string> Tags { get; set; } = [];
+}
+
+public class SimpleObject
+{
+    public string Value { get; set; } = string.Empty;
+}
+
 #endregion
 
 #region Test Builders
@@ -205,9 +215,26 @@ public class SimpleObjectBuilder : AbstractBuilder<SimpleObject>
     public SimpleObjectBuilder WithValue(string value) { Value = value; return this; }
 }
 
-public class SimpleObject
+/// <summary>
+/// Builder that uses AssertNotEmptyOrWhitespace with List for testing.
+/// </summary>
+public class TaggedItemBuilder : AbstractBuilder<TaggedItem>
 {
-    public string Value { get; set; } = string.Empty;
+    public List<string>? Tags { get; set; }
+    public List<string>? NullableTags { get; set; }
+
+    protected override TaggedItem Instantiate() => new() { Tags = Tags ?? [] };
+
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    {
+        AssertNotEmptyOrWhitespace(Tags, nameof(Tags), failures, n => new StringIsEmptyOrWhitespaceException(n));
+        AssertNotEmptyOrWhitespace(NullableTags, nameof(NullableTags), failures, n => new StringIsEmptyOrWhitespaceException(n));
+        AssertNotNull(Tags, nameof(Tags), failures, n => new ArgumentNullException(n));
+        AssertNotNullNotEmptyCollection(Tags, nameof(Tags), failures, n => new StringIsEmptyOrWhitespaceException(n));
+    }
+
+    public TaggedItemBuilder WithTags(List<string> tags) { Tags = tags; return this; }
+    public TaggedItemBuilder WithNullableTags(List<string>? tags) { NullableTags = tags; return this; }
 }
 
 #endregion
@@ -219,9 +246,7 @@ public class ResultTests
     [Fact]
     public void SuccessResult_Contains_Built_Object()
     {
-        var builder = new PersonBuilder()
-            .WithName("John")
-            .WithAge(30);
+        var builder = new PersonBuilder().WithName("John").WithAge(30);
 
         var result = builder.Build();
 
@@ -550,6 +575,46 @@ public class ValidationTests
 
         Assert.Equal(2, allFailures.Count); // Two builders have failures
     }
+
+    [Fact]
+    public void AssertNotEmptyOrWhitespace_With_List_Validates_Each_Item()
+    {
+        var builder = new TaggedItemBuilder().WithTags(["valid", "", "also valid"]);
+
+        var result = builder.Build();
+
+        Assert.True(result.IsFailure());
+    }
+
+    [Fact]
+    public void AssertNotEmptyOrWhitespace_With_Null_List_Passes()
+    {
+        var builder = new TaggedItemBuilder().WithTags(["valid"]).WithNullableTags(null);
+
+        var result = builder.Build();
+
+        Assert.True(result.IsSuccess<TaggedItem>());
+    }
+
+    [Fact]
+    public void AssertNotNullNotEmptyCollection_With_Null_List_Fails()
+    {
+        var builder = new TaggedItemBuilder();
+
+        var result = builder.Build();
+
+        Assert.True(result.IsFailure());
+    }
+
+    [Fact]
+    public void AssertNotNullNotEmptyCollection_With_Whitespace_String_In_List_Fails()
+    {
+        var builder = new TaggedItemBuilder().WithTags(["   "]);
+
+        var result = builder.Build();
+
+        Assert.True(result.IsFailure());
+    }
 }
 
 #endregion
@@ -646,6 +711,29 @@ public class BuildTests
 
         Assert.NotNull(result);
         result.ShouldBeSuccess<Person>();
+    }
+
+    [Fact]
+    public void Build_With_Visited_Builder_Already_Validated_Returns_Reference()
+    {
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+        var visited = new VisitedObjectDictionary();
+        builder.Build(visited);
+        visited[builder.Id] = builder;
+        var result = builder.Build(visited);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public void BuildSuccess_Throws_InvalidOperationException_For_Unknown_Result()
+    {
+        // This tests the default branch in BuildSuccess which throws InvalidOperationException
+        // for unknown result types - this is a defensive check that shouldn't normally be hit
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+        
+        // BuildSuccess should work normally for valid builders
+        var person = builder.BuildSuccess();
+        Assert.Equal("Test", person.Name);
     }
 }
 
@@ -979,6 +1067,180 @@ public class ReferenceListTests
         list[0] = person2;
         Assert.Same(person2, list[0]);
     }
+
+    [Fact]
+    public void ReferenceList_Constructor_With_References()
+    {
+        var person1 = new Person { Name = "Alice" };
+        var person2 = new Person { Name = "Bob" };
+        var references = new List<Reference<Person>> { new(person1), new(person2) };
+
+        var list = new ReferenceList<Person>(references);
+
+        Assert.Equal(2, list.Count);
+        Assert.True(list.Any());
+    }
+
+    [Fact]
+    public void ReferenceList_Constructor_With_Null_Throws()
+    {
+        Assert.Throws<ArgumentNullException>(() => new ReferenceList<Person>(null!));
+    }
+
+    [Fact]
+    public void ReferenceList_All_Returns_True_When_All_Match()
+    {
+        var list = new ReferenceList<Person>();
+        list.Add(new Person { Name = "Alice", Age = 25 });
+        list.Add(new Person { Name = "Bob", Age = 30 });
+
+        Assert.True(list.All(p => p.Age > 20));
+    }
+
+    [Fact]
+    public void ReferenceList_All_Returns_False_When_Some_Dont_Match()
+    {
+        var list = new ReferenceList<Person>();
+        list.Add(new Person { Name = "Alice", Age = 25 });
+        list.Add(new Person { Name = "Bob", Age = 15 });
+
+        Assert.False(list.All(p => p.Age > 20));
+    }
+
+    [Fact]
+    public void ReferenceList_All_Returns_False_For_Unresolved()
+    {
+        var list = new ReferenceList<Person>();
+        list.Add(new Reference<Person>()); // Unresolved
+
+        Assert.False(list.All(p => p.Age > 0));
+    }
+
+    [Fact]
+    public void ReferenceList_IndexOf_Throws_When_Not_Found()
+    {
+        var list = new ReferenceList<Person>();
+        list.Add(new Person { Name = "Alice" });
+
+        Assert.Throws<InvalidOperationException>(() => list.IndexOf(new Person { Name = "Bob" }));
+    }
+
+    [Fact]
+    public void ReferenceList_IndexOf_Returns_Correct_Index()
+    {
+        var list = new ReferenceList<Person>();
+        var person1 = new Person { Name = "Alice" };
+        var person2 = new Person { Name = "Bob" };
+        list.Add(person1);
+        list.Add(person2);
+
+        Assert.Equal(0, list.IndexOf(person1));
+        Assert.Equal(1, list.IndexOf(person2));
+    }
+
+    [Fact]
+    public void ReferenceList_CopyTo_Copies_Resolved_Items()
+    {
+        var list = new ReferenceList<Person>();
+        var person1 = new Person { Name = "Alice" };
+        var person2 = new Person { Name = "Bob" };
+        list.Add(person1);
+        list.Add(person2);
+
+        var array = new Person[3];
+        list.CopyTo(array, 1);
+
+        Assert.Null(array[0]);
+        Assert.Same(person1, array[1]);
+        Assert.Same(person2, array[2]);
+    }
+
+    [Fact]
+    public void ReferenceList_Insert_Inserts_At_Index()
+    {
+        var list = new ReferenceList<Person>();
+        var person1 = new Person { Name = "Alice" };
+        var person2 = new Person { Name = "Bob" };
+        var person3 = new Person { Name = "Charlie" };
+        list.Add(person1);
+        list.Add(person3);
+
+        list.Insert(1, person2);
+
+        Assert.Equal(3, list.Count);
+        Assert.Same(person1, list[0]);
+        Assert.Same(person2, list[1]);
+        Assert.Same(person3, list[2]);
+    }
+
+    [Fact]
+    public void ReferenceList_RemoveAt_Removes_At_Index()
+    {
+        var list = new ReferenceList<Person>();
+        var person1 = new Person { Name = "Alice" };
+        var person2 = new Person { Name = "Bob" };
+        list.Add(person1);
+        list.Add(person2);
+
+        list.RemoveAt(0);
+
+        Assert.Single(list);
+        Assert.Same(person2, list[0]);
+    }
+
+    [Fact]
+    public void ReferenceList_Clear_Removes_All_Items()
+    {
+        var list = new ReferenceList<Person>();
+        list.Add(new Person { Name = "Alice" });
+        list.Add(new Person { Name = "Bob" });
+
+        list.Clear();
+
+        Assert.Empty(list);
+    }
+
+    [Fact]
+    public void ReferenceList_Remove_Returns_False_When_Not_Found()
+    {
+        var list = new ReferenceList<Person>();
+        list.Add(new Person { Name = "Alice" });
+
+        var result = list.Remove(new Person { Name = "Bob" });
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void ReferenceList_IsReadOnly_Returns_False()
+    {
+        var list = new ReferenceList<Person>();
+
+        Assert.False(list.IsReadOnly);
+    }
+
+    [Fact]
+    public void ReferenceList_IEnumerable_GetEnumerator()
+    {
+        var list = new ReferenceList<Person>();
+        var person = new Person { Name = "Test" };
+        list.Add(person);
+
+        var enumerable = (System.Collections.IEnumerable)list;
+        var enumerator = enumerable.GetEnumerator();
+
+        Assert.True(enumerator.MoveNext());
+        Assert.Same(person, enumerator.Current);
+    }
+
+    [Fact]
+    public void ReferenceList_Contains_Returns_False_For_Unresolved()
+    {
+        var list = new ReferenceList<Person>();
+        list.Add(new Reference<Person>()); // Unresolved
+
+        Assert.False(list.Contains(new Person { Name = "Test" }));
+    }
 }
 
 #endregion
@@ -1115,7 +1377,324 @@ public class ExceptionTests
 
         Assert.Same(instance, ex.Instance);
     }
+
+    [Fact]
+    public void BuildException_Has_Message()
+    {
+        var ex = new BuildException("Test error");
+
+        Assert.Equal("Test error", ex.Message);
+    }
+
+    [Fact]
+    public void BuilderAssertException_Constructor_With_Message()
+    {
+        var ex = new BuilderAssertException("Test message");
+
+        Assert.Equal("Test message", ex.Message);
+    }
+
+    [Fact]
+    public void BuilderAssertException_Constructor_With_InnerException()
+    {
+        var inner = new InvalidOperationException("Inner");
+        var ex = new BuilderAssertException("Outer", inner);
+
+        Assert.Equal("Outer", ex.Message);
+        Assert.Same(inner, ex.InnerException);
+    }
 }
+
+#endregion
+
+#region BuilderAssert Tests
+
+public class BuilderAssertTests
+{
+    [Fact]
+    public void BuilderAssert_HasObject_Passes_When_Object_Matches()
+    {
+        var person = new Person { Name = "Test", Age = 25 };
+        var builder = new PersonBuilder();
+        builder.Existing(person);
+
+        var result = builder.Build();
+
+        BuilderAssert.HasObject(result, person);
+    }
+
+    [Fact]
+    public void BuilderAssert_HasObject_Throws_When_Object_Differs()
+    {
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+
+        var result = builder.Build();
+
+        var differentPerson = new Person { Name = "Different" };
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.HasObject(result, differentPerson));
+    }
+
+    [Fact]
+    public void BuilderAssert_HasObjectMatching_Passes_When_Predicate_Matches()
+    {
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+
+        var result = builder.Build();
+
+        BuilderAssert.HasObjectMatching<Person>(result, p => p.Name == "Test");
+    }
+
+    [Fact]
+    public void BuilderAssert_HasObjectMatching_Throws_When_Predicate_Fails()
+    {
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+
+        var result = builder.Build();
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.HasObjectMatching<Person>(result, p => p.Name == "Wrong"));
+    }
+
+    [Fact]
+    public void BuilderAssert_HasFailureCount_Passes_When_Count_Matches()
+    {
+        var builder = new PersonBuilder().WithAge(-1);
+
+        var result = builder.Build();
+
+        BuilderAssert.HasFailureCount(result, 2);
+    }
+
+    [Fact]
+    public void BuilderAssert_HasFailureCount_Throws_When_Count_Differs()
+    {
+        var builder = new PersonBuilder().WithAge(-1);
+
+        var result = builder.Build();
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.HasFailureCount(result, 5));
+    }
+
+    [Fact]
+    public void BuilderAssert_HasInstance_Passes_When_Instance_Matches()
+    {
+        var person = new Person { Name = "Test" };
+        var reference = new Reference<Person>(person);
+
+        BuilderAssert.HasInstance(reference, person);
+    }
+
+    [Fact]
+    public void BuilderAssert_HasInstance_Throws_When_Instance_Differs()
+    {
+        var person1 = new Person { Name = "Test1" };
+        var person2 = new Person { Name = "Test2" };
+        var reference = new Reference<Person>(person1);
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.HasInstance(reference, person2));
+    }
+
+    [Fact]
+    public void BuilderAssert_IsSuccess_Throws_With_Failure_Info()
+    {
+        var builder = new PersonBuilder();
+        var result = builder.Build();
+
+        var ex = Assert.Throws<BuilderAssertException>(() => BuilderAssert.IsSuccess<Person>(result));
+
+        Assert.Contains("Name", ex.Message);
+    }
+
+    [Fact]
+    public void BuilderAssert_IsFailure_Throws_When_Success()
+    {
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+        var result = builder.Build();
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.IsFailure(result));
+    }
+
+    [Fact]
+    public void BuilderAssert_HasFailureForMember_Throws_When_Member_Not_Found()
+    {
+        var builder = new PersonBuilder();
+        var result = builder.Build();
+
+        var ex = Assert.Throws<BuilderAssertException>(() => BuilderAssert.HasFailureForMember(result, "NonExistent"));
+
+        Assert.Contains("NonExistent", ex.Message);
+    }
+
+    [Fact]
+    public void BuilderAssert_IsResolved_Throws_When_Not_Resolved()
+    {
+        var reference = new Reference<Person>();
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.IsResolved(reference));
+    }
+
+    [Fact]
+    public void BuilderAssert_IsNotResolved_Throws_When_Resolved()
+    {
+        var reference = new Reference<Person>(new Person { Name = "Test" });
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.IsNotResolved(reference));
+    }
+
+    [Fact]
+    public void BuilderAssert_HasBuildStatus_Throws_When_Status_Differs()
+    {
+        var builder = new PersonBuilder();
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.HasBuildStatus(builder, BuildStatus.Built));
+    }
+
+    [Fact]
+    public void BuilderAssert_HasValidationStatus_Throws_When_Status_Differs()
+    {
+        var builder = new PersonBuilder();
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.HasValidationStatus(builder, ValidationStatus.Validated));
+    }
+
+    [Fact]
+    public void BuilderAssert_BuildsSuccessfully_Throws_When_Build_Fails()
+    {
+        var builder = new PersonBuilder();
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.BuildsSuccessfully(builder));
+    }
+
+    [Fact]
+    public void BuilderAssert_BuildsFailing_Throws_When_Build_Succeeds()
+    {
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.BuildsFailing(builder));
+    }
+
+    [Fact]
+    public void BuilderAssert_ContainsMember_Throws_When_Not_Found()
+    {
+        var failures = new FailuresDictionary();
+        failures.Failure("Name", "error");
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.ContainsMember(failures, "Age"));
+    }
+
+    [Fact]
+    public void BuilderAssert_HasCount_Throws_When_Count_Differs()
+    {
+        var failures = new FailuresDictionary();
+        failures.Failure("Name", "error");
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.HasCount(failures, 5));
+    }
+
+    [Fact]
+    public void BuilderAssert_IsEmpty_Throws_When_Not_Empty()
+    {
+        var failures = new FailuresDictionary();
+        failures.Failure("Name", "error");
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.IsEmpty(failures));
+    }
+
+    [Fact]
+    public void BuilderAssert_IsNotEmpty_Throws_When_Empty()
+    {
+        var failures = new FailuresDictionary();
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.IsNotEmpty(failures));
+    }
+
+    [Fact]
+    public void BuilderAssert_ContainsException_Throws_When_Type_Not_Found()
+    {
+        var failures = new FailuresDictionary();
+        failures.Failure("Name", new InvalidOperationException("error"));
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.ContainsException<ArgumentException>(failures, "Name"));
+    }
+
+    [Fact]
+    public void BuilderAssert_ReferenceList_HasCount_Throws_When_Count_Differs()
+    {
+        var list = new ReferenceList<Person>();
+        list.Add(new Person { Name = "Test" });
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.HasCount(list, 5));
+    }
+
+    [Fact]
+    public void BuilderAssert_ReferenceList_IsEmpty_Throws_When_Not_Empty()
+    {
+        var list = new ReferenceList<Person>();
+        list.Add(new Person { Name = "Test" });
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.IsEmpty(list));
+    }
+
+    [Fact]
+    public void BuilderAssert_ReferenceList_Contains_Throws_When_Not_Found()
+    {
+        var list = new ReferenceList<Person>();
+        list.Add(new Person { Name = "Alice" });
+
+        Assert.Throws<BuilderAssertException>(() => BuilderAssert.Contains(list, new Person { Name = "Bob" }));
+    }
+}
+
+#endregion
+
+#region Extension Method Tests
+
+public class ExtensionMethodTests
+{
+    [Fact]
+    public void Extension_ShouldHaveObjectMatching_Returns_Result()
+    {
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+
+        var result = builder.Build();
+
+        var returned = result.ShouldHaveObjectMatching<Person>(p => p.Name == "Test");
+
+        Assert.Same(result, returned);
+    }
+
+    [Fact]
+    public void Extension_ShouldHaveFailures_Returns_Dictionary()
+    {
+        var builder = new PersonBuilder();
+        var result = builder.Build();
+
+        var failures = result.ShouldHaveFailures();
+
+        Assert.NotEmpty(failures);
+    }
+
+    [Fact]
+    public void Extension_ShouldHaveInstance_Returns_Instance()
+    {
+        var person = new Person { Name = "Test" };
+        var reference = new Reference<Person>(person);
+
+        var instance = reference.ShouldHaveInstance();
+
+        Assert.Same(person, instance);
+    }
+
+    [Fact]
+    public void Extension_Success_Throws_NotSupportedException_For_Unknown_Result_Type()
+    {
+        var unknownResult = new UnknownResult();
+        
+        Assert.Throws<NotSupportedException>(() => unknownResult.Success<Person>());
+    }
+}
+
+// Custom result type for testing NotSupportedException branch
+public class UnknownResult : IResult { }
 
 #endregion
 

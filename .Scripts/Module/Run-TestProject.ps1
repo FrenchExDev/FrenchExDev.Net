@@ -237,7 +237,7 @@ Continuing without ReportGenerator will still run tests and collect coverage XML
     else {
         # Default: use coverlet.collector via XPlat Code Coverage
         if ($UseMsBuildCoverlet) { Write-Warning "Falling back to collector due to previous errors." }
-        $dotnetTestArgs = @('test', "`"$ProjectPath`"", '--configuration', $Configuration, '--logger', 'trx', '--results-directory', $ResultsDir, '--collect:"XPlat Code Coverage"')
+        $dotnetTestArgs = @('test', "`"$ProjectPath`"", '--configuration', $Configuration, '--logger', 'trx', '--results-directory', "`"$ResultsDir`"", '--collect', 'XPlat Code Coverage')
         if ($NoBuild) { $dotnetTestArgs += '--no-build' }
         if ($NoRestore) { $dotnetTestArgs += '--no-restore' }
     }

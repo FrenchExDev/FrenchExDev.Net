@@ -6,7 +6,6 @@ This folder contains helper scripts and a small PowerShell module to run tests a
 
 - [Overview](#overview)
 - [Entry Points](#entry-points)
-  - [Run-SolutionTests.ps1](#run-solutiontestsps1)
   - [Run-TestProject.ps1](#run-testprojectps1)
   - [ConvertTo-CoverageJson.ps1](#convertto-coveragejsonps1)
 - [Module](#module)
@@ -40,45 +39,6 @@ The `.Scripts` directory provides a comprehensive testing infrastructure for .NE
 ---
 
 ## Entry Points
-
-### Run-SolutionTests.ps1
-
-Main entry script to discover and run all test projects referenced by a solution file (`.sln` or `.slnx`).
-
-**Key Features:**
-- Auto-discovers test projects from solution
-- Supports filtering via include/exclude patterns
-- Parallel execution with configurable concurrency
-- Generates merged coverage reports
-- JSON/HTML interactive coverage reports
-- HTTP server integration for report hosting
-
-**Parameters:**
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `SolutionPath` | Path to solution file (auto-detected if empty) | `''` |
-| `Include` | Project name patterns to include | `@()` |
-| `Exclude` | Project name patterns to exclude | `@()` |
-| `Parallel` | Enable parallel test execution | `$false` |
-| `MaxParallel` | Maximum concurrent test jobs | `5` |
-| `NoBuild` | Skip build phase | `$false` |
-| `NoRestore` | Skip restore phase | `$false` |
-| `NoRun` | Dry-run: list projects without running | `$false` |
-| `Configuration` | Build configuration | `'Release'` |
-| `UseMsBuildCoverlet` | Use coverlet.msbuild instead of collector | `$false` |
-| `CoverageThreshold` | Minimum coverage percentage (fails if below) | `-1` |
-| `GenerateMergedReport` | Generate merged HTML report via ReportGenerator | `$false` |
-| `ReportTypes` | ReportGenerator output types | `@('Html')` |
-| `WriteMergedCobertura` | Write merged cobertura.xml | `$false` |
-| `GenerateCoverageJson` | Generate JSON coverage data | `$false` |
-| `GenerateCoverageHtml` | Generate interactive HTML viewer | `$false` |
-| `CoverageReportTitle` | Title for coverage report | `'Code Coverage Report'` |
-| `Serve` | Start HTTP server for report | `$false` |
-| `ServePort` | HTTP server port | `8080` |
-| `TableOnly` | Display summary table only | `$false` |
-
----
 
 ### Run-TestProject.ps1
 
