@@ -146,6 +146,288 @@ public readonly struct Result : IResult
 }
 
 /// <summary>
+/// Represents the result of an operation that can succeed with a value of type TResult or fail with an exception of
+/// type TException.
+/// </summary>
+/// <remarks>Use ResultEx<TResult, TException> to encapsulate the outcome of operations that may either produce a
+/// result or fail with a specific exception. This struct provides methods and properties to inspect the result,
+/// retrieve the value or exception, and perform actions based on success or failure. It is particularly useful for
+/// scenarios where you want to avoid throwing exceptions for control flow and instead handle both success and failure
+/// cases explicitly.</remarks>
+/// <typeparam name="TResult">The type of the value returned on success. Must be a non-nullable type.</typeparam>
+/// <typeparam name="TException">The type of the exception returned on failure. Must be a non-nullable type derived from Exception.</typeparam>
+public readonly struct ResultEx<TResult, TException> : IResult where TResult : notnull where TException : notnull, Exception
+{
+    public static ResultEx<TResult, TException> Success(TResult instance) => new(instance);
+    public static ResultEx<TResult, TException> Failure(TException exception) => new(exception);
+    public bool IsSuccess => _hasValue;
+    public bool IsFailure => !IsSuccess;
+    public TResult Object => _hasValue ? _object! : throw new InvalidResultAccessException();
+    public TException Exception => !_hasValue ? _exception! : throw new InvalidResultAccessException();
+    private readonly TResult? _object;
+    private readonly bool _hasValue;
+    private readonly TException? _exception;
+
+    /// <summary>
+    /// Initializes a new instance of the Result class with the specified result value.
+    /// </summary>
+    /// <param name="result">The value to be stored in the result. May be null if the type T is nullable.</param>
+    private ResultEx(TResult result)
+    {
+        _object = result;
+        _hasValue = true;
+        _exception = null;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the Result class with the specified collection of failures.
+    /// </summary>
+    /// <param name="failures">A dictionary containing failure details to associate with this result. Cannot be null.</param>
+    private ResultEx(TException failures)
+    {
+        _exception = failures;
+        _object = default;
+        _hasValue = false;
+    }
+
+    /// <summary>
+    /// Attempts to retrieve the stored value.
+    /// </summary>
+    /// <param name="result">When this method returns, contains the value if one is present; otherwise, the default value for the type of the
+    /// result parameter. This parameter is passed uninitialized.</param>
+    /// <returns>true if a value is present and was assigned to result; otherwise, false.</returns>
+    public bool TryGetValue(out TResult result)
+    {
+        if (!_hasValue)
+        {
+            result = default(TResult);
+            return false;
+        }
+        result = _object!;
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to retrieve the stored exception if one is present.
+    /// </summary>
+    /// <param name="exception">When this method returns, contains the exception of type TException if one is available; otherwise, the default
+    /// value for TException. This parameter is passed uninitialized.</param>
+    /// <returns>true if an exception is present and assigned to the exception parameter; otherwise, false.</returns>
+    public bool TryGetException(out TException exception)
+    {
+        if (_hasValue)
+        {
+            exception = default(TException);
+            return false;
+        }
+        exception = _exception!;
+        return true;
+    }
+
+    /// <summary>
+    /// Invokes the specified action if the result represents a successful outcome.
+    /// </summary>
+    /// <remarks>If the result is not successful, the action is not invoked. This method enables fluent
+    /// handling of successful results.</remarks>
+    /// <param name="action">The action to execute with the successful result value. Cannot be null.</param>
+    /// <returns>The current result instance, allowing for method chaining.</returns>
+    public ResultEx<TResult, TException> IfSuccess(Action<TResult> action)
+    {
+        if (IsSuccess)
+        {
+            action(_object!);
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Invokes the specified action if the result represents a failure.
+    /// </summary>
+    /// <remarks>If the result is not a failure, the specified action is not invoked. This method can be used
+    /// to perform error handling or logging in a fluent manner.</remarks>
+    /// <param name="action">The action to execute if the result is a failure. The exception associated with the failure is passed as a
+    /// parameter; this value may be null depending on the context.</param>
+    /// <returns>The current result instance. Enables method chaining.</returns>
+    public ResultEx<TResult, TException> IfFailure(Action<TException?> action)
+    {
+        if (IsFailure)
+        {
+            action(_exception);
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Returns the contained result object if available; otherwise, throws an exception.
+    /// </summary>
+    /// <returns>The result object of type <typeparamref name="TResult"/> if the operation was successful.</returns>
+    /// <exception cref="InvalidResultAccessException">Thrown if the result does not contain a valid object.</exception>
+    public TResult ObjectOrThrow()
+    {
+        return _object ?? throw new InvalidResultAccessException();
+    }
+
+    /// <summary>
+    /// Returns the stored object if available; otherwise, returns null.
+    /// </summary>
+    /// <returns>The stored object of type TResult if present; otherwise, null.</returns>
+    public TResult? ObjectOrNull()
+    {
+        return _object;
+    }
+
+    /// <summary>
+    /// Attempts to retrieve the successful result value.
+    /// </summary>
+    /// <param name="value">When this method returns, contains the result value if the operation was successful; otherwise, the default
+    /// value for the type of the result parameter. This parameter is passed uninitialized.</param>
+    /// <returns>true if a successful result value is available; otherwise, false.</returns>
+    public bool TryGetSuccess(out TResult value)
+    {
+        if (_hasValue)
+        {
+            value = _object!;
+            return true;
+        }
+
+        value = default(TResult);
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to retrieve the stored exception if the operation has failed.
+    /// </summary>
+    /// <param name="exception">When this method returns, contains the exception associated with the failure if the operation failed; otherwise,
+    /// the default value for the exception type.</param>
+    /// <returns>true if an exception is available and assigned to the out parameter; otherwise, false.</returns>
+    public bool TryGetFailure(out TException exception)
+    {
+        if (!_hasValue)
+        {
+            exception = _exception!;
+            return true;
+        }
+
+        exception = default(TException);
+        return false;
+    }
+
+    /// <summary>
+    /// Executes the specified asynchronous action if the result represents a successful value.
+    /// </summary>
+    /// <remarks>The provided function is only called if the result is successful. If the result is not
+    /// successful, the function is not invoked and the original result is returned.</remarks>
+    /// <param name="value">A function to invoke asynchronously with the result value if the operation was successful.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains this result instance, allowing for
+    /// method chaining.</returns>
+    public async Task<ResultEx<TResult, TException>> IfSuccessAsync(Func<TResult, Task> value)
+    {
+        if (_hasValue)
+        {
+            await value(_object!);
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Executes the specified asynchronous action if the result represents a failure, passing the associated exception
+    /// to the action.
+    /// </summary>
+    /// <remarks>Use this method to perform additional processing or logging when the result is a failure. The
+    /// action is not invoked if the result is successful.</remarks>
+    /// <param name="action">A function to invoke if the result is a failure. The function receives the exception associated with the
+    /// failure, or null if no exception is present.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result is this result instance, allowing for method
+    /// chaining.</returns>
+    public async Task<ResultEx<TResult, TException>> IfFailureAsync(Func<TException?, Task> action)
+    {
+        if (!IsSuccess)
+        {
+            await action(_exception);
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Invokes the specified action if the result represents a successful outcome.
+    /// </summary>
+    /// <remarks>If the result is not successful, the specified action is not invoked. This method enables
+    /// fluent handling of success scenarios.</remarks>
+    /// <param name="action">The action to execute if the result is successful. Cannot be null.</param>
+    /// <returns>The current result instance, allowing for method chaining.</returns>
+    public ResultEx<TResult, TException> IfSuccess(Action action)
+    {
+        if (IsSuccess)
+        {
+            action();
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Invokes the specified action if the result represents a failure.
+    /// </summary>
+    /// <remarks>Use this method to perform side effects or error handling logic when the result indicates
+    /// failure. The action is not invoked if the result is successful.</remarks>
+    /// <param name="action">The action to execute when the result is in a failure state. Cannot be null.</param>
+    /// <returns>The current result instance. Enables method chaining.</returns>
+    public ResultEx<TResult, TException> IfFailure(Action action)
+    {
+        if (IsFailure)
+        {
+            action();
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Invokes the specified delegate based on the result state and returns the current result instance.
+    /// </summary>
+    /// <remarks>Use this method to perform side effects or handle both success and failure cases without
+    /// altering the result. The delegates are invoked for their side effects; their return values are
+    /// ignored.</remarks>
+    /// <param name="onSuccess">A delegate to invoke if the result represents a success. The delegate receives the successful result value as
+    /// its parameter.</param>
+    /// <param name="onFailure">A delegate to invoke if the result represents a failure. The delegate receives the exception value as its
+    /// parameter.</param>
+    /// <returns>The current result instance, unchanged.</returns>
+    public ResultEx<TResult, TException> Match(Action<TResult> onSuccess, Action<TException> onFailure)
+    {
+        if (IsFailure)
+        {
+            onFailure(_exception!);
+            return this;
+        }
+
+        onSuccess(_object!);
+        return this;
+    }
+
+    /// <summary>
+    /// Executes the specified function and returns a result object indicating success or failure based on whether an
+    /// exception is thrown.
+    /// </summary>
+    /// <remarks>This method is typically used to simplify error handling by encapsulating the try-catch logic
+    /// and returning a standardized result object. Only exceptions of type <typeparamref name="TException"/> are
+    /// caught; other exceptions will propagate.</remarks>
+    /// <param name="value">A function that produces the result to be executed within the try-catch block.</param>
+    /// <returns>An object representing the outcome of the operation. If the function completes successfully, a success result is
+    /// returned; if a <typeparamref name="TException"/> is thrown, a failure result containing the exception is
+    /// returned.</returns>
+    public static object TryCatch(Func<TResult> value)
+    {
+        try
+        {
+            return Success(value());
+        }
+        catch (TException ex)
+        {
+            return Failure(ex);
+        }
+    }
+}
+
+/// <summary>
 /// Represents the result of an operation that may succeed or fail, encapsulating an optional object of type T.
 /// </summary>
 /// <remarks>Use the Success and Failure static methods to create instances representing successful or failed

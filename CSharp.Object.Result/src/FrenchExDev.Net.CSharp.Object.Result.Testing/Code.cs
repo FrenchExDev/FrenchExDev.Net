@@ -1,5 +1,7 @@
 ﻿namespace FrenchExDev.Net.CSharp.Object.Result.Testing;
 
+
+
 /// <summary>
 /// Provides assertion methods for testing <see cref="Result"/> and <see cref="Result{T}"/> instances.
 /// </summary>
@@ -190,7 +192,7 @@ public static class ResultAssert
         {
             return;
         }
-        
+
         throw new ResultAssertException(message ?? $"Expected failure key '{failureKey}' to contain value '{expectedValue}', but it was not found.");
     }
 
@@ -207,7 +209,7 @@ public static class ResultAssert
         HasFailureKey(result, "Exception", message);
 
         var exception = result.Failures!["Exception"].OfType<Exception>().FirstOrDefault();
-        
+
         if (exception is null)
         {
             throw new ResultAssertException(message ?? "Expected failure to contain an Exception, but none was found.");
@@ -421,5 +423,173 @@ public static class ResultAssertExtensions
         where TException : Exception
     {
         return ResultAssert.HasFailureException<T, TException>(result, message);
+    }
+}
+
+/// <summary>
+/// Provides assertion methods for testing <see cref="Result{TResult, TException}"/> instances.
+/// </summary>
+/// <remarks>
+/// Use these methods in unit tests to verify that result objects have the expected state, values, and exception details.
+/// All assertion methods throw <see cref="ResultAssertException"/> when the assertion fails.
+/// </remarks>
+public static class ResultExAssert
+{
+    /// <summary>
+    /// Asserts that the specified result represents a successful operation.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the value contained in the result.</typeparam>
+    /// <typeparam name="TException">The type of the exception contained in the result.</typeparam>
+    /// <param name="result">The result to verify.</param>
+    /// <param name="message">Optional custom message to include in the exception if the assertion fails.</param>
+    /// <exception cref="ResultAssertException">Thrown when the result is not successful.</exception>
+    public static void IsSuccess<TResult, TException>(ResultEx<TResult, TException> result, string? message = null)
+        where TResult : notnull
+        where TException : Exception
+    {
+        if (result.IsSuccess)
+        {
+            return;
+        }
+
+        throw new ResultAssertException(message ?? $"Expected Result<{typeof(TResult).Name}, {typeof(TException).Name}> to be successful, but it was a failure.");
+    }
+
+    /// <summary>
+    /// Asserts that the specified result represents a failed operation.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the value contained in the result.</typeparam>
+    /// <typeparam name="TException">The type of the exception contained in the result.</typeparam>
+    /// <param name="result">The result to verify.</param>
+    /// <param name="message">Optional custom message to include in the exception if the assertion fails.</param>
+    /// <exception cref="ResultAssertException">Thrown when the result is not a failure.</exception>
+    public static void IsFailure<TResult, TException>(ResultEx<TResult, TException> result, string? message = null)
+        where TResult : notnull
+        where TException : Exception
+    {
+        if (result.IsFailure)
+        {
+            return;
+        }
+
+        throw new ResultAssertException(message ?? $"Expected Result<{typeof(TResult).Name}, {typeof(TException).Name}> to be a failure, but it was successful.");
+    }
+
+    /// <summary>
+    /// Asserts that the specified result is successful and contains the expected value.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the value contained in the result.</typeparam>
+    /// <typeparam name="TException">The type of the exception contained in the result.</typeparam>
+    /// <param name="result">The result to verify.</param>
+    /// <param name="expectedValue">The expected value contained in the result.</param>
+    /// <param name="message">Optional custom message to include in the exception if the assertion fails.</param>
+    /// <exception cref="ResultAssertException">Thrown when the result is not successful or the value does not match.</exception>
+    public static void HasValue<TResult, TException>(ResultEx<TResult, TException> result, TResult expectedValue, string? message = null)
+        where TResult : notnull
+        where TException : Exception
+    {
+        IsSuccess(result, message);
+
+        if (Equals(result.Object, expectedValue))
+        {
+            return;
+        }
+
+        throw new ResultAssertException(message ?? $"Expected result value to be '{expectedValue}', but was '{result.Object}'.");
+    }
+
+    /// <summary>
+    /// Asserts that the specified result is successful and the value satisfies the given predicate.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the value contained in the result.</typeparam>
+    /// <typeparam name="TException">The type of the exception contained in the result.</typeparam>
+    /// <param name="result">The result to verify.</param>
+    /// <param name="predicate">A function to test the result value.</param>
+    /// <param name="message">Optional custom message to include in the exception if the assertion fails.</param>
+    /// <exception cref="ResultAssertException">Thrown when the result is not successful or the predicate returns false.</exception>
+    public static void HasValueMatching<TResult, TException>(ResultEx<TResult, TException> result, Func<TResult, bool> predicate, string? message = null)
+        where TResult : notnull
+        where TException : Exception
+    {
+        IsSuccess(result, message);
+
+        if (predicate(result.Object))
+        {
+            return;
+        }
+
+        throw new ResultAssertException(message ?? $"Result value '{result.Object}' did not match the expected predicate.");
+    }
+
+    /// <summary>
+    /// Asserts that the specified result has an associated exception.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the value contained in the result.</typeparam>
+    /// <typeparam name="TException">The type of the exception contained in the result.</typeparam>
+    /// <param name="result">The result to verify.</param>
+    /// <param name="message">Optional custom message to include in the exception if the assertion fails.</param>
+    /// <returns>The exception from the result.</returns>
+    /// <exception cref="ResultAssertException">Thrown when the result does not have an exception.</exception>
+    public static TException HasException<TResult, TException>(ResultEx<TResult, TException> result, string? message = null)
+        where TResult : notnull
+        where TException : Exception
+    {
+        IsFailure(result, message);
+
+        if (result.Exception is not null)
+        {
+            return result.Exception;
+        }
+
+        throw new ResultAssertException(message ?? $"Expected result to have an exception of type '{typeof(TException).Name}', but it was null.");
+    }
+
+    /// <summary>
+    /// Asserts that the specified result has an associated exception of a more specific type.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the value contained in the result.</typeparam>
+    /// <typeparam name="TException">The type of the exception contained in the result.</typeparam>
+    /// <typeparam name="TSpecificException">The expected specific exception type.</typeparam>
+    /// <param name="result">The result to verify.</param>
+    /// <param name="message">Optional custom message to include in the exception if the assertion fails.</param>
+    /// <returns>The exception cast to the specified type.</returns>
+    /// <exception cref="ResultAssertException">Thrown when the result does not have an exception of the specified type.</exception>
+    public static TSpecificException HasException<TResult, TException, TSpecificException>(ResultEx<TResult, TException> result, string? message = null)
+        where TResult : notnull
+        where TException : Exception
+        where TSpecificException : TException
+    {
+        var exception = HasException(result, message);
+
+        if (exception is TSpecificException typedException)
+        {
+            return typedException;
+        }
+
+        throw new ResultAssertException(message ?? $"Expected exception of type '{typeof(TSpecificException).Name}', but was '{exception.GetType().Name}'.");
+    }
+
+    /// <summary>
+    /// Asserts that the specified result has an exception with the expected message.
+    /// </summary>
+    /// <typeparam name="TResult">The type of the value contained in the result.</typeparam>
+    /// <typeparam name="TException">The type of the exception contained in the result.</typeparam>
+    /// <param name="result">The result to verify.</param>
+    /// <param name="expectedMessage">The expected exception message.</param>
+    /// <param name="message">Optional custom message to include in the exception if the assertion fails.</param>
+    /// <returns>The exception from the result.</returns>
+    /// <exception cref="ResultAssertException">Thrown when the exception message does not match.</exception>
+    public static TException HasExceptionWithMessage<TResult, TException>(ResultEx<TResult, TException> result, string expectedMessage, string? message = null)
+        where TResult : notnull
+        where TException : Exception
+    {
+        var exception = HasException(result, message);
+
+        if (string.Equals(exception.Message, expectedMessage, StringComparison.Ordinal))
+        {
+            return exception;
+        }
+
+        throw new ResultAssertException(message ?? $"Expected exception message to be '{expectedMessage}', but was '{exception.Message}'.");
     }
 }

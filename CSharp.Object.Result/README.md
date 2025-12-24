@@ -1,6 +1,6 @@
 ﻿# `FrenchExDev.Net.CSharp.Object.Result`
 
-A lightweight .NET library for representing operation outcomes as `Result` and `Result<T>` types, enabling explicit handling of success and failure states without throwing exceptions.
+A lightweight .NET library for representing operation outcomes as `Result`, `Result<T>`, and `ResultEx<TResult, TException>` types, enabling explicit handling of success and failure states without throwing exceptions.
 
 ## 📦 Project Structure
 
@@ -17,6 +17,7 @@ CSharp.Object.Result/
 
 - **`Result`** - Represents the outcome of an operation without a return value (success/failure)
 - **`Result<T>`** - Represents the outcome of an operation with a typed return value
+- **`ResultEx<TResult, TException>`** - Represents success with a value or failure with a strongly-typed exception
 - **Exception handling** - Optional encapsulation of exceptions in failure results
 - **Fluent API** - `IfSuccess()` and `IfFailure()` methods for conditional execution
 - **Async support** - `IfSuccessAsync()` and `IfFailureAsync()` methods
@@ -86,6 +87,66 @@ success
     .IfFailure(failures => Console.WriteLine("Failed"));
 ```
 
+### ResultEx (with typed exception)
+
+```csharp
+// Create a success with value
+var success = ResultEx<int, InvalidOperationException>.Success(42);
+
+// Create a failure with a specific exception type
+var failure = ResultEx<int, InvalidOperationException>.Failure(
+    new InvalidOperationException("Something went wrong"));
+
+// Access the value safely
+if (success.IsSuccess)
+{
+    int value = success.Object;
+}
+
+// Access with null fallback
+int? valueOrNull = success.ObjectOrNull();
+
+// Access or throw the stored exception
+try
+{
+    int value = failure.ObjectOrThrow(); // Throws the stored InvalidOperationException
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine(ex.Message);
+}
+
+// Try pattern for value
+if (success.TryGetValue(out var result))
+{
+    Console.WriteLine($"Value: {result}");
+}
+
+// Try pattern for exception
+if (failure.TryGetException(out var exception))
+{
+    Console.WriteLine($"Error: {exception.Message}");
+}
+
+// Conditional execution
+success
+    .IfSuccess(value => Console.WriteLine($"Got: {value}"))
+    .IfFailure(ex => Console.WriteLine($"Failed: {ex?.Message}"));
+
+// Match pattern for handling both cases
+failure.Match(
+    onSuccess: value => Console.WriteLine($"Success: {value}"),
+    onFailure: ex => Console.WriteLine($"Failure: {ex.Message}")
+);
+
+// TryCatch for automatic exception handling
+var result = ResultEx<int, FormatException>.TryCatch(() =>
+{
+    return int.Parse("not a number"); // Throws FormatException
+});
+// result is now a Failure containing the FormatException
+```
+
 ### Async Operations
 
 ```csharp
@@ -99,6 +160,16 @@ await Result<string>.Success("data")
     .IfSuccessAsync(async value =>
     {
         await ProcessAsync(value);
+    });
+
+await ResultEx<string, Exception>.Success("data")
+    .IfSuccessAsync(async value =>
+    {
+        await ProcessAsync(value);
+    })
+    .IfFailureAsync(async ex =>
+    {
+        await LogErrorAsync(ex);
     });
 ```
 
@@ -194,6 +265,31 @@ failure.IfFailure(failures =>
 | `FailuresOrThrow()` | Gets failures or throws |
 | `TryCatch<TResult, TException>(Func<TResult>)` | Executes and catches specific exception |
 | `TryCatch<TResult>(Func<Result<TResult>>)` | Executes and catches any exception |
+
+### `ResultEx<TResult, TException>` (with typed exception)
+
+| Member | Description |
+|--------|-------------|
+| `Success(TResult)` | Creates a successful result with a value |
+| `Failure(TException)` | Creates a failed result with a typed exception |
+| `IsSuccess` | Returns `true` if the result is successful |
+| `IsFailure` | Returns `true` if the result is a failure |
+| `Object` | Gets the value (throws `InvalidResultAccessException` if failure) |
+| `Exception` | Gets the exception (throws `InvalidResultAccessException` if success) |
+| `ObjectOrNull()` | Gets the value or `null` |
+| `ObjectOrThrow()` | Gets the value or throws the stored exception |
+| `TryGetValue(out TResult)` | Tries to get the value |
+| `TryGetException(out TException)` | Tries to get the exception |
+| `TryGetSuccess(out TResult)` | Tries to get the successful value |
+| `TryGetFailure(out TException)` | Tries to get the failure exception |
+| `IfSuccess(Action<TResult>)` | Executes action with value if successful |
+| `IfSuccess(Action)` | Executes action if successful |
+| `IfFailure(Action<TException?>)` | Executes action with exception if failed |
+| `IfFailure(Action)` | Executes action if failed |
+| `IfSuccessAsync(Func<TResult, Task>)` | Async version of `IfSuccess` |
+| `IfFailureAsync(Func<TException?, Task>)` | Async version of `IfFailure` |
+| `Match(Action<TResult>, Action<TException>)` | Executes appropriate action based on state |
+| `TryCatch(Func<TResult>)` | Executes and catches `TException`, returning a result |
 
 ## 🛠️ Requirements
 

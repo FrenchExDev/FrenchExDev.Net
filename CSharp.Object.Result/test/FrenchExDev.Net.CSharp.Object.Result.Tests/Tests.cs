@@ -5,6 +5,508 @@ namespace FrenchExDev.Net.CSharp.Object.Result.Tests;
 
 
 /// <summary>
+/// Contains unit tests for the ResultEx&lt;TResult, TException&gt; type, verifying success and failure behaviors,
+/// typed exception handling, and related extension methods.
+/// </summary>
+public class ResultExTests
+{
+    #region Success and Failure Creation
+
+    [Fact]
+    public void Success_Creates_Successful_Result_With_Value()
+    {
+        var result = ResultEx<string, InvalidOperationException>.Success("hello");
+
+        result.IsSuccess.ShouldBeTrue();
+        result.IsFailure.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Failure_Creates_Failed_Result_With_Typed_Exception()
+    {
+        var ex = new InvalidOperationException("boom");
+        var result = ResultEx<string, InvalidOperationException>.Failure(ex);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.IsFailure.ShouldBeTrue();
+        result.Exception.ShouldBeSameAs(ex);
+    }
+
+    [Fact]
+    public void Failure_Without_Exception_Creates_Failed_Result()
+    {
+        var result = ResultEx<string, Exception>.Failure(new InvalidDataException());
+
+        result.IsSuccess.ShouldBeFalse();
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    #endregion
+
+    #region Object Accessors
+
+    [Fact]
+    public void Object_Returns_Value_On_Success()
+    {
+        var result = ResultEx<string, Exception>.Success("value");
+
+        result.Object.ShouldBe("value");
+    }
+
+    [Fact]
+    public void Object_Throws_On_Failure()
+    {
+        var result = ResultEx<string, Exception>.Failure(new Exception("fail"));
+
+        Should.Throw<InvalidResultAccessException>(() => _ = result.Object);
+    }
+
+    [Fact]
+    public void ObjectOrNull_Returns_Value_On_Success()
+    {
+        var result = ResultEx<string, Exception>.Success("value");
+
+        result.ObjectOrNull().ShouldBe("value");
+    }
+
+    [Fact]
+    public void ObjectOrNull_Returns_Null_On_Failure()
+    {
+        var result = ResultEx<string, Exception>.Failure(new Exception("fail"));
+
+        result.ObjectOrNull().ShouldBeNull();
+    }
+
+    [Fact]
+    public void ObjectOrNull_Returns_Default_For_ValueType_On_Failure()
+    {
+        var result = ResultEx<int, Exception>.Failure(new Exception());
+
+        result.ObjectOrNull().ShouldBe(default(int));
+    }
+
+    [Fact]
+    public void ObjectOrThrow_Returns_Value_On_Success()
+    {
+        var result = ResultEx<int, Exception>.Success(42);
+
+        result.ObjectOrThrow().ShouldBe(42);
+    }
+
+    #endregion
+
+    #region Exception Accessor
+
+    [Fact]
+    public void Exception_Returns_Stored_Exception_On_Failure()
+    {
+        var ex = new ArgumentException("bad arg");
+        var result = ResultEx<string, ArgumentException>.Failure(ex);
+
+        result.Exception.ShouldBeSameAs(ex);
+    }
+
+    [Fact]
+    public void Exception_Throws_On_Success()
+    {
+        var result = ResultEx<string, Exception>.Success("ok");
+
+        Should.Throw<InvalidResultAccessException>(() => _ = result.Exception);
+    }
+
+    #endregion
+
+    #region TryGet Methods
+
+    [Fact]
+    public void TryGetSuccess_Returns_True_And_Value_On_Success()
+    {
+        var result = ResultEx<string, Exception>.Success("test");
+
+        result.TryGetSuccess(out var value).ShouldBeTrue();
+        value.ShouldBe("test");
+    }
+
+    [Fact]
+    public void TryGetSuccess_Returns_False_And_Default_On_Failure()
+    {
+        var result = ResultEx<string, Exception>.Failure(new Exception());
+
+        result.TryGetSuccess(out var value).ShouldBeFalse();
+        value.ShouldBeNull();
+    }
+
+    [Fact]
+    public void TryGetSuccess_Returns_Default_ValueType_On_Failure()
+    {
+        var result = ResultEx<int, Exception>.Failure(new Exception());
+
+        result.TryGetSuccess(out var value).ShouldBeFalse();
+        value.ShouldBe(default(int));
+    }
+
+    [Fact]
+    public void TryGetFailure_Returns_True_And_Exception_On_Failure()
+    {
+        var ex = new ArgumentException("bad arg");
+        var result = ResultEx<string, ArgumentException>.Failure(ex);
+
+        result.TryGetFailure(out var exception).ShouldBeTrue();
+        exception.ShouldBeSameAs(ex);
+    }
+
+    [Fact]
+    public void TryGetFailure_Returns_False_And_Null_On_Success()
+    {
+        var result = ResultEx<string, Exception>.Success("ok");
+
+        result.TryGetFailure(out var exception).ShouldBeFalse();
+        exception.ShouldBeNull();
+    }
+
+    #endregion
+
+    #region IfSuccess and IfFailure
+
+    [Fact]
+    public void IfSuccess_Invokes_Action_On_Success()
+    {
+        var invoked = false;
+        var capturedValue = string.Empty;
+        var result = ResultEx<string, Exception>.Success("captured");
+
+        var returned = result.IfSuccess(v =>
+        {
+            invoked = true;
+            capturedValue = v;
+        });
+
+        invoked.ShouldBeTrue();
+        capturedValue.ShouldBe("captured");
+        returned.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void IfSuccess_Does_Not_Invoke_Action_On_Failure()
+    {
+        var invoked = false;
+        var result = ResultEx<string, Exception>.Failure(new Exception());
+
+        result.IfSuccess(_ => invoked = true);
+
+        invoked.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void IfFailure_Invokes_Action_On_Failure()
+    {
+        var ex = new InvalidOperationException("fail");
+        var result = ResultEx<string, InvalidOperationException>.Failure(ex);
+        InvalidOperationException? capturedEx = null;
+
+        result.IfFailure(e => capturedEx = e);
+
+        capturedEx.ShouldBeSameAs(ex);
+    }
+
+    [Fact]
+    public void IfFailure_Does_Not_Invoke_Action_On_Success()
+    {
+        var invoked = false;
+        var result = ResultEx<string, Exception>.Success("ok");
+
+        result.IfFailure(_ => invoked = true);
+
+        invoked.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void IfSuccess_Returns_Same_Result()
+    {
+        var result = ResultEx<int, Exception>.Success(42);
+
+        var returned = result.IfSuccess(_ => { });
+
+        returned.IsSuccess.ShouldBeTrue();
+        returned.Object.ShouldBe(42);
+    }
+
+    [Fact]
+    public void IfFailure_Returns_Same_Result()
+    {
+        var ex = new Exception("err");
+        var result = ResultEx<int, Exception>.Failure(ex);
+
+        var returned = result.IfFailure(_ => { });
+
+        returned.IsFailure.ShouldBeTrue();
+        returned.Exception.ShouldBeSameAs(ex);
+    }
+
+    #endregion
+
+    #region Async Methods
+
+    [Fact]
+    public async Task IfSuccessAsync_Invokes_Async_Action_On_Success()
+    {
+        var called = false;
+        var result = ResultEx<int, Exception>.Success(10);
+
+        var returned = await result.IfSuccessAsync(async v =>
+        {
+            called = true;
+            v.ShouldBe(10);
+        });
+
+        called.ShouldBeTrue();
+        returned.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task IfSuccessAsync_Does_Not_Invoke_On_Failure()
+    {
+        var called = false;
+        var result = ResultEx<int, Exception>.Failure(new Exception());
+
+        await result.IfSuccessAsync(async _ =>
+        {
+            await Task.Yield();
+            called = true;
+        });
+
+        called.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task IfFailureAsync_Invokes_Async_Action_On_Failure()
+    {
+        var ex = new Exception("async fail");
+        var result = ResultEx<int, Exception>.Failure(ex);
+        var called = false;
+
+        await result.IfFailureAsync(async e =>
+        {
+            await Task.Yield();
+            called = true;
+            e.ShouldBeSameAs(ex);
+        });
+
+        called.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task IfFailureAsync_Does_Not_Invoke_On_Success()
+    {
+        var called = false;
+        var result = ResultEx<int, Exception>.Success(5);
+
+        await result.IfFailureAsync(async _ =>
+        {
+            await Task.Yield();
+            called = true;
+        });
+
+        called.ShouldBeFalse();
+    }
+
+    #endregion
+
+    #region Match
+
+    [Fact]
+    public void Match_Returns_Success_Func_Result_On_Success()
+    {
+        var result = ResultEx<int, Exception>.Success(5);
+
+        bool hitFailure = false;
+        bool hitSuccess = false;
+        int capturedValue = 0;
+
+        var matched = result.Match(
+            onSuccess: v => { hitSuccess = true; capturedValue = v; },
+            onFailure: ex => { hitFailure = true; });
+
+        hitSuccess.ShouldBeTrue();
+        hitFailure.ShouldBeFalse();
+        capturedValue.ShouldBe(5);
+        matched.IsSuccess.ShouldBeTrue();
+        matched.Object.ShouldBe(5);
+    }
+
+    [Fact]
+    public void Match_Returns_Failure_Func_Result_On_Failure()
+    {
+        var result = ResultEx<int, Exception>.Failure(new Exception("error"));
+
+        bool hitFailure = false;
+        bool hitSuccess = false;
+        string? capturedMessage = null;
+
+        var matched = result.Match(
+            onSuccess: v => { hitSuccess = true; },
+            onFailure: ex => { hitFailure = true; capturedMessage = ex.Message; });
+
+        hitFailure.ShouldBeTrue();
+        hitSuccess.ShouldBeFalse();
+        capturedMessage.ShouldBe("error");
+        matched.IsFailure.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Match_With_Null_Exception_On_Failure()
+    {
+        var result = ResultEx<int, Exception>.Failure(null!);
+
+        bool hitFailure = false;
+        string? capturedMessage = null;
+
+        var matched = result.Match(
+            onSuccess: v => { },
+            onFailure: ex => { hitFailure = true; capturedMessage = ex?.Message ?? "no exception"; });
+
+        hitFailure.ShouldBeTrue();
+        capturedMessage.ShouldBe("no exception");
+        matched.IsFailure.ShouldBeTrue();
+    }
+
+    #endregion
+
+    #region IResult Interface
+
+    [Fact]
+    public void IResult_Interface_Is_Implemented_For_Success()
+    {
+        IResult result = ResultEx<string, Exception>.Success("ok");
+
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void IResult_Interface_Is_Implemented_For_Failure()
+    {
+        IResult result = ResultEx<string, Exception>.Failure(new Exception());
+
+        result.IsSuccess.ShouldBeFalse();
+    }
+
+    #endregion
+
+    #region Chaining
+
+    [Fact]
+    public void Chaining_Methods_Preserve_Success_State()
+    {
+        var result = ResultEx<int, Exception>.Success(100);
+
+        var chained = result
+            .IfSuccess(_ => { })
+            .IfFailure(_ => { });
+
+        chained.IsSuccess.ShouldBeTrue();
+        chained.Object.ShouldBe(100);
+    }
+
+    [Fact]
+    public void Chaining_Methods_Preserve_Failure_State()
+    {
+        var ex = new Exception("chain fail");
+        var result = ResultEx<int, Exception>.Failure(ex);
+
+        var chained = result
+            .IfSuccess(_ => { })
+            .IfFailure(_ => { });
+
+        chained.IsFailure.ShouldBeTrue();
+        chained.Exception.ShouldBeSameAs(ex);
+    }
+
+    [Fact]
+    public async Task Async_Chaining_Preserves_Result_State()
+    {
+        var result = ResultEx<int, Exception>.Success(50);
+
+        var chained = await result.IfSuccessAsync(async _ => await Task.Yield());
+
+        chained.IsSuccess.ShouldBeTrue();
+        chained.Object.ShouldBe(50);
+    }
+
+    #endregion
+
+    #region Value Types
+
+    [Fact]
+    public void Value_Type_Success_Works_Correctly()
+    {
+        var result = ResultEx<int, Exception>.Success(42);
+
+        result.IsSuccess.ShouldBeTrue();
+        result.Object.ShouldBe(42);
+        result.ObjectOrThrow().ShouldBe(42);
+    }
+
+    [Fact]
+    public void Value_Type_Failure_Returns_Default()
+    {
+        var result = ResultEx<int, Exception>.Failure(new Exception());
+
+        result.TryGetSuccess(out var value).ShouldBeFalse();
+        value.ShouldBe(0);
+    }
+
+    [Fact]
+    public void Nullable_Value_Type_Success()
+    {
+        var result = ResultEx<int?, Exception>.Success(42);
+
+        result.IsSuccess.ShouldBeTrue();
+        result.Object.ShouldBe(42);
+    }
+
+    [Fact]
+    public void Nullable_Value_Type_With_Null_Success()
+    {
+        var result = ResultEx<int?, Exception>.Success(null);
+
+        result.IsSuccess.ShouldBeTrue();
+        result.Object.ShouldBeNull();
+    }
+
+    #endregion
+
+    #region Different Exception Types
+
+    [Fact]
+    public void Works_With_ArgumentException()
+    {
+        var ex = new ArgumentException("arg", "paramName");
+        var result = ResultEx<string, ArgumentException>.Failure(ex);
+
+        result.IsFailure.ShouldBeTrue();
+        result.Exception.ParamName.ShouldBe("paramName");
+    }
+
+    [Fact]
+    public void Works_With_Custom_Exception()
+    {
+        var ex = new CustomTestException("custom", 42);
+        var result = ResultEx<string, CustomTestException>.Failure(ex);
+
+        result.IsFailure.ShouldBeTrue();
+        result.Exception.ErrorCode.ShouldBe(42);
+    }
+
+    private sealed class CustomTestException(string message, int errorCode) : Exception(message)
+    {
+        public int ErrorCode { get; } = errorCode;
+    }
+
+    #endregion
+}
+
+
+/// <summary>
 /// Contains unit tests for the Result and Result<T> types, verifying their success and failure behaviors, exception
 /// handling, and related extension methods.
 /// </summary>
@@ -30,7 +532,7 @@ public class ResultTests
         var r = Result.Failure(ex);
         r.ShouldBeFailure()
          .ShouldHaveException();
-        
+
         var storedEx = r.ShouldHaveException<InvalidOperationException>();
         storedEx.ShouldBeSameAs(ex);
     }
@@ -79,7 +581,7 @@ public class ResultTests
         var res = Result<string>.Success("hello");
         res.ShouldBeSuccess()
            .ShouldHaveValue("hello");
-        
+
         res.ObjectOrNull().ShouldBe("hello");
         res.TryGetSuccess(out var value).ShouldBeTrue();
         value.ShouldBe("hello");
@@ -90,7 +592,7 @@ public class ResultTests
     {
         var failure = Result<string>.Failure();
         failure.ShouldBeFailure();
-        
+
         failure.ObjectOrNull().ShouldBeNull();
         failure.TryGetSuccess(out var _).ShouldBeFalse();
 
@@ -208,7 +710,7 @@ public class ResultTests
         var res = Result<int>.TryCatch<int>(() => throw ex);
         res.ShouldBeFailure()
            .ShouldHaveFailureKey("Exception");
-        
+
         var storedEx = res.ShouldHaveFailureException<int, InvalidOperationException>();
         storedEx.ShouldBeSameAs(ex);
     }
@@ -284,7 +786,7 @@ public class ResultTests
         var res = Result<string>.Failure(ex);
         res.ShouldBeFailure()
            .ShouldHaveFailureKey("Exception");
-        
+
         var storedEx = res.ShouldHaveFailureException<string, InvalidOperationException>();
         storedEx.ShouldBeSameAs(ex);
     }
@@ -296,7 +798,7 @@ public class ResultTests
         var res = Result<string>.Exception(ex);
         res.ShouldBeFailure()
            .ShouldHaveFailureKey("Exception");
-        
+
         var storedEx = res.ShouldHaveFailureException<string, InvalidOperationException>();
         storedEx.ShouldBeSameAs(ex);
     }
@@ -308,7 +810,7 @@ public class ResultTests
         var res = Result<int>.Failure(d => d.Add("k", "v"));
         res.ShouldBeFailure()
            .ShouldHaveFailureKey("k");
-        
+
         res.IfFailure(f =>
         {
             invoked = true;
@@ -330,7 +832,7 @@ public class ResultAssertTests
     public void IsSuccess_NonGeneric_Throws_When_Result_Is_Failure()
     {
         var failure = Result.Failure();
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.IsSuccess(failure));
         ex.Message.ShouldContain("failure");
     }
@@ -339,7 +841,7 @@ public class ResultAssertTests
     public void IsSuccess_NonGeneric_Throws_With_Custom_Message()
     {
         var failure = Result.Failure();
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.IsSuccess(failure, "Custom message"));
         ex.Message.ShouldBe("Custom message");
     }
@@ -348,7 +850,7 @@ public class ResultAssertTests
     public void IsFailure_NonGeneric_Throws_When_Result_Is_Success()
     {
         var success = Result.Success();
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.IsFailure(success));
         ex.Message.ShouldContain("successful");
     }
@@ -357,7 +859,7 @@ public class ResultAssertTests
     public void IsFailure_NonGeneric_Throws_With_Custom_Message()
     {
         var success = Result.Success();
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.IsFailure(success, "Custom failure message"));
         ex.Message.ShouldBe("Custom failure message");
     }
@@ -366,7 +868,7 @@ public class ResultAssertTests
     public void IsSuccess_Generic_Throws_When_Result_Is_Failure()
     {
         var failure = Result<string>.Failure();
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.IsSuccess(failure));
         ex.Message.ShouldContain("failure");
         ex.Message.ShouldContain("String");
@@ -376,7 +878,7 @@ public class ResultAssertTests
     public void IsSuccess_Generic_Throws_With_Custom_Message()
     {
         var failure = Result<string>.Failure();
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.IsSuccess(failure, "Custom generic message"));
         ex.Message.ShouldBe("Custom generic message");
     }
@@ -385,7 +887,7 @@ public class ResultAssertTests
     public void IsFailure_Generic_Throws_When_Result_Is_Success()
     {
         var success = Result<string>.Success("value");
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.IsFailure(success));
         ex.Message.ShouldContain("successful");
         ex.Message.ShouldContain("String");
@@ -395,7 +897,7 @@ public class ResultAssertTests
     public void IsFailure_Generic_Throws_With_Custom_Message()
     {
         var success = Result<string>.Success("value");
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.IsFailure(success, "Custom failure generic"));
         ex.Message.ShouldBe("Custom failure generic");
     }
@@ -404,7 +906,7 @@ public class ResultAssertTests
     public void HasValue_Throws_When_Value_Does_Not_Match()
     {
         var result = Result<string>.Success("actual");
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasValue(result, "expected"));
         ex.Message.ShouldContain("actual");
         ex.Message.ShouldContain("expected");
@@ -414,7 +916,7 @@ public class ResultAssertTests
     public void HasValue_Throws_With_Custom_Message()
     {
         var result = Result<string>.Success("actual");
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasValue(result, "expected", "Custom value message"));
         ex.Message.ShouldBe("Custom value message");
     }
@@ -423,7 +925,7 @@ public class ResultAssertTests
     public void HasValueMatching_Throws_When_Predicate_Fails()
     {
         var result = Result<int>.Success(5);
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasValueMatching(result, v => v > 10));
         ex.Message.ShouldContain("5");
         ex.Message.ShouldContain("predicate");
@@ -433,7 +935,7 @@ public class ResultAssertTests
     public void HasValueMatching_Throws_With_Custom_Message()
     {
         var result = Result<int>.Success(5);
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasValueMatching(result, v => v > 10, "Custom predicate message"));
         ex.Message.ShouldBe("Custom predicate message");
     }
@@ -442,7 +944,7 @@ public class ResultAssertTests
     public void HasException_Throws_When_No_Exception()
     {
         var result = Result.Failure();
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasException(result));
         ex.Message.ShouldContain("null");
     }
@@ -451,7 +953,7 @@ public class ResultAssertTests
     public void HasException_Throws_With_Custom_Message()
     {
         var result = Result.Failure();
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasException(result, "Custom no exception message"));
         ex.Message.ShouldBe("Custom no exception message");
     }
@@ -460,7 +962,7 @@ public class ResultAssertTests
     public void HasException_Generic_Throws_When_Wrong_Type()
     {
         var result = Result.Failure(new InvalidOperationException("test"));
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasException<ArgumentException>(result));
         ex.Message.ShouldContain("ArgumentException");
         ex.Message.ShouldContain("InvalidOperationException");
@@ -470,7 +972,7 @@ public class ResultAssertTests
     public void HasException_Generic_Throws_With_Custom_Message()
     {
         var result = Result.Failure(new InvalidOperationException("test"));
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasException<ArgumentException>(result, "Custom exception type message"));
         ex.Message.ShouldBe("Custom exception type message");
     }
@@ -479,7 +981,7 @@ public class ResultAssertTests
     public void HasFailureKey_Throws_When_Key_Not_Found()
     {
         var result = Result<string>.Failure(d => d.Add("OtherKey", "value"));
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasFailureKey(result, "MissingKey"));
         ex.Message.ShouldContain("MissingKey");
     }
@@ -488,7 +990,7 @@ public class ResultAssertTests
     public void HasFailureKey_Throws_With_Custom_Message()
     {
         var result = Result<string>.Failure(d => d.Add("OtherKey", "value"));
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasFailureKey(result, "MissingKey", "Custom key message"));
         ex.Message.ShouldBe("Custom key message");
     }
@@ -497,7 +999,7 @@ public class ResultAssertTests
     public void HasFailure_Throws_When_Value_Not_Found()
     {
         var result = Result<string>.Failure(d => d.Add("Key", "actual"));
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasFailure(result, "Key", "expected"));
         ex.Message.ShouldContain("Key");
         ex.Message.ShouldContain("expected");
@@ -507,7 +1009,7 @@ public class ResultAssertTests
     public void HasFailure_Throws_With_Custom_Message()
     {
         var result = Result<string>.Failure(d => d.Add("Key", "actual"));
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasFailure(result, "Key", "expected", "Custom failure value message"));
         ex.Message.ShouldBe("Custom failure value message");
     }
@@ -516,7 +1018,7 @@ public class ResultAssertTests
     public void HasFailureException_Throws_When_No_Exception_In_Failures()
     {
         var result = Result<string>.Failure(d => d.Add("Exception", "not-an-exception"));
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasFailureException(result));
         ex.Message.ShouldContain("Exception");
     }
@@ -525,7 +1027,7 @@ public class ResultAssertTests
     public void HasFailureException_Throws_With_Custom_Message()
     {
         var result = Result<string>.Failure(d => d.Add("Exception", "not-an-exception"));
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasFailureException(result, "Custom no failure exception message"));
         ex.Message.ShouldBe("Custom no failure exception message");
     }
@@ -534,7 +1036,7 @@ public class ResultAssertTests
     public void HasFailureException_Generic_Throws_When_Wrong_Type()
     {
         var result = Result<string>.Failure(new InvalidOperationException("test"));
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasFailureException<string, ArgumentException>(result));
         ex.Message.ShouldContain("ArgumentException");
         ex.Message.ShouldContain("InvalidOperationException");
@@ -544,7 +1046,7 @@ public class ResultAssertTests
     public void HasFailureException_Generic_Throws_With_Custom_Message()
     {
         var result = Result<string>.Failure(new InvalidOperationException("test"));
-        
+
         var ex = Should.Throw<ResultAssertException>(() => ResultAssert.HasFailureException<string, ArgumentException>(result, "Custom typed failure exception message"));
         ex.Message.ShouldBe("Custom typed failure exception message");
     }
@@ -563,7 +1065,7 @@ public class ResultAssertExceptionTests
     public void Constructor_With_Message_Sets_Message()
     {
         var ex = new ResultAssertException("Test message");
-        
+
         ex.Message.ShouldBe("Test message");
     }
 
@@ -572,7 +1074,7 @@ public class ResultAssertExceptionTests
     {
         var inner = new InvalidOperationException("Inner");
         var ex = new ResultAssertException("Outer message", inner);
-        
+
         ex.Message.ShouldBe("Outer message");
         ex.InnerException.ShouldBeSameAs(inner);
     }
@@ -581,12 +1083,12 @@ public class ResultAssertExceptionTests
     public void Exception_Can_Be_Thrown_And_Caught()
     {
         var inner = new ArgumentException("inner arg");
-        
+
         var caught = Should.Throw<ResultAssertException>(() =>
         {
             throw new ResultAssertException("Test throw", inner);
         });
-        
+
         caught.Message.ShouldBe("Test throw");
         caught.InnerException.ShouldBeSameAs(inner);
     }
@@ -605,7 +1107,7 @@ public class ResultAssertExtensionsTests
     public void ShouldBeSuccess_NonGeneric_Throws_When_Failure()
     {
         var failure = Result.Failure();
-        
+
         Should.Throw<ResultAssertException>(() => failure.ShouldBeSuccess());
     }
 
@@ -613,7 +1115,7 @@ public class ResultAssertExtensionsTests
     public void ShouldBeFailure_NonGeneric_Throws_When_Success()
     {
         var success = Result.Success();
-        
+
         Should.Throw<ResultAssertException>(() => success.ShouldBeFailure());
     }
 
@@ -621,7 +1123,7 @@ public class ResultAssertExtensionsTests
     public void ShouldHaveException_NonGeneric_Throws_When_No_Exception()
     {
         var failure = Result.Failure();
-        
+
         Should.Throw<ResultAssertException>(() => failure.ShouldHaveException());
     }
 
@@ -629,7 +1131,7 @@ public class ResultAssertExtensionsTests
     public void ShouldHaveException_Generic_Throws_When_Wrong_Type()
     {
         var failure = Result.Failure(new InvalidOperationException());
-        
+
         Should.Throw<ResultAssertException>(() => failure.ShouldHaveException<ArgumentException>());
     }
 
@@ -637,7 +1139,7 @@ public class ResultAssertExtensionsTests
     public void ShouldBeSuccess_Generic_Throws_When_Failure()
     {
         var failure = Result<int>.Failure();
-        
+
         Should.Throw<ResultAssertException>(() => failure.ShouldBeSuccess());
     }
 
@@ -645,7 +1147,7 @@ public class ResultAssertExtensionsTests
     public void ShouldBeFailure_Generic_Throws_When_Success()
     {
         var success = Result<int>.Success(42);
-        
+
         Should.Throw<ResultAssertException>(() => success.ShouldBeFailure());
     }
 
@@ -653,7 +1155,7 @@ public class ResultAssertExtensionsTests
     public void ShouldHaveValue_Throws_When_Value_Differs()
     {
         var result = Result<string>.Success("actual");
-        
+
         Should.Throw<ResultAssertException>(() => result.ShouldHaveValue("expected"));
     }
 
@@ -661,7 +1163,7 @@ public class ResultAssertExtensionsTests
     public void ShouldHaveValueMatching_Throws_When_Predicate_Fails()
     {
         var result = Result<int>.Success(5);
-        
+
         Should.Throw<ResultAssertException>(() => result.ShouldHaveValueMatching(v => v > 100));
     }
 
@@ -669,7 +1171,7 @@ public class ResultAssertExtensionsTests
     public void ShouldHaveFailureKey_Throws_When_Key_Missing()
     {
         var result = Result<string>.Failure(d => d.Add("A", "value"));
-        
+
         Should.Throw<ResultAssertException>(() => result.ShouldHaveFailureKey("B"));
     }
 
@@ -677,7 +1179,7 @@ public class ResultAssertExtensionsTests
     public void ShouldHaveFailure_Throws_When_Value_Missing()
     {
         var result = Result<string>.Failure(d => d.Add("Key", "actual"));
-        
+
         Should.Throw<ResultAssertException>(() => result.ShouldHaveFailure("Key", "expected"));
     }
 
@@ -685,7 +1187,7 @@ public class ResultAssertExtensionsTests
     public void ShouldHaveFailureException_NonTyped_Throws_When_No_Exception()
     {
         var result = Result<string>.Failure(d => d.Add("Exception", "not-exception"));
-        
+
         Should.Throw<ResultAssertException>(() => result.ShouldHaveFailureException());
     }
 
@@ -693,7 +1195,7 @@ public class ResultAssertExtensionsTests
     public void ShouldHaveFailureException_Typed_Throws_When_Wrong_Type()
     {
         var result = Result<string>.Failure(new InvalidOperationException());
-        
+
         Should.Throw<ResultAssertException>(() => result.ShouldHaveFailureException<string, ArgumentException>());
     }
 
@@ -701,7 +1203,7 @@ public class ResultAssertExtensionsTests
     public void ShouldHaveValueMatching_Returns_Result_When_Predicate_Matches()
     {
         var result = Result<int>.Success(10);
-        
+
         var returned = result.ShouldHaveValueMatching(v => v == 10);
         returned.IsSuccess.ShouldBeTrue();
         returned.Object.ShouldBe(10);
@@ -712,7 +1214,7 @@ public class ResultAssertExtensionsTests
     {
         var ex = new InvalidOperationException("stored");
         var result = Result<string>.Failure(ex);
-        
+
         var returnedException = result.ShouldHaveFailureException();
         returnedException.ShouldBeSameAs(ex);
     }
