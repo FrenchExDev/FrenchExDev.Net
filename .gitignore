@@ -16,3 +16,4 @@ doc/gen/
 **/test/temp/**
 _Scripts/logs/**
 **/test/*.xml
+TestResults/
