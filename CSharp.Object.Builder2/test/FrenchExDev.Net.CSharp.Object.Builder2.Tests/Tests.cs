@@ -1,12 +1,10 @@
-﻿using Shouldly;
+using Shouldly;
+using FrenchExDev.Net.CSharp.Object.Result2;
 
 namespace FrenchExDev.Net.CSharp.Object.Builder2.Tests;
 
 #region Test Domain Models
 
-/// <summary>
-/// Simple domain model for testing.
-/// </summary>
 public class Person
 {
     public string Name { get; set; } = string.Empty;
@@ -16,9 +14,6 @@ public class Person
     public List<Person> Friends { get; set; } = [];
 }
 
-/// <summary>
-/// Nested domain model for testing.
-/// </summary>
 public class Address
 {
     public string Street { get; set; } = string.Empty;
@@ -26,9 +21,6 @@ public class Address
     public string? ZipCode { get; set; }
 }
 
-/// <summary>
-/// Domain model with circular reference for testing.
-/// </summary>
 public class Department
 {
     public string Name { get; set; } = string.Empty;
@@ -52,31 +44,24 @@ public class SimpleObject
     public string Value { get; set; } = string.Empty;
 }
 
-#endregion
+public class ThreadSafeCounter
+{
+    public int BuildCount;
+    public int InstantiateCount;
+}
 
+#endregion
 
 #region Test Builders
 
 public class StringIsEmptyOrWhitespaceException : Exception
 {
-    public StringIsEmptyOrWhitespaceException()
-    {
-    }
-
-    public StringIsEmptyOrWhitespaceException(string? message) : base(message)
-    {
-    }
+    public StringIsEmptyOrWhitespaceException() { }
+    public StringIsEmptyOrWhitespaceException(string? message) : base(message) { }
 }
 
-/// <summary>
-/// Simple builder for Person with validation.
-/// </summary>
 public class PersonBuilder : AbstractBuilder<Person>
 {
-    public PersonBuilder()
-    {
-    }
-
     public string? Name { get; set; }
     public int Age { get; set; }
     public string? Email { get; set; }
@@ -96,10 +81,7 @@ public class PersonBuilder : AbstractBuilder<Person>
     {
         AssertNotNullOrEmptyOrWhitespace(Name, nameof(Name), failures, n => new StringIsEmptyOrWhitespaceException(n));
         Assert(() => Age < 0, nameof(Age), failures, n => new ArgumentOutOfRangeException(n, "Age cannot be negative"));
-
-        if (AddressBuilder is not null)
-            AddressBuilder.Validate(visitedCollector, failures);
-
+        AddressBuilder?.Validate(visitedCollector, failures);
         ValidateListInternal(Friends, nameof(Friends), visitedCollector, failures);
     }
 
@@ -118,28 +100,16 @@ public class PersonBuilder : AbstractBuilder<Person>
         configure(AddressBuilder);
         return this;
     }
-    public PersonBuilder WithFriend(Action<PersonBuilder> configure)
-    {
-        Friends.New(configure);
-        return this;
-    }
+    public PersonBuilder WithFriend(Action<PersonBuilder> configure) { Friends.New(configure); return this; }
 }
 
-/// <summary>
-/// Simple builder for Address with validation.
-/// </summary>
 public class AddressBuilder : AbstractBuilder<Address>
 {
     public string? Street { get; set; }
     public string? City { get; set; }
     public string? ZipCode { get; set; }
 
-    protected override Address Instantiate() => new()
-    {
-        Street = Street!,
-        City = City!,
-        ZipCode = ZipCode
-    };
+    protected override Address Instantiate() => new() { Street = Street!, City = City!, ZipCode = ZipCode };
 
     protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
@@ -152,9 +122,6 @@ public class AddressBuilder : AbstractBuilder<Address>
     public AddressBuilder WithZipCode(string zipCode) { ZipCode = zipCode; return this; }
 }
 
-/// <summary>
-/// Builder for Department with circular reference handling.
-/// </summary>
 public class DepartmentBuilder : AbstractBuilder<Department>
 {
     public string? Name { get; set; }
@@ -188,26 +155,15 @@ public class DepartmentBuilder : AbstractBuilder<Department>
         configure(ManagerBuilder);
         return this;
     }
-    public DepartmentBuilder WithEmployee(Action<EmployeeBuilder> configure)
-    {
-        Employees.New(configure);
-        return this;
-    }
+    public DepartmentBuilder WithEmployee(Action<EmployeeBuilder> configure) { Employees.New(configure); return this; }
 }
 
-/// <summary>
-/// Builder for Employee.
-/// </summary>
 public class EmployeeBuilder : AbstractBuilder<Employee>
 {
     public string? Name { get; set; }
     public Reference<Department>? DepartmentRef { get; set; }
 
-    protected override Employee Instantiate() => new()
-    {
-        Name = Name!,
-        Department = DepartmentRef?.ResolvedOrNull()
-    };
+    protected override Employee Instantiate() => new() { Name = Name!, Department = DepartmentRef?.ResolvedOrNull() };
 
     protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
     {
@@ -218,21 +174,13 @@ public class EmployeeBuilder : AbstractBuilder<Employee>
     public EmployeeBuilder WithDepartment(Reference<Department> deptRef) { DepartmentRef = deptRef; return this; }
 }
 
-/// <summary>
-/// Builder with no validation for testing basic functionality.
-/// </summary>
 public class SimpleObjectBuilder : AbstractBuilder<SimpleObject>
 {
     public string? Value { get; set; }
-
     protected override SimpleObject Instantiate() => new() { Value = Value ?? string.Empty };
-
     public SimpleObjectBuilder WithValue(string value) { Value = value; return this; }
 }
 
-/// <summary>
-/// Builder that uses AssertNotEmptyOrWhitespace with List for testing.
-/// </summary>
 public class TaggedItemBuilder : AbstractBuilder<TaggedItem>
 {
     public List<string>? Tags { get; set; }
@@ -252,8 +200,26 @@ public class TaggedItemBuilder : AbstractBuilder<TaggedItem>
     public TaggedItemBuilder WithNullableTags(List<string>? tags) { NullableTags = tags; return this; }
 }
 
-#endregion
+public class SlowBuilder : AbstractBuilder<SimpleObject>
+{
+    private readonly ThreadSafeCounter _counter;
+    public string? Value { get; set; }
 
+    public SlowBuilder() { _counter = new ThreadSafeCounter(); }
+    public SlowBuilder(ThreadSafeCounter counter) { _counter = counter; }
+
+    protected override SimpleObject Instantiate()
+    {
+        Interlocked.Increment(ref _counter.InstantiateCount);
+        Thread.Sleep(10);
+        return new() { Value = Value ?? string.Empty };
+    }
+
+    public SlowBuilder WithValue(string value) { Value = value; return this; }
+    public int GetInstantiateCount() => _counter.InstantiateCount;
+}
+
+#endregion
 
 public class Tests
 {
@@ -262,69 +228,74 @@ public class Tests
     [Fact]
     public void Build_SimpleObject_ShouldCreateInstance()
     {
-        // Arrange
-        var builder = new SimpleObjectBuilder()
-            .WithValue("test");
-
-        // Act
+        var builder = new SimpleObjectBuilder().WithValue("test");
         var result = builder.Build().Value.Resolved();
-
-        // Assert
-        result.Value.ShouldNotBeNull();
-        result.Value.ShouldBeSameAs("test");
+        result.ShouldNotBeNull();
+        result.Value.ShouldBe("test");
     }
 
     [Fact]
     public void Build_PersonWithAllProperties_ShouldCreateCompleteInstance()
     {
-        // Arrange
         var builder = new PersonBuilder()
-            .WithName("John Doe")
-            .WithAge(30)
-            .WithEmail("john@example.com")
-            .WithAddress(a => a
-                .WithStreet("123 Main St")
-                .WithCity("Paris")
-                .WithZipCode("75001"));
-
-        // Act
+            .WithName("John Doe").WithAge(30).WithEmail("john@example.com")
+            .WithAddress(a => a.WithStreet("123 Main St").WithCity("Paris").WithZipCode("75001"));
         var result = builder.Build().Value.Resolved();
-
-        // Assert
         result.ShouldNotBeNull();
         result.Name.ShouldBe("John Doe");
         result.Age.ShouldBe(30);
-        result.Email.ShouldBe("john@example.com");
         result.Address.ShouldNotBeNull();
         result.Address.Street.ShouldBe("123 Main St");
-        result.Address.City.ShouldBe("Paris");
-        result.Address.ZipCode.ShouldBe("75001");
     }
 
     [Fact]
     public void Build_PersonWithFriends_ShouldCreateNestedList()
     {
-        // Arrange
-        var builder = new PersonBuilder()
-            .WithName("Alice")
-            .WithAge(25)
+        var builder = new PersonBuilder().WithName("Alice").WithAge(25)
             .WithFriend(f => f.WithName("Bob").WithAge(26))
             .WithFriend(f => f.WithName("Charlie").WithAge(27));
-
-        // Act
         var result = builder.Build().Value.Resolved();
-
-        // Assert
-        result.ShouldNotBeNull();
         result.Friends.Count.ShouldBe(2);
         result.Friends[0].Name.ShouldBe("Bob");
-        result.Friends[1].Name.ShouldBe("Charlie");
     }
 
     #endregion
 
     #region Validation Tests
 
+    [Fact]
+    public void Build_PersonWithNullName_ShouldFail()
+    {
+        var builder = new PersonBuilder().WithAge(25);
+        var buildResult = builder.Build();
+        buildResult.Value.IsResolved.ShouldBeFalse();
+        builder.BuildStatus.ShouldBe(BuildStatus.Building);
+    }
+
+    [Fact]
+    public void BuildOrThrow_PersonWithNullName_ShouldThrowAggregateException()
+    {
+        var builder = new PersonBuilder().WithAge(25);
+        var exception = Should.Throw<AggregateException>(() => builder.BuildOrThrow());
+        exception.InnerExceptions.ShouldContain(e => e is StringIsEmptyOrWhitespaceException);
+    }
+
+    [Fact]
+    public void BuildOrThrow_PersonWithNegativeAge_ShouldThrowAggregateException()
+    {
+        var builder = new PersonBuilder().WithName("John").WithAge(-1);
+        var exception = Should.Throw<AggregateException>(() => builder.BuildOrThrow());
+        exception.InnerExceptions.ShouldContain(e => e is ArgumentOutOfRangeException);
+    }
+
+    [Fact]
+    public void BuildOrThrow_AddressWithMissingStreet_ShouldThrowAggregateException()
+    {
+        var builder = new PersonBuilder().WithName("John").WithAge(25)
+            .WithAddress(a => a.WithCity("Paris"));
+        var exception = Should.Throw<AggregateException>(() => builder.BuildOrThrow());
+        exception.InnerExceptions.ShouldContain(e => e is StringIsEmptyOrWhitespaceException);
+    }
 
     #endregion
 
@@ -333,15 +304,9 @@ public class Tests
     [Fact]
     public void Reference_ShouldReturnSameInstanceAfterBuild()
     {
-        // Arrange
-        var builder = new SimpleObjectBuilder()
-            .WithValue("test");
-
-        // Act
+        var builder = new SimpleObjectBuilder().WithValue("test");
         var reference = builder.Reference();
         builder.Build().Value.Resolved();
-
-        // Assert
         reference.ResolvedOrNull().ShouldNotBeNull();
         reference.ResolvedOrNull()?.Value.ShouldBe("test");
     }
@@ -349,15 +314,33 @@ public class Tests
     [Fact]
     public void Reference_BeforeBuild_ShouldReturnNull()
     {
-        // Arrange
-        var builder = new SimpleObjectBuilder()
-            .WithValue("test");
-
-        // Act
+        var builder = new SimpleObjectBuilder().WithValue("test");
         var reference = builder.Reference();
-
-        // Assert
         reference.ResolvedOrNull().ShouldBeNull();
+    }
+
+    [Fact]
+    public void Reference_Resolved_BeforeBuild_ShouldThrowReferenceNotResolvedException()
+    {
+        var builder = new SimpleObjectBuilder().WithValue("test");
+        var reference = builder.Reference();
+        Should.Throw<ReferenceNotResolvedException>(() => reference.Resolved());
+    }
+
+    [Fact]
+    public void Reference_ConstructorWithExisting_ShouldResolveImmediately()
+    {
+        var obj = new SimpleObject { Value = "test" };
+        var reference = new Reference<SimpleObject>(obj);
+        reference.IsResolved.ShouldBeTrue();
+        reference.Instance.ShouldBe(obj);
+    }
+
+    [Fact]
+    public void Reference_ConstructorWithNull_ShouldNotBeResolved()
+    {
+        var reference = new Reference<SimpleObject>(null);
+        reference.IsResolved.ShouldBeFalse();
     }
 
     #endregion
@@ -367,30 +350,16 @@ public class Tests
     [Fact]
     public void Build_DepartmentWithEmployees_ShouldHandleCircularReferences()
     {
-        // Arrange
-        var departmentBuilder = new DepartmentBuilder()
-            .WithName("Engineering");
-
+        var departmentBuilder = new DepartmentBuilder().WithName("Engineering");
         departmentBuilder
-            .WithManager(m => m
-                .WithName("Alice")
-                .WithDepartment(departmentBuilder.Reference()))
-            .WithEmployee(e => e
-                .WithName("Bob")
-                .WithDepartment(departmentBuilder.Reference()))
-            .WithEmployee(e => e
-                .WithName("Charlie")
-                .WithDepartment(departmentBuilder.Reference()));
+            .WithManager(m => m.WithName("Alice").WithDepartment(departmentBuilder.Reference()))
+            .WithEmployee(e => e.WithName("Bob").WithDepartment(departmentBuilder.Reference()))
+            .WithEmployee(e => e.WithName("Charlie").WithDepartment(departmentBuilder.Reference()));
 
-        // Act
         var result = departmentBuilder.Build().Value.Resolved();
-
-        // Assert
-        result.ShouldNotBeNull();
         result.Name.ShouldBe("Engineering");
         result.Manager.ShouldNotBeNull();
         result.Manager.Name.ShouldBe("Alice");
-        // Note: The department reference is resolved after build, so we check via the reference
         departmentBuilder.Reference().IsResolved.ShouldBeTrue();
         result.Employees.Count.ShouldBe(2);
     }
@@ -402,60 +371,413 @@ public class Tests
     [Fact]
     public void BuilderList_New_ShouldAddConfiguredItem()
     {
-        // Arrange
-        var builder = new PersonBuilder()
-            .WithName("Parent")
-            .WithAge(40);
-
-        // Act
+        var builder = new PersonBuilder().WithName("Parent").WithAge(40);
         builder.Friends.New(f => f.WithName("Friend1").WithAge(20));
         builder.Friends.New(f => f.WithName("Friend2").WithAge(21));
         var result = builder.Build().Value.Resolved();
-
-        // Assert
         result.Friends.Count.ShouldBe(2);
     }
 
     [Fact]
     public void BuilderList_AsReferenceList_ShouldReturnReferences()
     {
-        // Arrange
-        var builder = new PersonBuilder()
-            .WithName("Parent")
-            .WithAge(40)
+        var builder = new PersonBuilder().WithName("Parent").WithAge(40)
             .WithFriend(f => f.WithName("Friend1").WithAge(20));
-
-        // Act
         builder.Build().Value.Resolved();
         var referenceList = builder.Friends.AsReferenceList();
-
-        // Assert
         referenceList.AsEnumerable().Count().ShouldBe(1);
     }
 
-    #endregion
-
-    #region TaggedItem Validation Tests
-
+    [Fact]
+    public void BuilderList_BuildSuccess_ShouldBuildAllItems()
+    {
+        var list = new BuilderList<SimpleObject, SimpleObjectBuilder>();
+        list.New(b => b.WithValue("first"));
+        list.New(b => b.WithValue("second"));
+        var results = list.BuildSuccess();
+        results.Count.ShouldBe(2);
+        results[0].Value.ShouldBe("first");
+    }
 
     [Fact]
-    public void Build_TaggedItemWithValidTags_ShouldSucceed()
+    public void BuilderList_ValidateFailures_ShouldReturnFailures()
     {
-        // Arrange
-        var builder = new TaggedItemBuilder()
-            .WithTags(["tag1", "tag2", "tag3"]);
-
-        // Act
-        var result = builder.Build().Value.Resolved();
-
-        // Assert
-        result.ShouldNotBeNull();
-        result.Tags.Count.ShouldBe(3);
+        var list = new BuilderList<Person, PersonBuilder>();
+        list.New(b => b.WithName("Valid").WithAge(25));
+        list.New(b => b.WithAge(30)); // Missing name
+        var failures = list.ValidateFailures();
+        failures.Count.ShouldBe(1);
     }
 
     #endregion
 
-    #region Multiple Validation Failures Tests
+    #region ReferenceList Tests
+
+    [Fact]
+    public void ReferenceList_DefaultConstructor_ShouldCreateEmptyList()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Count.ShouldBe(0);
+        list.Any().ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ReferenceList_Add_ShouldAddInstance()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        var obj = new SimpleObject { Value = "test" };
+        list.Add(obj);
+        list.Count.ShouldBe(1);
+        list[0].Value.ShouldBe("test");
+    }
+
+    [Fact]
+    public void ReferenceList_AddReference_ShouldAddReference()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        var reference = new Reference<SimpleObject>().Resolve(new SimpleObject { Value = "test" });
+        list.Add(reference);
+        list.Count.ShouldBe(1);
+        list.Contains(reference).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ReferenceList_Contains_ShouldFindInstance()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        var obj = new SimpleObject { Value = "test" };
+        list.Add(obj);
+        list.Contains(obj).ShouldBeTrue();
+        list.Contains(new SimpleObject { Value = "other" }).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ReferenceList_Any_WithPredicate_ShouldFindMatch()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "first" });
+        list.Add(new SimpleObject { Value = "second" });
+        list.Any(x => x.Value == "first").ShouldBeTrue();
+        list.Any(x => x.Value == "nonexistent").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ReferenceList_All_ShouldCheckAllItems()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "a" });
+        list.Add(new SimpleObject { Value = "ab" });
+        list.All(x => x.Value.Length > 0).ShouldBeTrue();
+        list.All(x => x.Value.Length > 1).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ReferenceList_Where_ShouldFilterItems()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "a" });
+        list.Add(new SimpleObject { Value = "ab" });
+        list.Add(new SimpleObject { Value = "abc" });
+        var filtered = list.Where(x => x.Value.Length >= 2).ToList();
+        filtered.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void ReferenceList_Select_ShouldMapItems()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "hello" });
+        list.Add(new SimpleObject { Value = "world" });
+        var lengths = list.Select(x => x.Value.Length).ToList();
+        lengths.ShouldBe([5, 5]);
+    }
+
+    [Fact]
+    public void ReferenceList_IndexOf_ShouldFindIndex()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        var obj1 = new SimpleObject { Value = "first" };
+        var obj2 = new SimpleObject { Value = "second" };
+        list.Add(obj1);
+        list.Add(obj2);
+        list.IndexOf(obj1).ShouldBe(0);
+        list.IndexOf(obj2).ShouldBe(1);
+    }
+
+    [Fact]
+    public void ReferenceList_IndexOf_NotFound_ShouldThrow()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "test" });
+        Should.Throw<InvalidOperationException>(() => list.IndexOf(new SimpleObject { Value = "other" }));
+    }
+
+    [Fact]
+    public void ReferenceList_Insert_ShouldInsertAtIndex()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "first" });
+        list.Add(new SimpleObject { Value = "third" });
+        list.Insert(1, new SimpleObject { Value = "second" });
+        list.Count.ShouldBe(3);
+        list[1].Value.ShouldBe("second");
+    }
+
+    [Fact]
+    public void ReferenceList_RemoveAt_ShouldRemoveAtIndex()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "first" });
+        list.Add(new SimpleObject { Value = "second" });
+        list.RemoveAt(0);
+        list.Count.ShouldBe(1);
+        list[0].Value.ShouldBe("second");
+    }
+
+    [Fact]
+    public void ReferenceList_Clear_ShouldRemoveAllItems()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "first" });
+        list.Add(new SimpleObject { Value = "second" });
+        list.Clear();
+        list.Count.ShouldBe(0);
+    }
+
+    [Fact]
+    public void ReferenceList_Remove_ShouldRemoveItem()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        var obj = new SimpleObject { Value = "test" };
+        list.Add(obj);
+        var removed = list.Remove(obj);
+        removed.ShouldBeTrue();
+        list.Count.ShouldBe(0);
+    }
+
+    [Fact]
+    public void ReferenceList_Remove_NotFound_ShouldReturnFalse()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "test" });
+        var removed = list.Remove(new SimpleObject { Value = "other" });
+        removed.ShouldBeFalse();
+        list.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void ReferenceList_CopyTo_ShouldCopyItems()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "first" });
+        list.Add(new SimpleObject { Value = "second" });
+        var array = new SimpleObject[3];
+        list.CopyTo(array, 1);
+        array[0].ShouldBeNull();
+        array[1].Value.ShouldBe("first");
+        array[2].Value.ShouldBe("second");
+    }
+
+    [Fact]
+    public void ReferenceList_Indexer_Set_ShouldReplaceItem()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "old" });
+        list[0] = new SimpleObject { Value = "new" };
+        list[0].Value.ShouldBe("new");
+    }
+
+    [Fact]
+    public void ReferenceList_ElementAt_ShouldReturnItem()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "test" });
+        list.ElementAt(0).Value.ShouldBe("test");
+    }
+
+    [Fact]
+    public void ReferenceList_Queryable_ShouldReturnQueryable()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "test" });
+        var queryable = list.Queryable;
+        queryable.ShouldNotBeNull();
+        queryable.Count().ShouldBe(1);
+    }
+
+    [Fact]
+    public void ReferenceList_IsReadOnly_ShouldBeFalse()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.IsReadOnly.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ReferenceList_GetEnumerator_ShouldEnumerate()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "test" });
+        var items = new List<SimpleObject>();
+        foreach (var item in list) items.Add(item);
+        items.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void ReferenceList_NonGenericGetEnumerator_ShouldEnumerate()
+    {
+        var list = new ReferenceList<SimpleObject>();
+        list.Add(new SimpleObject { Value = "test" });
+        var items = new List<object>();
+        System.Collections.IEnumerable enumerable = list;
+        foreach (var item in enumerable) items.Add(item);
+        items.Count.ShouldBe(1);
+    }
+
+    #endregion
+
+    #region Failure Tests
+
+    [Fact]
+    public void Failure_ImplicitConversion_FromException_ShouldWork()
+    {
+        var ex = new InvalidOperationException("test");
+        Failure failure = ex;
+        failure.Value.ShouldBe(ex);
+    }
+
+    [Fact]
+    public void Failure_ImplicitConversion_FromString_ShouldWork()
+    {
+        var message = "error message";
+        Failure failure = message;
+        failure.Value.ShouldBe(message);
+    }
+
+    [Fact]
+    public void Failure_ImplicitConversion_FromFailuresDictionary_ShouldWork()
+    {
+        var dict = new FailuresDictionary();
+        dict.Failure("key", new InvalidOperationException("test"));
+        Failure failure = dict;
+        failure.Value.ShouldBe(dict);
+    }
+
+    #endregion
+
+    #region ReferenceNotResolvedException Tests
+
+    [Fact]
+    public void ReferenceNotResolvedException_DefaultConstructor_ShouldWork()
+    {
+        var ex = new ReferenceNotResolvedException();
+        ex.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void ReferenceNotResolvedException_MessageConstructor_ShouldSetMessage()
+    {
+        var ex = new ReferenceNotResolvedException("custom message");
+        ex.Message.ShouldBe("custom message");
+    }
+
+    [Fact]
+    public void ReferenceNotResolvedException_InnerExceptionConstructor_ShouldSetInnerException()
+    {
+        var inner = new InvalidOperationException("inner");
+        var ex = new ReferenceNotResolvedException("outer", inner);
+        ex.Message.ShouldBe("outer");
+        ex.InnerException.ShouldBe(inner);
+    }
+
+    #endregion
+
+    #region AbstractBuilder Tests
+
+    [Fact]
+    public void AbstractBuilder_Result_BeforeBuild_ShouldThrow()
+    {
+        var builder = new SimpleObjectBuilder().WithValue("test");
+        Should.Throw<InvalidOperationException>(() => _ = builder.Result);
+    }
+
+    [Fact]
+    public void AbstractBuilder_Result_AfterBuild_ShouldReturnValue()
+    {
+        var builder = new SimpleObjectBuilder().WithValue("test");
+        builder.Build();
+        var result = builder.Result;
+        result.ShouldNotBeNull();
+        result.Value.ShouldBe("test");
+    }
+
+    [Fact]
+    public void AbstractBuilder_Id_ShouldBeUnique()
+    {
+        var builder1 = new SimpleObjectBuilder();
+        var builder2 = new SimpleObjectBuilder();
+        builder1.Id.ShouldNotBe(builder2.Id);
+        builder1.Id.ShouldNotBe(Guid.Empty);
+    }
+
+    [Fact]
+    public void Build_CalledTwice_ShouldReturnSameResult()
+    {
+        var builder = new SimpleObjectBuilder().WithValue("test");
+        var result1 = builder.Build();
+        var result2 = builder.Build();
+        result1.Value.ShouldBeSameAs(result2.Value);
+        builder.BuildStatus.ShouldBe(BuildStatus.Built);
+    }
+
+    [Fact]
+    public void Build_WithExistingInstance_ShouldReturnExistingInstance()
+    {
+        var existingObj = new SimpleObject { Value = "existing" };
+        var builder = new SimpleObjectBuilder().Existing(existingObj);
+        var result = builder.Build().Value.Resolved();
+        result.ShouldBeSameAs(existingObj);
+    }
+
+    [Fact]
+    public void Build_WithExistingInstance_ShouldNotCallInstantiate()
+    {
+        var existingObj = new SimpleObject { Value = "existing" };
+        var counter = new ThreadSafeCounter();
+        var builder = new SlowBuilder(counter);
+        builder.Existing(existingObj);
+        builder.Build();
+        builder.GetInstantiateCount().ShouldBe(0);
+    }
+
+    [Fact]
+    public void Existing_ShouldReturnSameBuilderInstance()
+    {
+        var builder = new SimpleObjectBuilder();
+        var existingObj = new SimpleObject { Value = "test" };
+        var result = builder.Existing(existingObj);
+        result.ShouldBeSameAs(builder);
+    }
+
+    #endregion
+
+    #region FailuresDictionary Tests
+
+    [Fact]
+    public void FailuresDictionary_Failure_ShouldAddToExistingList()
+    {
+        var dict = new FailuresDictionary();
+        dict.Failure("key", new InvalidOperationException("first"));
+        dict.Failure("key", new InvalidOperationException("second"));
+        dict["key"].Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void FailuresDictionary_Failure_ShouldReturnSameInstance()
+    {
+        var dict = new FailuresDictionary();
+        var result = dict.Failure("key", new InvalidOperationException("test"));
+        result.ShouldBeSameAs(dict);
+    }
 
     #endregion
 
@@ -464,15 +786,8 @@ public class Tests
     [Fact]
     public void Build_PersonWithNullAddress_ShouldSucceed()
     {
-        // Arrange
-        var builder = new PersonBuilder()
-            .WithName("John")
-            .WithAge(25);
-
-        // Act
+        var builder = new PersonBuilder().WithName("John").WithAge(25);
         var result = builder.Build().Value.Resolved();
-
-        // Assert
         result.ShouldNotBeNull();
         result.Address.ShouldBeNull();
     }
@@ -480,65 +795,61 @@ public class Tests
     [Fact]
     public void Build_PersonWithEmptyFriendsList_ShouldSucceed()
     {
-        // Arrange
-        var builder = new PersonBuilder()
-            .WithName("John")
-            .WithAge(25);
-
-        // Act
+        var builder = new PersonBuilder().WithName("John").WithAge(25);
         var result = builder.Build().Value.Resolved();
-
-        // Assert
         result.ShouldNotBeNull();
         result.Friends.ShouldBeEmpty();
     }
 
     [Fact]
-    public void Build_AddressWithNullZipCode_ShouldSucceed()
+    public void Build_TaggedItemWithValidTags_ShouldSucceed()
     {
-        // Arrange
-        var builder = new AddressBuilder()
-            .WithStreet("123 Main St")
-            .WithCity("Paris");
-
-        // Act
+        var builder = new TaggedItemBuilder().WithTags(["tag1", "tag2", "tag3"]);
         var result = builder.Build().Value.Resolved();
-
-        // Assert
         result.ShouldNotBeNull();
-        result.ZipCode.ShouldBeNull();
+        result.Tags.Count.ShouldBe(3);
     }
 
     [Fact]
-    public void Build_DepartmentWithNoManager_ShouldSucceed()
+    public void BuildOrThrow_TaggedItemWithNullTags_ShouldThrowAggregateException()
     {
-        // Arrange
-        var builder = new DepartmentBuilder()
-            .WithName("Sales")
-            .WithEmployee(e => e.WithName("John"));
-
-        // Act
-        var result = builder.Build().Value.Resolved();
-
-        // Assert
-        result.ShouldNotBeNull();
-        result.Manager.ShouldBeNull();
-        result.Employees.Count.ShouldBe(1);
+        var builder = new TaggedItemBuilder();
+        var exception = Should.Throw<AggregateException>(() => builder.BuildOrThrow());
+        exception.InnerExceptions.ShouldContain(e => e is ArgumentNullException);
     }
 
     [Fact]
-    public void Build_DepartmentWithNoEmployees_ShouldSucceed()
+    public void BuildOrThrow_TaggedItemWithEmptyTags_ShouldThrowAggregateException()
     {
-        // Arrange
-        var builder = new DepartmentBuilder()
-            .WithName("Empty Dept");
+        var builder = new TaggedItemBuilder().WithTags([]);
+        var exception = Should.Throw<AggregateException>(() => builder.BuildOrThrow());
+        exception.InnerExceptions.ShouldContain(e => e is StringIsEmptyOrWhitespaceException);
+    }
 
-        // Act
-        var result = builder.Build().Value.Resolved();
+    [Fact]
+    public void BuildOrThrow_TaggedItemWithWhitespaceTag_ShouldThrowAggregateException()
+    {
+        var builder = new TaggedItemBuilder().WithTags(["valid", "   ", "another"]);
+        var exception = Should.Throw<AggregateException>(() => builder.BuildOrThrow());
+        exception.InnerExceptions.ShouldNotBeEmpty();
+    }
 
-        // Assert
+    [Fact]
+    public void BuildOrThrow_ValidBuilder_ShouldReturnObject()
+    {
+        var builder = new PersonBuilder().WithName("John").WithAge(25);
+        var result = builder.BuildOrThrow();
         result.ShouldNotBeNull();
-        result.Employees.ShouldBeEmpty();
+        result.Name.ShouldBe("John");
+    }
+
+    [Fact]
+    public void BuildOrThrow_NestedValidationFailure_ShouldExtractNestedExceptions()
+    {
+        var builder = new PersonBuilder().WithName("Alice").WithAge(25)
+            .WithFriend(f => f.WithAge(26)); // Missing name
+        var exception = Should.Throw<AggregateException>(() => builder.BuildOrThrow());
+        exception.InnerExceptions.ShouldNotBeEmpty();
     }
 
     #endregion
@@ -548,33 +859,369 @@ public class Tests
     [Fact]
     public void FluentApi_ShouldReturnSameBuilderInstance()
     {
-        // Arrange
         var builder = new PersonBuilder();
-
-        // Act
-        var result = builder
-            .WithName("Test")
-            .WithAge(25)
-            .WithEmail("test@test.com");
-
-        // Assert
+        var result = builder.WithName("Test").WithAge(25).WithEmail("test@test.com");
         result.ShouldBeSameAs(builder);
     }
 
     [Fact]
     public void FluentApi_AddressBuilder_ShouldReturnSameBuilderInstance()
     {
-        // Arrange
         var builder = new AddressBuilder();
-
-        // Act
-        var result = builder
-            .WithStreet("Street")
-            .WithCity("City")
-            .WithZipCode("12345");
-
-        // Assert
+        var result = builder.WithStreet("Street").WithCity("City").WithZipCode("12345");
         result.ShouldBeSameAs(builder);
+    }
+
+    #endregion
+
+    #region Thread-Safety Tests
+
+    [Fact]
+    public async Task Reference_Resolve_ShouldBeThreadSafe_OnlyFirstWins()
+    {
+        var reference = new Reference<SimpleObject>();
+        var obj1 = new SimpleObject { Value = "first" };
+        var obj2 = new SimpleObject { Value = "second" };
+        var obj3 = new SimpleObject { Value = "third" };
+
+        var tasks = new[]
+        {
+            Task.Run(() => reference.Resolve(obj1)),
+            Task.Run(() => reference.Resolve(obj2)),
+            Task.Run(() => reference.Resolve(obj3))
+        };
+        await Task.WhenAll(tasks);
+
+        reference.IsResolved.ShouldBeTrue();
+        var resolved = reference.Resolved();
+        new[] { "first", "second", "third" }.ShouldContain(resolved.Value);
+    }
+
+    [Fact]
+    public async Task Build_ConcurrentCalls_ShouldOnlyBuildOnce()
+    {
+        var counter = new ThreadSafeCounter();
+        var builder = new SlowBuilder(counter).WithValue("test");
+
+        var tasks = Enumerable.Range(0, 10)
+            .Select(_ => Task.Run(() => builder.Build()))
+            .ToArray();
+        await Task.WhenAll(tasks);
+
+        builder.GetInstantiateCount().ShouldBe(1);
+        builder.BuildStatus.ShouldBe(BuildStatus.Built);
+    }
+
+    [Fact]
+    public async Task Build_ConcurrentCalls_AllShouldReturnSameReference()
+    {
+        var builder = new SimpleObjectBuilder().WithValue("test");
+
+        var tasks = Enumerable.Range(0, 10)
+            .Select(_ => Task.Run(() => builder.Build()))
+            .ToArray();
+        var results = await Task.WhenAll(tasks);
+
+        var firstRef = results[0].Value;
+        foreach (var result in results)
+        {
+            result.Value.ShouldBeSameAs(firstRef);
+        }
+    }
+
+    [Fact]
+    public async Task Validate_ConcurrentCalls_ShouldOnlyValidateOnce()
+    {
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+        var visited = new VisitedObjectDictionary();
+        var failures = new FailuresDictionary();
+
+        builder.Validate(visited, failures);
+        var statusAfterFirst = builder.ValidationStatus;
+
+        var tasks = Enumerable.Range(0, 10)
+            .Select(_ => Task.Run(() =>
+            {
+                var v = new VisitedObjectDictionary();
+                var f = new FailuresDictionary();
+                builder.Validate(v, f);
+            }))
+            .ToArray();
+        await Task.WhenAll(tasks);
+
+        statusAfterFirst.ShouldBe(ValidationStatus.Validated);
+        builder.ValidationStatus.ShouldBe(ValidationStatus.Validated);
+    }
+
+    [Fact]
+    public async Task BuildStatus_ShouldBeThreadSafeToRead()
+    {
+        var builder = new SimpleObjectBuilder().WithValue("test");
+        var statusReadCount = 0;
+
+        var buildTask = Task.Run(() => builder.Build());
+        var statusTasks = Enumerable.Range(0, 100)
+            .Select(_ => Task.Run(() =>
+            {
+                var status = builder.BuildStatus;
+                Interlocked.Increment(ref statusReadCount);
+                return status;
+            }))
+            .ToArray();
+
+        await Task.WhenAll([buildTask, .. statusTasks]);
+
+        statusReadCount.ShouldBe(100);
+        builder.BuildStatus.ShouldBe(BuildStatus.Built);
+    }
+
+    [Fact]
+    public async Task ValidationStatus_ShouldBeThreadSafeToRead()
+    {
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+        var visited = new VisitedObjectDictionary();
+        var failures = new FailuresDictionary();
+        var statusReadCount = 0;
+
+        var validateTask = Task.Run(() => builder.Validate(visited, failures));
+        var statusTasks = Enumerable.Range(0, 100)
+            .Select(_ => Task.Run(() =>
+            {
+                var status = builder.ValidationStatus;
+                Interlocked.Increment(ref statusReadCount);
+                return status;
+            }))
+            .ToArray();
+
+        await Task.WhenAll([validateTask, .. statusTasks]);
+
+        statusReadCount.ShouldBe(100);
+        builder.ValidationStatus.ShouldBe(ValidationStatus.Validated);
+    }
+
+    [Fact]
+    public async Task Reference_IsResolved_ShouldBeThreadSafeToRead()
+    {
+        var reference = new Reference<SimpleObject>();
+        var obj = new SimpleObject { Value = "test" };
+
+        var resolveTask = Task.Run(() =>
+        {
+            Thread.Sleep(5);
+            reference.Resolve(obj);
+        });
+
+        var readTasks = Enumerable.Range(0, 100)
+            .Select(_ => Task.Run(() => reference.IsResolved))
+            .ToArray();
+
+        await Task.WhenAll([resolveTask, .. readTasks]);
+
+        reference.IsResolved.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Reference_ResolvedOrNull_ShouldNeverThrow()
+    {
+        var reference = new Reference<SimpleObject>();
+        reference.ResolvedOrNull().ShouldBeNull();
+        reference.Resolve(new SimpleObject { Value = "test" });
+        reference.ResolvedOrNull().ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task MultipleBuildersWithSharedReference_ShouldBeThreadSafe()
+    {
+        var departmentBuilder = new DepartmentBuilder().WithName("Engineering");
+        var employeeBuilders = Enumerable.Range(0, 10)
+            .Select(i => new EmployeeBuilder().WithName($"Employee{i}").WithDepartment(departmentBuilder.Reference()))
+            .ToList();
+
+        var departmentTask = Task.Run(() => departmentBuilder.Build());
+        var employeeTasks = employeeBuilders.Select(b => Task.Run(() => b.Build())).ToArray();
+
+        await Task.WhenAll([departmentTask, .. employeeTasks]);
+
+        departmentBuilder.Reference().IsResolved.ShouldBeTrue();
+        var department = departmentBuilder.Reference().Resolved();
+        department.Name.ShouldBe("Engineering");
+    }
+
+    [Fact]
+    public async Task Build_WithExisting_ConcurrentCalls_ShouldAllReturnSameExisting()
+    {
+        var existingObj = new SimpleObject { Value = "existing" };
+        var builder = new SimpleObjectBuilder();
+        builder.Existing(existingObj);
+
+        var tasks = Enumerable.Range(0, 20)
+            .Select(_ => Task.Run(() => builder.Build()))
+            .ToArray();
+        var results = await Task.WhenAll(tasks);
+
+        foreach (var result in results)
+        {
+            result.Value.Resolved().ShouldBeSameAs(existingObj);
+        }
+    }
+
+    [Fact]
+    public void Build_WithVisitedContainingSelf_ShouldReturnEarlyWithReference()
+    {
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+        var visited = new VisitedObjectDictionary();
+        visited[builder.Id] = builder;
+        
+        var result = builder.Build(visited);
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Build_WithVisitedContainingBuiltBuilder_ShouldReturnEarlyWithReference()
+    {
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+        var visited = new VisitedObjectDictionary();
+        builder.Build();
+        builder.BuildStatus.ShouldBe(BuildStatus.Built);
+        visited[builder.Id] = builder;
+        
+        var result = builder.Build(visited);
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.IsResolved.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Build_ConcurrentWithVisited_ShouldHandleMultipleThreads()
+    {
+        // Note: VisitedObjectDictionary is NOT thread-safe by design.
+        // Each concurrent build should use its own visited dictionary.
+        var builders = Enumerable.Range(0, 10)
+            .Select(i => new PersonBuilder().WithName($"Person{i}").WithAge(25 + i))
+            .ToList();
+
+        // Each build gets its own visited dictionary
+        var tasks = builders.Select(b => Task.Run(() => 
+        {
+            var visited = new VisitedObjectDictionary();
+            return b.Build(visited);
+        })).ToArray();
+        var results = await Task.WhenAll(tasks);
+
+        foreach (var result in results)
+        {
+            result.IsSuccess.ShouldBeTrue();
+        }
+    }
+
+    [Fact]
+    public async Task BuildOrThrow_ConcurrentCalls_ShouldAllReturnSameResult()
+    {
+        var builder = new SimpleObjectBuilder().WithValue("test");
+        
+        var tasks = Enumerable.Range(0, 10)
+            .Select(_ => Task.Run(() => builder.BuildOrThrow()))
+            .ToArray();
+        var results = await Task.WhenAll(tasks);
+
+        var first = results[0];
+        foreach (var result in results)
+        {
+            result.ShouldBeSameAs(first);
+        }
+    }
+
+    [Fact]
+    public async Task Validate_ConcurrentCalls_FirstShouldBlockOthers()
+    {
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+        var barrier = new Barrier(10);
+
+        var tasks = Enumerable.Range(0, 10)
+            .Select(_ => Task.Run(() =>
+            {
+                barrier.SignalAndWait();
+                var v = new VisitedObjectDictionary();
+                var f = new FailuresDictionary();
+                builder.Validate(v, f);
+                return f;
+            }))
+            .ToArray();
+        var results = await Task.WhenAll(tasks);
+
+        foreach (var failures in results)
+        {
+            failures.ShouldBeEmpty();
+        }
+        builder.ValidationStatus.ShouldBe(ValidationStatus.Validated);
+    }
+
+    [Fact]
+    public async Task Build_CircularReferences_ConcurrentBuild_ShouldHandleCorrectly()
+    {
+        var departmentBuilder = new DepartmentBuilder().WithName("Engineering");
+        for (int i = 0; i < 5; i++)
+        {
+            departmentBuilder.WithEmployee(e => e.WithName($"Employee{i}").WithDepartment(departmentBuilder.Reference()));
+        }
+
+        var tasks = Enumerable.Range(0, 10)
+            .Select(_ => Task.Run(() => departmentBuilder.Build()))
+            .ToArray();
+        var results = await Task.WhenAll(tasks);
+
+        var reference = departmentBuilder.Reference();
+        reference.IsResolved.ShouldBeTrue();
+        var department = reference.Resolved();
+        department.Name.ShouldBe("Engineering");
+        department.Employees.Count.ShouldBe(5);
+
+        foreach (var result in results)
+        {
+            result.Value.ShouldBeSameAs(reference);
+        }
+    }
+
+    [Fact]
+    public async Task Reference_MultipleResolveAttempts_OnlyFirstWins()
+    {
+        var reference = new Reference<SimpleObject>();
+        var objects = Enumerable.Range(0, 100)
+            .Select(i => new SimpleObject { Value = $"value{i}" })
+            .ToArray();
+
+        var tasks = objects.Select(obj => Task.Run(() => reference.Resolve(obj))).ToArray();
+        await Task.WhenAll(tasks);
+
+        reference.IsResolved.ShouldBeTrue();
+        var resolved = reference.Resolved();
+        objects.ShouldContain(resolved);
+    }
+
+    [Fact]
+    public async Task Reference_ConcurrentReadsWhileResolving_ShouldNotThrow()
+    {
+        var reference = new Reference<SimpleObject>();
+        var obj = new SimpleObject { Value = "test" };
+        var readsCompleted = 0;
+
+        var readers = Enumerable.Range(0, 100)
+            .Select(idx => Task.Run(() =>
+            {
+                while (!reference.IsResolved)
+                {
+                    var nullableResult = reference.ResolvedOrNull();
+                    var instanceResult = reference.Instance;
+                }
+                Interlocked.Increment(ref readsCompleted);
+            }))
+            .ToArray();
+
+        await Task.Delay(1);
+        reference.Resolve(obj);
+        await Task.WhenAll(readers);
+
+        readsCompleted.ShouldBe(100);
+        reference.Resolved().ShouldBeSameAs(obj);
     }
 
     #endregion

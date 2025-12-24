@@ -194,6 +194,18 @@ public abstract class AbstractBuilder<TClass> : IBuilder<TClass> where TClass : 
     public ValidationStatus ValidationStatus => (ValidationStatus)Volatile.Read(ref _validationStatus);
     public Reference<TClass> Reference() => _reference;
 
+    /// <summary>
+    /// Configures the builder to use an existing instance of the class as the basis for further operations.
+    /// When Build is called, this existing instance will be returned without creating a new one.
+    /// </summary>
+    /// <param name="instance">The existing instance to use. Cannot be null.</param>
+    /// <returns>This builder instance for method chaining.</returns>
+    public AbstractBuilder<TClass> Existing(TClass instance)
+    {
+        _existing = instance;
+        return this;
+    }
+
     public Result<Reference<TClass>> Build(VisitedObjectDictionary? visited = null)
     {
         // Fast path: if already built with existing instance
@@ -252,6 +264,58 @@ public abstract class AbstractBuilder<TClass> : IBuilder<TClass> where TClass : 
             _reference.Resolve(instance);
             return Result<Reference<TClass>>.Success(_reference);
         }
+    }
+
+    /// <summary>
+    /// Builds the object and returns the result if the build operation is successful.
+    /// </summary>
+    /// <param name="visitedCollector">An optional dictionary used to track visited objects during the build process.</param>
+    /// <returns>The successfully built object of type TClass.</returns>
+    /// <exception cref="AggregateException">Thrown if the build operation fails with validation errors.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the build operation results in an unknown state.</exception>
+    public TClass BuildOrThrow(VisitedObjectDictionary? visitedCollector = null)
+    {
+        Build(visitedCollector);
+
+        lock (_buildLock)
+        {
+            if (_buildResult is null)
+                throw new InvalidOperationException("Build resulted in an unknown state.");
+
+            if (_buildResult.Value.IsSuccess)
+                return _buildResult.Value.Value;
+
+            if (_buildResult.Value.TryGetException<BuildFailureException>(out var buildFailure))
+            {
+                var exceptions = ExtractExceptionsFromFailures(buildFailure!.Failures);
+                throw new AggregateException("Build failed with the following errors:", exceptions);
+            }
+
+            throw new InvalidOperationException("Build resulted in an unknown state.");
+        }
+    }
+
+    /// <summary>
+    /// Recursively extracts all exceptions from a FailuresDictionary, including nested dictionaries.
+    /// </summary>
+    private static List<Exception> ExtractExceptionsFromFailures(FailuresDictionary failures)
+    {
+        var result = new List<Exception>();
+        foreach (var kvp in failures)
+        {
+            foreach (var failure in kvp.Value)
+            {
+                if (failure.Value is Exception ex)
+                {
+                    result.Add(ex);
+                }
+                else if (failure.Value is FailuresDictionary nestedDict)
+                {
+                    result.AddRange(ExtractExceptionsFromFailures(nestedDict));
+                }
+            }
+        }
+        return result;
     }
 
     /// <summary>
@@ -572,21 +636,5 @@ public class ReferenceList<TClass> : IReferenceList<TClass> where TClass : class
     {
         get => _references[index].Resolved();
         set => _references[index] = new Reference<TClass>().Resolve(value);
-    }
-}
-
-/// <summary>
-/// Provides extension methods for accessing success values and failure details from result instances.
-/// </summary>
-public static class Extensions
-{
-    public static TClass Success<TClass>(this IResult result) where TClass : class
-    {
-        return result.IsSuccess ? result.Success<TClass>() : throw new InvalidResultAccessOperationException();
-    }
-
-    public static FailuresDictionary Failures<TClass>(this IResult result) where TClass : class
-    {
-        return !result.IsSuccess ? result.Failures<TClass>() : throw new InvalidResultAccessOperationException();
     }
 }
