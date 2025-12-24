@@ -240,6 +240,7 @@ public abstract class AbstractBuilder<TClass> : IBuilder<TClass> where TClass : 
             // Set building status atomically
             Interlocked.Exchange(ref _buildStatus, (int)BuildStatus.Building);
 
+            // double-check
             if (_existing is not null)
             {
                 Interlocked.Exchange(ref _buildStatus, (int)BuildStatus.Built);
