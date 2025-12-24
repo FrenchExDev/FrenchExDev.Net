@@ -408,4 +408,74 @@ public readonly struct Result<TResult> : IResult
         }
         return this;
     }
+
+    /// <summary>
+    /// Transforms the value of a successful result using the specified mapping function.
+    /// </summary>
+    /// <remarks>If the result is a failure, the failure is propagated without invoking the mapping function.
+    /// This method is useful for transforming the contained value while preserving the result structure.</remarks>
+    /// <typeparam name="TNew">The type of the transformed value.</typeparam>
+    /// <param name="map">A function that transforms the current value to a new value.</param>
+    /// <returns>A new result containing the transformed value if successful; otherwise, a failure result with the original exception.</returns>
+    public Result<TNew> Map<TNew>(Func<TResult, TNew> map)
+    {
+        if (IsSuccess)
+        {
+            return Result<TNew>.Success(map(Value));
+        }
+        return Result<TNew>.Failure(Exception<Exception>());
+    }
+
+    /// <summary>
+    /// Asynchronously transforms the value of a successful result using the specified mapping function.
+    /// </summary>
+    /// <remarks>If the result is a failure, the failure is propagated without invoking the mapping function.
+    /// This method is useful for transforming the contained value asynchronously while preserving the result structure.</remarks>
+    /// <typeparam name="TNew">The type of the transformed value.</typeparam>
+    /// <param name="map">An asynchronous function that transforms the current value to a new value.</param>
+    /// <returns>A task containing a new result with the transformed value if successful; otherwise, a failure result with the original exception.</returns>
+    public async Task<Result<TNew>> MapAsync<TNew>(Func<TResult, Task<TNew>> map)
+    {
+        if (IsSuccess)
+        {
+            return Result<TNew>.Success(await map(Value));
+        }
+        return Result<TNew>.Failure(Exception<Exception>());
+    }
+
+    /// <summary>
+    /// Chains a result-producing operation to this result, enabling flat composition without nesting.
+    /// </summary>
+    /// <remarks>If this result is successful, the binder function is invoked with the value and its result is returned.
+    /// If this result is a failure, the failure is propagated without invoking the binder function.
+    /// This method is also known as FlatMap or SelectMany in other functional libraries.</remarks>
+    /// <typeparam name="TNew">The type of the value in the result returned by the binder function.</typeparam>
+    /// <param name="bind">A function that takes the current value and returns a new result.</param>
+    /// <returns>The result of the binder function if this result is successful; otherwise, a failure result with the original exception.</returns>
+    public Result<TNew> Bind<TNew>(Func<TResult, Result<TNew>> bind)
+    {
+        if (IsSuccess)
+        {
+            return bind(Value);
+        }
+        return Result<TNew>.Failure(Exception<Exception>());
+    }
+
+    /// <summary>
+    /// Asynchronously chains a result-producing operation to this result, enabling flat composition without nesting.
+    /// </summary>
+    /// <remarks>If this result is successful, the binder function is invoked with the value and its result is returned.
+    /// If this result is a failure, the failure is propagated without invoking the binder function.
+    /// This method is also known as FlatMap or SelectMany in other functional libraries.</remarks>
+    /// <typeparam name="TNew">The type of the value in the result returned by the binder function.</typeparam>
+    /// <param name="bind">An asynchronous function that takes the current value and returns a new result.</param>
+    /// <returns>A task containing the result of the binder function if this result is successful; otherwise, a failure result with the original exception.</returns>
+    public async Task<Result<TNew>> BindAsync<TNew>(Func<TResult, Task<Result<TNew>>> bind)
+    {
+        if (IsSuccess)
+        {
+            return await bind(Value);
+        }
+        return Result<TNew>.Failure(Exception<Exception>());
+    }
 }

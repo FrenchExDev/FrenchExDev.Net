@@ -781,4 +781,234 @@ public class Tests
     }
 
     #endregion
+
+    #region Map Tests
+
+    [Fact]
+    public void Map_OnSuccess_ShouldTransformValue()
+    {
+        // Arrange
+        var result = Result<int>.Success(10);
+
+        // Act
+        var mappedResult = result.Map(x => x * 2);
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(mappedResult, 20);
+    }
+
+    [Fact]
+    public void Map_OnSuccess_ShouldTransformToStringType()
+    {
+        // Arrange
+        var result = Result<int>.Success(42);
+
+        // Act
+        var mappedResult = result.Map(x => $"Value is {x}");
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(mappedResult, "Value is 42");
+    }
+
+    [Fact]
+    public void Map_OnFailure_ShouldPropagateFailure()
+    {
+        // Arrange
+        var result = Result<int>.Failure(new InvalidOperationException("original error"));
+
+        // Act
+        var mappedResult = result.Map(x => x * 2);
+
+        // Assert
+        ResultTesting.ShouldBeFailure(mappedResult);
+        var ex = ResultTesting.ShouldBeFailureWithException<int, InvalidOperationException>(mappedResult);
+        ex.Message.ShouldBe("original error");
+    }
+
+    #endregion
+
+    #region MapAsync Tests
+
+    [Fact]
+    public async Task MapAsync_OnSuccess_ShouldTransformValueAsynchronously()
+    {
+        // Arrange
+        var result = Result<int>.Success(10);
+
+        // Act
+        var mappedResult = await result.MapAsync(async x =>
+        {
+            await Task.Delay(1);
+            return x * 3;
+        });
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(mappedResult, 30);
+    }
+
+    [Fact]
+    public async Task MapAsync_OnFailure_ShouldPropagateFailure()
+    {
+        // Arrange
+        var result = Result<int>.Failure(new ArgumentException("async error"));
+
+        // Act
+        var mappedResult = await result.MapAsync(async x =>
+        {
+            await Task.Delay(1);
+            return x * 3;
+        });
+
+        // Assert
+        ResultTesting.ShouldBeFailure(mappedResult);
+        var ex = ResultTesting.ShouldBeFailureWithException<int, ArgumentException>(mappedResult);
+        ex.Message.ShouldBe("async error");
+    }
+
+    #endregion
+
+    #region Bind Tests
+
+    [Fact]
+    public void Bind_OnSuccess_ShouldChainSuccessfulResult()
+    {
+        // Arrange
+        var result = Result<int>.Success(10);
+
+        // Act
+        var boundResult = result.Bind(x => Result<string>.Success($"Number: {x}"));
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(boundResult, "Number: 10");
+    }
+
+    [Fact]
+    public void Bind_OnSuccess_ShouldChainToFailure()
+    {
+        // Arrange
+        var result = Result<int>.Success(10);
+
+        // Act
+        var boundResult = result.Bind<string>(x => 
+            Result<string>.Failure(new InvalidOperationException("bind failed")));
+
+        // Assert
+        ResultTesting.ShouldBeFailure(boundResult);
+        var ex = ResultTesting.ShouldBeFailureWithException<string, InvalidOperationException>(boundResult);
+        ex.Message.ShouldBe("bind failed");
+    }
+
+    [Fact]
+    public void Bind_OnFailure_ShouldPropagateFailure()
+    {
+        // Arrange
+        var result = Result<int>.Failure(new ArgumentException("initial failure"));
+
+        // Act
+        var boundResult = result.Bind(x => Result<string>.Success($"Number: {x}"));
+
+        // Assert
+        ResultTesting.ShouldBeFailure(boundResult);
+        var ex = ResultTesting.ShouldBeFailureWithException<string, ArgumentException>(boundResult);
+        ex.Message.ShouldBe("initial failure");
+    }
+
+    [Fact]
+    public void Bind_ShouldEnableFlatComposition()
+    {
+        // Arrange - simulate a validation pipeline
+        var step1 = Result<int>.Success(100);
+
+        // Act - chain multiple operations without nesting
+        var finalResult = step1
+            .Bind(value => value > 0 
+                ? Result<int>.Success(value * 2) 
+                : Result<int>.Failure(new ArgumentException("Must be positive")))
+            .Bind(value => Result<string>.Success($"Final: {value}"));
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(finalResult, "Final: 200");
+    }
+
+    #endregion
+
+    #region BindAsync Tests
+
+    [Fact]
+    public async Task BindAsync_OnSuccess_ShouldChainSuccessfulResult()
+    {
+        // Arrange
+        var result = Result<int>.Success(10);
+
+        // Act
+        var boundResult = await result.BindAsync(async x =>
+        {
+            await Task.Delay(1);
+            return Result<string>.Success($"Async Number: {x}");
+        });
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(boundResult, "Async Number: 10");
+    }
+
+    [Fact]
+    public async Task BindAsync_OnSuccess_ShouldChainToFailure()
+    {
+        // Arrange
+        var result = Result<int>.Success(10);
+
+        // Act
+        var boundResult = await result.BindAsync<string>(async x =>
+        {
+            await Task.Delay(1);
+            return Result<string>.Failure(new InvalidOperationException("async bind failed"));
+        });
+
+        // Assert
+        ResultTesting.ShouldBeFailure(boundResult);
+        var ex = ResultTesting.ShouldBeFailureWithException<string, InvalidOperationException>(boundResult);
+        ex.Message.ShouldBe("async bind failed");
+    }
+
+    [Fact]
+    public async Task BindAsync_OnFailure_ShouldPropagateFailure()
+    {
+        // Arrange
+        var result = Result<int>.Failure(new ArgumentException("async initial failure"));
+
+        // Act
+        var boundResult = await result.BindAsync(async x =>
+        {
+            await Task.Delay(1);
+            return Result<string>.Success($"Async Number: {x}");
+        });
+
+        // Assert
+        ResultTesting.ShouldBeFailure(boundResult);
+        var ex = ResultTesting.ShouldBeFailureWithException<string, ArgumentException>(boundResult);
+        ex.Message.ShouldBe("async initial failure");
+    }
+
+    [Fact]
+    public async Task BindAsync_ShouldEnableFlatAsyncComposition()
+    {
+        // Arrange - simulate an async validation pipeline
+        var step1 = Result<int>.Success(50);
+
+        // Act - chain multiple async operations without nesting
+        var finalResult = await step1
+            .BindAsync(async value =>
+            {
+                await Task.Delay(1);
+                return value > 0
+                    ? Result<int>.Success(value * 2)
+                    : Result<int>.Failure(new ArgumentException("Must be positive"));
+            })
+            .ContinueWith(t => t.Result.Bind(value => Result<string>.Success($"Final: {value}")));
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(finalResult, "Final: 100");
+    }
+
+    #endregion
 }

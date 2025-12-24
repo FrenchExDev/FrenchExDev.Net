@@ -8,6 +8,10 @@
     <PackageVersion Include="Blazored.SessionStorage" Version="2.4.0" />
     <PackageVersion Include="ByteSize" Version="2.1.2" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="coverlet.msbuild" Version="6.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageVersion>
     <PackageVersion Include="Figgle" Version="0.6.5" />
     <PackageVersion Include="LibGit2Sharp" Version="0.31.0" />
     <PackageVersion Include="Markdig" Version="0.43.0" />
