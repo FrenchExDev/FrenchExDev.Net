@@ -2,7 +2,6 @@
 using Shouldly;
 
 namespace FrenchExDev.Net.CSharp.Object.Result2.Tests;
-
 public class Tests
 {
     #region Success Tests
@@ -1008,6 +1007,487 @@ public class Tests
 
         // Assert
         ResultTesting.ShouldBeSuccessWithValue(finalResult, "Final: 100");
+    }
+
+    #endregion
+
+    #region Edge Cases Tests
+
+    [Fact]
+    public void Success_WithDefaultValue_ShouldBeSuccess()
+    {
+        // Arrange & Act
+        var result = Result<int>.Success(default);
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(result, 0);
+    }
+
+    [Fact]
+    public void Success_WithDefaultBoolValue_ShouldBeSuccess()
+    {
+        // Arrange & Act
+        var result = Result<bool>.Success(default);
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(result, false);
+    }
+
+    [Fact]
+    public void Success_WithEmptyString_ShouldBeSuccess()
+    {
+        // Arrange & Act
+        var result = Result<string>.Success(string.Empty);
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(result, string.Empty);
+    }
+
+    [Fact]
+    public void Failure_WithInnerException_ShouldPreserveInnerException()
+    {
+        // Arrange
+        var inner = new ArgumentException("inner error");
+        var outer = new InvalidOperationException("outer error", inner);
+
+        // Act
+        var result = Result<int>.Failure(outer);
+
+        // Assert
+        var ex = ResultTesting.ShouldBeFailureWithException<int, InvalidOperationException>(result);
+        ex.InnerException.ShouldBeSameAs(inner);
+    }
+
+    [Fact]
+    public void TryGetException_WithBaseType_ShouldReturnTrueForDerivedType()
+    {
+        // Arrange - ArgumentException derives from Exception
+        var result = Result<int>.Failure(new ArgumentException("error"));
+
+        // Act
+        var success = result.TryGetException<Exception>(out var exception);
+
+        // Assert
+        success.ShouldBeTrue();
+        exception.ShouldBeOfType<ArgumentException>();
+    }
+
+    [Fact]
+    public void TryGetException_WithSystemException_ShouldReturnTrueForDerivedType()
+    {
+        // Arrange - InvalidOperationException derives from SystemException
+        var result = Result<int>.Failure(new InvalidOperationException("error"));
+
+        // Act
+        var success = result.TryGetException<SystemException>(out var exception);
+
+        // Assert
+        success.ShouldBeTrue();
+        exception.ShouldBeOfType<InvalidOperationException>();
+    }
+
+    #endregion
+
+    #region Composition Chain Tests
+
+    [Fact]
+    public void Map_ChainMultipleTransformations_ShouldComposeCorrectly()
+    {
+        // Arrange
+        var result = Result<int>.Success(2);
+
+        // Act
+        var finalResult = result
+            .Map(x => x * 3)      // 6
+            .Map(x => x + 4)      // 10
+            .Map(x => x.ToString()); // "10"
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(finalResult, "10");
+    }
+
+    [Fact]
+    public void Map_ChainWithFailureInMiddle_ShouldPropagateFailure()
+    {
+        // Arrange
+        var result = Result<int>.Failure(new InvalidOperationException("initial error"));
+
+        // Act
+        var finalResult = result
+            .Map(x => x * 2)
+            .Map(x => x + 10)
+            .Map(x => x.ToString());
+
+        // Assert
+        ResultTesting.ShouldBeFailure(finalResult);
+        var ex = ResultTesting.ShouldBeFailureWithException<string, InvalidOperationException>(finalResult);
+        ex.Message.ShouldBe("initial error");
+    }
+
+    [Fact]
+    public void Bind_ChainedFailures_ShouldPropagateFirstFailure()
+    {
+        // Arrange
+        var result = Result<int>.Failure(new ArgumentException("first error"));
+
+        // Act - second Bind should never execute
+        var boundResult = result
+            .Bind(x => Result<int>.Failure(new InvalidOperationException("second error")));
+
+        // Assert - should have the first error
+        ResultTesting.ShouldBeFailure(boundResult);
+        var ex = ResultTesting.ShouldBeFailureWithException<int, ArgumentException>(boundResult);
+        ex.Message.ShouldBe("first error");
+    }
+
+    [Fact]
+    public void Bind_ValidationPipeline_ShouldStopAtFirstFailure()
+    {
+        // Arrange - simulate a validation pipeline
+        var input = Result<int>.Success(-5);
+
+        // Act
+        var finalResult = input
+            .Bind(value => value >= 0
+                ? Result<int>.Success(value)
+                : Result<int>.Failure(new ArgumentException("Must be non-negative")))
+            .Bind(value => value <= 100
+                ? Result<int>.Success(value)
+                : Result<int>.Failure(new ArgumentException("Must be <= 100")))
+            .Bind(value => Result<string>.Success($"Valid: {value}"));
+
+        // Assert - should fail at first validation
+        ResultTesting.ShouldBeFailure(finalResult);
+        ResultTesting.ShouldBeFailureWithMessage<string, ArgumentException>(finalResult, "Must be non-negative");
+    }
+
+    [Fact]
+    public void Bind_ValidationPipeline_AllValid_ShouldSucceed()
+    {
+        // Arrange
+        var input = Result<int>.Success(50);
+
+        // Act
+        var finalResult = input
+            .Bind(value => value >= 0
+                ? Result<int>.Success(value)
+                : Result<int>.Failure(new ArgumentException("Must be non-negative")))
+            .Bind(value => value <= 100
+                ? Result<int>.Success(value)
+                : Result<int>.Failure(new ArgumentException("Must be <= 100")))
+            .Bind(value => Result<string>.Success($"Valid: {value}"));
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(finalResult, "Valid: 50");
+    }
+
+    [Fact]
+    public void Map_AndBind_MixedComposition_ShouldWorkCorrectly()
+    {
+        // Arrange
+        var result = Result<string>.Success("42");
+
+        // Act
+        var finalResult = result
+            .Map(int.Parse)                    // Result<int> = 42
+            .Map(x => x * 2)                   // Result<int> = 84
+            .Bind(x => x > 0
+                ? Result<int>.Success(x)
+                : Result<int>.Failure(new ArgumentException("Must be positive")))
+            .Map(x => $"Result: {x}");         // Result<string> = "Result: 84"
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(finalResult, "Result: 84");
+    }
+
+    #endregion
+
+    #region Async Composition Tests
+
+    [Fact]
+    public async Task MapAsync_ChainMultipleTransformations_ShouldComposeCorrectly()
+    {
+        // Arrange
+        var result = Result<int>.Success(5);
+
+        // Act
+        var step1 = await result.MapAsync(async x =>
+        {
+            await Task.Delay(1);
+            return x * 2; // 10
+        });
+
+        var step2 = await step1.MapAsync(async x =>
+        {
+            await Task.Delay(1);
+            return x + 5; // 15
+        });
+
+        var finalResult = await step2.MapAsync(async x =>
+        {
+            await Task.Delay(1);
+            return $"Value: {x}"; // "Value: 15"
+        });
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(finalResult, "Value: 15");
+    }
+
+    [Fact]
+    public async Task BindAsync_ChainedOperations_ShouldStopAtFirstFailure()
+    {
+        // Arrange
+        var result = Result<int>.Success(10);
+
+        // Act
+        var finalResult = await result
+            .BindAsync(async x =>
+            {
+                await Task.Delay(1);
+                return Result<int>.Failure(new InvalidOperationException("First async failure"));
+            });
+
+        // This would be the second bind, but it should never execute
+        var afterSecondBind = await finalResult.BindAsync(async x =>
+        {
+            await Task.Delay(1);
+            return Result<string>.Success($"Should not reach: {x}");
+        });
+
+        // Assert
+        ResultTesting.ShouldBeFailure(afterSecondBind);
+        ResultTesting.ShouldBeFailureWithMessage<string, InvalidOperationException>(
+            afterSecondBind, "First async failure");
+    }
+
+    #endregion
+
+    #region Struct Behavior Tests
+
+    [Fact]
+    public void Result_IsValueType_ShouldBeTrue()
+    {
+        // Assert - Result<T> should be a struct (value type)
+        typeof(Result<int>).IsValueType.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Result_DefaultValue_ShouldNotBeSuccess()
+    {
+        // Arrange - default struct initialization
+        Result<int> result = default;
+
+        // Assert - default should not be success (IsSuccess = false by default)
+        result.IsSuccess.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Result_CopySemantics_ShouldBeIndependent()
+    {
+        // Arrange
+        var original = Result<int>.Success(42);
+
+        // Act - copy the struct
+        var copy = original;
+
+        // Assert - both should have same value but be independent
+        original.Value.ShouldBe(42);
+        copy.Value.ShouldBe(42);
+    }
+
+    #endregion
+
+    #region Thread Safety Tests
+
+    [Fact]
+    public async Task Result_ConcurrentAccess_ShouldBeSafe()
+    {
+        // Arrange
+        var result = Result<int>.Success(42);
+
+        // Act - concurrent reads
+        var tasks = Enumerable.Range(0, 100)
+            .Select(_ => Task.Run(() =>
+            {
+                result.IsSuccess.ShouldBeTrue();
+                return result.Value;
+            }))
+            .ToArray();
+
+        await Task.WhenAll(tasks);
+
+        // Assert - all reads should return same value
+        tasks.All(t => t.Result == 42).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task Result_ConcurrentMapOperations_ShouldBeIndependent()
+    {
+        // Arrange
+        var result = Result<int>.Success(10);
+
+        // Act - concurrent map operations (each creates a new Result)
+        var tasks = Enumerable.Range(1, 10)
+            .Select(multiplier => Task.Run(() => result.Map(x => x * multiplier)))
+            .ToArray();
+
+        var results = await Task.WhenAll(tasks);
+
+        // Assert - each mapped result should be independent
+        for (int i = 0; i < results.Length; i++)
+        {
+            var mappedValue = results[i].Value;
+            mappedValue.ShouldBe(10 * (i + 1));
+        }
+    }
+
+    #endregion
+
+    #region Match Return Value Tests
+
+    [Fact]
+    public void Match_ShouldReturnSameResultInstance()
+    {
+        // Arrange
+        var result = Result<int>.Success(42);
+
+        // Act
+        var returnedResult = result.Match(
+            onSuccess: _ => { },
+            onFailure: _ => { });
+
+        // Assert - struct copy, but same values
+        returnedResult.IsSuccess.ShouldBe(result.IsSuccess);
+        returnedResult.Value.ShouldBe(result.Value);
+    }
+
+    [Fact]
+    public void IfSuccess_ShouldReturnSameResultForChaining()
+    {
+        // Arrange
+        var result = Result<int>.Success(42);
+        var callCount = 0;
+
+        // Act - chain multiple IfSuccess calls
+        var finalResult = result
+            .IfSuccess(_ => callCount++)
+            .IfSuccess(_ => callCount++)
+            .IfSuccess(_ => callCount++);
+
+        // Assert
+        callCount.ShouldBe(3);
+        finalResult.IsSuccess.ShouldBeTrue();
+        finalResult.Value.ShouldBe(42);
+    }
+
+    [Fact]
+    public void IfException_ShouldReturnSameResultForChaining()
+    {
+        // Arrange
+        var result = Result<int>.Failure(new InvalidOperationException("error"));
+        var callCount = 0;
+
+        // Act - chain multiple IfException calls
+        var finalResult = result
+            .IfException(_ => callCount++)
+            .IfException(_ => callCount++)
+            .IfException(_ => callCount++);
+
+        // Assert
+        callCount.ShouldBe(3);
+        finalResult.IsSuccess.ShouldBeFalse();
+    }
+
+    #endregion
+
+    #region Complex Type Tests
+
+    [Fact]
+    public void Success_WithComplexType_ShouldPreserveReference()
+    {
+        // Arrange
+        var complexObject = new List<string> { "a", "b", "c" };
+
+        // Act
+        var result = Result<List<string>>.Success(complexObject);
+
+        // Assert
+        result.Value.ShouldBeSameAs(complexObject);
+    }
+
+    [Fact]
+    public void Map_WithComplexTypeTransformation_ShouldWork()
+    {
+        // Arrange
+        var result = Result<string>.Success("hello,world,test");
+
+        // Act
+        var mappedResult = result.Map(s => s.Split(',').ToList());
+
+        // Assert
+        ResultTesting.ShouldBeSuccess(mappedResult);
+        mappedResult.Value.Count.ShouldBe(3);
+        mappedResult.Value.ShouldContain("hello");
+        mappedResult.Value.ShouldContain("world");
+        mappedResult.Value.ShouldContain("test");
+    }
+
+    [Fact]
+    public void Bind_WithComplexTypeTransformation_ShouldWork()
+    {
+        // Arrange
+        var result = Result<List<int>>.Success([1, 2, 3, 4, 5]);
+
+        // Act
+        var boundResult = result.Bind(list =>
+            list.Count > 0
+                ? Result<int>.Success(list.Sum())
+                : Result<int>.Failure(new InvalidOperationException("Empty list")));
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(boundResult, 15);
+    }
+
+    #endregion
+
+    #region Nullable Reference Type Tests
+
+    [Fact]
+    public void Success_WithNullableReferenceType_ShouldHandleNull()
+    {
+        // Arrange & Act
+        var result = Result<string?>.Success(null);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBeNull();
+    }
+
+    [Fact]
+    public void TryGetSuccessValue_WithNullValue_ShouldReturnTrueAndNull()
+    {
+        // Arrange
+        var result = Result<string?>.Success(null);
+
+        // Act
+        var success = result.TryGetSuccessValue(out var value);
+
+        // Assert
+        success.ShouldBeTrue();
+        value.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Map_WithNullableInput_ShouldHandleNull()
+    {
+        // Arrange
+        var result = Result<string?>.Success(null);
+
+        // Act
+        var mappedResult = result.Map(s => s?.Length ?? -1);
+
+        // Assert
+        ResultTesting.ShouldBeSuccessWithValue(mappedResult, -1);
     }
 
     #endregion

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace FrenchExDev.Net.CSharp.Object.Builder;
@@ -30,7 +31,7 @@ public class SuccessResult<TClass>(TClass instance) : IResult where TClass : cla
 /// <summary>
 /// Dictionary mapping member names to collected failures (typed <see cref="Failure"/> instead of object).
 /// </summary>
-public class FailuresDictionary : Dictionary<string, List<Failure>>
+public class FailuresDictionary : ConcurrentDictionary<string, List<Failure>>
 {
     /// <summary>
     /// Adds a failure payload under a member name.
