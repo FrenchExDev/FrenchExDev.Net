@@ -1,4 +1,4 @@
-using FrenchExDev.Net.CSharp.Object.Result2;
+﻿using FrenchExDev.Net.CSharp.Object.Result2;
 
 namespace FrenchExDev.Net.CSharp.Object.Builder2;
 
@@ -6,9 +6,13 @@ namespace FrenchExDev.Net.CSharp.Object.Builder2;
 /// Default build orchestrator that handles the complete build lifecycle.
 /// Follows Single Responsibility Principle - only handles orchestration.
 /// </summary>
-/// <typeparam name="TClass">The type of object being built.</typeparam>
-public class DefaultBuildOrchestrator<TClass> : IBuildOrchestrator<TClass> where TClass : class
+public class DefaultBuildOrchestrator : IBuildOrchestrator
 {
+    /// <summary>
+    /// Gets the default singleton instance of the orchestrator.
+    /// </summary>
+    public static DefaultBuildOrchestrator Instance { get; } = new();
+
     private readonly ISynchronizationStrategy _syncStrategy;
     private readonly Func<IFailureCollector> _failureCollectorFactory;
 
@@ -25,7 +29,17 @@ public class DefaultBuildOrchestrator<TClass> : IBuildOrchestrator<TClass> where
         _failureCollectorFactory = failureCollectorFactory ?? throw new ArgumentNullException(nameof(failureCollectorFactory));
     }
 
-    public Result<Reference<TClass>> Build(IBuilder<TClass> builder, IVisitedTracker? visited = null)
+    /// <summary>
+    /// Gets the synchronization strategy used by this orchestrator.
+    /// </summary>
+    public ISynchronizationStrategy SyncStrategy => _syncStrategy;
+
+    /// <summary>
+    /// Creates a new failure collector using the configured factory.
+    /// </summary>
+    public IFailureCollector CreateFailureCollector() => _failureCollectorFactory();
+
+    public Result<Reference<TClass>> Build<TClass>(IBuilder<TClass> builder, IVisitedTracker? visited = null) where TClass : class
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -54,21 +68,4 @@ public class DefaultBuildOrchestrator<TClass> : IBuildOrchestrator<TClass> where
         // The builder handles its own synchronization
         return builder.Build(visited as VisitedObjectDictionary);
     }
-}
-
-/// <summary>
-/// Marker interface for builders that can provide an existing instance.
-/// </summary>
-/// <typeparam name="TClass">The type of the existing instance.</typeparam>
-public interface IExistingInstanceProvider<TClass> where TClass : class
-{
-    /// <summary>
-    /// Gets whether an existing instance has been set.
-    /// </summary>
-    bool HasExisting { get; }
-
-    /// <summary>
-    /// Gets the existing instance, if set.
-    /// </summary>
-    TClass? ExistingInstance { get; }
 }

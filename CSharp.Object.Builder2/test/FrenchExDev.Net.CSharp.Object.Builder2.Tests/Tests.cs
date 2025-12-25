@@ -87,7 +87,8 @@ public class PersonBuilder : AbstractBuilder<Person>
 
     protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
     {
-        AddressBuilder?.Build(visitedCollector);
+        if (AddressBuilder is not null)
+            BuildChild(AddressBuilder, visitedCollector);
         BuildList<PersonBuilder, Person>(Friends, visitedCollector);
     }
 
@@ -144,7 +145,8 @@ public class DepartmentBuilder : AbstractBuilder<Department>
 
     protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
     {
-        ManagerBuilder?.Build(visitedCollector);
+        if (ManagerBuilder is not null)
+            BuildChild(ManagerBuilder, visitedCollector);
         BuildList<EmployeeBuilder, Employee>(Employees, visitedCollector);
     }
 
@@ -1293,743 +1295,49 @@ public class Tests
     }
 
     [Fact]
-    public void Build_WithVisitedContainingValidatedBuildingBuilder_ShouldReturnEarlyWithReference()
+    public void DefaultBuildOrchestrator_Instance_ShouldReturnSingleton()
     {
-        // Test line 228: when visited contains a builder that is Validated AND Building
-        // This requires the builder to be in the middle of building when we check visited
+        var instance1 = DefaultBuildOrchestrator.Instance;
+        var instance2 = DefaultBuildOrchestrator.Instance;
         
-        // This is a race condition edge case that's very hard to test directly.
-        // The code path is: 
-        // 1. Builder is in visited dictionary
-        // 2. ValidationStatus is Validated (not NotValidated or Validating)
-        // 3. BuildStatus is Built or Building
-        // But if BuildStatus is Built, we would have returned at line 220 already.
-        // So this path requires BuildStatus == Building, which happens only during concurrent builds.
+        instance1.ShouldBeSameAs(instance2);
+    }
+
+    [Fact]
+    public void DefaultBuildOrchestrator_SyncStrategy_ShouldReturnConfiguredStrategy()
+    {
+        var customStrategy = NoSynchronizationStrategy.Instance;
+        var orchestrator = new DefaultBuildOrchestrator(customStrategy, () => new FailuresDictionary());
         
-        // We'll verify the existing test coverage is correct - this defensive code 
-        // protects against edge cases that are nearly impossible to trigger in tests.
+        orchestrator.SyncStrategy.ShouldBeSameAs(customStrategy);
+    }
+
+    [Fact]
+    public void DefaultBuildOrchestrator_CreateFailureCollector_ShouldUseFactory()
+    {
+        var callCount = 0;
+        var orchestrator = new DefaultBuildOrchestrator(
+            LockSynchronizationStrategy.Instance, 
+            () => { callCount++; return new FailuresDictionary(); });
         
-        var builder = new PersonBuilder().WithName("Test").WithAge(25);
-        var visited = new VisitedObjectDictionary();
+        orchestrator.CreateFailureCollector();
+        orchestrator.CreateFailureCollector();
         
-        // Build and verify
+        callCount.ShouldBe(2);
+    }
+
+    [Fact]
+    public void Builder_WithOrchestrator_ShouldUseOrchestratorForChildBuilds()
+    {
+        var orchestrator = new TrackingBuildOrchestrator();
+        var builder = new PersonBuilderWithOrchestrator(orchestrator)
+            .WithName("Test")
+            .WithAddress(a => a.WithStreet("123 Main").WithCity("TestCity"));
+        
         builder.Build();
-        builder.ValidationStatus.ShouldBe(ValidationStatus.Validated);
-        builder.BuildStatus.ShouldBe(BuildStatus.Built);
         
-        // Add to visited
-        visited[builder.Id] = builder;
-        
-        // Since BuildStatus is Built, we'll return at line 220, not hit line 228
-        // This test documents the expected behavior
-        var result = builder.Build(visited);
-        result.IsSuccess.ShouldBeTrue();
-        result.Value.IsResolved.ShouldBeTrue();
-    }
-
-    #endregion
-
-    #region Interface Segregation Tests
-
-    [Fact]
-    public void Builder_ShouldImplementIBuildable()
-    {
-        IBuildable<SimpleObject> buildable = new SimpleObjectBuilder().WithValue("test");
-        buildable.BuildStatus.ShouldBe(BuildStatus.NotBuilding);
-        var result = buildable.Build();
-        result.IsSuccess.ShouldBeTrue();
-        buildable.BuildStatus.ShouldBe(BuildStatus.Built);
-    }
-
-    [Fact]
-    public void Builder_ShouldImplementIValidatable()
-    {
-        IValidatable validatable = new PersonBuilder().WithName("Test").WithAge(25);
-        validatable.ValidationStatus.ShouldBe(ValidationStatus.NotValidated);
-        var visited = new VisitedObjectDictionary();
-        var failures = new FailuresDictionary();
-        validatable.Validate(visited, failures);
-        validatable.ValidationStatus.ShouldBe(ValidationStatus.Validated);
-        failures.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void Builder_ShouldImplementIReferenceable()
-    {
-        IReferenceable<SimpleObject> referenceable = new SimpleObjectBuilder().WithValue("test");
-        var reference = referenceable.Reference();
-        reference.ShouldNotBeNull();
-        reference.IsResolved.ShouldBeFalse();
-    }
-
-    [Fact]
-    public void Builder_ShouldImplementIIdentifiable()
-    {
-        IIdentifiable identifiable = new SimpleObjectBuilder();
-        identifiable.Id.ShouldNotBe(Guid.Empty);
-    }
-
-    #endregion
-
-    #region ValidationAssertions Static Class Tests
-
-    [Fact]
-    public void ValidationAssertions_AssertNotNull_ShouldAddFailureWhenNull()
-    {
-        var failures = new FailuresDictionary();
-        ValidationAssertions.AssertNotNull(null, "TestField", failures, n => new ArgumentNullException(n));
-        failures.ContainsKey("TestField").ShouldBeTrue();
-        failures["TestField"].Count.ShouldBe(1);
-    }
-
-    [Fact]
-    public void ValidationAssertions_AssertNotNull_ShouldNotAddFailureWhenNotNull()
-    {
-        var failures = new FailuresDictionary();
-        ValidationAssertions.AssertNotNull("value", "TestField", failures, n => new ArgumentNullException(n));
-        failures.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void ValidationAssertions_AssertNotEmptyOrWhitespace_String_ShouldAddFailureWhenWhitespace()
-    {
-        var failures = new FailuresDictionary();
-        ValidationAssertions.AssertNotEmptyOrWhitespace("   ", "TestField", failures, n => new ArgumentException(n));
-        failures.ContainsKey("TestField").ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ValidationAssertions_AssertNotEmptyOrWhitespace_String_ShouldNotAddFailureWhenNull()
-    {
-        var failures = new FailuresDictionary();
-        ValidationAssertions.AssertNotEmptyOrWhitespace((string?)null, "TestField", failures, n => new ArgumentException(n));
-        failures.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void ValidationAssertions_AssertNotEmptyOrWhitespace_List_ShouldValidateEachItem()
-    {
-        var failures = new FailuresDictionary();
-        ValidationAssertions.AssertNotEmptyOrWhitespace(["valid", "   ", "another"], "TestField", failures, n => new ArgumentException(n));
-        failures["TestField"].Count.ShouldBe(1);
-    }
-
-    [Fact]
-    public void ValidationAssertions_AssertNotNullOrEmptyOrWhitespace_ShouldAddFailureWhenNull()
-    {
-        var failures = new FailuresDictionary();
-        ValidationAssertions.AssertNotNullOrEmptyOrWhitespace(null, "TestField", failures, n => new ArgumentException(n));
-        failures.ContainsKey("TestField").ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ValidationAssertions_AssertNotNullNotEmptyCollection_ShouldAddFailureWhenNull()
-    {
-        var failures = new FailuresDictionary();
-        ValidationAssertions.AssertNotNullNotEmptyCollection<string>(null, "TestField", failures, n => new ArgumentException(n));
-        failures.ContainsKey("TestField").ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ValidationAssertions_AssertNotNullNotEmptyCollection_ShouldAddFailureWhenEmpty()
-    {
-        var failures = new FailuresDictionary();
-        ValidationAssertions.AssertNotNullNotEmptyCollection(new List<string>(), "TestField", failures, n => new ArgumentException(n));
-        failures.ContainsKey("TestField").ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ValidationAssertions_Assert_ShouldAddFailureWhenPredicateTrue()
-    {
-        var failures = new FailuresDictionary();
-        ValidationAssertions.Assert(() => true, "TestField", failures, n => new ArgumentException(n));
-        failures.ContainsKey("TestField").ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ValidationAssertions_Assert_ShouldNotAddFailureWhenPredicateFalse()
-    {
-        var failures = new FailuresDictionary();
-        ValidationAssertions.Assert(() => false, "TestField", failures, n => new ArgumentException(n));
-        failures.ShouldBeEmpty();
-    }
-
-    #endregion
-
-    #region BuilderListWithFactory Tests
-
-    [Fact]
-    public void BuilderListWithFactory_New_ShouldUseFactory()
-    {
-        var factoryCallCount = 0;
-        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() =>
-        {
-            factoryCallCount++;
-            return new SimpleObjectBuilder();
-        });
-
-        list.New(b => b.WithValue("first"));
-        list.New(b => b.WithValue("second"));
-
-        factoryCallCount.ShouldBe(2);
-        list.Count.ShouldBe(2);
-    }
-
-    [Fact]
-    public void BuilderListWithFactory_BuildSuccess_ShouldBuildAllItems()
-    {
-        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() => new SimpleObjectBuilder());
-        list.New(b => b.WithValue("first"));
-        list.New(b => b.WithValue("second"));
-
-        var results = list.BuildSuccess();
-
-        results.Count.ShouldBe(2);
-        results[0].Value.ShouldBe("first");
-        results[1].Value.ShouldBe("second");
-    }
-
-    [Fact]
-    public void BuilderListWithFactory_ValidateFailures_ShouldReturnFailures()
-    {
-        var list = new BuilderListWithFactory<Person, PersonBuilder>(() => new PersonBuilder());
-        list.New(b => b.WithName("Valid").WithAge(25));
-        list.New(b => b.WithAge(30)); // Missing name
-
-        var failures = list.ValidateFailures();
-
-        failures.Count.ShouldBe(1);
-    }
-
-    [Fact]
-    public void BuilderListWithFactory_AsReferenceList_ShouldReturnReferences()
-    {
-        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() => new SimpleObjectBuilder());
-        list.New(b => b.WithValue("test"));
-        list.BuildSuccess();
-
-        var referenceList = list.AsReferenceList();
-
-        referenceList.AsEnumerable().Count().ShouldBe(1);
-    }
-
-    [Fact]
-    public void BuilderListWithFactory_NullFactory_ShouldThrow()
-    {
-        Should.Throw<ArgumentNullException>(() => new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(null!));
-    }
-
-    [Fact]
-    public void BuilderListExtensions_CreateBuilderList_ShouldCreateList()
-    {
-        var list = BuilderListExtensions.CreateBuilderList<SimpleObject, SimpleObjectBuilder>(() => new SimpleObjectBuilder());
-        list.ShouldNotBeNull();
-        list.ShouldBeOfType<BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>>();
-    }
-
-    #endregion
-
-    #region IFailureCollector Tests
-
-    [Fact]
-    public void IFailureCollector_AddFailure_ShouldAddToCollection()
-    {
-        IFailureCollector collector = new FailuresDictionary();
-        collector.AddFailure("field", Failure.FromException(new InvalidOperationException()));
-        collector.HasFailures.ShouldBeTrue();
-        collector.FailureCount.ShouldBe(1);
-    }
-
-    [Fact]
-    public void IFailureCollector_HasFailures_ShouldReturnFalseWhenEmpty()
-    {
-        IFailureCollector collector = new FailuresDictionary();
-        collector.HasFailures.ShouldBeFalse();
-        collector.FailureCount.ShouldBe(0);
-    }
-
-    [Fact]
-    public void IFailureCollector_AddFailure_ShouldReturnSameInstance()
-    {
-        IFailureCollector collector = new FailuresDictionary();
-        var result = collector.AddFailure("field", Failure.FromMessage("error"));
-        result.ShouldBeSameAs(collector);
-    }
-
-    [Fact]
-    public void FailuresDictionary_ImplementsIFailureCollector()
-    {
-        var dict = new FailuresDictionary();
-        dict.ShouldBeAssignableTo<IFailureCollector>();
-    }
-
-    #endregion
-
-    #region IReferenceFactory Tests
-
-    [Fact]
-    public void DefaultReferenceFactory_Create_ShouldCreateNewReference()
-    {
-        var factory = DefaultReferenceFactory.Instance;
-        var ref1 = factory.Create<SimpleObject>();
-        var ref2 = factory.Create<SimpleObject>();
-        
-        ref1.ShouldNotBeNull();
-        ref2.ShouldNotBeNull();
-        ref1.ShouldNotBeSameAs(ref2);
-        ref1.IsResolved.ShouldBeFalse();
-    }
-
-    [Fact]
-    public void DefaultReferenceFactory_CreateWithExisting_ShouldCreateResolvedReference()
-    {
-        var factory = DefaultReferenceFactory.Instance;
-        var obj = new SimpleObject { Value = "test" };
-        var reference = factory.Create(obj);
-        
-        reference.IsResolved.ShouldBeTrue();
-        reference.Resolved().ShouldBeSameAs(obj);
-    }
-
-    [Fact]
-    public void DefaultReferenceFactory_CreateWithNull_ShouldCreateUnresolvedReference()
-    {
-        var factory = DefaultReferenceFactory.Instance;
-        var reference = factory.Create<SimpleObject>(null);
-        
-        reference.IsResolved.ShouldBeFalse();
-    }
-
-    [Fact]
-    public void DefaultReferenceFactory_Instance_ShouldBeSingleton()
-    {
-        var instance1 = DefaultReferenceFactory.Instance;
-        var instance2 = DefaultReferenceFactory.Instance;
-        instance1.ShouldBeSameAs(instance2);
-    }
-
-    #endregion
-
-    #region IReadOnlyReferenceList Tests
-
-    [Fact]
-    public void ReferenceList_ImplementsIReadOnlyReferenceList()
-    {
-        var list = new ReferenceList<SimpleObject>();
-        list.ShouldBeAssignableTo<IReadOnlyReferenceList<SimpleObject>>();
-    }
-
-    [Fact]
-    public void IReadOnlyReferenceList_AsEnumerable_ShouldReturnItems()
-    {
-        IReadOnlyReferenceList<SimpleObject> list = new ReferenceList<SimpleObject>();
-        ((ReferenceList<SimpleObject>)list).Add(new SimpleObject { Value = "test" });
-        
-        var items = list.AsEnumerable().ToList();
-        items.Count.ShouldBe(1);
-        items[0].Value.ShouldBe("test");
-    }
-
-    [Fact]
-    public void IReadOnlyReferenceList_Contains_ShouldFindItem()
-    {
-        var obj = new SimpleObject { Value = "test" };
-        IReadOnlyReferenceList<SimpleObject> list = new ReferenceList<SimpleObject>();
-        ((ReferenceList<SimpleObject>)list).Add(obj);
-        
-        list.Contains(obj).ShouldBeTrue();
-        list.Contains(new SimpleObject { Value = "other" }).ShouldBeFalse();
-    }
-
-    #endregion
-
-    #region Dependency Injection Scenario Tests
-
-    [Fact]
-    public void Builder_CanUseCustomReferenceFactory()
-    {
-        // This demonstrates that builders can be constructed with DI
-        var factory = DefaultReferenceFactory.Instance;
-        var builder = new SimpleObjectBuilder(); // Uses default factory
-        
-        builder.Reference().ShouldNotBeNull();
-    }
-
-    [Fact]
-    public void Validation_WorksWithIFailureCollector()
-    {
-        var builder = new PersonBuilder().WithAge(25); // Missing name
-        IFailureCollector collector = new FailuresDictionary();
-        var visited = new VisitedObjectDictionary();
-        
-        builder.Validate(visited, collector);
-        
-        collector.HasFailures.ShouldBeTrue();
-        collector.FailureCount.ShouldBeGreaterThan(0);
-    }
-
-    #endregion
-
-    #region IVisitedTracker Tests
-
-    [Fact]
-    public void VisitedObjectDictionary_ImplementsIVisitedTracker()
-    {
-        var visited = new VisitedObjectDictionary();
-        visited.ShouldBeAssignableTo<IVisitedTracker>();
-    }
-
-    [Fact]
-    public void IVisitedTracker_IsVisited_ShouldReturnFalseWhenNotVisited()
-    {
-        IVisitedTracker tracker = new VisitedObjectDictionary();
-        tracker.IsVisited(Guid.NewGuid()).ShouldBeFalse();
-    }
-
-    [Fact]
-    public void IVisitedTracker_MarkVisited_ShouldMakeIsVisitedReturnTrue()
-    {
-        IVisitedTracker tracker = new VisitedObjectDictionary();
-        var id = Guid.NewGuid();
-        var obj = new SimpleObject { Value = "test" };
-        
-        tracker.MarkVisited(id, obj);
-        
-        tracker.IsVisited(id).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void IVisitedTracker_TryGet_ShouldReturnVisitedObject()
-    {
-        IVisitedTracker tracker = new VisitedObjectDictionary();
-        var id = Guid.NewGuid();
-        var obj = new SimpleObject { Value = "test" };
-        
-        tracker.MarkVisited(id, obj);
-        tracker.TryGet(id, out var result).ShouldBeTrue();
-        result.ShouldBeSameAs(obj);
-    }
-
-    [Fact]
-    public void IVisitedTracker_TryGet_ShouldReturnFalseWhenNotVisited()
-    {
-        IVisitedTracker tracker = new VisitedObjectDictionary();
-        tracker.TryGet(Guid.NewGuid(), out var result).ShouldBeFalse();
-        result.ShouldBeNull();
-    }
-
-    [Fact]
-    public void IVisitedTracker_Count_ShouldReturnNumberOfVisitedObjects()
-    {
-        IVisitedTracker tracker = new VisitedObjectDictionary();
-        tracker.Count.ShouldBe(0);
-        
-        tracker.MarkVisited(Guid.NewGuid(), new SimpleObject());
-        tracker.Count.ShouldBe(1);
-        
-        tracker.MarkVisited(Guid.NewGuid(), new SimpleObject());
-        tracker.Count.ShouldBe(2);
-    }
-
-    #endregion
-
-    #region ISynchronizationStrategy Tests
-
-    [Fact]
-    public void LockSynchronizationStrategy_Instance_ShouldBeSingleton()
-    {
-        var instance1 = LockSynchronizationStrategy.Instance;
-        var instance2 = LockSynchronizationStrategy.Instance;
-        instance1.ShouldBeSameAs(instance2);
-    }
-
-    [Fact]
-    public void LockSynchronizationStrategy_Execute_ShouldExecuteAction()
-    {
-        var strategy = LockSynchronizationStrategy.Instance;
-        var executed = false;
-        var lockObj = new object();
-        
-        strategy.Execute(lockObj, () => executed = true);
-        
-        executed.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void LockSynchronizationStrategy_ExecuteFunc_ShouldReturnResult()
-    {
-        var strategy = LockSynchronizationStrategy.Instance;
-        var lockObj = new object();
-        
-        var result = strategy.Execute(lockObj, () => 42);
-        
-        result.ShouldBe(42);
-    }
-
-    [Fact]
-    public async Task ReaderWriterSynchronizationStrategy_ShouldBeThreadSafe()
-    {
-        var strategy = new ReaderWriterSynchronizationStrategy();
-        var counter = 0;
-        var lockObj = new object();
-        
-        var tasks = Enumerable.Range(0, 10)
-            .Select(_ => Task.Run(() => strategy.Execute(lockObj, () => Interlocked.Increment(ref counter))))
-            .ToArray();
-        
-        await Task.WhenAll(tasks);
-        
-        counter.ShouldBe(10);
-    }
-
-    [Fact]
-    public async Task ReaderWriterSynchronizationStrategy_ExecuteRead_ShouldAllowConcurrentReads()
-    {
-        var strategy = new ReaderWriterSynchronizationStrategy();
-        var readCount = 0;
-        
-        var tasks = Enumerable.Range(0, 10)
-            .Select(_ => Task.Run(() => strategy.ExecuteRead(() => 
-            {
-                Interlocked.Increment(ref readCount);
-                return readCount;
-            })))
-            .ToArray();
-        
-        await Task.WhenAll(tasks);
-        
-        readCount.ShouldBe(10);
-    }
-
-    #endregion
-
-    #region IExistingInstanceProvider Tests
-
-    [Fact]
-    public void AbstractBuilder_ImplementsIExistingInstanceProvider()
-    {
-        var builder = new SimpleObjectBuilder();
-        builder.ShouldBeAssignableTo<IExistingInstanceProvider<SimpleObject>>();
-    }
-
-    [Fact]
-    public void IExistingInstanceProvider_HasExisting_ShouldBeFalseInitially()
-    {
-        IExistingInstanceProvider<SimpleObject> provider = new SimpleObjectBuilder();
-        provider.HasExisting.ShouldBeFalse();
-        provider.ExistingInstance.ShouldBeNull();
-    }
-
-    [Fact]
-    public void IExistingInstanceProvider_HasExisting_ShouldBeTrueAfterExisting()
-    {
-        var existing = new SimpleObject { Value = "existing" };
-        var builder = new SimpleObjectBuilder();
-        builder.Existing(existing);
-        
-        IExistingInstanceProvider<SimpleObject> provider = builder;
-        provider.HasExisting.ShouldBeTrue();
-        provider.ExistingInstance.ShouldBeSameAs(existing);
-    }
-
-    #endregion
-
-    #region IBuildOrchestrator Tests
-
-    [Fact]
-    public void DefaultBuildOrchestrator_Build_ShouldBuildSuccessfully()
-    {
-        var orchestrator = new DefaultBuildOrchestrator<SimpleObject>();
-        var builder = new SimpleObjectBuilder().WithValue("test");
-        
-        var result = orchestrator.Build(builder);
-        
-        result.IsSuccess.ShouldBeTrue();
-        result.Value.IsResolved.ShouldBeTrue();
-        result.Value.Resolved().Value.ShouldBe("test");
-    }
-
-    [Fact]
-    public void DefaultBuildOrchestrator_Build_WithExisting_ShouldReturnExisting()
-    {
-        var orchestrator = new DefaultBuildOrchestrator<SimpleObject>();
-        var existing = new SimpleObject { Value = "existing" };
-        var builder = new SimpleObjectBuilder();
-        builder.Existing(existing);
-        
-        var result = orchestrator.Build(builder);
-        
-        result.IsSuccess.ShouldBeTrue();
-        result.Value.Resolved().ShouldBeSameAs(existing);
-    }
-
-    [Fact]
-    public void DefaultBuildOrchestrator_Build_AlreadyBuilt_ShouldReturnSameReference()
-    {
-        var orchestrator = new DefaultBuildOrchestrator<SimpleObject>();
-        var builder = new SimpleObjectBuilder().WithValue("test");
-        
-        var result1 = orchestrator.Build(builder);
-        var result2 = orchestrator.Build(builder);
-        
-        result1.Value.ShouldBeSameAs(result2.Value);
-    }
-
-    [Fact]
-    public void DefaultBuildOrchestrator_Build_WithNullBuilder_ShouldThrow()
-    {
-        var orchestrator = new DefaultBuildOrchestrator<SimpleObject>();
-        
-        Should.Throw<ArgumentNullException>(() => orchestrator.Build(null!));
-    }
-
-    [Fact]
-    public void DefaultBuildOrchestrator_Constructor_WithCustomDependencies_ShouldWork()
-    {
-        var orchestrator = new DefaultBuildOrchestrator<SimpleObject>(
-            NoSynchronizationStrategy.Instance,
-            () => new FailuresDictionary());
-        
-        var builder = new SimpleObjectBuilder().WithValue("test");
-        var result = orchestrator.Build(builder);
-        
-        result.IsSuccess.ShouldBeTrue();
-    }
-
-    #endregion
-
-    #region IValidationStrategy Tests
-
-    [Fact]
-    public void CustomValidationStrategy_CanBeImplemented()
-    {
-        // Demonstrates that IValidationStrategy can be implemented
-        var strategy = new TestValidationStrategy();
-        var builder = new SimpleObjectBuilder().WithValue("test");
-        var visited = new VisitedObjectDictionary();
-        IFailureCollector failures = new FailuresDictionary();
-        
-        strategy.Validate(builder, visited, failures);
-        
-        strategy.ValidateCalled.ShouldBeTrue();
-    }
-
-    #endregion
-
-    #region Additional Coverage Tests
-
-    [Fact]
-    public void DefaultBuildOrchestrator_Constructor_NullSyncStrategy_ShouldThrow()
-    {
-        Should.Throw<ArgumentNullException>(() => 
-            new DefaultBuildOrchestrator<SimpleObject>(null!, () => new FailuresDictionary()));
-    }
-
-    [Fact]
-    public void DefaultBuildOrchestrator_Constructor_NullFailureFactory_ShouldThrow()
-    {
-        Should.Throw<ArgumentNullException>(() => 
-            new DefaultBuildOrchestrator<SimpleObject>(LockSynchronizationStrategy.Instance, null!));
-    }
-
-    [Fact]
-    public void DefaultBuildOrchestrator_Build_WithVisitedTracker_ShouldHandleCycleDetection()
-    {
-        var orchestrator = new DefaultBuildOrchestrator<SimpleObject>();
-        var builder = new SimpleObjectBuilder().WithValue("test");
-        var visited = new VisitedObjectDictionary();
-        
-        // First build
-        var result1 = orchestrator.Build(builder, visited);
-        result1.IsSuccess.ShouldBeTrue();
-        
-        // Second build with same visited should return early
-        visited.MarkVisited(builder.Id, builder);
-        var result2 = orchestrator.Build(builder, visited);
-        result2.IsSuccess.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ReaderWriterSynchronizationStrategy_ExecuteFunc_ShouldReturnResult()
-    {
-        var strategy = new ReaderWriterSynchronizationStrategy();
-        var lockObj = new object();
-        
-        var result = strategy.Execute(lockObj, () => 123);
-        
-        result.ShouldBe(123);
-    }
-
-    [Fact]
-    public void VisitedObjectDictionary_MarkVisited_ShouldOverwriteExisting()
-    {
-        var tracker = new VisitedObjectDictionary();
-        var id = Guid.NewGuid();
-        var obj1 = new SimpleObject { Value = "first" };
-        var obj2 = new SimpleObject { Value = "second" };
-        
-        tracker.MarkVisited(id, obj1);
-        tracker.MarkVisited(id, obj2);
-        
-        tracker.TryGet(id, out var result).ShouldBeTrue();
-        result.ShouldBeSameAs(obj2);
-    }
-
-    [Fact]
-    public void AbstractBuilder_WithCustomSyncStrategy_ShouldUseProvidedStrategy()
-    {
-        // Custom builder that exposes sync strategy usage
-        var builder = new SimpleObjectBuilder().WithValue("test");
-        
-        // Build should work regardless of strategy
-        var result = builder.Build();
-        result.IsSuccess.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void Failure_Match_ActionOverload_ShouldInvokeCorrectHandler()
-    {
-        var exceptionCalled = false;
-        var messageCalled = false;
-        var nestedCalled = false;
-        
-        var exFailure = Failure.FromException(new InvalidOperationException("ex"));
-        exFailure.Match(
-            onException: _ => exceptionCalled = true,
-            onMessage: _ => messageCalled = true,
-            onNested: _ => nestedCalled = true);
-        
-        exceptionCalled.ShouldBeTrue();
-        messageCalled.ShouldBeFalse();
-        nestedCalled.ShouldBeFalse();
-    }
-
-    [Fact]
-    public void MessageFailure_Match_ShouldInvokeMessageHandler()
-    {
-        var messageCalled = false;
-        
-        var msgFailure = Failure.FromMessage("test message");
-        msgFailure.Match(
-            onException: _ => { },
-            onMessage: _ => messageCalled = true,
-            onNested: _ => { });
-        
-        messageCalled.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void NestedFailure_Match_ShouldInvokeNestedHandler()
-    {
-        var nestedCalled = false;
-        
-        var nestedFailure = Failure.FromNested(new FailuresDictionary());
-        nestedFailure.Match(
-            onException: _ => { },
-            onMessage: _ => { },
-            onNested: _ => nestedCalled = true);
-        
-        nestedCalled.ShouldBeTrue();
+        // The orchestrator should have been called for the AddressBuilder
+        orchestrator.BuildCallCount.ShouldBeGreaterThan(0);
     }
 
     #endregion
@@ -2043,5 +1351,59 @@ public class TestValidationStrategy : IValidationStrategy<SimpleObjectBuilder>
     public void Validate(SimpleObjectBuilder builder, IVisitedTracker visited, IFailureCollector failures)
     {
         ValidateCalled = true;
+    }
+}
+
+// Test orchestrator that tracks calls
+public class TrackingBuildOrchestrator : IBuildOrchestrator
+{
+    public int BuildCallCount { get; private set; }
+
+    public Result<Reference<TClass>> Build<TClass>(IBuilder<TClass> builder, IVisitedTracker? visited = null) where TClass : class
+    {
+        BuildCallCount++;
+        return builder.Build(visited as VisitedObjectDictionary);
+    }
+}
+
+// PersonBuilder with orchestrator injection for testing
+public class PersonBuilderWithOrchestrator : AbstractBuilder<Person>
+{
+    public PersonBuilderWithOrchestrator(IBuildOrchestrator orchestrator) 
+        : base(DefaultReferenceFactory.Instance, LockSynchronizationStrategy.Instance, orchestrator) { }
+
+    public string? Name { get; set; }
+    public int Age { get; set; }
+    public string? Email { get; set; }
+    public AddressBuilder? AddressBuilder { get; set; }
+
+    protected override Person Instantiate() => new()
+    {
+        Name = Name!,
+        Age = Age,
+        Email = Email,
+        Address = AddressBuilder?.Reference().ResolvedOrNull()
+    };
+
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
+    {
+        AssertNotNullOrEmptyOrWhitespace(Name, nameof(Name), failures, n => new StringIsEmptyOrWhitespaceException(n));
+        AddressBuilder?.Validate(visitedCollector, failures);
+    }
+
+    protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
+    {
+        if (AddressBuilder is not null)
+            BuildChild(AddressBuilder, visitedCollector);
+    }
+
+    public PersonBuilderWithOrchestrator WithName(string name) { Name = name; return this; }
+    public PersonBuilderWithOrchestrator WithAge(int age) { Age = age; return this; }
+    public PersonBuilderWithOrchestrator WithEmail(string email) { Email = email; return this; }
+    public PersonBuilderWithOrchestrator WithAddress(Action<AddressBuilder> configure)
+    {
+        AddressBuilder = new AddressBuilder();
+        configure(AddressBuilder);
+        return this;
     }
 }

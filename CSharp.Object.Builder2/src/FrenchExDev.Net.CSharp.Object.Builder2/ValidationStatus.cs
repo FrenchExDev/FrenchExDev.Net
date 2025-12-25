@@ -4,8 +4,3 @@
 /// Specifies the status of a validation process.
 /// </summary>
 public enum ValidationStatus { NotValidated, Validating, Validated }
-
-/// <summary>
-/// Specifies the status of a build process.
-/// </summary>
-public enum BuildStatus { NotBuilding, Building, Built }

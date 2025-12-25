@@ -1,25 +1,4 @@
-﻿namespace FrenchExDev.Net.CSharp.Object.Builder2;
-
-/// <summary>
-/// Read-only list of object references.
-/// </summary>
-public interface IReadOnlyReferenceList<TClass> : IReadOnlyList<TClass> where TClass : class
-{
-    IEnumerable<TClass> AsEnumerable();
-    bool Contains(TClass instance);
-    bool Contains(Reference<TClass> reference);
-}
-
-/// <summary>
-/// Mutable list of object references.
-/// </summary>
-public interface IReferenceList<TClass> : IList<TClass>, IReadOnlyReferenceList<TClass> where TClass : class
-{
-    IQueryable<TClass> Queryable { get; }
-    TClass ElementAt(int index);
-    void Add(Reference<TClass> reference);
-    new bool Contains(Reference<TClass> reference);
-}
+namespace FrenchExDev.Net.CSharp.Object.Builder2;
 
 /// <summary>
 /// List of references. Use AsEnumerable() with standard LINQ methods for querying.

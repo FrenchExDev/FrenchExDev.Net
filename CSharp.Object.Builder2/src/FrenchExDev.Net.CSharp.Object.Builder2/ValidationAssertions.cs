@@ -1,4 +1,4 @@
-namespace FrenchExDev.Net.CSharp.Object.Builder2;
+﻿namespace FrenchExDev.Net.CSharp.Object.Builder2;
 
 /// <summary>
 /// Provides static validation assertion methods for use in builder validation logic.
