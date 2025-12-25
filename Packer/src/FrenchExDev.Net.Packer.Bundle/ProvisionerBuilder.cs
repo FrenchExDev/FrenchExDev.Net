@@ -7,7 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -103,10 +103,10 @@ public class ProvisionerBuilder : AbstractBuilder<Provisioner>
     /// and circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where each failure is recorded with its associated field and
     /// exception.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
     {
         if (string.IsNullOrEmpty(_type))
-            failures.Failure(nameof(_type), new MissingFieldException(nameof(_type)));
+            failures.AddFailure(nameof(_type), new MissingFieldException(nameof(_type)));
 
     }
 

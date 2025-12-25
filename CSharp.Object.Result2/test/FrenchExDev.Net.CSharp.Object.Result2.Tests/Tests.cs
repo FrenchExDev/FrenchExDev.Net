@@ -145,7 +145,7 @@ public class Tests
         var result = Result<int>.Failure(new InvalidOperationException("error"));
 
         // Act & Assert
-        var ex = Should.Throw<InvalidResultAccessOperationException>(() => result.Exception<ArgumentException>());
+        var ex = Should.Throw<InvalidOperationException>(() => result.Exception<ArgumentException>());
         ex.Message.ShouldBe("Exception is null after cast to TException");
     }
 

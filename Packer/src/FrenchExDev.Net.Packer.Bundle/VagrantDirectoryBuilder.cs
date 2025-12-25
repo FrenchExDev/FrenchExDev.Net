@@ -7,7 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -81,18 +81,18 @@ public class VagrantDirectoryBuilder : AbstractBuilder<VagrantDirectory>
     /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
     /// <param name="failures">A dictionary for collecting validation failures. Any issues found during validation are added to this
     /// collection.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
     {
         foreach (var file in _files)
         {
             if (file.Value.Extension is "")
-                failures.Failure(nameof(file.Value.Extension), new ArgumentException("File extension cannot be empty.", nameof(file.Value.Extension)));
+                failures.AddFailure(nameof(file.Value.Extension), new ArgumentException("File extension cannot be empty.", nameof(file.Value.Extension)));
 
             if (file.Value.Path is "")
-                failures.Failure(nameof(file.Value.Path), new ArgumentException("File path cannot be empty.", nameof(file.Value.Path)));
+                failures.AddFailure(nameof(file.Value.Path), new ArgumentException("File path cannot be empty.", nameof(file.Value.Path)));
 
             if (file.Value.NewLine is "")
-                failures.Failure(nameof(file.Value.NewLine), new ArgumentException("File new line cannot be empty.", nameof(file.Value.NewLine)));
+                failures.AddFailure(nameof(file.Value.NewLine), new ArgumentException("File new line cannot be empty.", nameof(file.Value.NewLine)));
         }
     }
 }

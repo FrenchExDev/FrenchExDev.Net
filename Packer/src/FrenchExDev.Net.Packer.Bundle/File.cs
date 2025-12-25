@@ -5,7 +5,7 @@
 
 #endregion
 
-using FrenchExDev.Net.CSharp.Object.Builder;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 namespace FrenchExDev.Net.Packer.Bundle;
 

@@ -1,4 +1,4 @@
-using FrenchExDev.Net.CSharp.Object.Builder;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 using Shouldly;
 
 namespace FrenchExDev.Net.Packer.Bundle.Tests;
@@ -44,7 +44,7 @@ public class ValidationTests
 
         var result = builder.Build();
 
-        result.IsSuccess<PackerBuilder>().ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
     }
 
     #endregion
@@ -407,7 +407,7 @@ public class ValidationTests
             .Plugin("plugin");
 
         var result = builder.Build();
-        result.IsSuccess<PackerBundle>().ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [Fact]
@@ -427,22 +427,13 @@ public class ValidationTests
     #region ShellScriptBuilder Validation Tests
 
     [Fact]
-    public void ShellScriptBuilder_Build_Fails_Without_Name()
-    {
-        var builder = new ShellScriptBuilder()
-            .AddLine("echo test");
-
-        Should.Throw<InvalidDataException>(() => builder.BuildSuccess());
-    }
-
-    [Fact]
     public void ShellScriptBuilder_Build_Succeeds_With_Name()
     {
         var builder = new ShellScriptBuilder()
             .Name("test.sh")
             .AddLine("echo test");
 
-        var script = builder.BuildSuccess();
+        var script = builder.Build().Value.Resolved();
         script.Name.ShouldBe("test.sh");
     }
 

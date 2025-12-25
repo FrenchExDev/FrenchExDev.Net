@@ -7,7 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -560,31 +560,31 @@ public class PackerBuilderBuilder : AbstractBuilder<PackerBuilder>
    /// </summary>
    /// <param name="visitedCollector">A dictionary used to track objects that have already been visited during validation to prevent redundant checks.</param>
    /// <param name="failures">A dictionary that accumulates validation failures, mapping property names to the corresponding exception details.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
     {
-        AssertNotNullNotEmptyCollection(_bootCommand, nameof(PackerBuilder.BootCommand), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_bootWait, nameof(PackerBuilder.BootWait), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_communicator, nameof(PackerBuilder.Communicator), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_diskSize, nameof(PackerBuilder.DiskSize), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_format, nameof(PackerBuilder.Format), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_guestOsType, nameof(PackerBuilder.GuestOsType), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_httpDirectory, nameof(PackerBuilder.HttpDirectory), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_isoChecksum, nameof(PackerBuilder.IsoChecksum), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotNullNotEmptyCollection(_isoUrls, nameof(PackerBuilder.IsoUrls), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotNullNotEmptyCollection(_isoUrls, nameof(PackerBuilder.IsoUrls), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_guestAdditionUrl, nameof(PackerBuilder.GuestAdditionUrl), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_guestAdditionSha256, nameof(PackerBuilder.GuestAdditionSha256), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_guestAdditionPath, nameof(PackerBuilder.GuestAdditionPath), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_guestAdditionMode, nameof(PackerBuilder.GuestAdditionMode), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_virtualBoxVersionFile, nameof(PackerBuilder.VirtualBoxVersionFile), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_shutdownCommand, nameof(PackerBuilder.ShutdownCommand), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_sshPassword, nameof(PackerBuilder.SshPassword), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_sshTimeout, nameof(PackerBuilder.SshTimeout), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_sshUsername, nameof(PackerBuilder.SshUsername), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_type, nameof(PackerBuilder.Type), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotNullNotEmptyCollection(_vboxManage, nameof(PackerBuilder.VboxManage), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_vmName, nameof(PackerBuilder.VmName), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
-        AssertNotEmptyOrWhitespace(_hardDriveInterface, nameof(PackerBuilder.HardDriveInterface), failures, (name) => new StringIsEmptyOrWhitespaceException(name));
+        AssertNotNullNotEmptyCollection(_bootCommand, nameof(PackerBuilder.BootCommand), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_bootWait, nameof(PackerBuilder.BootWait), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_communicator, nameof(PackerBuilder.Communicator), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_diskSize, nameof(PackerBuilder.DiskSize), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_format, nameof(PackerBuilder.Format), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_guestOsType, nameof(PackerBuilder.GuestOsType), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_httpDirectory, nameof(PackerBuilder.HttpDirectory), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_isoChecksum, nameof(PackerBuilder.IsoChecksum), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotNullNotEmptyCollection(_isoUrls, nameof(PackerBuilder.IsoUrls), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotNullNotEmptyCollection(_isoUrls, nameof(PackerBuilder.IsoUrls), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_guestAdditionUrl, nameof(PackerBuilder.GuestAdditionUrl), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_guestAdditionSha256, nameof(PackerBuilder.GuestAdditionSha256), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_guestAdditionPath, nameof(PackerBuilder.GuestAdditionPath), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_guestAdditionMode, nameof(PackerBuilder.GuestAdditionMode), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_virtualBoxVersionFile, nameof(PackerBuilder.VirtualBoxVersionFile), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_shutdownCommand, nameof(PackerBuilder.ShutdownCommand), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_sshPassword, nameof(PackerBuilder.SshPassword), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_sshTimeout, nameof(PackerBuilder.SshTimeout), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_sshUsername, nameof(PackerBuilder.SshUsername), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_type, nameof(PackerBuilder.Type), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotNullNotEmptyCollection(_vboxManage, nameof(PackerBuilder.VboxManage), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_vmName, nameof(PackerBuilder.VmName), failures, (name) => new RequiredPropertyNotSetException(name));
+        AssertNotEmptyOrWhitespace(_hardDriveInterface, nameof(PackerBuilder.HardDriveInterface), failures, (name) => new RequiredPropertyNotSetException(name));
     }
 
     /// <summary>

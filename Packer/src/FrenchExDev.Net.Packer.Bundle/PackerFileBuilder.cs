@@ -7,7 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -242,7 +242,7 @@ public class PackerFileBuilder : AbstractBuilder<PackerFile>
     /// and circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where each entry represents a specific issue found during the
     /// validation process.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
     {
         ValidateListInternal(_builders, nameof(_builders), visitedCollector, failures);
         ValidateListInternal(_postProcessors, nameof(_postProcessors), visitedCollector, failures);

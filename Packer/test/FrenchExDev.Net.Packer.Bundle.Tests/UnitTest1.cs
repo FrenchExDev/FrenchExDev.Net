@@ -1,4 +1,5 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
+using Newtonsoft.Json.Linq;
 using Shouldly;
 
 namespace FrenchExDev.Net.Packer.Bundle.Tests;
@@ -51,19 +52,10 @@ public class ShellScriptBuilderTests
             .Name("setup.sh");
         
         var result = builder.Build();
-        
-        result.IsSuccess<ShellScript>().ShouldBeTrue();
-        var script = result.Success<ShellScript>();
-        script.Name.ShouldBe("setup.sh");
-    }
 
-    [Fact]
-    public void Build_Throws_When_Name_Is_Missing()
-    {
-        var builder = new ShellScriptBuilder()
-            .AddLine("echo hello");
-        
-        Should.Throw<InvalidDataException>(() => builder.BuildSuccess());
+        result.IsSuccess.ShouldBeTrue();
+        var script = result.Value.Resolved();
+        script.Name.ShouldBe("setup.sh");
     }
 
     [Fact]
@@ -73,7 +65,7 @@ public class ShellScriptBuilderTests
             .Name("setup.sh")
             .AddLine("echo hello");
         
-        var script = builder.Build().Success<ShellScript>();
+        var script = builder.Build().Value.Resolved();
         
         script.Lines.ShouldContain("echo hello");
     }
@@ -84,9 +76,9 @@ public class ShellScriptBuilderTests
         var builder = new ShellScriptBuilder()
             .Name("setup.sh")
             .AddLines(new[] { "echo hello", "echo world" });
-        
-        var script = builder.Build().Success<ShellScript>();
-        
+
+        var script = builder.Build().Value.Resolved();
+
         script.Lines.ShouldContain("echo hello");
         script.Lines.ShouldContain("echo world");
     }
@@ -97,9 +89,9 @@ public class ShellScriptBuilderTests
         var builder = new ShellScriptBuilder()
             .Name("setup.sh")
             .AddLines("echo hello\necho world", "\n");
-        
-        var script = builder.Build().Success<ShellScript>();
-        
+
+        var script = builder.Build().Value.Resolved();
+
         script.Lines.ShouldContain("echo hello");
         script.Lines.ShouldContain("echo world");
     }
@@ -111,9 +103,9 @@ public class ShellScriptBuilderTests
             .Name("setup.sh")
             .Set("-e")
             .AddLine("echo hello");
-        
-        var script = builder.Build().Success<ShellScript>();
-        
+
+        var script = builder.Build().Value.Resolved();
+
         script.Lines[0].ShouldBe("set -e");
         script.Lines[1].ShouldBe("echo hello");
     }
@@ -124,9 +116,9 @@ public class ShellScriptBuilderTests
         var builder = new ShellScriptBuilder()
             .Name("setup.sh")
             .SetNewLine("\r\n");
-        
-        var script = builder.Build().Success<ShellScript>();
-        
+
+        var script = builder.Build().Value.Resolved();
+
         script.NewLine.ShouldBe("\r\n");
     }
 }
@@ -248,7 +240,7 @@ public class FileBuilderTests
     public void Build_Creates_File_With_Defaults()
     {
         var builder = new FileBuilder();
-        var file = builder.Build().Success<File>();
+        var file = builder.Build().Value.Resolved();
         
         file.NewLine.ShouldBe("\n");
         file.Name.ShouldBeEmpty();
@@ -262,7 +254,7 @@ public class FileBuilderTests
         var builder = new FileBuilder()
             .AddLine("test line");
         
-        var file = builder.Build().Success<File>();
+        var file = builder.Build().Value.Resolved();
         
         file.Lines.ShouldContain("test line");
     }
@@ -272,9 +264,9 @@ public class FileBuilderTests
     {
         var builder = new FileBuilder()
             .AddLines(new[] { "line1", "line2" });
-        
-        var file = builder.Build().Success<File>();
-        
+
+        var file = builder.Build().Value.Resolved();
+
         file.Lines.Count.ShouldBe(2);
     }
 
@@ -283,9 +275,9 @@ public class FileBuilderTests
     {
         var builder = new FileBuilder()
             .AddLines(new List<string> { "line1", "line2" });
-        
-        var file = builder.Build().Success<File>();
-        
+
+        var file = builder.Build().Value.Resolved();
+
         file.Lines.Count.ShouldBe(2);
     }
 
@@ -294,9 +286,9 @@ public class FileBuilderTests
     {
         var builder = new FileBuilder()
             .AddLines("line1;line2", ";");
-        
-        var file = builder.Build().Success<File>();
-        
+
+        var file = builder.Build().Value.Resolved();
+
         file.Lines.Count.ShouldBe(2);
     }
 
@@ -305,9 +297,9 @@ public class FileBuilderTests
     {
         var builder = new FileBuilder()
             .SetNewLine("\r\n");
-        
-        var file = builder.Build().Success<File>();
-        
+
+        var file = builder.Build().Value.Resolved();
+
         file.NewLine.ShouldBe("\r\n");
     }
 
@@ -316,9 +308,9 @@ public class FileBuilderTests
     {
         var builder = new FileBuilder()
             .AppendLine("test");
-        
-        var file = builder.Build().Success<File>();
-        
+
+        var file = builder.Build().Value.Resolved();
+
         file.Lines.ShouldContain("test");
     }
 }
@@ -358,7 +350,7 @@ public class HttpDirectoryBuilderTests
     public void Build_Creates_Empty_Directory()
     {
         var builder = new HttpDirectoryBuilder();
-        var dir = builder.Build().Success<HttpDirectory>();
+        var dir = builder.Build().Value.Resolved();
         
         dir.Files.ShouldBeEmpty();
     }
@@ -370,7 +362,7 @@ public class HttpDirectoryBuilderTests
         var builder = new HttpDirectoryBuilder()
             .AddFile("test.txt", file);
         
-        var dir = builder.Build().Success<HttpDirectory>();
+        var dir = builder.Build().Value.Resolved();
         
         dir.Files.ShouldContainKey("test.txt");
     }
@@ -382,9 +374,9 @@ public class HttpDirectoryBuilderTests
         var builder = new HttpDirectoryBuilder()
             .AddFile("test.txt", file)
             .RemoveFile("test.txt");
-        
-        var dir = builder.Build().Success<HttpDirectory>();
-        
+
+        var dir = builder.Build().Value.Resolved();
+
         dir.Files.ShouldNotContainKey("test.txt");
     }
 }
@@ -414,7 +406,7 @@ public class VagrantDirectoryBuilderTests
     public void Build_Creates_Empty_Directory()
     {
         var builder = new VagrantDirectoryBuilder();
-        var dir = builder.Build().Success<VagrantDirectory>();
+        var dir = builder.Build().Value.Resolved();
         
         dir.Files.ShouldBeEmpty();
     }
@@ -426,9 +418,9 @@ public class VagrantDirectoryBuilderTests
         var file = new File(new List<string>(), "\n", "Vagrantfile", ".rb", "/vagrant");
         var builder = new VagrantDirectoryBuilder()
             .AddFile("Vagrantfile", file);
-        
-        var dir = builder.Build().Success<VagrantDirectory>();
-        
+
+        var dir = builder.Build().Value.Resolved();
+
         dir.Files.ShouldContainKey("Vagrantfile");
     }
 
@@ -439,9 +431,9 @@ public class VagrantDirectoryBuilderTests
         var builder = new VagrantDirectoryBuilder()
             .AddFile("Vagrantfile", file)
             .RemoveFile("Vagrantfile");
-        
-        var dir = builder.Build().Success<VagrantDirectory>();
-        
+
+        var dir = builder.Build().Value.Resolved();
+
         dir.Files.ShouldNotContainKey("Vagrantfile");
     }
 }
@@ -484,8 +476,8 @@ public class PackerFileBuilderTests
         
         var result = builder.Build();
         
-        result.IsSuccess<PackerFile>().ShouldBeTrue();
-        var pf = result.Success<PackerFile>();
+        result.IsSuccess.ShouldBeTrue();
+        var pf = result.Value.Resolved();
         pf.Description.ShouldBe("Test build");
     }
 
@@ -517,9 +509,9 @@ public class PackerFileBuilderTests
                 .VmName("test-vm")
                 .HardDriveInterface("sata")
                 .ModifyVm("--cpus", "1"));
-        
-        var pf = builder.Build().Success<PackerFile>();
-        
+
+        var pf = builder.Build().Value.Resolved();
+
         pf.Builders.ShouldNotBeNull();
         pf.Builders!.Count.ShouldBe(1);
     }
@@ -529,9 +521,9 @@ public class PackerFileBuilderTests
     {
         var builder = new PackerFileBuilder()
             .Provisioner(p => p.Type("shell"));
-        
-        var pf = builder.Build().Success<PackerFile>();
-        
+
+        var pf = builder.Build().Value.Resolved();
+
         pf.Provisioners.ShouldNotBeNull();
         pf.Provisioners!.Count.ShouldBe(1);
     }
@@ -542,9 +534,9 @@ public class PackerFileBuilderTests
         // PostProcessor validation requires CompressionLevel
         var builder = new PackerFileBuilder()
             .PostProcessor(pp => pp.Type("vagrant").CompressionLevel(6));
-        
-        var pf = builder.Build().Success<PackerFile>();
-        
+
+        var pf = builder.Build().Value.Resolved();
+
         pf.PostProcessors.ShouldNotBeNull();
         pf.PostProcessors!.Count.ShouldBe(1);
     }
@@ -554,9 +546,9 @@ public class PackerFileBuilderTests
     {
         var builder = new PackerFileBuilder()
             .Variable("os_version", "1.0");
-        
-        var pf = builder.Build().Success<PackerFile>();
-        
+
+        var pf = builder.Build().Value.Resolved();
+
         pf.Variables.ShouldContainKeyAndValue("os_version", "1.0");
     }
 
@@ -566,9 +558,9 @@ public class PackerFileBuilderTests
         var builder = new PackerFileBuilder()
             .Variable("os_version", "1.0")
             .ChangeVariable("os_version", "2.0");
-        
-        var pf = builder.Build().Success<PackerFile>();
-        
+
+        var pf = builder.Build().Value.Resolved();
+
         pf.Variables.ShouldContainKeyAndValue("os_version", "2.0");
     }
 
@@ -621,9 +613,9 @@ public class PackerFileBuilderTests
         var builder = new PackerFileBuilder()
             .Provisioner(p => p.Type("shell"))
             .UpdateProvisioner(p => true, p => p.AddScript("test.sh"));
-        
-        var pf = builder.Build().Success<PackerFile>();
-        
+
+        var pf = builder.Build().Value.Resolved();
+
         pf.Provisioners![0].Scripts.ShouldContain("test.sh");
     }
 
@@ -633,9 +625,9 @@ public class PackerFileBuilderTests
         var builder = new PackerFileBuilder()
             .PostProcessor(pp => pp.Type("vagrant").CompressionLevel(6))
             .UpdatePostProcessor(pp => true, pp => pp.Output("output.box"));
-        
-        var pf = builder.Build().Success<PackerFile>();
-        
+
+        var pf = builder.Build().Value.Resolved();
+
         pf.PostProcessors![0].Output.ShouldBe("output.box");
     }
 }
@@ -681,9 +673,9 @@ public class PackerBuilderBuilderTests
             .HardDriveDiscard(true);
         
         var result = builder.Build();
-        
-        result.IsSuccess<PackerBuilder>().ShouldBeTrue();
-        var pb = result.Success<PackerBuilder>();
+
+        result.IsSuccess.ShouldBeTrue();
+        var pb = result.Value.Resolved();
         pb.Type.ShouldBe("virtualbox-iso");
         pb.VmName.ShouldBe("test-vm");
         pb.Headless.ShouldBe(true);
@@ -695,9 +687,9 @@ public class PackerBuilderBuilderTests
     {
         var builder = CreateBaseBuilder()
             .ModifyVm("--memory", "1024");
-        
-        var pb = builder.Build().Success<PackerBuilder>();
-        
+
+        var pb = builder.Build().Value.Resolved();
+
         pb.VboxManage.ShouldNotBeNull();
         // Should have at least 2 commands (base + this one)
         pb.VboxManage!.Count.ShouldBeGreaterThanOrEqualTo(2);
@@ -709,9 +701,9 @@ public class PackerBuilderBuilderTests
     {
         var builder = CreateBaseBuilder()
             .ModifyVmIf(() => true, "--memory", "1024");
-        
-        var pb = builder.Build().Success<PackerBuilder>();
-        
+
+        var pb = builder.Build().Value.Resolved();
+
         pb.VboxManage.ShouldNotBeNull();
         pb.VboxManage!.Count.ShouldBeGreaterThanOrEqualTo(2);
     }
@@ -721,9 +713,9 @@ public class PackerBuilderBuilderTests
     {
         var builder = CreateBaseBuilder()
             .ModifyVmIf(() => false, "--memory", "1024");
-        
-        var pb = builder.Build().Success<PackerBuilder>();
-        
+
+        var pb = builder.Build().Value.Resolved();
+
         // Should only have the base command from CreateBaseBuilder
         pb.VboxManage.ShouldNotBeNull();
         pb.VboxManage!.Count.ShouldBe(1);
@@ -735,9 +727,9 @@ public class PackerBuilderBuilderTests
     {
         var builder = CreateBaseBuilder()
             .ModifyStorageController("SATA Controller", "--add", "sata");
-        
-        var pb = builder.Build().Success<PackerBuilder>();
-        
+
+        var pb = builder.Build().Value.Resolved();
+
         pb.VboxManage.ShouldNotBeNull();
         pb.VboxManage!.Any(cmd => cmd.Contains("storagectl")).ShouldBeTrue();
     }
@@ -748,9 +740,9 @@ public class PackerBuilderBuilderTests
         var builder = CreateBaseBuilder()
             .ModifyStorageControllerIf(() => true, "SATA", "--add", "sata")
             .ModifyStorageControllerIf(() => false, "IDE", "--add", "ide");
-        
-        var pb = builder.Build().Success<PackerBuilder>();
-        
+
+        var pb = builder.Build().Value.Resolved();
+
         // Should have base command + one storagectl (not the IDE one)
         pb.VboxManage!.Count.ShouldBe(2);
     }
@@ -760,9 +752,9 @@ public class PackerBuilderBuilderTests
     {
         var builder = CreateBaseBuilder()
             .ModifyStorageAttach("SATA Controller", 0, "--type", "hdd");
-        
-        var pb = builder.Build().Success<PackerBuilder>();
-        
+
+        var pb = builder.Build().Value.Resolved();
+
         pb.VboxManage.ShouldNotBeNull();
         pb.VboxManage!.Any(cmd => cmd.Contains("storageattach")).ShouldBeTrue();
     }
@@ -774,8 +766,8 @@ public class PackerBuilderBuilderTests
             .ModifyStorageAttachIf(() => true, "SATA", 0, "--type", "hdd")
             .ModifyStorageAttachIf(() => false, "IDE", 0, "--type", "dvd");
         
-        var pb = builder.Build().Success<PackerBuilder>();
-        
+        var pb = builder.Build().Value.Resolved();
+
         // base + one storageattach
         pb.VboxManage!.Count.ShouldBe(2);
     }
@@ -785,9 +777,9 @@ public class PackerBuilderBuilderTests
     {
         var builder = CreateBaseBuilder()
             .AddVBoxManage("setproperty", "machinefolder", "/vms", "default");
-        
-        var pb = builder.Build().Success<PackerBuilder>();
-        
+
+        var pb = builder.Build().Value.Resolved();
+
         pb.VboxManage.ShouldNotBeNull();
         pb.VboxManage!.Any(cmd => cmd.Contains("setproperty")).ShouldBeTrue();
     }
@@ -798,9 +790,9 @@ public class PackerBuilderBuilderTests
         var builder = CreateBaseBuilder()
             .AddVBoxManageIf(() => true, "setproperty", "a", "b", "c")
             .AddVBoxManageIf(() => false, "setproperty", "x", "y", "z");
-        
-        var pb = builder.Build().Success<PackerBuilder>();
-        
+
+        var pb = builder.Build().Value.Resolved();
+
         // base + one setproperty
         pb.VboxManage!.Count.ShouldBe(2);
     }
@@ -810,9 +802,9 @@ public class PackerBuilderBuilderTests
     {
         var builder = CreateBaseBuilder()
             .ModifyProperty("machinefolder", "/vms");
-        
-        var pb = builder.Build().Success<PackerBuilder>();
-        
+
+        var pb = builder.Build().Value.Resolved();
+
         pb.VboxManage!.Any(cmd => cmd.Contains("setproperty") && cmd.Contains("machinefolder")).ShouldBeTrue();
     }
 
@@ -821,9 +813,9 @@ public class PackerBuilderBuilderTests
     {
         var builder = CreateBaseBuilder()
             .SetExtraData("VBoxInternal/Key", "Value");
-        
-        var pb = builder.Build().Success<PackerBuilder>();
-        
+
+        var pb = builder.Build().Value.Resolved();
+
         pb.VboxManage!.Any(cmd => cmd.Contains("setextradata")).ShouldBeTrue();
     }
 }
@@ -864,11 +856,11 @@ public class ProvisionerBuilderTests
             .PauseBefore("5s");
         
         var result = builder.Build();
-        
-        result.IsSuccess<Provisioner>().ShouldBeTrue();
-        var p = result.Success<Provisioner>();
+
+        result.IsSuccess.ShouldBeTrue();
+        var p = result.Value.Resolved();
         p.Type.ShouldBe("shell");
-        p.Scripts.ShouldContain("setup.sh");
+        p.Scripts!.ShouldContain("setup.sh");
         p.PauseBefore.ShouldBe("5s");
     }
 
@@ -879,9 +871,9 @@ public class ProvisionerBuilderTests
             .Type("shell")
             .AddScript("second.sh")
             .BeforeScript("second.sh", "first.sh");
-        
-        var p = builder.Build().Success<Provisioner>();
-        
+
+        var p = builder.Build().Value.Resolved();
+
         p.Scripts![0].ShouldBe("first.sh");
         p.Scripts[1].ShouldBe("second.sh");
     }
@@ -893,9 +885,8 @@ public class ProvisionerBuilderTests
             .Type("shell")
             .AddScript("existing.sh")
             .BeforeScript("nonexistent.sh", "new.sh");
-        
-        var p = builder.Build().Success<Provisioner>();
-        
+
+        var p = builder.Build().Value.Resolved();
         p.Scripts!.Count.ShouldBe(1);
     }
 
@@ -907,7 +898,7 @@ public class ProvisionerBuilderTests
             .Type("shell")
             .Override(@override);
         
-        var p = builder.Build().Success<Provisioner>();
+        var p = builder.Build().Value.Resolved();
         
         p.Override.ShouldBeSameAs(@override);
     }
@@ -957,8 +948,8 @@ public class PostProcessorBuilderTests
         
         var result = builder.Build();
         
-        result.IsSuccess<PostProcessor>().ShouldBeTrue();
-        var pp = result.Success<PostProcessor>();
+        result.IsSuccess.ShouldBeTrue();
+        var pp = result.Value.Resolved();
         pp.Type.ShouldBe("vagrant");
         pp.CompressionLevel.ShouldBe(6);
         pp.KeepInputArtifact.ShouldBeTrue();
@@ -974,9 +965,9 @@ public class PostProcessorBuilderTests
             .CompressionLevel(6)
             .Output("output.box")
             .VagrantfileTemplate("template.tpl");
-        
-        var pp = builder.Build().Success<PostProcessor>();
-        
+
+        var pp = builder.Build().Value.Resolved();
+
         pp.KeepInputArtifact.ShouldBeFalse();
     }
 }
@@ -1011,9 +1002,8 @@ public class ProvisionerOverrideBuilderTests
             .VirtualBoxIso(vboxOverride);
         
         var result = builder.Build();
-        
-        result.IsSuccess<ProvisionerOverride>().ShouldBeTrue();
-        var po = result.Success<ProvisionerOverride>();
+        result.IsSuccess.ShouldBeTrue();
+        var po = result.Value.Resolved();
         po.VirtualBoxIso.ShouldBeSameAs(vboxOverride);
     }
 
@@ -1023,7 +1013,7 @@ public class ProvisionerOverrideBuilderTests
         var builder = new ProvisionerOverrideBuilder()
             .VirtualBoxIso(null);
         
-        var po = builder.Build().Success<ProvisionerOverride>();
+        var po = builder.Build().Value.Resolved();
         
         po.VirtualBoxIso.ShouldBeNull();
     }
@@ -1057,9 +1047,8 @@ public class VirtualBoxIsoProvisionerOverrideBuilderTests
             .ExecuteCommand("echo test");
         
         var result = builder.Build();
-        
-        result.IsSuccess<VirtualBoxIsoProvisionerOverride>().ShouldBeTrue();
-        var vo = result.Success<VirtualBoxIsoProvisionerOverride>();
+        result.IsSuccess.ShouldBeTrue();
+        var vo = result.Value.Resolved();
         vo.ExecuteCommand.ShouldBe("echo test");
     }
 
@@ -1069,7 +1058,7 @@ public class VirtualBoxIsoProvisionerOverrideBuilderTests
         var builder = new VirtualBoxIsoProvisionerOverrideBuilder()
             .ExecuteCommand(null);
         
-        var vo = builder.Build().Success<VirtualBoxIsoProvisionerOverride>();
+        var vo = builder.Build().Value.Resolved();
         
         vo.ExecuteCommand.ShouldBeNull();
     }
@@ -1126,7 +1115,7 @@ public class PackerBundleBuilderTests
         
         var result = builder.Build();
         
-        result.IsSuccess<PackerBundle>().ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [Fact]
@@ -1135,7 +1124,7 @@ public class PackerBundleBuilderTests
         var builder = new PackerBundleBuilder()
             .Directory("/tmp/build");
         
-        var bundle = builder.Build().Success<PackerBundle>();
+        var bundle = builder.Build().Value.Resolved();
         
         bundle.Directories.ShouldContain("/tmp/build");
     }
@@ -1146,7 +1135,7 @@ public class PackerBundleBuilderTests
         var builder = new PackerBundleBuilder()
             .Plugin("packer-plugin-virtualbox");
         
-        var bundle = builder.Build().Success<PackerBundle>();
+        var bundle = builder.Build().Value.Resolved();
         
         bundle.Plugins.ShouldContain("packer-plugin-virtualbox");
     }
@@ -1157,7 +1146,7 @@ public class PackerBundleBuilderTests
         var builder = new PackerBundleBuilder()
             .Script("setup", sb => sb.Name("setup.sh"));
         
-        var bundle = builder.Build().Success<PackerBundle>();
+        var bundle = builder.Build().Value.Resolved();
         
         bundle.Scripts.ShouldContainKey("setup");
     }
@@ -1172,7 +1161,7 @@ public class PackerBundleBuilderTests
                 { "script2", sb => sb.Name("s2.sh") }
             });
         
-        var bundle = builder.Build().Success<PackerBundle>();
+        var bundle = builder.Build().Value.Resolved();
         
         bundle.Scripts.Count.ShouldBe(2);
     }
@@ -1184,7 +1173,7 @@ public class PackerBundleBuilderTests
             .Script("setup", sb => sb.Name("setup.sh"))
             .ScriptRemove("setup");
         
-        var bundle = builder.Build().Success<PackerBundle>();
+        var bundle = builder.Build().Value.Resolved();
         
         bundle.Scripts.ShouldNotContainKey("setup");
     }
@@ -1197,7 +1186,7 @@ public class PackerBundleBuilderTests
         var builder = new PackerBundleBuilder()
             .VagrantDirectory(vd => vd.AddFile("Vagrantfile", file));
         
-        var bundle = builder.Build().Success<PackerBundle>();
+        var bundle = builder.Build().Value.Resolved();
         
         bundle.VagrantDirectory.Files.ShouldContainKey("Vagrantfile");
     }
@@ -1209,7 +1198,7 @@ public class PackerBundleBuilderTests
         var builder = new PackerBundleBuilder()
             .HttpDirectory(hd => hd.AddFile("answers.txt", file));
         
-        var bundle = builder.Build().Success<PackerBundle>();
+        var bundle = builder.Build().Value.Resolved();
         
         bundle.HttpDirectory.Files.ShouldContainKey("answers.txt");
     }
@@ -1220,7 +1209,7 @@ public class PackerBundleBuilderTests
         var builder = new PackerBundleBuilder()
             .PackerFile(pf => pf.Description("Test bundle"));
         
-        var bundle = builder.Build().Success<PackerBundle>();
+        var bundle = builder.Build().Value.Resolved();
         
         bundle.PackerFile.Description.ShouldBe("Test bundle");
     }

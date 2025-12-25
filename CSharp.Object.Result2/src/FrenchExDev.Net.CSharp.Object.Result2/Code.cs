@@ -317,7 +317,7 @@ public readonly struct Result<TResult> : IResult
         {
             throw new InvalidResultAccessOperationException("Cannot access Exception when the result is a success.");
         }
-        return _exception as TException ?? throw new InvalidResultAccessOperationException("Exception is null after cast to TException");
+        return _exception as TException ?? throw new InvalidOperationException("Exception is null after cast to TException");
     }
 
     /// <summary>
@@ -760,5 +760,10 @@ public readonly struct Result<TResult> : IResult
             return await bind(Value);
         }
         return Result<TNew>.Failure(Exception<Exception>());
+    }
+
+    public bool IsFailure()
+    {
+        return !IsSuccess;
     }
 }

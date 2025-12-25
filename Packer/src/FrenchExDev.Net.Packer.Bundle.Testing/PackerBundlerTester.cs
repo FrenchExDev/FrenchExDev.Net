@@ -7,7 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -48,7 +48,7 @@ public class PackerBundlerTester
     {
         var packerBundleBuilder = Builder();
         builderBody(packerBundleBuilder);
-        var packerBundle = packerBundleBuilder.BuildSuccess();
+        var packerBundle = packerBundleBuilder.Build().Value.Resolved();
         assertBuiltBody(packerBundle);
         var serializedPackerFile = packerBundle.PackerFile.Serialize();
         assertSerializedBody(serializedPackerFile);
@@ -69,7 +69,7 @@ public class PackerBundlerTester
     {
         var packerBundleBuilder = Builder();
         builderBody(packerBundleBuilder);
-        var failures = packerBundleBuilder.Build().Failures<PackerBundle>();
-        assertFailuresBody(failures);
+        var failures = packerBundleBuilder.Build().Exception<BuildFailureException>();
+        assertFailuresBody(failures.Failures);
     }
 }

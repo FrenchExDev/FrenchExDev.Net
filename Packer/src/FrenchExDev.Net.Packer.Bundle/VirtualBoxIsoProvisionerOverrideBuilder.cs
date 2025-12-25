@@ -7,7 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -58,8 +58,13 @@ public class VirtualBoxIsoProvisionerOverrideBuilder : AbstractBuilder<VirtualBo
         return new(_executeCommand);
     }
 
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    /// <summary>
+    /// Validates the builder's state before constructing the VirtualBoxIsoProvisionerOverride instance.
+    /// </summary>
+    /// <param name="visitedCollector"></param>
+    /// <param name="failures"></param>
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
     {
-        AssertNotEmptyOrWhitespace(_executeCommand, nameof(VirtualBoxIsoProvisionerOverride.ExecuteCommand), failures, (s) => new StringIsEmptyOrWhitespaceException(s));
+        AssertNotEmptyOrWhitespace(_executeCommand, nameof(VirtualBoxIsoProvisionerOverride.ExecuteCommand), failures, (s) => new RequiredPropertyNotSetException(s));
     }
 }

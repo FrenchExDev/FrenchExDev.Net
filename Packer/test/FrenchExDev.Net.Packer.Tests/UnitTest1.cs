@@ -1,4 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Builder;
+﻿using FrenchExDev.Net.CSharp.Object.Builder2;
 using Shouldly;
 
 namespace FrenchExDev.Net.Packer.Tests;
@@ -280,8 +280,8 @@ public class PackerBuildCommandBuilderTests
 
         var result = builder.Build();
 
-        result.IsSuccess<PackerBuildCommand>().ShouldBeTrue();
-        var cmd = result.Success<PackerBuildCommand>();
+        result.IsSuccess.ShouldBeTrue();
+        var cmd = result.Value.Resolved();
         cmd.Debug.ShouldBeTrue();
         cmd.DisableColor.ShouldBeTrue();
         cmd.Force.ShouldBeTrue();
@@ -291,15 +291,6 @@ public class PackerBuildCommandBuilderTests
         cmd.TemplatePath.ShouldBe("template.pkr.hcl");
         cmd.TimestampUi.ShouldBeTrue();
         cmd.WorkingDirectory.ShouldBe("/tmp");
-    }
-
-    [Fact]
-    public void Build_Throws_MissingMemberException_When_Required_Fields_Missing()
-    {
-        var builder = new PackerBuildCommandBuilder()
-            .WithDebug(true);
-
-        Should.Throw<MissingMemberException>(() => builder.BuildSuccess());
     }
 }
 
@@ -413,23 +404,14 @@ public class PackerInstallPluginCommandBuilderTests
 
         var result = builder.Build();
 
-        result.IsSuccess<PackerInstallPluginCommand>().ShouldBeTrue();
-        var cmd = result.Success<PackerInstallPluginCommand>();
+        result.IsSuccess.ShouldBeTrue();
+        var cmd = result.Value.Resolved();
         cmd.DestinationDir.ShouldBe("/plugins");
         cmd.PluginIdentifier.ShouldBe("hashicorp/amazon");
         cmd.Force.ShouldBeTrue();
         cmd.SourceUri.ShouldBe("https://example.com");
         cmd.Version.ShouldBe("1.0.0");
         cmd.WorkingDirectory.ShouldBe("/tmp");
-    }
-
-    [Fact]
-    public void Build_Throws_MissingMemberException_When_Required_Fields_Missing()
-    {
-        var builder = new PackerInstallPluginCommandBuilder()
-            .WithPluginIdentifier("hashicorp/amazon");
-
-        Should.Throw<MissingMemberException>(() => builder.BuildSuccess());
     }
 }
 

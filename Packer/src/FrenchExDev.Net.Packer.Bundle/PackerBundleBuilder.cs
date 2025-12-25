@@ -7,7 +7,7 @@
 
 #region Usings
 
-using FrenchExDev.Net.CSharp.Object.Builder;
+using FrenchExDev.Net.CSharp.Object.Builder2;
 
 #endregion
 
@@ -176,7 +176,7 @@ public class PackerBundleBuilder : AbstractBuilder<PackerBundle>
     /// or circular references.</param>
     /// <param name="failures">A dictionary for collecting validation failures, where each entry represents a specific validation error found
     /// during processing.</param>
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, FailuresDictionary failures)
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
     {
         _packerFileBuilder.Validate(visitedCollector, failures);
         _httpDirectory.Validate(visitedCollector, failures);
@@ -200,9 +200,9 @@ public class PackerBundleBuilder : AbstractBuilder<PackerBundle>
     {
         return new PackerBundle()
         {
-            PackerFile = _packerFileBuilder.Build().Success<PackerFile>(),
-            HttpDirectory = _httpDirectory.Build().Success<HttpDirectory>(),
-            VagrantDirectory = _vagrantDirectory.Build().Success<VagrantDirectory>(),
+            PackerFile = _packerFileBuilder.Build().Value.Resolved(),
+            HttpDirectory = _httpDirectory.Build().Value.Resolved(),
+            VagrantDirectory = _vagrantDirectory.Build().Value.Resolved(),
             Directories = [.. _directories],
             Scripts = _scriptsBuilders.Build(),
             Plugins = [.. _plugins]

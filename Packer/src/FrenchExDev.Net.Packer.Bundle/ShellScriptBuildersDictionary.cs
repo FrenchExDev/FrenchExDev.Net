@@ -9,8 +9,6 @@
 
 #endregion
 
-using FrenchExDev.Net.CSharp.Object.Builder;
-
 namespace FrenchExDev.Net.Packer.Bundle;
 
 public class ShellScriptBuildersDictionary : Dictionary<string, ShellScriptBuilder>
@@ -21,7 +19,7 @@ public class ShellScriptBuildersDictionary : Dictionary<string, ShellScriptBuild
         foreach (var k in this)
         {
             var buildResult = k.Value.Build();
-            result.Add(k.Key, buildResult.Success<ShellScript>());
+            result.Add(k.Key, buildResult.Value.Resolved());
         }
         return result;
     }
