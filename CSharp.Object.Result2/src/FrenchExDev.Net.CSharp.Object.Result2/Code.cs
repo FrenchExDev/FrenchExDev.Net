@@ -1,116 +1,220 @@
 ﻿namespace FrenchExDev.Net.CSharp.Object.Result2;
 
 /// <summary>
-/// Represents the result of an operation, indicating whether it was successful.
+/// Represents the outcome of an operation that may succeed or fail.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <see cref="IResult"/> is the base interface for all result types in this library.
+/// It provides a consistent way to check whether an operation completed successfully
+/// without needing to know the specific result type.
+/// </para>
+/// </remarks>
+/// <seealso cref="Result{TResult}"/>
 public interface IResult
 {
     /// <summary>
     /// Gets a value indicating whether the operation completed successfully.
     /// </summary>
+    /// <value>
+    /// <see langword="true"/> if the operation succeeded; <see langword="false"/> if it failed.
+    /// </value>
     bool IsSuccess { get; }
 }
 
 /// <summary>
-/// Represents errors that occur when an operation returns a result indicating failure.
+/// The exception that is thrown when an operation completes but produces a result indicating failure.
 /// </summary>
-/// <remarks>Use this exception to signal that an operation completed but produced a result that represents an
-/// error or failure condition, rather than throwing a different exception type. This can be useful in scenarios where
-/// operations return result objects that encapsulate both success and failure states.</remarks>
+/// <remarks>
+/// <para>
+/// <see cref="ResultException"/> serves as the base class for all result-related exceptions.
+/// Use this exception type when signaling that an operation completed but produced an error
+/// or failure condition, rather than throwing a different exception type.
+/// </para>
+/// <para>
+/// This supports a hybrid error handling approach where operations return result objects
+/// that encapsulate both success and failure states, but exceptions are thrown when
+/// the result is accessed incorrectly.
+/// </para>
+/// </remarks>
+/// <seealso cref="InvalidResultAccessOperationException"/>
+/// <seealso cref="Result{TResult}"/>
 public class ResultException : Exception
 {
     /// <summary>
-    /// Initializes a new instance of the ResultException class.
+    /// Initializes a new instance of the <see cref="ResultException"/> class.
     /// </summary>
     public ResultException()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the ResultException class with a specified error message.
+    /// Initializes a new instance of the <see cref="ResultException"/> class with a specified error message.
     /// </summary>
-    /// <param name="message">The message that describes the error. This value can be null.</param>
+    /// <param name="message">The message that describes the error.</param>
     public ResultException(string? message) : base(message)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the ResultException class with a specified error message and a reference to the
-    /// inner exception that is the cause of this exception.
+    /// Initializes a new instance of the <see cref="ResultException"/> class with a specified error message
+    /// and a reference to the inner exception that is the cause of this exception.
     /// </summary>
-    /// <param name="message">The message that describes the error, or null to use the default message.</param>
-    /// <param name="innerException">The exception that is the cause of the current exception, or null if no inner exception is specified.</param>
+    /// <param name="message">The error message that explains the reason for the exception.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception, or <see langword="null"/> if no inner exception is specified.</param>
     public ResultException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
 }
 
 /// <summary>
-/// The exception that is thrown when an invalid operation is performed on a result object, such as accessing a value
-/// that is not present.
+/// The exception that is thrown when an invalid access operation is performed on a result object,
+/// such as accessing a value from a failed result or an exception from a successful result.
 /// </summary>
-/// <remarks>This exception typically indicates a misuse of a result type, such as attempting to retrieve a value
-/// from a failed result or an error from a successful result. Catch this exception to handle cases where result access
-/// patterns are violated.</remarks>
+/// <remarks>
+/// <para>
+/// This exception indicates a programming error where the result's state was not checked before
+/// accessing its value or exception. To avoid this exception:
+/// </para>
+/// <list type="bullet">
+///   <item><description>Check <see cref="IResult.IsSuccess"/> before accessing <see cref="Result{TResult}.Value"/></description></item>
+///   <item><description>Use <see cref="Result{TResult}.TryGetSuccessValue"/> for safe value access</description></item>
+///   <item><description>Use <see cref="Result{TResult}.TryGetException{TException}"/> for safe exception access</description></item>
+///   <item><description>Use pattern matching methods like <see cref="Result{TResult}.Match"/></description></item>
+/// </list>
+/// </remarks>
+/// <example>
+/// <code>
+/// var result = Result&lt;int&gt;.Failure(new InvalidOperationException("Error"));
+/// 
+/// // This will throw InvalidResultAccessOperationException
+/// // var value = result.Value;
+/// 
+/// // Safe access patterns
+/// if (result.TryGetSuccessValue(out var value))
+/// {
+///     Console.WriteLine($"Value: {value}");
+/// }
+/// 
+/// result.Match(
+///     onSuccess: v => Console.WriteLine($"Success: {v}"),
+///     onFailure: ex => Console.WriteLine($"Error: {ex.Message}")
+/// );
+/// </code>
+/// </example>
+/// <seealso cref="ResultException"/>
+/// <seealso cref="Result{TResult}"/>
 public class InvalidResultAccessOperationException : ResultException
 {
     /// <summary>
-    /// Initializes a new instance of the InvalidResultAccessOperationException class.
+    /// Initializes a new instance of the <see cref="InvalidResultAccessOperationException"/> class.
     /// </summary>
     public InvalidResultAccessOperationException()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the InvalidResultAccessOperationException class with a specified error message.
+    /// Initializes a new instance of the <see cref="InvalidResultAccessOperationException"/> class 
+    /// with a specified error message.
     /// </summary>
-    /// <param name="message">The message that describes the error.</param>
+    /// <param name="message">The message that describes the invalid access operation.</param>
     public InvalidResultAccessOperationException(string message) : base(message)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the InvalidResultAccessOperationException class with a specified error message and
-    /// a reference to the inner exception that is the cause of this exception.
+    /// Initializes a new instance of the <see cref="InvalidResultAccessOperationException"/> class 
+    /// with a specified error message and a reference to the inner exception that is the cause of this exception.
     /// </summary>
-    /// <param name="message">The message that describes the error. This value can be null.</param>
-    /// <param name="innerException">The exception that is the cause of the current exception, or null if no inner exception is specified.</param>
+    /// <param name="message">The error message that explains the reason for the exception.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception, or <see langword="null"/> if no inner exception is specified.</param>
     public InvalidResultAccessOperationException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
 }
 
 /// <summary>
-/// Represents the outcome of an operation that can succeed or fail, encapsulating either a result value or an
-/// exception.
+/// Represents the outcome of an operation that can succeed with a value or fail with an exception.
+/// Provides a functional approach to error handling without relying on exceptions for control flow.
 /// </summary>
-/// <remarks>Use this struct to model operations that may fail, providing a unified way to handle both successful
-/// results and errors without relying on exceptions for control flow. The result indicates success or failure via the
-/// IsSuccess property, and provides access to the value or exception as appropriate.</remarks>
 /// <typeparam name="TResult">The type of the value returned if the operation is successful.</typeparam>
+/// <remarks>
+/// <para>
+/// <see cref="Result{TResult}"/> is a discriminated union type that encapsulates either a success value
+/// or a failure exception. This pattern, also known as the "Railway Oriented Programming" pattern,
+/// provides several benefits:
+/// </para>
+/// <list type="bullet">
+///   <item><description>Explicit error handling - failures must be acknowledged</description></item>
+///   <item><description>Composable operations - chain operations with <see cref="Map{TNew}"/> and <see cref="Bind{TNew}"/></description></item>
+///   <item><description>No exception overhead for expected failures</description></item>
+///   <item><description>Clear separation between expected failures and exceptional conditions</description></item>
+/// </list>
+/// <para>
+/// This is a <see langword="struct"/> for performance reasons - it avoids heap allocation for result objects.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// // Creating results
+/// var success = Result&lt;int&gt;.Success(42);
+/// var failure = Result&lt;int&gt;.Failure(new ArgumentException("Invalid value"));
+/// 
+/// // Pattern matching
+/// success.Match(
+///     onSuccess: value => Console.WriteLine($"Got: {value}"),
+///     onFailure: ex => Console.WriteLine($"Error: {ex.Message}")
+/// );
+/// 
+/// // Chaining operations (Railway pattern)
+/// var result = Result&lt;string&gt;.Success("42")
+///     .Map(int.Parse)                    // Transform to int
+///     .Map(x => x * 2)                   // Double it
+///     .Bind(x => x > 0 
+///         ? Result&lt;int&gt;.Success(x) 
+///         : Result&lt;int&gt;.Failure(new Exception("Must be positive")));
+/// 
+/// // Safe access
+/// if (result.TryGetSuccessValue(out var value))
+/// {
+///     Console.WriteLine($"Result: {value}");
+/// }
+/// </code>
+/// </example>
+/// <seealso cref="IResult"/>
+/// <seealso cref="ResultException"/>
+/// <seealso cref="InvalidResultAccessOperationException"/>
 public readonly struct Result<TResult> : IResult
 {
     /// <summary>
     /// Gets a value indicating whether the operation completed successfully.
     /// </summary>
+    /// <value>
+    /// <see langword="true"/> if the result contains a success value;
+    /// <see langword="false"/> if it contains a failure exception.
+    /// </value>
+    /// <remarks>
+    /// Always check this property before accessing <see cref="Value"/> to avoid
+    /// <see cref="InvalidResultAccessOperationException"/>.
+    /// </remarks>
     public readonly bool IsSuccess { get; }
 
     /// <summary>
-    /// Stores the result value if the operation was successful; otherwise, null.
+    /// Stores the result value if the operation was successful; otherwise, <see langword="default"/>.
     /// </summary>
     private readonly TResult? _value;
 
     /// <summary>
-    /// Stores the exception if the operation failed; otherwise, null.  
+    /// Stores the exception if the operation failed; otherwise, <see langword="null"/>.
     /// </summary>
     private readonly Exception? _exception;
 
     /// <summary>
-    /// Initializes a new instance of the Result class with the specified success state, value, and exception.
+    /// Initializes a new instance of the <see cref="Result{TResult}"/> struct.
     /// </summary>
-    /// <param name="isSuccess">A value indicating whether the result represents a successful operation.</param>
-    /// <param name="value">The value associated with a successful result, or null if the operation failed.</param>
-    /// <param name="exception">The exception associated with a failed result, or null if the operation was successful.</param>
+    /// <param name="isSuccess">Indicates whether the result represents success.</param>
+    /// <param name="value">The success value, or <see langword="default"/> for failures.</param>
+    /// <param name="exception">The failure exception, or <see langword="null"/> for successes.</param>
     private Result(bool isSuccess, TResult? value, Exception? exception)
     {
         IsSuccess = isSuccess;
@@ -121,8 +225,15 @@ public readonly struct Result<TResult> : IResult
     /// <summary>
     /// Creates a successful result containing the specified value.
     /// </summary>
-    /// <param name="value">The value to associate with the successful result.</param>
-    /// <returns>A <see cref="Result{TResult}"/> representing a successful operation with the specified value.</returns>
+    /// <param name="value">The value to wrap in a success result.</param>
+    /// <returns>A <see cref="Result{TResult}"/> representing a successful operation.</returns>
+    /// <example>
+    /// <code>
+    /// var result = Result&lt;string&gt;.Success("Hello, World!");
+    /// Console.WriteLine(result.IsSuccess); // true
+    /// Console.WriteLine(result.Value);     // "Hello, World!"
+    /// </code>
+    /// </example>
     public static Result<TResult> Success(TResult value)
     {
         return new Result<TResult>(true, value, null);
@@ -131,19 +242,42 @@ public readonly struct Result<TResult> : IResult
     /// <summary>
     /// Creates a failed result containing the specified exception.
     /// </summary>
-    /// <typeparam name="TException">The type of exception to associate with the failed result. Must derive from Exception.</typeparam>
-    /// <param name="exception">The exception that describes the reason for the failure. Cannot be null.</param>
-    /// <returns>A Result<TResult> instance representing a failure, containing the specified exception.</returns>
+    /// <typeparam name="TException">The type of exception. Must derive from <see cref="Exception"/>.</typeparam>
+    /// <param name="exception">The exception that describes the failure reason.</param>
+    /// <returns>A <see cref="Result{TResult}"/> representing a failed operation.</returns>
+    /// <example>
+    /// <code>
+    /// var result = Result&lt;int&gt;.Failure(new ArgumentNullException("parameter"));
+    /// Console.WriteLine(result.IsSuccess); // false
+    /// </code>
+    /// </example>
     public static Result<TResult> Failure<TException>(TException exception) where TException : Exception
     {
         return new Result<TResult>(false, default, exception);
     }
 
     /// <summary>
-    /// Gets the value contained in the result if the operation was successful.
+    /// Gets the success value contained in this result.
     /// </summary>
-    /// <remarks>Accessing this property when the result represents a failure will throw an exception. To
-    /// avoid exceptions, check the IsSuccess property before accessing Value.</remarks>
+    /// <value>The value of type <typeparamref name="TResult"/> if the operation succeeded.</value>
+    /// <exception cref="InvalidResultAccessOperationException">
+    /// Thrown when accessing this property on a failure result.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Always check <see cref="IsSuccess"/> before accessing this property, or use
+    /// <see cref="TryGetSuccessValue"/> for safe access.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var result = Result&lt;int&gt;.Success(42);
+    /// if (result.IsSuccess)
+    /// {
+    ///     Console.WriteLine(result.Value); // Safe: 42
+    /// }
+    /// </code>
+    /// </example>
     public TResult Value
     {
         get
@@ -157,13 +291,26 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Retrieves the exception associated with a failed result, cast to the specified exception type.
+    /// Gets the failure exception, cast to the specified type.
     /// </summary>
-    /// <remarks>Use this method to access the exception when the result indicates failure. If the result is
-    /// successful, or if the exception is not of the specified type, an exception is thrown.</remarks>
-    /// <typeparam name="TException">The type of exception to return. Must derive from Exception.</typeparam>
-    /// <returns>The exception instance of type TException associated with the failed result.</returns>
-    /// <exception cref="InvalidResultAccessOperationException">Thrown if the result represents a success, or if the exception cannot be cast to the specified type.</exception>
+    /// <typeparam name="TException">The type to cast the exception to. Must derive from <see cref="Exception"/>.</typeparam>
+    /// <returns>The exception of type <typeparamref name="TException"/>.</returns>
+    /// <exception cref="InvalidResultAccessOperationException">
+    /// Thrown when calling this method on a success result, or when the exception cannot be cast to <typeparamref name="TException"/>.
+    /// </exception>
+    /// <remarks>
+    /// Use <see cref="TryGetException{TException}"/> for safe access without exceptions.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var result = Result&lt;int&gt;.Failure(new ArgumentException("Invalid"));
+    /// if (!result.IsSuccess)
+    /// {
+    ///     var ex = result.Exception&lt;ArgumentException&gt;();
+    ///     Console.WriteLine(ex.Message); // "Invalid"
+    /// }
+    /// </code>
+    /// </example>
     public TException Exception<TException>() where TException : Exception
     {
         if (IsSuccess)
@@ -174,15 +321,27 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Attempts to retrieve the stored exception as the specified exception type.
+    /// Attempts to retrieve the failure exception as the specified type.
     /// </summary>
-    /// <remarks>Use this method to safely attempt to access the stored exception as a specific type without
-    /// throwing an exception. If the operation was successful, or if the stored exception is not of the requested type,
-    /// the method returns false and sets exception to null.</remarks>
-    /// <typeparam name="TException">The type of exception to retrieve. Must derive from Exception.</typeparam>
-    /// <param name="exception">When this method returns, contains the exception of type TException if one is available; otherwise, null. This
-    /// parameter is passed uninitialized.</param>
-    /// <returns>true if the stored exception is of type TException; otherwise, false.</returns>
+    /// <typeparam name="TException">The expected type of the exception.</typeparam>
+    /// <param name="exception">
+    /// When this method returns, contains the exception if the result is a failure and the exception
+    /// is of the specified type; otherwise, <see langword="null"/>.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the result is a failure and the exception is of type <typeparamref name="TException"/>;
+    /// otherwise, <see langword="false"/>.
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// var result = Result&lt;int&gt;.Failure(new ArgumentNullException("param"));
+    /// 
+    /// if (result.TryGetException&lt;ArgumentNullException&gt;(out var ex))
+    /// {
+    ///     Console.WriteLine($"Parameter: {ex.ParamName}");
+    /// }
+    /// </code>
+    /// </example>
     public bool TryGetException<TException>(out TException? exception) where TException : Exception
     {
         if (IsSuccess)
@@ -195,11 +354,30 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Attempts to retrieve the result value if the operation was successful.
+    /// Attempts to retrieve the success value.
     /// </summary>
-    /// <param name="value">When this method returns, contains the result value if the operation was successful; otherwise, the default
-    /// value for the type.</param>
-    /// <returns>true if the operation was successful and the result value was retrieved; otherwise, false.</returns>
+    /// <param name="value">
+    /// When this method returns, contains the success value if available;
+    /// otherwise, the default value for <typeparamref name="TResult"/>.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the result is a success and the value was retrieved;
+    /// otherwise, <see langword="false"/>.
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// var result = GetUserById(123);
+    /// 
+    /// if (result.TryGetSuccessValue(out var user))
+    /// {
+    ///     Console.WriteLine($"Found user: {user.Name}");
+    /// }
+    /// else
+    /// {
+    ///     Console.WriteLine("User not found");
+    /// }
+    /// </code>
+    /// </example>
     public bool TryGetSuccessValue(out TResult? value)
     {
         if (!IsSuccess)
@@ -212,16 +390,28 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Asynchronously invokes the specified delegate based on the result state, calling the success handler if the
-    /// operation succeeded or the failure handler if it failed.
+    /// Asynchronously executes one of two handlers based on the result state.
     /// </summary>
-    /// <remarks>Both delegates are awaited. If the result is successful, only the success handler is called;
-    /// otherwise, only the failure handler is called. Neither delegate may be null.</remarks>
-    /// <param name="onSuccess">A delegate to invoke if the result represents a successful operation. The delegate receives the result value as
-    /// its parameter.</param>
-    /// <param name="onFailure">A delegate to invoke if the result represents a failed operation. The delegate receives the exception associated
-    /// with the failure as its parameter.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result is this result instance.</returns>
+    /// <param name="onSuccess">
+    /// An async function to execute if the result is a success. Receives the value as a parameter.
+    /// </param>
+    /// <param name="onFailure">
+    /// An async function to execute if the result is a failure. Receives the exception as a parameter.
+    /// </param>
+    /// <returns>
+    /// A task that completes with this result instance after the appropriate handler has executed.
+    /// </returns>
+    /// <remarks>
+    /// Only one handler is executed based on the result state. The handlers are awaited before returning.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// await result.MatchAsync(
+    ///     onSuccess: async value => await SaveAsync(value),
+    ///     onFailure: async ex => await LogErrorAsync(ex)
+    /// );
+    /// </code>
+    /// </example>
     public async Task<Result<TResult>> MatchAsync(Func<TResult, Task> onSuccess, Func<Exception, Task> onFailure)
     {
         if (IsSuccess)
@@ -235,17 +425,21 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Asynchronously invokes the specified delegate based on the result state. Executes the success delegate if the
-    /// result is successful; otherwise, executes the failure delegate for the specified exception type.
+    /// Asynchronously executes one of two handlers based on the result state, with typed exception handling.
     /// </summary>
-    /// <remarks>If the result is not successful and the exception is not of type TException, the onFailure
-    /// delegate will receive a default instance of TException. This method allows for custom asynchronous handling of
-    /// both success and failure cases.</remarks>
-    /// <typeparam name="TException">The type of exception to handle when the result is not successful. Must derive from Exception.</typeparam>
-    /// <param name="onSuccess">A delegate to invoke asynchronously if the result is successful. Receives the result value as its parameter.</param>
-    /// <param name="onFailure">A delegate to invoke asynchronously if the result is not successful and the exception is of type TException.
-    /// Receives the exception as its parameter.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the original result instance.</returns>
+    /// <typeparam name="TException">The expected type of the failure exception.</typeparam>
+    /// <param name="onSuccess">
+    /// An async function to execute if the result is a success. Receives the value as a parameter.
+    /// </param>
+    /// <param name="onFailure">
+    /// An async function to execute if the result is a failure. Receives the typed exception as a parameter.
+    /// </param>
+    /// <returns>
+    /// A task that completes with this result instance after the appropriate handler has executed.
+    /// </returns>
+    /// <exception cref="InvalidResultAccessOperationException">
+    /// Thrown if the result is a failure but the exception cannot be cast to <typeparamref name="TException"/>.
+    /// </exception>
     public async Task<Result<TResult>> MatchAsync<TException>(Func<TResult, Task> onSuccess, Func<TException, Task> onFailure) where TException : Exception
     {
         if (IsSuccess)
@@ -259,15 +453,27 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Invokes the specified action depending on whether the result represents a success or a failure.
+    /// Executes one of two handlers based on the result state.
     /// </summary>
-    /// <remarks>Use this method to handle both success and failure cases in a single call. Only one of the
-    /// provided actions will be invoked, depending on the state of the result.</remarks>
-    /// <param name="onSuccess">The action to execute if the result is successful. The result value is passed as a parameter to this action.
-    /// Cannot be null.</param>
-    /// <param name="onFailure">The action to execute if the result represents a failure. The exception is passed as a parameter to this action.
-    /// Cannot be null.</param>
-    /// <returns>The current result instance, allowing for method chaining.</returns>
+    /// <param name="onSuccess">
+    /// An action to execute if the result is a success. Receives the value as a parameter.
+    /// </param>
+    /// <param name="onFailure">
+    /// An action to execute if the result is a failure. Receives the exception as a parameter.
+    /// </param>
+    /// <returns>This result instance for method chaining.</returns>
+    /// <remarks>
+    /// This is the primary pattern matching method for handling both success and failure cases.
+    /// Only one handler is executed based on the result state.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// result.Match(
+    ///     onSuccess: value => Console.WriteLine($"Success: {value}"),
+    ///     onFailure: ex => Console.WriteLine($"Error: {ex.Message}")
+    /// );
+    /// </code>
+    /// </example>
     public Result<TResult> Match(Action<TResult> onSuccess, Action<Exception> onFailure)
     {
         if (IsSuccess)
@@ -281,17 +487,27 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Invokes the specified action for a successful result or an error action for a failure, enabling pattern matching
-    /// on the result state.
+    /// Executes one of two handlers based on the result state, with typed exception handling.
     /// </summary>
-    /// <remarks>If the result is successful, only the onSuccess action is invoked. If the result is a
-    /// failure, only the onFailure action is invoked with the exception cast to TException. This method enables
-    /// functional-style handling of result states.</remarks>
-    /// <typeparam name="TException">The type of exception to handle when the result represents a failure. Must derive from Exception.</typeparam>
-    /// <param name="onSuccess">The action to execute if the result is successful. The result value is passed as a parameter.</param>
-    /// <param name="onFailure">The action to execute if the result represents a failure. The exception of type TException is passed as a
-    /// parameter.</param>
-    /// <returns>The current Result<TResult> instance, allowing for method chaining.</returns>
+    /// <typeparam name="TException">The expected type of the failure exception.</typeparam>
+    /// <param name="onSuccess">
+    /// An action to execute if the result is a success. Receives the value as a parameter.
+    /// </param>
+    /// <param name="onFailure">
+    /// An action to execute if the result is a failure. Receives the typed exception as a parameter.
+    /// </param>
+    /// <returns>This result instance for method chaining.</returns>
+    /// <exception cref="InvalidResultAccessOperationException">
+    /// Thrown if the result is a failure but the exception cannot be cast to <typeparamref name="TException"/>.
+    /// </exception>
+    /// <example>
+    /// <code>
+    /// result.Match&lt;ArgumentException&gt;(
+    ///     onSuccess: value => Process(value),
+    ///     onFailure: ex => Console.WriteLine($"Argument error: {ex.ParamName}")
+    /// );
+    /// </code>
+    /// </example>
     public Result<TResult> Match<TException>(Action<TResult> onSuccess, Action<TException> onFailure) where TException : Exception
     {
         if (IsSuccess)
@@ -305,12 +521,21 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Invokes the specified action if the result represents a successful outcome.
+    /// Executes an action if the result represents success.
     /// </summary>
-    /// <remarks>This method enables fluent handling of successful results by executing the provided action
-    /// only when the result is successful. If the result is not successful, the action is not invoked.</remarks>
-    /// <param name="onSuccess">The action to execute with the result value if the operation was successful. Cannot be null.</param>
-    /// <returns>The current result instance. If the result is successful, the action is invoked before returning.</returns>
+    /// <param name="onSuccess">An action to execute with the success value. Not called if the result is a failure.</param>
+    /// <returns>This result instance for method chaining.</returns>
+    /// <remarks>
+    /// Use this method when you only need to handle the success case and want to ignore failures.
+    /// For handling both cases, use <see cref="Match"/>.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// result
+    ///     .IfSuccess(value => Console.WriteLine($"Got: {value}"))
+    ///     .IfException(ex => Logger.Error(ex));
+    /// </code>
+    /// </example>
     public Result<TResult> IfSuccess(Action<TResult> onSuccess)
     {
         if (IsSuccess)
@@ -321,13 +546,10 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Invokes the specified asynchronous action if the result represents a successful outcome.
+    /// Asynchronously executes an action if the result represents success.
     /// </summary>
-    /// <remarks>If the result is not successful, the specified action is not invoked. This method enables
-    /// fluent chaining of actions to be performed only on successful results.</remarks>
-    /// <param name="onSuccess">A function to execute asynchronously if the result is successful. The function receives the result value as its
-    /// parameter.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains this result instance.</returns>
+    /// <param name="onSuccess">An async function to execute with the success value. Not called if the result is a failure.</param>
+    /// <returns>A task that completes with this result instance.</returns>
     public async Task<Result<TResult>> IfSuccessAsync(Func<TResult, Task> onSuccess)
     {
         if (IsSuccess)
@@ -338,12 +560,22 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Invokes the specified action if the result represents a failure due to an exception.
+    /// Executes an action if the result represents a failure.
     /// </summary>
-    /// <remarks>Use this method to perform custom error handling or logging when the result contains an
-    /// exception. The action is not called if the result is successful.</remarks>
-    /// <param name="onFailure">The action to execute with the exception if the result is not successful. Cannot be null.</param>
-    /// <returns>The current result instance, enabling method chaining.</returns>
+    /// <param name="onFailure">An action to execute with the exception. Not called if the result is a success.</param>
+    /// <returns>This result instance for method chaining.</returns>
+    /// <remarks>
+    /// Use this method for error handling, logging, or cleanup when you only need to handle the failure case.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// result.IfException(ex => 
+    /// {
+    ///     Logger.Error("Operation failed", ex);
+    ///     Metrics.IncrementErrorCount();
+    /// });
+    /// </code>
+    /// </example>
     public Result<TResult> IfException(Action<Exception> onFailure)
     {
         if (!IsSuccess)
@@ -354,13 +586,10 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Invokes the specified asynchronous action if the result represents a failure due to an exception.
+    /// Asynchronously executes an action if the result represents a failure.
     /// </summary>
-    /// <remarks>Use this method to perform additional actions, such as logging or cleanup, when an exception
-    /// has occurred. The action is not invoked if the result is successful.</remarks>
-    /// <param name="onFailure">A function to execute when the result contains an exception. The function receives the exception as a parameter
-    /// and returns a task that represents the asynchronous operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the original result instance.</returns>
+    /// <param name="onFailure">An async function to execute with the exception. Not called if the result is a success.</param>
+    /// <returns>A task that completes with this result instance.</returns>
     public async Task<Result<TResult>> IfExceptionAsync(Func<Exception, Task> onFailure)
     {
         if (!IsSuccess)
@@ -371,16 +600,14 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Invokes the specified asynchronous delegate if the result represents a failure caused by the specified exception
-    /// type.
+    /// Asynchronously executes an action if the result is a failure with the specified exception type.
     /// </summary>
-    /// <remarks>Use this method to perform additional asynchronous actions, such as logging or cleanup, when
-    /// a specific exception type is present in the result. The delegate is not invoked if the result is successful or
-    /// if the exception is not of type TException.</remarks>
-    /// <typeparam name="TException">The type of exception to match. Must derive from Exception.</typeparam>
-    /// <param name="onFailure">An asynchronous delegate to execute if the result contains an exception of type TException. The delegate
-    /// receives the exception instance as its parameter.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the original result object.</returns>
+    /// <typeparam name="TException">The expected type of the failure exception.</typeparam>
+    /// <param name="onFailure">An async function to execute with the typed exception.</param>
+    /// <returns>A task that completes with this result instance.</returns>
+    /// <exception cref="InvalidResultAccessOperationException">
+    /// Thrown if the result is a failure but the exception cannot be cast to <typeparamref name="TException"/>.
+    /// </exception>
     public async Task<Result<TResult>> IfExceptionAsync<TException>(Func<TException, Task> onFailure) where TException : Exception
     {
         if (!IsSuccess)
@@ -391,15 +618,21 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Invokes the specified action if the result represents a failure caused by an exception of the specified type.
+    /// Executes an action if the result is a failure with the specified exception type.
     /// </summary>
-    /// <remarks>Use this method to perform custom handling or logging when a specific exception type is
-    /// present in the result. If the result is successful or the exception is not of type TException, the action is not
-    /// invoked.</remarks>
-    /// <typeparam name="TException">The type of exception to match. Must derive from Exception.</typeparam>
-    /// <param name="onFailure">The action to execute if the result contains an exception of type TException. The exception instance is passed
-    /// as a parameter to the action.</param>
-    /// <returns>The current result instance, allowing for method chaining.</returns>
+    /// <typeparam name="TException">The expected type of the failure exception.</typeparam>
+    /// <param name="onFailure">An action to execute with the typed exception. Not called if the result is a success.</param>
+    /// <returns>This result instance for method chaining.</returns>
+    /// <exception cref="InvalidResultAccessOperationException">
+    /// Thrown if the result is a failure but the exception cannot be cast to <typeparamref name="TException"/>.
+    /// </exception>
+    /// <example>
+    /// <code>
+    /// result
+    ///     .IfException&lt;ArgumentNullException&gt;(ex => HandleNullArg(ex.ParamName))
+    ///     .IfException&lt;FormatException&gt;(ex => HandleBadFormat());
+    /// </code>
+    /// </example>
     public Result<TResult> IfException<TException>(Action<TException> onFailure) where TException : Exception
     {
         if (!IsSuccess)
@@ -410,13 +643,27 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Transforms the value of a successful result using the specified mapping function.
+    /// Transforms the success value using the specified mapping function.
     /// </summary>
-    /// <remarks>If the result is a failure, the failure is propagated without invoking the mapping function.
-    /// This method is useful for transforming the contained value while preserving the result structure.</remarks>
     /// <typeparam name="TNew">The type of the transformed value.</typeparam>
     /// <param name="map">A function that transforms the current value to a new value.</param>
-    /// <returns>A new result containing the transformed value if successful; otherwise, a failure result with the original exception.</returns>
+    /// <returns>
+    /// A new result containing the transformed value if this result is a success;
+    /// otherwise, a failure result with the original exception.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// If this result is a failure, the failure is propagated without invoking the mapping function.
+    /// This is a functor map operation that preserves the result structure.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var result = Result&lt;string&gt;.Success("42")
+    ///     .Map(int.Parse)      // Result&lt;int&gt; with value 42
+    ///     .Map(x => x * 2);    // Result&lt;int&gt; with value 84
+    /// </code>
+    /// </example>
     public Result<TNew> Map<TNew>(Func<TResult, TNew> map)
     {
         if (IsSuccess)
@@ -427,13 +674,20 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Asynchronously transforms the value of a successful result using the specified mapping function.
+    /// Asynchronously transforms the success value using the specified mapping function.
     /// </summary>
-    /// <remarks>If the result is a failure, the failure is propagated without invoking the mapping function.
-    /// This method is useful for transforming the contained value asynchronously while preserving the result structure.</remarks>
     /// <typeparam name="TNew">The type of the transformed value.</typeparam>
-    /// <param name="map">An asynchronous function that transforms the current value to a new value.</param>
-    /// <returns>A task containing a new result with the transformed value if successful; otherwise, a failure result with the original exception.</returns>
+    /// <param name="map">An async function that transforms the current value to a new value.</param>
+    /// <returns>
+    /// A task containing a new result with the transformed value if this result is a success;
+    /// otherwise, a failure result with the original exception.
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// var result = await Result&lt;int&gt;.Success(userId)
+    ///     .MapAsync(async id => await userRepository.GetByIdAsync(id));
+    /// </code>
+    /// </example>
     public async Task<Result<TNew>> MapAsync<TNew>(Func<TResult, Task<TNew>> map)
     {
         if (IsSuccess)
@@ -444,14 +698,36 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Chains a result-producing operation to this result, enabling flat composition without nesting.
+    /// Chains a result-producing operation to this result, enabling flat composition.
     /// </summary>
-    /// <remarks>If this result is successful, the binder function is invoked with the value and its result is returned.
-    /// If this result is a failure, the failure is propagated without invoking the binder function.
-    /// This method is also known as FlatMap or SelectMany in other functional libraries.</remarks>
     /// <typeparam name="TNew">The type of the value in the result returned by the binder function.</typeparam>
     /// <param name="bind">A function that takes the current value and returns a new result.</param>
-    /// <returns>The result of the binder function if this result is successful; otherwise, a failure result with the original exception.</returns>
+    /// <returns>
+    /// The result of the binder function if this result is a success;
+    /// otherwise, a failure result with the original exception.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// Also known as <c>FlatMap</c> or <c>SelectMany</c> in other functional libraries.
+    /// This is a monadic bind operation that enables "Railway Oriented Programming" where
+    /// operations that can fail are chained together, and any failure short-circuits the chain.
+    /// </para>
+    /// <para>
+    /// Use <see cref="Bind{TNew}"/> instead of <see cref="Map{TNew}"/> when the transformation
+    /// itself returns a <see cref="Result{TResult}"/>, to avoid nested results.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Chaining operations that can fail
+    /// var result = ParseUserId(input)                    // Result&lt;int&gt;
+    ///     .Bind(id => FindUser(id))                      // Result&lt;User&gt;
+    ///     .Bind(user => ValidateUser(user))              // Result&lt;User&gt;
+    ///     .Bind(user => CreateSession(user));            // Result&lt;Session&gt;
+    /// 
+    /// // If any step fails, subsequent steps are skipped
+    /// </code>
+    /// </example>
     public Result<TNew> Bind<TNew>(Func<TResult, Result<TNew>> bind)
     {
         if (IsSuccess)
@@ -462,14 +738,21 @@ public readonly struct Result<TResult> : IResult
     }
 
     /// <summary>
-    /// Asynchronously chains a result-producing operation to this result, enabling flat composition without nesting.
+    /// Asynchronously chains a result-producing operation to this result.
     /// </summary>
-    /// <remarks>If this result is successful, the binder function is invoked with the value and its result is returned.
-    /// If this result is a failure, the failure is propagated without invoking the binder function.
-    /// This method is also known as FlatMap or SelectMany in other functional libraries.</remarks>
     /// <typeparam name="TNew">The type of the value in the result returned by the binder function.</typeparam>
-    /// <param name="bind">An asynchronous function that takes the current value and returns a new result.</param>
-    /// <returns>A task containing the result of the binder function if this result is successful; otherwise, a failure result with the original exception.</returns>
+    /// <param name="bind">An async function that takes the current value and returns a new result.</param>
+    /// <returns>
+    /// A task containing the result of the binder function if this result is a success;
+    /// otherwise, a failure result with the original exception.
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// var result = await ParseUserId(input)
+    ///     .BindAsync(async id => await FindUserAsync(id))
+    ///     .BindAsync(async user => await ValidateUserAsync(user));
+    /// </code>
+    /// </example>
     public async Task<Result<TNew>> BindAsync<TNew>(Func<TResult, Task<Result<TNew>>> bind)
     {
         if (IsSuccess)
