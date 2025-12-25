@@ -220,19 +220,19 @@ public class AbstractBuilderTests
     }
 
     [Fact]
-    public void Build_ConcurrentBuilds_ShouldOnlyInstantiateOnce()
+    public async Task Build_ConcurrentBuilds_ShouldOnlyInstantiateOnce()
     {
         var counter = new ThreadSafeCounter();
         var builder = new SlowBuilder(counter).WithValue("test");
 
         var tasks = Enumerable.Range(0, 5).Select(_ => Task.Run(() => builder.Build())).ToArray();
-        Task.WaitAll(tasks);
+        await Task.WhenAll(tasks);
 
         counter.InstantiateCount.ShouldBe(1);
     }
 
     [Fact]
-    public void Validate_ConcurrentValidation_ShouldOnlyValidateOnce()
+    public async Task Validate_ConcurrentValidation_ShouldOnlyValidateOnce()
     {
         var validationCount = 0;
         var validatingBuilder = new CountingValidationBuilder(() => Interlocked.Increment(ref validationCount));
@@ -244,7 +244,7 @@ public class AbstractBuilderTests
             validatingBuilder.Validate(visited, failures);
         })).ToArray();
 
-        Task.WaitAll(tasks);
+        await Task.WhenAll(tasks);
         validationCount.ShouldBe(1);
     }
 
