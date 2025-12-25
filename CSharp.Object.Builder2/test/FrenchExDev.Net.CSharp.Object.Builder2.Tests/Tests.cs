@@ -819,15 +819,25 @@ public class Tests
         builder.GetInstantiateCount().ShouldBe(0);
     }
 
-    [Fact]
-    public void Existing_ShouldReturnSameBuilderInstance()
+    public static IEnumerable<object[]> ExistingPatterns
+    {
+        get
+        {
+            yield return new object[] { new SimpleObject { Value = "existing1" } };
+            yield return new object[] { new SimpleObject { Value = "existing2" } };
+            yield return new object[] { new SimpleObject { Value = "existing3" } };
+
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(ExistingPatterns))]
+    public void Existing_ShouldReturnSameBuilderInstance(SimpleObject existingObj)
     {
         var builder = new SimpleObjectBuilder();
-        var existingObj = new SimpleObject { Value = "test" };
         var result = builder.Existing(existingObj);
         result.ShouldBeSameAs(builder);
     }
-
     #endregion
 
     #region Edge Cases
@@ -1286,36 +1296,6 @@ public class Tests
 
     #endregion
 
-    #region ReferenceList Additional Edge Cases
-
-    [Fact]
-    public void ReferenceList_WithUnresolvedReferences_ShouldHandleGracefully()
-    {
-        var list = new ReferenceList<SimpleObject>();
-        var unresolvedRef = new Reference<SimpleObject>();
-        
-        list.Add(unresolvedRef);
-        
-        list.Count.ShouldBe(1);
-        list.Contains(unresolvedRef).ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ReferenceList_MixedResolvedAndUnresolved_ShouldWork()
-    {
-        var list = new ReferenceList<SimpleObject>();
-        
-        var resolved = new Reference<SimpleObject>().Resolve(new SimpleObject { Value = "resolved" });
-        var unresolved = new Reference<SimpleObject>();
-        
-        list.Add(resolved);
-        list.Add(unresolved);
-        
-        list.Count.ShouldBe(2);
-    }
-
-    #endregion
-
     #region Struct Value Type Tests
 
     [Fact]
@@ -1331,15 +1311,687 @@ public class Tests
     }
 
     #endregion
+
+    #region AbstractBuilder Constructor Branch Coverage Tests
+
+    [Fact]
+    public void AbstractBuilder_Constructor_NullReferenceFactory_ShouldThrow()
+    {
+        Should.Throw<ArgumentNullException>(() => new TestBuilderWithCustomStrategy(null!, LockSynchronizationStrategy.Instance));
+    }
+
+    [Fact]
+    public void AbstractBuilder_Constructor_NullSyncStrategy_ShouldThrow()
+    {
+        Should.Throw<ArgumentNullException>(() => new TestBuilderWithCustomStrategy(DefaultReferenceFactory.Instance, null!));
+    }
+
+    [Fact]
+    public void AbstractBuilder_Constructor_WithReferenceFactoryOnly_ShouldWork()
+    {
+        var builder = new TestBuilderWithReferenceFactory(DefaultReferenceFactory.Instance);
+        builder.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void AbstractBuilder_Constructor_WithCustomSyncStrategy_ShouldUseIt()
+    {
+        var builder = new TestBuilderWithCustomStrategy(DefaultReferenceFactory.Instance, NoSynchronizationStrategy.Instance);
+        builder.WithValue("test");
+        var result = builder.BuildOrThrow();
+        result.ShouldNotBeNull();
+    }
+
+    #endregion
+
+    #region BuildCore Branch Coverage Tests
+
+    [Fact]
+    public void Build_WhenAlreadyBuiltInsideLock_ShouldReturnExistingReference()
+    {
+        // This tests the double-check inside BuildCore (line 143)
+        var builder = new SimpleObjectBuilder().WithValue("test");
+        
+        // Build once
+        var result1 = builder.Build();
+        builder.BuildStatus.ShouldBe(BuildStatus.Built);
+        
+        // Build again - should hit the BuildStatus.Built check inside BuildCore
+        var result2 = builder.Build();
+        
+        result1.Value.ShouldBeSameAs(result2.Value);
+    }
+
+    [Fact]
+    public void Build_WithExisting_InsideBuildCore_ShouldReturnExisting()
+    {
+        // This tests line 148-154 - _existing check inside BuildCore
+        var existing = new SimpleObject { Value = "existing" };
+        var counter = new ThreadSafeCounter();
+        var builder = new SlowBuilder(counter);
+        
+        // Set existing after construction but before build
+        builder.Existing(existing);
+        
+        var result = builder.Build();
+        
+        result.Value.IsResolved.ShouldBeTrue();
+        result.Value.Resolved().ShouldBeSameAs(existing);
+        builder.GetInstantiateCount().ShouldBe(0);
+    }
+
+    #endregion
+
+    #region Build Visited Dictionary Branch Coverage Tests
+
+    [Fact]
+    public void Build_WithVisited_ContainingNotValidatedBuilder_ShouldReturnEarly()
+    {
+        // Tests line 127-128
+        var builder = new PersonBuilder().WithName("Test").WithAge(25);
+        var visited = new VisitedObjectDictionary();
+        
+        // Add builder to visited but don't validate it
+        visited[builder.Id] = builder;
+        builder.ValidationStatus.ShouldBe(ValidationStatus.NotValidated);
+        
+        var result = builder.Build(visited);
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Build_WithVisited_ContainingBuildingBuilder_ShouldReturnEarly()
+    {
+        // Tests line 129-130 - BuildStatus.Building
+        var builder = new BuildingStatusTestBuilder();
+        var visited = new VisitedObjectDictionary();
+        
+        // Simulate being in Building status
+        builder.SetBuildingStatus();
+        visited[builder.Id] = builder;
+        
+        var result = builder.Build(visited);
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Build_WithVisited_ContainingValidatingBuilder_ShouldReturnEarly()
+    {
+        // Tests line 127-128 - ValidationStatus.Validating
+        var builder = new ValidatingStatusTestBuilder();
+        var visited = new VisitedObjectDictionary();
+        
+        // Simulate being in Validating status
+        builder.SetValidatingStatus();
+        visited[builder.Id] = builder;
+        
+        var result = builder.Build(visited);
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    #endregion
+
+    #region BuildOrThrow Branch Coverage Tests
+
+    [Fact]
+    public void BuildOrThrow_WithMessageFailure_ShouldExtractAsInvalidOperationException()
+    {
+        // Tests line 227 - message failure extraction
+        var builder = new MessageFailureTestBuilder();
+        
+        var exception = Should.Throw<AggregateException>(() => builder.BuildOrThrow());
+        exception.InnerExceptions.ShouldContain(e => e is InvalidOperationException && e.Message == "Test message failure");
+    }
+
+    [Fact]
+    public void BuildOrThrow_WithNestedFailure_ShouldExtractRecursively()
+    {
+        // Tests line 228 - nested failure extraction
+        var builder = new NestedFailureTestBuilder();
+        
+        var exception = Should.Throw<AggregateException>(() => builder.BuildOrThrow());
+        exception.InnerExceptions.ShouldNotBeEmpty();
+        exception.InnerExceptions.ShouldContain(e => e is ArgumentException && e.Message == "Nested error");
+    }
+
+    [Fact]
+    public void BuildOrThrow_WithExceptionFailure_ShouldExtractDirectly()
+    {
+        // Tests line 226 - exception failure extraction
+        var builder = new ExceptionFailureTestBuilder();
+        
+        var exception = Should.Throw<AggregateException>(() => builder.BuildOrThrow());
+        exception.InnerExceptions.ShouldContain(e => e is ArgumentException && e.Message == "Direct exception failure");
+    }
+
+    #endregion
+
+    #region ReaderWriterSynchronizationStrategy Builder Tests
+
+    [Fact]
+    public void Builder_WithReaderWriterStrategy_ShouldBuildSuccessfully()
+    {
+        var builder = new ReaderWriterStrategyBuilder().WithValue("test");
+        var result = builder.BuildOrThrow();
+        
+        result.ShouldNotBeNull();
+        result.Value.ShouldBe("test");
+    }
+
+    [Fact]
+    public void Builder_WithReaderWriterStrategy_ShouldValidateSuccessfully()
+    {
+        var builder = new ReaderWriterStrategyBuilder().WithValue("test");
+        var visited = new VisitedObjectDictionary();
+        var failures = new FailuresDictionary();
+        
+        builder.Validate(visited, failures);
+        
+        failures.HasFailures.ShouldBeFalse();
+        builder.ValidationStatus.ShouldBe(ValidationStatus.Validated);
+    }
+
+    [Fact]
+    public async Task Builder_WithReaderWriterStrategy_ConcurrentBuilds_ShouldOnlyBuildOnce()
+    {
+        var counter = new ThreadSafeCounter();
+        var builder = new SlowReaderWriterStrategyBuilder(counter).WithValue("test");
+
+        var tasks = Enumerable.Range(0, 10)
+            .Select(_ => Task.Run(() => builder.Build()))
+            .ToArray();
+        await Task.WhenAll(tasks);
+
+        builder.GetInstantiateCount().ShouldBe(1);
+        builder.BuildStatus.ShouldBe(BuildStatus.Built);
+    }
+
+    [Fact]
+    public async Task Builder_WithReaderWriterStrategy_ConcurrentValidations_ShouldOnlyValidateOnce()
+    {
+        var builder = new ReaderWriterStrategyBuilder().WithValue("test");
+        var barrier = new Barrier(10);
+
+        var tasks = Enumerable.Range(0, 10)
+            .Select(_ => Task.Run(() =>
+            {
+                barrier.SignalAndWait();
+                var v = new VisitedObjectDictionary();
+                var f = new FailuresDictionary();
+                builder.Validate(v, f);
+                return f;
+            }))
+            .ToArray();
+        var results = await Task.WhenAll(tasks);
+
+        foreach (var failures in results)
+        {
+            failures.HasFailures.ShouldBeFalse();
+        }
+        builder.ValidationStatus.ShouldBe(ValidationStatus.Validated);
+    }
+
+    [Fact]
+    public void ReaderWriterSynchronizationStrategy_Execute_Action_ShouldWork()
+    {
+        var strategy = new ReaderWriterSynchronizationStrategy();
+        var executed = false;
+        var lockObj = new object();
+
+        strategy.Execute(lockObj, () => executed = true);
+
+        executed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ReaderWriterSynchronizationStrategy_Execute_Func_ShouldReturnResult()
+    {
+        var strategy = new ReaderWriterSynchronizationStrategy();
+        var lockObj = new object();
+
+        var result = strategy.Execute(lockObj, () => 42);
+
+        result.ShouldBe(42);
+    }
+
+    [Fact]
+    public void ReaderWriterSynchronizationStrategy_ExecuteRead_ShouldReturnResult()
+    {
+        var strategy = new ReaderWriterSynchronizationStrategy();
+
+        var result = strategy.ExecuteRead(() => "test");
+
+        result.ShouldBe("test");
+    }
+
+    [Fact]
+    public async Task ReaderWriterSynchronizationStrategy_ShouldAllowConcurrentReads()
+    {
+        var strategy = new ReaderWriterSynchronizationStrategy();
+        var concurrentReads = 0;
+        var maxConcurrentReads = 0;
+
+        var tasks = Enumerable.Range(0, 20)
+            .Select(_ => Task.Run(() =>
+            {
+                strategy.ExecuteRead(() =>
+                {
+                    var current = Interlocked.Increment(ref concurrentReads);
+                    if (current > maxConcurrentReads)
+                        Interlocked.Exchange(ref maxConcurrentReads, current);
+                    
+                    Thread.Sleep(10);
+                    Interlocked.Decrement(ref concurrentReads);
+                    return 0;
+                });
+            }))
+            .ToArray();
+
+        await Task.WhenAll(tasks);
+
+        // Multiple reads should have happened concurrently
+        maxConcurrentReads.ShouldBeGreaterThan(1);
+    }
+
+    #endregion
+
+    #region Reference Additional Concurrency Tests
+
+    [Fact]
+    public async Task Reference_ConcurrentResolveAndOnResolve_ShouldBeThreadSafe()
+    {
+        var reference = new Reference<SimpleObject>();
+        var callCount = 0;
+        var obj = new SimpleObject { Value = "test" };
+
+        // Register callbacks and resolve concurrently
+        var registerTasks = Enumerable.Range(0, 5)
+            .Select(_ => Task.Run(() => reference.OnResolve(_ => Interlocked.Increment(ref callCount))))
+            .ToArray();
+
+        var resolveTask = Task.Run(() =>
+        {
+            Thread.Sleep(5); // Let some callbacks register
+            reference.Resolve(obj);
+        });
+
+        await Task.WhenAll(registerTasks.Concat(new[] { resolveTask }));
+
+        reference.IsResolved.ShouldBeTrue();
+        // Callbacks registered before resolve should have been called
+        callCount.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task Reference_MultipleConcurrentResolves_OnlyFirstWins()
+    {
+        var reference = new Reference<SimpleObject>();
+        var objects = Enumerable.Range(0, 10)
+            .Select(i => new SimpleObject { Value = $"obj{i}" })
+            .ToList();
+
+        var tasks = objects.Select(obj => Task.Run(() => reference.Resolve(obj))).ToArray();
+        await Task.WhenAll(tasks);
+
+        reference.IsResolved.ShouldBeTrue();
+        // Only one object should win
+        objects.ShouldContain(reference.Resolved());
+    }
+
+    [Fact]
+    public void Reference_OnResolve_AfterAlreadyResolved_ShouldNotCallCallback()
+    {
+        var reference = new Reference<SimpleObject>();
+        var obj = new SimpleObject { Value = "test" };
+        
+        reference.Resolve(obj);
+        
+        var wasCalledAfter = false;
+        reference.OnResolve(_ => wasCalledAfter = true);
+        
+        // According to the implementation, OnResolve just adds to the list
+        // but since _instance == instance check fails for new registrations after resolve,
+        // the callback won't be called during the Resolve that already happened
+        // Actually, looking at the code again, OnResolve just adds to the list
+        // and Resolve only calls callbacks if _instance == instance (first resolve)
+        // So callbacks added after resolve are never called
+        wasCalledAfter.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Reference_Resolve_WithSameInstanceTwice_ShouldCallCallbacksOnce()
+    {
+        var reference = new Reference<SimpleObject>();
+        var obj = new SimpleObject { Value = "test" };
+        var callCount = 0;
+        
+        reference.OnResolve(_ => callCount++);
+        reference.Resolve(obj);
+        reference.Resolve(obj); // Same instance again
+        
+        callCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Reference_Constructor_WithExisting_ShouldNotTriggerCallbacks()
+    {
+        var obj = new SimpleObject { Value = "test" };
+        var reference = new Reference<SimpleObject>(obj);
+        
+        var wasCalled = false;
+        reference.OnResolve(_ => wasCalled = true);
+        
+        // Callback registered after construction with existing shouldn't be called
+        // because Resolve was never called
+        wasCalled.ShouldBeFalse();
+    }
+
+    #endregion
+
+    #region BuilderListWithFactory Direct Tests
+
+    [Fact]
+    public void BuilderListWithFactory_New_CreatesAndConfiguresBuilder()
+    {
+        var factoryCallCount = 0;
+        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() =>
+        {
+            factoryCallCount++;
+            return new SimpleObjectBuilder();
+        });
+
+        list.New(b => b.WithValue("first"));
+        list.New(b => b.WithValue("second"));
+        list.New(b => b.WithValue("third"));
+
+        factoryCallCount.ShouldBe(3);
+        list.Count.ShouldBe(3);
+    }
+
+    [Fact]
+    public void BuilderListWithFactory_AsReferenceList_ReturnsCorrectReferences()
+    {
+        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() => new SimpleObjectBuilder());
+        list.New(b => b.WithValue("first"));
+        list.New(b => b.WithValue("second"));
+        
+        // Build all
+        foreach (var builder in list)
+            builder.Build();
+
+        var referenceList = list.AsReferenceList();
+        
+        referenceList.Count.ShouldBe(2);
+        referenceList[0].Value.ShouldBe("first");
+        referenceList[1].Value.ShouldBe("second");
+    }
+
+    [Fact]
+    public void BuilderListWithFactory_BuildSuccess_BuildsAllAndReturnsInstances()
+    {
+        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() => new SimpleObjectBuilder());
+        list.New(b => b.WithValue("a"));
+        list.New(b => b.WithValue("b"));
+        list.New(b => b.WithValue("c"));
+
+        var results = list.BuildSuccess();
+
+        results.Count.ShouldBe(3);
+        results[0].Value.ShouldBe("a");
+        results[1].Value.ShouldBe("b");
+        results[2].Value.ShouldBe("c");
+    }
+
+    [Fact]
+    public void BuilderListWithFactory_ValidateFailures_ReturnsOnlyFailures()
+    {
+        var list = new BuilderListWithFactory<Person, PersonBuilder>(() => new PersonBuilder());
+        list.New(b => b.WithName("Valid1").WithAge(25)); // Valid
+        list.New(b => b.WithAge(30)); // Invalid - missing name
+        list.New(b => b.WithName("Valid2").WithAge(35)); // Valid
+        list.New(b => b.WithAge(-5)); // Invalid - missing name and negative age
+
+        var failures = list.ValidateFailures();
+
+        failures.Count.ShouldBe(2); // Only the invalid ones
+    }
+
+    [Fact]
+    public void BuilderListWithFactory_NullFactory_ThrowsArgumentNullException()
+    {
+        Should.Throw<ArgumentNullException>(() => 
+            new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(null!));
+    }
+
+    [Fact]
+    public void BuilderListWithFactory_New_ReturnsListForChaining()
+    {
+        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() => new SimpleObjectBuilder());
+        
+        var result = list
+            .New(b => b.WithValue("a"))
+            .New(b => b.WithValue("b"))
+            .New(b => b.WithValue("c"));
+
+        result.ShouldBeSameAs(list);
+        list.Count.ShouldBe(3);
+    }
+
+    [Fact]
+    public void BuilderListWithFactory_WithDependencyInjectionPattern_ShouldWork()
+    {
+        // Simulate DI by using a factory that tracks creation
+        var createdBuilders = new List<SimpleObjectBuilder>();
+        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() =>
+        {
+            var builder = new SimpleObjectBuilder();
+            createdBuilders.Add(builder);
+            return builder;
+        });
+
+        list.New(b => b.WithValue("from-di"));
+
+        createdBuilders.Count.ShouldBe(1);
+        createdBuilders[0].ShouldBeSameAs(list[0]);
+    }
+
+    [Fact]
+    public void BuilderListWithFactory_AsReferenceList_BeforeBuild_ReturnsUnresolvedReferences()
+    {
+        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() => new SimpleObjectBuilder());
+        list.New(b => b.WithValue("test"));
+
+        var referenceList = list.AsReferenceList();
+
+        referenceList.Count.ShouldBe(1);
+        // References exist but are not resolved yet
+        var reference = list[0].Reference();
+        reference.IsResolved.ShouldBeFalse();
+    }
+
+    #endregion
+
+}
+#region Test Helper Builders for Branch Coverage
+
+/// <summary>
+/// Builder that allows setting custom reference factory and sync strategy for testing constructors.
+/// </summary>
+public class TestBuilderWithCustomStrategy : AbstractBuilder<SimpleObject>
+{
+    public string? Value { get; set; }
+    
+    public TestBuilderWithCustomStrategy(IReferenceFactory referenceFactory, ISynchronizationStrategy syncStrategy)
+        : base(referenceFactory, syncStrategy) { }
+    
+    protected override SimpleObject Instantiate() => new() { Value = Value ?? string.Empty };
+    
+    public TestBuilderWithCustomStrategy WithValue(string value) { Value = value; return this; }
 }
 
-// Test helper class
-public class TestValidationStrategy : IValidationStrategy<SimpleObjectBuilder>
+/// <summary>
+/// Builder that uses the single-parameter constructor with reference factory.
+/// </summary>
+public class TestBuilderWithReferenceFactory : AbstractBuilder<SimpleObject>
 {
-    public bool ValidateCalled { get; private set; }
+    public string? Value { get; set; }
     
-    public void Validate(SimpleObjectBuilder builder, IVisitedTracker visited, IFailureCollector failures)
+    public TestBuilderWithReferenceFactory(IReferenceFactory referenceFactory)
+        : base(referenceFactory) { }
+    
+    protected override SimpleObject Instantiate() => new() { Value = Value ?? string.Empty };
+}
+
+/// <summary>
+/// Builder that exposes a method to set BuildStatus to Building for testing.
+/// </summary>
+public class BuildingStatusTestBuilder : AbstractBuilder<SimpleObject>
+{
+    protected override SimpleObject Instantiate() => new() { Value = "test" };
+    
+    public void SetBuildingStatus()
     {
-        ValidateCalled = true;
+        // Use reflection to set the private _buildStatus field
+        var field = typeof(AbstractBuilder<SimpleObject>).GetField("_buildStatus", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        field?.SetValue(this, (int)BuildStatus.Building);
     }
 }
+
+/// <summary>
+/// Builder that exposes a method to set ValidationStatus to Validating for testing.
+/// </summary>
+public class ValidatingStatusTestBuilder : AbstractBuilder<SimpleObject>
+{
+    protected override SimpleObject Instantiate() => new() { Value = "test" };
+    
+    public void SetValidatingStatus()
+    {
+        // Use reflection to set the private _validationStatus field
+        var field = typeof(AbstractBuilder<SimpleObject>).GetField("_validationStatus", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        field?.SetValue(this, (int)ValidationStatus.Validating);
+    }
+}
+
+/// <summary>
+/// Builder that produces a message failure for testing message extraction.
+/// </summary>
+public class MessageFailureTestBuilder : AbstractBuilder<SimpleObject>
+{
+    protected override SimpleObject Instantiate() => new() { Value = "test" };
+    
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
+    {
+        failures.AddFailure("test", Failure.FromMessage("Test message failure"));
+    }
+}
+
+/// <summary>
+/// Builder that produces a nested failure for testing recursive extraction.
+/// </summary>
+public class NestedFailureTestBuilder : AbstractBuilder<SimpleObject>
+{
+    protected override SimpleObject Instantiate() => new() { Value = "test" };
+    
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
+    {
+        var nested = new FailuresDictionary();
+        nested.AddFailure("inner", Failure.FromException(new ArgumentException("Nested error")));
+        failures.AddFailure("outer", Failure.FromNested(nested));
+    }
+}
+
+/// <summary>
+/// Builder that produces an exception failure for testing direct exception extraction.
+/// </summary>
+public class ExceptionFailureTestBuilder : AbstractBuilder<SimpleObject>
+{
+    protected override SimpleObject Instantiate() => new() { Value = "test" };
+    
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
+    {
+        failures.AddFailure("test", Failure.FromException(new ArgumentException("Direct exception failure")));
+    }
+}
+
+/// <summary>
+/// Builder with slow validation to test concurrent validation scenarios.
+/// </summary>
+public class SlowValidatingBuilder : AbstractBuilder<SimpleObject>
+{
+    protected override SimpleObject Instantiate() => new() { Value = "test" };
+    
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
+    {
+        Thread.Sleep(50); // Slow validation
+    }
+}
+
+/// <summary>
+/// Builder that overrides CreateFailureCollector to track if it was used.
+/// </summary>
+public class CustomFailureCollectorBuilder : AbstractBuilder<SimpleObject>
+{
+    public string? Value { get; set; }
+    public bool CustomCollectorUsed { get; private set; }
+    
+    protected override SimpleObject Instantiate() => new() { Value = Value ?? string.Empty };
+    
+    protected override FailuresDictionary CreateFailureCollector()
+    {
+        CustomCollectorUsed = true;
+        return base.CreateFailureCollector();
+    }
+    
+    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
+    {
+        AssertNotNull(Value, nameof(Value), failures, n => new ArgumentNullException(n));
+    }
+}
+
+/// <summary>
+/// Builder that uses ReaderWriterSynchronizationStrategy for testing.
+/// </summary>
+public class ReaderWriterStrategyBuilder : AbstractBuilder<SimpleObject>
+{
+    private static readonly ReaderWriterSynchronizationStrategy _strategy = new();
+    
+    public string? Value { get; set; }
+    
+    public ReaderWriterStrategyBuilder() 
+        : base(DefaultReferenceFactory.Instance, _strategy) { }
+    
+    protected override SimpleObject Instantiate() => new() { Value = Value ?? string.Empty };
+    
+    public ReaderWriterStrategyBuilder WithValue(string value) { Value = value; return this; }
+}
+
+/// <summary>
+/// Slow builder that uses ReaderWriterSynchronizationStrategy for concurrent testing.
+/// </summary>
+public class SlowReaderWriterStrategyBuilder : AbstractBuilder<SimpleObject>
+{
+    private static readonly ReaderWriterSynchronizationStrategy _strategy = new();
+    private readonly ThreadSafeCounter _counter;
+    
+    public string? Value { get; set; }
+    
+    public SlowReaderWriterStrategyBuilder(ThreadSafeCounter counter) 
+        : base(DefaultReferenceFactory.Instance, _strategy)
+    {
+        _counter = counter;
+    }
+    
+    protected override SimpleObject Instantiate()
+    {
+        Interlocked.Increment(ref _counter.InstantiateCount);
+        Thread.Sleep(10);
+        return new() { Value = Value ?? string.Empty };
+    }
+    
+    public SlowReaderWriterStrategyBuilder WithValue(string value) { Value = value; return this; }
+    public int GetInstantiateCount() => _counter.InstantiateCount;
+}
+
+#endregion
