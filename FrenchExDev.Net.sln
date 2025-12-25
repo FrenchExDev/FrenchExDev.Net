@@ -144,6 +144,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{AE80F9AE-2BD4-D6EB-A81B-DBD612A4B9D4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{E88E7C76-D038-0859-F870-4A2307C4A0C4}"
+	ProjectSection(SolutionItems) = preProject
+		CSharp.Object.Builder2\LICENSE.md = CSharp.Object.Builder2\LICENSE.md
+		CSharp.Object.Builder2\README.md = CSharp.Object.Builder2\README.md
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.CSharp.Object.Builder2", "CSharp.Object.Builder2\src\FrenchExDev.Net.CSharp.Object.Builder2\FrenchExDev.Net.CSharp.Object.Builder2.csproj", "{D81D8697-1966-4FAD-84C6-2000C6F34B4B}"
 EndProject
