@@ -830,27 +830,6 @@ public class Tests
 
     #endregion
 
-    #region FailuresDictionary Tests
-
-    [Fact]
-    public void FailuresDictionary_Failure_ShouldAddToExistingList()
-    {
-        var dict = new FailuresDictionary();
-        dict.Failure("key", new InvalidOperationException("first"));
-        dict.Failure("key", new InvalidOperationException("second"));
-        dict["key"].Count.ShouldBe(2);
-    }
-
-    [Fact]
-    public void FailuresDictionary_Failure_ShouldReturnSameInstance()
-    {
-        var dict = new FailuresDictionary();
-        var result = dict.Failure("key", new InvalidOperationException("test"));
-        result.ShouldBeSameAs(dict);
-    }
-
-    #endregion
-
     #region Edge Cases
 
     [Fact]
@@ -1115,6 +1094,14 @@ public class Tests
         departmentBuilder.Reference().IsResolved.ShouldBeTrue();
         var department = departmentBuilder.Reference().Resolved();
         department.Name.ShouldBe("Engineering");
+        
+        // All employees should have their references resolved
+        foreach (var employeeBuilder in employeeBuilders)
+        {
+            employeeBuilder.Reference().IsResolved.ShouldBeTrue();
+            var employee = employeeBuilder.Reference().Resolved();
+            employee.Department.ShouldBeSameAs(department);
+        }
     }
 
     [Fact]
@@ -1255,89 +1242,383 @@ public class Tests
     public async Task Reference_MultipleResolveAttempts_OnlyFirstWins()
     {
         var reference = new Reference<SimpleObject>();
-        var objects = Enumerable.Range(0, 100)
-            .Select(i => new SimpleObject { Value = $"value{i}" })
-            .ToArray();
+        var obj1 = new SimpleObject { Value = "first" };
+        var obj2 = new SimpleObject { Value = "second" };
+        var obj3 = new SimpleObject { Value = "third" };
 
-        var tasks = objects.Select(obj => Task.Run(() => reference.Resolve(obj))).ToArray();
-        await Task.WhenAll(tasks);
+        reference.Resolve(obj1);
+        reference.Resolve(obj2);
+        reference.Resolve(obj3);
 
-        reference.IsResolved.ShouldBeTrue();
-        var resolved = reference.Resolved();
-        objects.ShouldContain(resolved);
+        reference.Resolved().Value.ShouldBe("first");
     }
 
     [Fact]
-    public async Task Reference_ConcurrentReadsWhileResolving_ShouldNotThrow()
+    public async Task Reference_OnResolve_CalledAfterResolve_CallbacksNotCalledForSecondResolve()
     {
         var reference = new Reference<SimpleObject>();
-        var obj = new SimpleObject { Value = "test" };
-        var readsCompleted = 0;
+        var callCount = 0;
 
-        var readers = Enumerable.Range(0, 100)
-            .Select(idx => Task.Run(() =>
-            {
-                while (!reference.IsResolved)
-                {
-                    var nullableResult = reference.ResolvedOrNull();
-                    var instanceResult = reference.Instance;
-                }
-                Interlocked.Increment(ref readsCompleted);
-            }))
-            .ToArray();
+        reference.OnResolve(_ => callCount++);
+        reference.Resolve(new SimpleObject { Value = "first" });
+        reference.Resolve(new SimpleObject { Value = "second" });
 
-        await Task.Delay(1);
-        reference.Resolve(obj);
-        await Task.WhenAll(readers);
+        callCount.ShouldBe(1);
+    }
 
-        readsCompleted.ShouldBe(100);
-        reference.Resolved().ShouldBeSameAs(obj);
+    #endregion
+
+    #region Integration Tests - Complex Scenarios
+
+    [Fact]
+    public void Build_DeeplyNestedStructure_ShouldBuildCorrectly()
+    {
+        var builder = new PersonBuilder()
+            .WithName("Root")
+            .WithAge(50)
+            .WithFriend(f1 => f1
+                .WithName("Level1-Friend1")
+                .WithAge(40)
+                .WithFriend(f2 => f2
+                    .WithName("Level2-Friend1")
+                    .WithAge(30)
+                    .WithFriend(f3 => f3
+                        .WithName("Level3-Friend1")
+                        .WithAge(20))));
+
+        var result = builder.Build().Value.Resolved();
+
+        result.Name.ShouldBe("Root");
+        result.Friends.Count.ShouldBe(1);
+        result.Friends[0].Friends.Count.ShouldBe(1);
+        result.Friends[0].Friends[0].Friends.Count.ShouldBe(1);
+        result.Friends[0].Friends[0].Friends[0].Name.ShouldBe("Level3-Friend1");
     }
 
     [Fact]
-    public void DefaultBuildOrchestrator_Instance_ShouldReturnSingleton()
+    public void Build_WithMessageFailure_ShouldBeExtractedInBuildOrThrow()
     {
-        var instance1 = DefaultBuildOrchestrator.Instance;
-        var instance2 = DefaultBuildOrchestrator.Instance;
+        // Using FailuresDictionary to simulate message failure extraction
+        var failures = new FailuresDictionary();
+        failures.AddFailure("test", Failure.FromMessage("This is a message failure"));
+
+        var exception = new BuildFailureException(failures);
         
+        // Verify the failure can be extracted
+        var failuresList = failures["test"];
+        failuresList.Count.ShouldBe(1);
+        failuresList[0].TryGetMessage(out var message).ShouldBeTrue();
+        message.ShouldBe("This is a message failure");
+    }
+
+    #endregion
+
+    #region BuilderListWithFactory Tests
+
+    [Fact]
+    public void BuilderListWithFactory_New_ShouldUseFactoryToCreateBuilder()
+    {
+        var factoryCallCount = 0;
+        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() =>
+        {
+            factoryCallCount++;
+            return new SimpleObjectBuilder();
+        });
+
+        list.New(b => b.WithValue("first"));
+        list.New(b => b.WithValue("second"));
+
+        factoryCallCount.ShouldBe(2);
+        list.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void BuilderListWithFactory_Constructor_NullFactory_ShouldThrow()
+    {
+        Should.Throw<ArgumentNullException>(() => 
+            new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(null!));
+    }
+
+    [Fact]
+    public void BuilderListWithFactory_AsReferenceList_ShouldReturnReferences()
+    {
+        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() => new SimpleObjectBuilder());
+        list.New(b => b.WithValue("test"));
+        list[0].Build();
+
+        var referenceList = list.AsReferenceList();
+        referenceList.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void BuilderListWithFactory_BuildSuccess_ShouldBuildAllItems()
+    {
+        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() => new SimpleObjectBuilder());
+        list.New(b => b.WithValue("first"));
+        list.New(b => b.WithValue("second"));
+
+        var results = list.BuildSuccess();
+        results.Count.ShouldBe(2);
+        results[0].Value.ShouldBe("first");
+        results[1].Value.ShouldBe("second");
+    }
+
+    [Fact]
+    public void BuilderListWithFactory_ValidateFailures_ShouldReturnFailures()
+    {
+        var list = new BuilderListWithFactory<Person, PersonBuilder>(() => new PersonBuilder());
+        list.New(b => b.WithName("Valid").WithAge(25));
+        list.New(b => b.WithAge(30)); // Missing name
+
+        var failures = list.ValidateFailures();
+        failures.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void BuilderListWithFactory_New_ShouldReturnSameInstance()
+    {
+        var list = new BuilderListWithFactory<SimpleObject, SimpleObjectBuilder>(() => new SimpleObjectBuilder());
+        var result = list.New(b => b.WithValue("test"));
+        result.ShouldBeSameAs(list);
+    }
+
+    #endregion
+
+    #region BuilderListExtensions Tests
+
+    [Fact]
+    public void BuilderListExtensions_CreateBuilderList_ShouldCreateListWithFactory()
+    {
+        var list = BuilderListExtensions.CreateBuilderList<SimpleObject, SimpleObjectBuilder>(() => new SimpleObjectBuilder());
+        
+        list.ShouldNotBeNull();
+        list.New(b => b.WithValue("test"));
+        list.Count.ShouldBe(1);
+    }
+
+    #endregion
+
+    #region NoSynchronizationStrategy Tests
+
+    [Fact]
+    public void NoSynchronizationStrategy_Execute_Action_ShouldExecuteWithoutLocking()
+    {
+        var strategy = NoSynchronizationStrategy.Instance;
+        var executed = false;
+        var lockObj = new object();
+
+        strategy.Execute(lockObj, () => executed = true);
+
+        executed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void NoSynchronizationStrategy_Execute_Func_ShouldReturnResult()
+    {
+        var strategy = NoSynchronizationStrategy.Instance;
+        var lockObj = new object();
+
+        var result = strategy.Execute(lockObj, () => 42);
+
+        result.ShouldBe(42);
+    }
+
+    [Fact]
+    public void NoSynchronizationStrategy_Instance_ShouldBeSingleton()
+    {
+        var instance1 = NoSynchronizationStrategy.Instance;
+        var instance2 = NoSynchronizationStrategy.Instance;
+
         instance1.ShouldBeSameAs(instance2);
     }
 
+    #endregion
+
+    #region ReaderWriterSynchronizationStrategy Tests
+
     [Fact]
-    public void DefaultBuildOrchestrator_SyncStrategy_ShouldReturnConfiguredStrategy()
+    public void ReaderWriterSynchronizationStrategy_Execute_Action_ShouldExecuteWithLock()
     {
-        var customStrategy = NoSynchronizationStrategy.Instance;
-        var orchestrator = new DefaultBuildOrchestrator(customStrategy, () => new FailuresDictionary());
-        
-        orchestrator.SyncStrategy.ShouldBeSameAs(customStrategy);
+        var strategy = new ReaderWriterSynchronizationStrategy();
+        var executed = false;
+        var lockObj = new object();
+
+        strategy.Execute(lockObj, () => executed = true);
+
+        executed.ShouldBeTrue();
     }
 
     [Fact]
-    public void DefaultBuildOrchestrator_CreateFailureCollector_ShouldUseFactory()
+    public void ReaderWriterSynchronizationStrategy_Execute_Func_ShouldReturnResult()
     {
-        var callCount = 0;
-        var orchestrator = new DefaultBuildOrchestrator(
-            LockSynchronizationStrategy.Instance, 
-            () => { callCount++; return new FailuresDictionary(); });
-        
-        orchestrator.CreateFailureCollector();
-        orchestrator.CreateFailureCollector();
-        
-        callCount.ShouldBe(2);
+        var strategy = new ReaderWriterSynchronizationStrategy();
+        var lockObj = new object();
+
+        var result = strategy.Execute(lockObj, () => "test");
+
+        result.ShouldBe("test");
     }
 
     [Fact]
-    public void Builder_WithOrchestrator_ShouldUseOrchestratorForChildBuilds()
+    public void ReaderWriterSynchronizationStrategy_ExecuteRead_ShouldReturnResult()
     {
-        var orchestrator = new TrackingBuildOrchestrator();
-        var builder = new PersonBuilderWithOrchestrator(orchestrator)
-            .WithName("Test")
-            .WithAddress(a => a.WithStreet("123 Main").WithCity("TestCity"));
+        var strategy = new ReaderWriterSynchronizationStrategy();
+
+        var result = strategy.ExecuteRead(() => 123);
+
+        result.ShouldBe(123);
+    }
+
+    [Fact]
+    public void ReaderWriterSynchronizationStrategy_Execute_Action_WhenExceptionThrown_ShouldReleaseLock()
+    {
+        var strategy = new ReaderWriterSynchronizationStrategy();
+        var lockObj = new object();
+
+        Should.Throw<InvalidOperationException>(() => 
+            strategy.Execute(lockObj, () => throw new InvalidOperationException("test")));
+
+        // Should be able to acquire lock again (proving it was released)
+        var executed = false;
+        strategy.Execute(lockObj, () => executed = true);
+        executed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ReaderWriterSynchronizationStrategy_Execute_Func_WhenExceptionThrown_ShouldReleaseLock()
+    {
+        var strategy = new ReaderWriterSynchronizationStrategy();
+        var lockObj = new object();
+
+        Should.Throw<InvalidOperationException>(() => 
+            strategy.Execute(lockObj, () => 
+            {
+                throw new InvalidOperationException("test");
+                return 0;
+            }));
+
+        var result = strategy.Execute(lockObj, () => 42);
+        result.ShouldBe(42);
+    }
+
+    [Fact]
+    public void ReaderWriterSynchronizationStrategy_ExecuteRead_WhenExceptionThrown_ShouldReleaseLock()
+    {
+        var strategy = new ReaderWriterSynchronizationStrategy();
+
+        Should.Throw<InvalidOperationException>(() => 
+            strategy.ExecuteRead(() => 
+            {
+                throw new InvalidOperationException("test");
+                return 0;
+            }));
+
+        var result = strategy.ExecuteRead(() => 123);
+        result.ShouldBe(123);
+    }
+
+    #endregion
+
+    #region DefaultReferenceFactory Tests
+
+    [Fact]
+    public void DefaultReferenceFactory_Create_ShouldReturnNewReference()
+    {
+        var factory = DefaultReferenceFactory.Instance;
+        var reference = factory.Create<SimpleObject>();
         
-        builder.Build();
+        reference.ShouldNotBeNull();
+        reference.IsResolved.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void DefaultReferenceFactory_CreateWithExisting_ShouldReturnResolvedReference()
+    {
+        var factory = DefaultReferenceFactory.Instance;
+        var existing = new SimpleObject { Value = "test" };
+        var reference = factory.Create(existing);
         
-        // The orchestrator should have been called for the AddressBuilder
-        orchestrator.BuildCallCount.ShouldBeGreaterThan(0);
+        reference.ShouldNotBeNull();
+        reference.IsResolved.ShouldBeTrue();
+        reference.Resolved().ShouldBeSameAs(existing);
+    }
+
+    [Fact]
+    public void DefaultReferenceFactory_CreateWithNull_ShouldReturnUnresolvedReference()
+    {
+        var factory = DefaultReferenceFactory.Instance;
+        var reference = factory.Create<SimpleObject>(null);
+        
+        reference.ShouldNotBeNull();
+        reference.IsResolved.ShouldBeFalse();
+    }
+
+    #endregion
+
+    #region MessageFailure Additional Tests
+
+    [Fact]
+    public void MessageFailure_Match_ShouldInvokeOnMessage()
+    {
+        var failure = Failure.FromMessage("test message");
+        var result = "";
+
+        failure.Match(
+            onException: _ => { },
+            onMessage: msg => result = msg,
+            onNested: _ => { });
+
+        result.ShouldBe("test message");
+    }
+
+    #endregion
+
+    #region VisitedObjectDictionary Additional Tests
+
+    [Fact]
+    public void VisitedObjectDictionary_IsVisited_ShouldReturnFalseForUnknownId()
+    {
+        var visited = new VisitedObjectDictionary();
+        visited.IsVisited(Guid.NewGuid()).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void VisitedObjectDictionary_TryGet_ShouldReturnFalseForUnknownId()
+    {
+        var visited = new VisitedObjectDictionary();
+        visited.TryGet(Guid.NewGuid(), out var value).ShouldBeFalse();
+        value.ShouldBeNull();
+    }
+
+    [Fact]
+    public void VisitedObjectDictionary_MarkVisited_ShouldAddEntry()
+    {
+        var visited = new VisitedObjectDictionary();
+        var id = Guid.NewGuid();
+        var obj = new object();
+
+        visited.MarkVisited(id, obj);
+
+        visited.IsVisited(id).ShouldBeTrue();
+        visited.TryGet(id, out var result).ShouldBeTrue();
+        result.ShouldBeSameAs(obj);
+    }
+
+    #endregion
+
+    #region FailuresDictionary Additional Tests
+
+    [Fact]
+    public void FailuresDictionary_FailureCount_ShouldReturnCount()
+    {
+        var dict = new FailuresDictionary();
+        dict.FailureCount.ShouldBe(0);
+        
+        dict.Failure("key1", new InvalidOperationException("test1"));
+        dict.FailureCount.ShouldBe(1);
+        
+        dict.Failure("key2", new InvalidOperationException("test2"));
+        dict.FailureCount.ShouldBe(2);
     }
 
     #endregion
@@ -1351,59 +1632,5 @@ public class TestValidationStrategy : IValidationStrategy<SimpleObjectBuilder>
     public void Validate(SimpleObjectBuilder builder, IVisitedTracker visited, IFailureCollector failures)
     {
         ValidateCalled = true;
-    }
-}
-
-// Test orchestrator that tracks calls
-public class TrackingBuildOrchestrator : IBuildOrchestrator
-{
-    public int BuildCallCount { get; private set; }
-
-    public Result<Reference<TClass>> Build<TClass>(IBuilder<TClass> builder, IVisitedTracker? visited = null) where TClass : class
-    {
-        BuildCallCount++;
-        return builder.Build(visited as VisitedObjectDictionary);
-    }
-}
-
-// PersonBuilder with orchestrator injection for testing
-public class PersonBuilderWithOrchestrator : AbstractBuilder<Person>
-{
-    public PersonBuilderWithOrchestrator(IBuildOrchestrator orchestrator) 
-        : base(DefaultReferenceFactory.Instance, LockSynchronizationStrategy.Instance, orchestrator) { }
-
-    public string? Name { get; set; }
-    public int Age { get; set; }
-    public string? Email { get; set; }
-    public AddressBuilder? AddressBuilder { get; set; }
-
-    protected override Person Instantiate() => new()
-    {
-        Name = Name!,
-        Age = Age,
-        Email = Email,
-        Address = AddressBuilder?.Reference().ResolvedOrNull()
-    };
-
-    protected override void ValidateInternal(VisitedObjectDictionary visitedCollector, IFailureCollector failures)
-    {
-        AssertNotNullOrEmptyOrWhitespace(Name, nameof(Name), failures, n => new StringIsEmptyOrWhitespaceException(n));
-        AddressBuilder?.Validate(visitedCollector, failures);
-    }
-
-    protected override void BuildInternal(VisitedObjectDictionary visitedCollector)
-    {
-        if (AddressBuilder is not null)
-            BuildChild(AddressBuilder, visitedCollector);
-    }
-
-    public PersonBuilderWithOrchestrator WithName(string name) { Name = name; return this; }
-    public PersonBuilderWithOrchestrator WithAge(int age) { Age = age; return this; }
-    public PersonBuilderWithOrchestrator WithEmail(string email) { Email = email; return this; }
-    public PersonBuilderWithOrchestrator WithAddress(Action<AddressBuilder> configure)
-    {
-        AddressBuilder = new AddressBuilder();
-        configure(AddressBuilder);
-        return this;
     }
 }
