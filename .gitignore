@@ -17,3 +17,4 @@ doc/gen/
 _Scripts/logs/**
 **/test/*.xml
 TestResults*/
+**/coverage.cobertura.xml

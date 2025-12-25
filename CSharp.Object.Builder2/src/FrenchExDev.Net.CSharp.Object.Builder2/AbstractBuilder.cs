@@ -1,4 +1,5 @@
-﻿using FrenchExDev.Net.CSharp.Object.Result2;
+using FrenchExDev.Net.CSharp.Object.Result2;
+using System.Runtime.CompilerServices;
 
 namespace FrenchExDev.Net.CSharp.Object.Builder2;
 
@@ -31,7 +32,7 @@ public abstract class AbstractBuilder<TClass> : IBuilder<TClass>, IExistingInsta
     /// using the specified reference factory and default lock synchronization strategy.
     /// </summary>
     /// <param name="referenceFactory">The factory used to create references for built instances.</param>
-    protected AbstractBuilder(IReferenceFactory referenceFactory) 
+    protected AbstractBuilder(IReferenceFactory referenceFactory)
         : this(referenceFactory, LockSynchronizationStrategy.Instance) { }
 
     /// <summary>
@@ -112,22 +113,31 @@ public abstract class AbstractBuilder<TClass> : IBuilder<TClass>, IExistingInsta
     /// An optional dictionary tracking visited builders to detect and handle circular references.
     /// </param>
     /// <returns>
-    /// A <see cref="Result{T}"/> containing the reference to the built instance.
+    /// A <see cref="Result{T}"/> containing a <see cref="Reference{TClass}"/> to the built instance on success,
+    /// or a failure with validation errors. The reference may be unresolved if circular reference handling is in progress.
     /// </returns>
     public Result<Reference<TClass>> Build(VisitedObjectDictionary? visited = null)
     {
+        // fast-path when existing instance is provided
         if (_existing is not null)
-            return Result<Reference<TClass>>.Success(_reference.Resolve(_existing));
+        {
+            _reference.Resolve(_existing);
+            _buildResult = Result<TClass>.Success(_existing);
+            Interlocked.Exchange(ref _buildStatus, (int)BuildStatus.Built);
+            return Result<Reference<TClass>>.Success(_reference);
+        }
 
+        // fast-path when already built
         if (BuildStatus == BuildStatus.Built)
             return Result<Reference<TClass>>.Success(_reference);
 
+        // detect circular references - return unresolved reference to allow deferred resolution
         if (visited is not null && visited.TryGet(Id, out var v) && v is IBuilder<TClass> builder)
         {
             if (builder.ValidationStatus is ValidationStatus.NotValidated or ValidationStatus.Validating)
-                return Result<Reference<TClass>>.Success(_reference);
+                return Result<Reference<TClass>>.Success(_reference); // Return unresolved reference
             if (builder.BuildStatus is BuildStatus.Built or BuildStatus.Building)
-                return Result<Reference<TClass>>.Success(_reference);
+                return Result<Reference<TClass>>.Success(_reference); // Return reference (may or may not be resolved)
         }
 
         return _syncStrategy.Execute(_buildLock, () => BuildCore(visited));
@@ -137,7 +147,7 @@ public abstract class AbstractBuilder<TClass> : IBuilder<TClass>, IExistingInsta
     /// Core build logic executed within the synchronization context.
     /// </summary>
     /// <param name="visited">The dictionary tracking visited builders.</param>
-    /// <returns>A result containing the reference to the built instance.</returns>
+    /// <returns>A result containing the reference to the built instance on success, or a failure with validation errors.</returns>
     private Result<Reference<TClass>> BuildCore(VisitedObjectDictionary? visited)
     {
         if (BuildStatus == BuildStatus.Built)
@@ -156,11 +166,11 @@ public abstract class AbstractBuilder<TClass> : IBuilder<TClass>, IExistingInsta
         visited ??= [];
         var failuresCollector = CreateFailureCollector();
         Validate(visited, failuresCollector);
-        
+
         if (failuresCollector.HasFailures)
         {
             _buildResult = Result<TClass>.Failure(new BuildFailureException(failuresCollector));
-            return Result<Reference<TClass>>.Success(_reference);
+            return Result<Reference<TClass>>.Failure(new BuildFailureException(failuresCollector));
         }
 
         BuildInternal(visited);
@@ -176,62 +186,6 @@ public abstract class AbstractBuilder<TClass> : IBuilder<TClass>, IExistingInsta
     /// </summary>
     /// <returns>A new <see cref="FailuresDictionary"/> instance.</returns>
     protected virtual FailuresDictionary CreateFailureCollector() => new();
-
-    /// <summary>
-    /// Builds the instance and returns it, throwing an exception if the build fails.
-    /// </summary>
-    /// <param name="visitedCollector">
-    /// An optional dictionary tracking visited builders to detect and handle circular references.
-    /// </param>
-    /// <returns>The built instance of type <typeparamref name="TClass"/>.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the build results in an unknown state.</exception>
-    /// <exception cref="AggregateException">Thrown when the build fails with one or more validation errors.</exception>
-    public TClass BuildOrThrow(VisitedObjectDictionary? visitedCollector = null)
-    {
-        Build(visitedCollector);
-
-        return _syncStrategy.Execute(_buildLock, () =>
-        {
-            if (_buildResult is null)
-                throw new InvalidOperationException("Build resulted in an unknown state.");
-
-            if (_buildResult.Value.IsSuccess)
-                return _buildResult.Value.Value;
-
-            if (_buildResult.Value.TryGetException<BuildFailureException>(out var buildFailure))
-            {
-                var exceptions = ExtractExceptionsFromFailures(buildFailure!.Failures);
-                throw new AggregateException("Build failed with the following errors:", exceptions);
-            }
-
-            throw new InvalidOperationException("Build resulted in an unknown state.");
-        });
-    }
-
-    /// <summary>
-    /// Recursively extracts exceptions from a failure collector hierarchy.
-    /// </summary>
-    /// <param name="failures">The failure collector containing validation failures.</param>
-    /// <returns>A list of exceptions extracted from the failures.</returns>
-    private static List<Exception> ExtractExceptionsFromFailures(IFailureCollector failures)
-    {
-        var result = new List<Exception>();
-        if (failures is FailuresDictionary dict)
-        {
-            foreach (var kvp in dict)
-            {
-                foreach (var failure in kvp.Value)
-                {
-                    failure.Match(
-                        onException: ex => result.Add(ex),
-                        onMessage: msg => result.Add(new InvalidOperationException(msg)),
-                        onNested: nested => result.AddRange(ExtractExceptionsFromFailures(nested))
-                    );
-                }
-            }
-        }
-        return result;
-    }
 
     /// <summary>
     /// Called during the build process to perform additional build logic before instantiation.
@@ -386,4 +340,62 @@ public abstract class AbstractBuilder<TClass> : IBuilder<TClass>, IExistingInsta
     /// <param name="builder">A factory function to create the exception for the failure.</param>
     protected void Assert(Func<bool> predicate, string name, IFailureCollector failures, Func<string, Exception> builder)
         => ValidationAssertions.Assert(predicate, name, failures, builder);
+
+    /// <summary>
+    /// Ensures that a required reference type property has a value, throwing if it is null.
+    /// Use this method in <see cref="Instantiate"/> to safely access required properties.
+    /// </summary>
+    /// <typeparam name="TValue">The type of the property value.</typeparam>
+    /// <param name="value">The property value to check.</param>
+    /// <param name="propertyName">
+    /// The name of the property. Automatically captured from the argument expression.
+    /// </param>
+    /// <returns>The non-null value.</returns>
+    /// <exception cref="RequiredPropertyNotSetException">
+    /// Thrown when <paramref name="value"/> is <c>null</c>.
+    /// </exception>
+    /// <example>
+    /// <code>
+    /// protected override Person Instantiate() => new()
+    /// {
+    ///     Name = Require(Name),
+    ///     Address = AddressBuilder?.Reference().ResolvedOrNull()
+    /// };
+    /// </code>
+    /// </example>
+    protected TValue Require<TValue>(
+        TValue? value,
+        [CallerArgumentExpression(nameof(value))] string? propertyName = null) where TValue : class
+    {
+        return value ?? throw new RequiredPropertyNotSetException(propertyName ?? "Unknown");
+    }
+
+    /// <summary>
+    /// Ensures that a required nullable value type property has a value, throwing if it is null.
+    /// Use this method in <see cref="Instantiate"/> to safely access required nullable value type properties.
+    /// </summary>
+    /// <typeparam name="TValue">The underlying value type of the property.</typeparam>
+    /// <param name="value">The nullable property value to check.</param>
+    /// <param name="propertyName">
+    /// The name of the property. Automatically captured from the argument expression.
+    /// </param>
+    /// <returns>The non-null value.</returns>
+    /// <exception cref="RequiredPropertyNotSetException">
+    /// Thrown when <paramref name="value"/> is <c>null</c>.
+    /// </exception>
+    /// <example>
+    /// <code>
+    /// protected override Order Instantiate() => new()
+    /// {
+    ///     Quantity = Require(Quantity), // Quantity is int?
+    ///     Price = Require(Price)        // Price is decimal?
+    /// };
+    /// </code>
+    /// </example>
+    protected TValue Require<TValue>(
+        TValue? value,
+        [CallerArgumentExpression(nameof(value))] string? propertyName = null) where TValue : struct
+    {
+        return value ?? throw new RequiredPropertyNotSetException(propertyName ?? "Unknown");
+    }
 }

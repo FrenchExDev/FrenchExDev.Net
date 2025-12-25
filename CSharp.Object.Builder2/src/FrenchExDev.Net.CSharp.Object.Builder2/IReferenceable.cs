@@ -1,4 +1,4 @@
-﻿namespace FrenchExDev.Net.CSharp.Object.Builder2;
+namespace FrenchExDev.Net.CSharp.Object.Builder2;
 
 /// <summary>
 /// Defines a contract for objects that can provide a reference to themselves.

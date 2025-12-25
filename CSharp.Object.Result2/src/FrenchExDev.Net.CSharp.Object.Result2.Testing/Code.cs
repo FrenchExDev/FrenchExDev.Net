@@ -1,4 +1,4 @@
-﻿using FrenchExDev.Net.CSharp.Object.Result2;
+using FrenchExDev.Net.CSharp.Object.Result2;
 
 namespace FrenchExDev.Net.CSharp.Object.Result2.Testing;
 

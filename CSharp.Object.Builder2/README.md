@@ -12,10 +12,8 @@ A robust, thread-safe implementation of the **Builder Pattern** for .NET, design
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Core Concepts](#core-concepts)
-  - [AbstractBuilder](#abstractbuilder)
-  - [Reference](#reference)
-  - [Validation](#validation)
-  - [Circular References](#circular-references)
+- [Working with Results](#working-with-results)
+- [Circular References](#circular-references)
 - [API Reference](#api-reference)
 - [Advanced Usage](#advanced-usage)
 - [Thread Safety](#thread-safety)
@@ -31,6 +29,7 @@ Builder2 provides a powerful abstraction for constructing complex object graphs 
 - **Thread safety** - Safe concurrent builds of the same builder
 - **Deferred resolution** - Reference objects before they're built
 - **Fluent API** - Clean, readable builder configuration
+- **Result Pattern** - No exceptions for expected failures
 
 ## Features
 
@@ -43,6 +42,8 @@ Builder2 provides a powerful abstraction for constructing complex object graphs 
 | 📦 **Deferred Resolution** | Reference objects that haven't been built yet |
 | 🎯 **Type-Safe** | Full generic support with compile-time safety |
 | 🧩 **Extensible** | Custom synchronization and reference strategies |
+| 📋 **Result Pattern** | Explicit success/failure handling without exceptions |
+| 🚂 **Railway Oriented** | Composable operations with `Map`, `Bind`, and `Match` |
 
 ## Installation
 
@@ -87,7 +88,7 @@ public class PersonBuilder : AbstractBuilder<Person>
     // Required: Define how to create the instance
     protected override Person Instantiate() => new()
     {
-        Name = Name!,
+        Name = Require(Name),  // Safe access - throws if null
         Age = Age,
         Address = AddressBuilder?.Reference().ResolvedOrNull(),
         Friends = [.. Friends.AsReferenceList().AsEnumerable()]
@@ -132,41 +133,38 @@ public class PersonBuilder : AbstractBuilder<Person>
 ### 3. Use the Builder
 
 ```csharp
-// Simple build
-var person = new PersonBuilder()
+// Build and handle with functional style
+new PersonBuilder()
     .WithName("Alice")
     .WithAge(30)
-    .WithAddress(a => a
-        .WithStreet("123 Main St")
-        .WithCity("Paris"))
-    .BuildOrThrow();
+    .WithAddress(a => a.WithStreet("123 Main St").WithCity("Paris"))
+    .Build()
+    .Map(r => r.Resolved())
+    .Match(
+        onSuccess: person => Console.WriteLine($"Created: {person.Name}"),
+        onFailure: ex => Console.WriteLine($"Failed: {ex.Message}")
+    );
 
 // Build with nested objects
-var alice = new PersonBuilder()
+new PersonBuilder()
     .WithName("Alice")
     .WithAge(30)
     .WithFriend(f => f.WithName("Bob").WithAge(25))
     .WithFriend(f => f.WithName("Charlie").WithAge(28))
-    .BuildOrThrow();
-
-Console.WriteLine(alice.Friends.Count); // 2
+    .Build()
+    .Map(r => r.Resolved())
+    .IfSuccess(person => Console.WriteLine($"{person.Name} has {person.Friends.Count} friends"));
 ```
 
 ## Core Concepts
 
 ### AbstractBuilder
 
-The base class for all builders. Provides:
-
-- **Build lifecycle management** (NotBuilding → Building → Built)
-- **Validation lifecycle** (NotValidated → Validating → Validated)
-- **Thread-safe operations**
-- **Reference management**
+The base class for all builders:
 
 ```csharp
 public abstract class AbstractBuilder<TClass> : IBuilder<TClass>
 {
-    // Override these methods in your builder:
     protected abstract TClass Instantiate();
     protected virtual void ValidateInternal(...) { }
     protected virtual void BuildInternal(...) { }
@@ -177,10 +175,9 @@ public abstract class AbstractBuilder<TClass> : IBuilder<TClass>
 
 | Method | Description |
 |--------|-------------|
-| `Build()` | Builds and returns a `Result<Reference<TClass>>` |
-| `BuildOrThrow()` | Builds or throws `AggregateException` on failure |
+| `Build()` | Returns `Result<Reference<TClass>>` - success with reference or failure with errors |
 | `Validate()` | Validates without building |
-| `Reference()` | Gets the deferred reference |
+| `Reference()` | Gets the deferred reference (can be obtained before building) |
 | `Existing()` | Use an existing instance instead of building |
 
 ### Reference
@@ -194,15 +191,11 @@ var builder = new PersonBuilder().WithName("Alice").WithAge(30);
 var reference = builder.Reference();
 Console.WriteLine(reference.IsResolved); // false
 
-// Build the object
+// Build resolves the reference
 builder.Build();
-
-// Reference is now resolved
 Console.WriteLine(reference.IsResolved); // true
 Console.WriteLine(reference.Resolved().Name); // "Alice"
 ```
-
-#### Reference Methods
 
 | Method | Description |
 |--------|-------------|
@@ -213,29 +206,19 @@ Console.WriteLine(reference.Resolved().Name); // "Alice"
 
 ### Validation
 
-Built-in validation assertions for common scenarios:
+Built-in validation assertions:
 
 ```csharp
 protected override void ValidateInternal(
     VisitedObjectDictionary visited, 
     IFailureCollector failures)
 {
-    // String validations
     AssertNotNullOrEmptyOrWhitespace(Name, nameof(Name), failures, 
         n => new ArgumentException(n));
-    
-    AssertNotEmptyOrWhitespace(Description, nameof(Description), failures,
-        n => new ArgumentException(n)); // null is OK
-    
-    // Null checks
     AssertNotNull(RequiredObject, nameof(RequiredObject), failures,
         n => new ArgumentNullException(n));
-    
-    // Collection validations
     AssertNotNullNotEmptyCollection(Items, nameof(Items), failures,
         n => new ArgumentException(n));
-    
-    // Custom predicates
     Assert(() => Age < 0, nameof(Age), failures,
         n => new ArgumentOutOfRangeException(n));
     
@@ -245,20 +228,211 @@ protected override void ValidateInternal(
 }
 ```
 
-#### Failure Types
+### Required Properties in Instantiate
+
+Use the `Require` helper method to safely access required properties in `Instantiate()`. If a property is null, it throws `RequiredPropertyNotSetException` with the property name automatically captured:
 
 ```csharp
-// Exception-based failure
-Failure.FromException(new ArgumentException("Invalid"));
+public class OrderBuilder : AbstractBuilder<Order>
+{
+    public string? CustomerId { get; set; }
+    public int? Quantity { get; set; }
+    public decimal? Price { get; set; }
 
-// Message-based failure
-Failure.FromMessage("Name is required");
+    protected override Order Instantiate() => new()
+    {
+        CustomerId = Require(CustomerId),  // Throws if null
+        Quantity = Require(Quantity),       // Works with nullable value types
+        Price = Require(Price)
+    };
 
-// Nested failures (for child validation)
-Failure.FromNested(childFailures);
+    // Fluent API...
+}
+
+// Usage - throws RequiredPropertyNotSetException with PropertyName = "CustomerId"
+var builder = new OrderBuilder().WithQuantity(10).WithPrice(99.99m);
+builder.Build(); // Throws: "Required property 'CustomerId' was not set before instantiation."
 ```
 
-### Circular References
+The `Require` method:
+- Works with both reference types and nullable value types
+- Automatically captures the property name using `CallerArgumentExpression`
+- Throws `RequiredPropertyNotSetException` (inherits from `InvalidOperationException`)
+- Provides clear error messages for debugging
+
+## Working with Results
+
+Builder2 returns `Result<Reference<TClass>>` which integrates with Result2 for functional error handling.
+
+### Basic Result Handling
+
+```csharp
+var result = new PersonBuilder()
+    .WithName("Alice")
+    .WithAge(30)
+    .Build();
+
+// Option 1: Check IsSuccess
+if (result.IsSuccess)
+{
+    var person = result.Value.Resolved();
+    Console.WriteLine(person.Name);
+}
+
+// Option 2: TryGetSuccessValue
+if (result.TryGetSuccessValue(out var reference))
+{
+    Console.WriteLine(reference.Resolved().Name);
+}
+
+// Option 3: TryGetException
+if (result.TryGetException<BuildFailureException>(out var failure))
+{
+    foreach (var (field, errors) in failure.Failures)
+        Console.WriteLine($"{field}: {errors.Count} errors");
+}
+```
+
+### Functional Composition
+
+#### Map - Transform Values
+
+```csharp
+var nameResult = new PersonBuilder()
+    .WithName("Alice")
+    .WithAge(30)
+    .Build()
+    .Map(reference => reference.Resolved())  // Result<Reference<Person>> → Result<Person>
+    .Map(person => person.Name);              // Result<Person> → Result<string>
+
+nameResult.IfSuccess(name => Console.WriteLine(name)); // "Alice"
+```
+
+#### Bind - Chain Fallible Operations
+
+```csharp
+Result<Person> ValidatePerson(Person p) =>
+    p.Age >= 0 ? Result<Person>.Success(p) 
+               : Result<Person>.Failure(new ArgumentException("Invalid age"));
+
+Result<string> GetGreeting(Person p) =>
+    Result<string>.Success($"Hello, {p.Name}!");
+
+var greeting = new PersonBuilder()
+    .WithName("Alice")
+    .WithAge(30)
+    .Build()
+    .Map(r => r.Resolved())
+    .Bind(ValidatePerson)
+    .Bind(GetGreeting);
+
+greeting.IfSuccess(msg => Console.WriteLine(msg)); // "Hello, Alice!"
+```
+
+#### Match - Handle Both Cases
+
+```csharp
+new PersonBuilder()
+    .WithName("Alice")
+    .WithAge(30)
+    .Build()
+    .Map(r => r.Resolved())
+    .Match(
+        onSuccess: person => 
+        {
+            Console.WriteLine($"Built: {person.Name}");
+            SaveToDatabase(person);
+        },
+        onFailure: ex => 
+        {
+            Logger.Error("Build failed", ex);
+        }
+    );
+```
+
+#### IfSuccess / IfException
+
+```csharp
+builder.Build()
+    .Map(r => r.Resolved())
+    .IfSuccess(person => Console.WriteLine(person.Name))
+    .IfException(ex => Logger.Warn(ex.Message));
+
+// Typed exception handling
+result.IfException<BuildFailureException>(ex => 
+{
+    foreach (var (field, failures) in ex.Failures)
+        Console.WriteLine($"Error on {field}");
+});
+```
+
+### Async Operations
+
+```csharp
+var result = await new PersonBuilder()
+    .WithName("Alice")
+    .WithAge(30)
+    .Build()
+    .MapAsync(async r => 
+    {
+        var person = r.Resolved();
+        await _repository.SaveAsync(person);
+        return person;
+    })
+    .BindAsync(async person => 
+    {
+        var enriched = await _enrichmentService.EnrichAsync(person);
+        return enriched is not null
+            ? Result<Person>.Success(enriched)
+            : Result<Person>.Failure(new Exception("Enrichment failed"));
+    });
+
+await result.MatchAsync(
+    onSuccess: async person => await NotifyAsync(person),
+    onFailure: async ex => await LogErrorAsync(ex)
+);
+```
+
+### Processing Pipeline Example
+
+```csharp
+public async Task<Result<OrderConfirmation>> ProcessOrderAsync(OrderRequest request)
+{
+    return await new OrderBuilder()
+        .WithCustomerId(request.CustomerId)
+        .WithItems(request.Items)
+        .Build()
+        .Map(r => r.Resolved())
+        .BindAsync(ValidateOrderAsync)
+        .BindAsync(CheckInventoryAsync)
+        .BindAsync(ProcessPaymentAsync)
+        .MapAsync(async order =>
+        {
+            await _repository.SaveAsync(order);
+            return new OrderConfirmation(order.Id, order.Total);
+        });
+}
+```
+
+### Result Methods Reference
+
+| Method | Description |
+|--------|-------------|
+| `IsSuccess` | Boolean indicating success/failure |
+| `Value` | Gets success value (throws if failure) |
+| `TryGetSuccessValue(out T)` | Safe value access |
+| `TryGetException<T>(out T)` | Safe typed exception access |
+| `Map<T>(Func)` | Transform success value |
+| `MapAsync<T>(Func)` | Async transformation |
+| `Bind<T>(Func)` | Chain result-producing operations |
+| `BindAsync<T>(Func)` | Async chaining |
+| `Match(onSuccess, onFailure)` | Handle both cases |
+| `MatchAsync(...)` | Async match |
+| `IfSuccess(Action)` | Handle success only |
+| `IfException(Action)` | Handle failure only |
+| `IfException<T>(Action)` | Typed failure handler |
+
+## Circular References
 
 Handle bidirectional relationships using `Reference<T>`:
 
@@ -275,24 +449,18 @@ public class Employee
     public Department? Department { get; set; }
 }
 
-// Builder with circular reference
-public class DepartmentBuilder : AbstractBuilder<Department>
-{
-    public BuilderList<Employee, EmployeeBuilder> Employees { get; } = [];
-    
-    // ... implementation
-}
-
 public class EmployeeBuilder : AbstractBuilder<Employee>
 {
+    public string? Name { get; set; }
     public Reference<Department>? DepartmentRef { get; set; }
     
     protected override Employee Instantiate() => new()
     {
-        Name = Name!,
+        Name = Require(Name),
         Department = DepartmentRef?.ResolvedOrNull()
     };
     
+    public EmployeeBuilder WithName(string name) { Name = name; return this; }
     public EmployeeBuilder WithDepartment(Reference<Department> dept)
     {
         DepartmentRef = dept;
@@ -300,15 +468,26 @@ public class EmployeeBuilder : AbstractBuilder<Employee>
     }
 }
 
-// Usage: Employees reference their department
+// Usage
 var deptBuilder = new DepartmentBuilder().WithName("Engineering");
 deptBuilder
     .WithEmployee(e => e.WithName("Alice").WithDepartment(deptBuilder.Reference()))
     .WithEmployee(e => e.WithName("Bob").WithDepartment(deptBuilder.Reference()));
 
-var dept = deptBuilder.BuildOrThrow();
-// dept.Employees[0].Department == dept ✓
+deptBuilder.Build()
+    .Map(r => r.Resolved())
+    .IfSuccess(dept => 
+    {
+        Console.WriteLine(dept.Employees[0].Department == dept); // true
+    });
 ```
+
+**How it works:**
+1. `deptBuilder.Reference()` returns an unresolved reference
+2. Employees store this reference during configuration
+3. During build, `ResolvedOrNull()` returns `null` (not yet resolved)
+4. After department instantiation, `Resolve()` is called
+5. All employee references now point to the built department
 
 ## API Reference
 
@@ -317,11 +496,9 @@ var dept = deptBuilder.BuildOrThrow();
 | Interface | Description |
 |-----------|-------------|
 | `IBuilder<T>` | Main builder contract |
-| `IBuildable<T>` | Can build objects |
+| `IBuildable<T>` | Can build objects (returns `Result<Reference<T>>`) |
 | `IValidatable` | Can be validated |
 | `IReferenceable<T>` | Provides references |
-| `IIdentifiable` | Has unique ID |
-| `IExistingInstanceProvider<T>` | Can use existing instances |
 
 ### Classes
 
@@ -331,9 +508,7 @@ var dept = deptBuilder.BuildOrThrow();
 | `Reference<T>` | Deferred reference wrapper |
 | `BuilderList<T, TBuilder>` | List of builders |
 | `BuilderListWithFactory<T, TBuilder>` | List with custom factory |
-| `ReferenceList<T>` | List of references |
 | `FailuresDictionary` | Validation failure collector |
-| `VisitedObjectDictionary` | Tracks visited objects |
 
 ### Synchronization Strategies
 
@@ -362,14 +537,14 @@ public class MyBuilder : AbstractBuilder<MyClass>
 var existing = new Person { Name = "Alice", Age = 30 };
 var builder = new PersonBuilder().Existing(existing);
 
-var result = builder.Build();
-Console.WriteLine(result.Value.Resolved() == existing); // true
+builder.Build()
+    .Map(r => r.Resolved())
+    .IfSuccess(person => Console.WriteLine(person == existing)); // true
 ```
 
 ### Builder Lists with Factory
 
 ```csharp
-// For dependency injection scenarios
 var list = new BuilderListWithFactory<Person, PersonBuilder>(
     () => serviceProvider.GetRequiredService<PersonBuilder>());
 
@@ -377,40 +552,11 @@ list.New(b => b.WithName("Alice"));
 list.New(b => b.WithName("Bob"));
 ```
 
-### Handling Build Failures
-
-```csharp
-var builder = new PersonBuilder().WithAge(-1); // Invalid
-
-// Option 1: Check result
-var result = builder.Build();
-if (!result.Value.IsResolved)
-{
-    // Handle failure
-}
-
-// Option 2: Catch exception
-try
-{
-    var person = builder.BuildOrThrow();
-}
-catch (AggregateException ex)
-{
-    foreach (var inner in ex.InnerExceptions)
-    {
-        Console.WriteLine(inner.Message);
-    }
-}
-```
-
 ## Thread Safety
-
-Builder2 is designed for concurrent use:
 
 ```csharp
 var builder = new PersonBuilder().WithName("Alice").WithAge(30);
 
-// Multiple threads can safely call Build()
 var tasks = Enumerable.Range(0, 100)
     .Select(_ => Task.Run(() => builder.Build()))
     .ToArray();
@@ -418,8 +564,13 @@ var tasks = Enumerable.Range(0, 100)
 await Task.WhenAll(tasks);
 
 // All tasks receive the same instance
-var results = tasks.Select(t => t.Result.Value.Resolved());
-Console.WriteLine(results.Distinct().Count()); // 1
+var people = tasks
+    .Select(t => t.Result)
+    .Where(r => r.IsSuccess)
+    .Select(r => r.Value.Resolved())
+    .Distinct();
+
+Console.WriteLine(people.Count()); // 1
 ```
 
 ### Guarantees
@@ -440,363 +591,12 @@ Console.WriteLine(results.Distinct().Count()); // 1
 | BuilderList | 100% |
 | Reference | 100% |
 | Validation | 100% |
-| Failures | 100% |
 
 ### Running Tests
 
 ```bash
 cd CSharp.Object.Builder2
 dotnet test
-```
-
-### Coverage Report
-
-```bash
-dotnet test --collect:"XPlat Code Coverage"
-reportgenerator -reports:"**/coverage.cobertura.xml" -targetdir:"coverage"
-```
-
-## Sequence Diagrams
-
-### Complex Build Scenario: Department with Circular Employee References
-
-This diagram illustrates building a `Department` with a `Manager` and `Employees`, where each employee has a circular reference back to the department.
-
-**Test Scenario:**
-```csharp
-var deptBuilder = new DepartmentBuilder().WithName("Engineering");
-deptBuilder
-    .WithManager(m => m.WithName("Alice").WithDepartment(deptBuilder.Reference()))
-    .WithEmployee(e => e.WithName("Bob").WithDepartment(deptBuilder.Reference()))
-    .WithEmployee(e => e.WithName("Charlie").WithDepartment(deptBuilder.Reference()));
-
-var dept = deptBuilder.BuildOrThrow();
-```
-
-### Sequence Diagram: Full Build Lifecycle
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant Client
-    participant DeptBuilder as DepartmentBuilder
-    participant DeptRef as Reference<Department>
-    participant Visited as VisitedObjectDictionary
-    participant Failures as FailuresDictionary
-    participant MgrBuilder as EmployeeBuilder (Manager)
-    participant MgrRef as Reference<Employee>
-    participant EmpBuilder1 as EmployeeBuilder (Bob)
-    participant EmpBuilder2 as EmployeeBuilder (Charlie)
-    participant SyncStrategy as LockSynchronizationStrategy
-
-    Note over Client,SyncStrategy: Phase 1: Configuration
-    Client->>DeptBuilder: new DepartmentBuilder()
-    DeptBuilder->>DeptRef: Create Reference<Department>
-    Client->>DeptBuilder: WithName("Engineering")
-    Client->>DeptBuilder: WithManager(configure)
-    DeptBuilder->>MgrBuilder: new EmployeeBuilder()
-    MgrBuilder->>MgrRef: Create Reference<Employee>
-    Client->>MgrBuilder: WithName("Alice")
-    Client->>MgrBuilder: WithDepartment(deptBuilder.Reference())
-    MgrBuilder-->>MgrBuilder: Store DeptRef
-    
-    Client->>DeptBuilder: WithEmployee(configure) [Bob]
-    DeptBuilder->>EmpBuilder1: new EmployeeBuilder()
-    Client->>EmpBuilder1: WithName("Bob").WithDepartment(deptRef)
-    
-    Client->>DeptBuilder: WithEmployee(configure) [Charlie]
-    DeptBuilder->>EmpBuilder2: new EmployeeBuilder()
-    Client->>EmpBuilder2: WithName("Charlie").WithDepartment(deptRef)
-
-    Note over Client,SyncStrategy: Phase 2: Build Invocation
-    Client->>DeptBuilder: BuildOrThrow()
-    DeptBuilder->>DeptBuilder: Build(visited=null)
-    
-    Note over Client,SyncStrategy: Phase 3: Lock Acquisition
-    DeptBuilder->>SyncStrategy: Execute(_buildLock, BuildCore)
-    SyncStrategy-->>DeptBuilder: Acquire lock
-    DeptBuilder->>DeptBuilder: BuildStatus = Building
-
-    Note over Client,SyncStrategy: Phase 4: Validation
-    DeptBuilder->>Visited: new VisitedObjectDictionary()
-    DeptBuilder->>Failures: new FailuresDictionary()
-    DeptBuilder->>DeptBuilder: Validate(visited, failures)
-    
-    rect rgba(173, 216, 230, 0.3)
-        Note over DeptBuilder,Failures: DepartmentBuilder.ValidateInternal()
-        DeptBuilder->>Visited: MarkVisited(DeptBuilder.Id, this)
-        DeptBuilder->>DeptBuilder: ValidationStatus = Validating
-        DeptBuilder->>DeptBuilder: AssertNotNullOrEmptyOrWhitespace(Name)
-        DeptBuilder->>MgrBuilder: Validate(visited, failures)
-        
-        rect rgba(144, 238, 144, 0.3)
-            Note over MgrBuilder,Failures: EmployeeBuilder.ValidateInternal() [Manager]
-            MgrBuilder->>Visited: MarkVisited(MgrBuilder.Id, this)
-            MgrBuilder->>MgrBuilder: ValidationStatus = Validating
-            MgrBuilder->>MgrBuilder: AssertNotNullOrEmptyOrWhitespace(Name)
-            MgrBuilder->>MgrBuilder: ValidationStatus = Validated
-        end
-        
-        DeptBuilder->>DeptBuilder: ValidateListInternal(Employees)
-        
-        loop For each Employee in Employees
-            DeptBuilder->>EmpBuilder1: Validate(visited, itemFailures)
-            rect rgba(255, 182, 193, 0.3)
-                Note over EmpBuilder1: EmployeeBuilder.ValidateInternal() [Bob]
-                EmpBuilder1->>Visited: MarkVisited(EmpBuilder1.Id, this)
-                EmpBuilder1->>EmpBuilder1: ValidationStatus = Validating
-                EmpBuilder1->>EmpBuilder1: AssertNotNullOrEmptyOrWhitespace(Name)
-                EmpBuilder1->>EmpBuilder1: ValidationStatus = Validated
-            end
-            
-            DeptBuilder->>EmpBuilder2: Validate(visited, itemFailures)
-            rect rgba(255, 255, 150, 0.3)
-                Note over EmpBuilder2: EmployeeBuilder.ValidateInternal() [Charlie]
-                EmpBuilder2->>Visited: MarkVisited(EmpBuilder2.Id, this)
-                EmpBuilder2->>EmpBuilder2: ValidationStatus = Validating
-                EmpBuilder2->>EmpBuilder2: AssertNotNullOrEmptyOrWhitespace(Name)
-                EmpBuilder2->>EmpBuilder2: ValidationStatus = Validated
-            end
-        end
-        
-        DeptBuilder->>DeptBuilder: ValidationStatus = Validated
-    end
-
-    Note over Client,SyncStrategy: Phase 5: Build Children
-    DeptBuilder->>DeptBuilder: BuildInternal(visited)
-    
-    rect rgba(144, 238, 144, 0.3)
-        Note over DeptBuilder,MgrRef: Build Manager
-        DeptBuilder->>MgrBuilder: BuildChild(ManagerBuilder, visited)
-        MgrBuilder->>MgrBuilder: Build(visited)
-        Note over MgrBuilder: Already validated, skip validation
-        MgrBuilder->>MgrBuilder: BuildInternal(visited)
-        MgrBuilder->>MgrBuilder: Instantiate()
-        MgrBuilder-->>MgrBuilder: Employee { Name="Alice", Department=deptRef.ResolvedOrNull() }
-        Note over MgrBuilder: Department not yet resolved → null
-        MgrBuilder->>MgrRef: Resolve(employee)
-        MgrBuilder->>MgrBuilder: BuildStatus = Built
-    end
-    
-    rect rgba(255, 182, 193, 0.3)
-        Note over DeptBuilder,EmpBuilder2: Build Employees List
-        DeptBuilder->>DeptBuilder: BuildList(Employees, visited)
-        
-        DeptBuilder->>EmpBuilder1: Build(visited)
-        EmpBuilder1->>EmpBuilder1: Instantiate()
-        EmpBuilder1-->>EmpBuilder1: Employee { Name="Bob", Department=null }
-        EmpBuilder1->>EmpBuilder1: Reference().Resolve(employee)
-        EmpBuilder1->>EmpBuilder1: BuildStatus = Built
-        
-        DeptBuilder->>EmpBuilder2: Build(visited)
-        EmpBuilder2->>EmpBuilder2: Instantiate()
-        EmpBuilder2-->>EmpBuilder2: Employee { Name="Charlie", Department=null }
-        EmpBuilder2->>EmpBuilder2: Reference().Resolve(employee)
-        EmpBuilder2->>EmpBuilder2: BuildStatus = Built
-    end
-
-    Note over Client,SyncStrategy: Phase 6: Instantiate Department
-    DeptBuilder->>DeptBuilder: Instantiate()
-    DeptBuilder-->>DeptBuilder: Department { Name, Manager=MgrRef.Resolved(), Employees=[...] }
-    DeptBuilder->>DeptRef: Resolve(department)
-    
-    Note over DeptRef,EmpBuilder2: 🔄 Circular references now resolved!
-    Note over DeptRef: All Employee.Department references<br/>now point to the resolved Department
-    
-    DeptBuilder->>DeptBuilder: BuildStatus = Built
-    DeptBuilder->>DeptBuilder: _buildResult = Success(department)
-    
-    SyncStrategy-->>DeptBuilder: Release lock
-    DeptBuilder-->>Client: Return department
-
-    Note over Client,SyncStrategy: Phase 7: Result
-    Client->>Client: dept.Manager.Department == dept ✓
-    Client->>Client: dept.Employees[0].Department == dept ✓
-```
-
-### State Diagram: Builder Lifecycle
-
-```mermaid
-stateDiagram-v2
-    [*] --> NotBuilding: new Builder()
-    
-    state "Build Status" as BuildStatus {
-        NotBuilding --> Building: Build() called
-        Building --> Built: Instantiate() success
-        Building --> NotBuilding: Validation failed
-    }
-    
-    state "Validation Status" as ValidationStatus {
-        NotValidated --> Validating: Validate() called
-        Validating --> Validated: ValidateInternal() complete
-    }
-    
-    state "Reference Status" as ReferenceStatus {
-        Unresolved --> Resolved: Resolve(instance)
-        Resolved --> Resolved: Resolve() ignored (idempotent)
-    }
-    
-    Built --> [*]: Result available
-```
-
-### Class Diagram: Builder Components
-
-```mermaid
-classDiagram
-    class AbstractBuilder~TClass~ {
-        -Guid _guid
-        -Result~TClass~ _buildResult
-        -int _buildStatus
-        -int _validationStatus
-        -Reference~TClass~ _reference
-        -TClass _existing
-        -object _buildLock
-        -object _validateLock
-        -ISynchronizationStrategy _syncStrategy
-        +Guid Id
-        +TClass Result
-        +BuildStatus BuildStatus
-        +ValidationStatus ValidationStatus
-        +Reference~TClass~ Reference()
-        +bool HasExisting
-        +TClass ExistingInstance
-        +Existing(TClass instance) AbstractBuilder
-        +Build(VisitedObjectDictionary) Result~Reference~
-        +BuildOrThrow(VisitedObjectDictionary) TClass
-        +Validate(VisitedObjectDictionary, IFailureCollector)
-        #BuildCore(VisitedObjectDictionary) Result~Reference~
-        #BuildInternal(VisitedObjectDictionary)*
-        #ValidateInternal(VisitedObjectDictionary, IFailureCollector)*
-        #Instantiate()* TClass
-        #BuildChild~T~(IBuilder, VisitedObjectDictionary) Result
-        #BuildList~TBuilder,TModel~(BuilderList, VisitedObjectDictionary)
-        #ValidateListInternal~T,TBuilder~(BuilderList, string, VisitedObjectDictionary, IFailureCollector)
-    }
-
-    class Reference~TClass~ {
-        -TClass _instance
-        -object _resolveLock
-        -List~Action~ _onResolve
-        +TClass Instance
-        +bool IsResolved
-        +Resolve(TClass instance) Reference
-        +Resolved() TClass
-        +ResolvedOrNull() TClass
-        +OnResolve(Action) Reference
-    }
-
-    class BuilderList~TClass,TBuilder~ {
-        +AsReferenceList() ReferenceList
-        +New(Action) BuilderList
-        +BuildSuccess() List~TClass~
-        +ValidateFailures() List~FailuresDictionary~
-    }
-
-    class FailuresDictionary {
-        +bool HasFailures
-        +int FailureCount
-        +AddFailure(string, Failure) IFailureCollector
-        +Failure(string, Failure) FailuresDictionary
-    }
-
-    class VisitedObjectDictionary {
-        +MarkVisited(Guid, object)
-        +IsVisited(Guid) bool
-        +TryGet(Guid, out object) bool
-    }
-
-    class ISynchronizationStrategy {
-        <<interface>>
-        +Execute(object, Action)
-        +Execute~T~(object, Func~T~) T
-    }
-
-    class LockSynchronizationStrategy {
-        +Instance LockSynchronizationStrategy$
-        +Execute(object, Action)
-        +Execute~T~(object, Func~T~) T
-    }
-
-    AbstractBuilder --> Reference : creates
-    AbstractBuilder --> ISynchronizationStrategy : uses
-    AbstractBuilder --> FailuresDictionary : collects failures
-    AbstractBuilder --> VisitedObjectDictionary : tracks visits
-    AbstractBuilder --> BuilderList : manages children
-    ISynchronizationStrategy <|.. LockSynchronizationStrategy
-```
-
-### Flowchart: Build Decision Tree
-
-```mermaid
-flowchart TD
-    A[Build Called] --> B{Has Existing?}
-    B -->|Yes| C[Resolve Reference with Existing]
-    C --> D[Return Success]
-    
-    B -->|No| E{Already Built?}
-    E -->|Yes| F[Return Existing Reference]
-    
-    E -->|No| G{In Visited & Building/Validating?}
-    G -->|Yes| H[Return Unresolved Reference]
-    H --> I[Circular Reference Handled]
-    
-    G -->|No| J[Acquire Build Lock]
-    J --> K[Set Status = Building]
-    K --> L[Create FailuresDictionary]
-    L --> M[Validate]
-    
-    M --> N{Has Failures?}
-    N -->|Yes| O[Store Failure Result]
-    O --> P[Return Reference Unresolved]
-    
-    N -->|No| Q[BuildInternal - Build Children]
-    Q --> R[Instantiate]
-    R --> S[Store Success Result]
-    S --> T[Set Status = Built]
-    T --> U[Resolve Reference]
-    U --> V[Release Lock]
-    V --> W[Return Success with Reference]
-    
-    B[Build Called] --> X[Already Built]
-    X --> Y{Circular Reference?}
-    Y -->|Yes| Z[Handle Circular Reference]
-    Z --> W
-    W --> AA[Return Success with Reference]
-    
-    style A fill:#e1f5fe
-    style D fill:#c8e6c9
-    style F fill:#c8e6c9
-    style I fill:#fff9c4
-    style P fill:#ffcdd2
-    style W fill:#c8e6c9
-```
-
-### Flowchart: Validation Flow
-
-```mermaid
-flowchart TD
-    A[Validate Called] --> B{Status == Validated<br/>or Validating?}
-    B -->|Yes| C[Skip - Already Processed]
-    
-    B -->|No| D[Acquire Validate Lock]
-    D --> E{Double-Check Status}
-    E -->|Already Done| C
-    
-    E -->|Not Done| F[Mark as Visited]
-    F --> G[Set Status = Validating]
-    G --> H[ValidateInternal]
-    
-    H --> I[Run Assertions]
-    I --> J[Validate Child Builders]
-    J --> K[Validate Builder Lists]
-    
-    K --> L[Set Status = Validated]
-    L --> M[Release Lock]
-    M --> N[Return]
-    
-    style A fill:#e1f5fe
-    style C fill:#fff9c4
-    style N fill:#c8e6c9
 ```
 
 ## Architecture
@@ -814,6 +614,7 @@ flowchart TD
 │                   AbstractBuilder<T>                         │
 │  ┌───────────────────────────────────────────────────────┐   │
 │  │ Build() → Validate() → BuildInternal() → Instantiate()│   │
+│  │ Returns Result<Reference<T>> for deferred resolution  │   │
 │  └───────────────────────────────────────────────────────┘   │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────────────┐     │
 │  │ Reference<T>│ │ BuildStatus │ │ValidationStatus     │     │
@@ -826,27 +627,6 @@ flowchart TD
      │BuilderList  │ │ Failure   │ │ISyncStrategy│
      │<T,TBuilder> │ │Dictionary │ │             │
      └─────────────┘ └───────────┘ └─────────────┘
-```
-
-## Project Structure
-
-```
-CSharp.Object.Builder2/
-├── src/
-│   ├── FrenchExDev.Net.CSharp.Object.Builder2/
-│   │   ├── AbstractBuilder.cs      # Core builder base class
-│   │   ├── Reference.cs            # Deferred reference
-│   │   ├── BuilderList.cs          # Builder collections
-│   │   ├── Failure.cs              # Failure types
-│   │   ├── ValidationAssertions.cs # Validation helpers
-│   │   └── ...
-│   └── FrenchExDev.Net.CSharp.Object.Builder2.Testing/
-│       └── ...                     # Test utilities
-├── test/
-│   └── FrenchExDev.Net.CSharp.Object.Builder2.Tests/
-│       └── Tests.cs                # 111 unit tests
-├── README.md
-└── LICENSE.md
 ```
 
 ## License

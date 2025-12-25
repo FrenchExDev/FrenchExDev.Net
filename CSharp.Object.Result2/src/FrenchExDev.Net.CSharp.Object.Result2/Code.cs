@@ -1,4 +1,4 @@
-﻿namespace FrenchExDev.Net.CSharp.Object.Result2;
+namespace FrenchExDev.Net.CSharp.Object.Result2;
 
 /// <summary>
 /// Represents the outcome of an operation that may succeed or fail.

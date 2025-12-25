@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\CSharp.Object.Builder\src\FrenchExDev.Net.CSharp.Object.Builder\FrenchExDev.Net.CSharp.Object.Builder.csproj" />
+    <ProjectReference Include="..\..\..\CSharp.Object.Builder2\src\FrenchExDev.Net.CSharp.Object.Builder2\FrenchExDev.Net.CSharp.Object.Builder2.csproj" />
     <ProjectReference Include="..\FrenchExDev.Net.Packer.Bundle\FrenchExDev.Net.Packer.Bundle.csproj" />
   </ItemGroup>
 

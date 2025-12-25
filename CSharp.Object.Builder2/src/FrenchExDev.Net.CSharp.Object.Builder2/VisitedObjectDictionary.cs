@@ -1,4 +1,4 @@
-﻿namespace FrenchExDev.Net.CSharp.Object.Builder2;
+namespace FrenchExDev.Net.CSharp.Object.Builder2;
 
 /// <summary>
 /// A dictionary that tracks objects visited during build or validation operations to prevent cycles.
