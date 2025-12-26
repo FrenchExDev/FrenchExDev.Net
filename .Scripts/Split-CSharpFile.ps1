@@ -161,7 +161,8 @@ foreach ($type in $types) {
 }
 Write-Host ""
 
-# Group related types (base class with derived types in same file)
+# Group related types (concrete classes with their abstract base classes in same file)
+# Note: Abstract classes implementing interfaces are NOT grouped with the interface
 function Group-RelatedTypes {
     param($Types)
     
@@ -174,15 +175,23 @@ function Group-RelatedTypes {
         
         $groupName = $type.FileName
         
-        # Check if this type inherits from another type in our list
-        foreach ($potentialBase in $Types) {
-            if ($potentialBase.Name -eq $type.Name) { continue }
-            
-            # Check for inheritance pattern: ": BaseType" or ": BaseType," or ": BaseType<"
-            $inheritPattern = ":\s*$([regex]::Escape($potentialBase.Name))[\s,<(]"
-            if ($type.Content -match $inheritPattern) {
-                $groupName = $potentialBase.FileName
-                break
+        # Skip grouping if this type is abstract - abstract types should be in their own files
+        $isAbstract = $type.Modifiers -match 'abstract'
+        
+        if (-not $isAbstract) {
+            # Check if this type inherits from another type in our list
+            foreach ($potentialBase in $Types) {
+                if ($potentialBase.Name -eq $type.Name) { continue }
+                
+                # Skip if potential base is an interface - don't group implementations with interfaces
+                if ($potentialBase.Kind -eq 'interface') { continue }
+                
+                # Check for inheritance pattern: ": BaseType" or ": BaseType," or ": BaseType<"
+                $inheritPattern = ":\s*$([regex]::Escape($potentialBase.Name))[\s,<(]"
+                if ($type.Content -match $inheritPattern) {
+                    $groupName = $potentialBase.FileName
+                    break
+                }
             }
         }
         
