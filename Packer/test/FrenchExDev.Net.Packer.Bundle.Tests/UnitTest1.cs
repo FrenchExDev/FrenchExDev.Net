@@ -549,7 +549,8 @@ public class PackerFileBuilderTests
 
         var pf = builder.Build().Value.Resolved();
 
-        pf.Variables.ShouldContainKeyAndValue("os_version", "1.0");
+        pf.Variables.ShouldNotBeNull();
+        pf.Variables!.ShouldContainKeyAndValue("os_version", "1.0");
     }
 
     [Fact]
@@ -561,7 +562,8 @@ public class PackerFileBuilderTests
 
         var pf = builder.Build().Value.Resolved();
 
-        pf.Variables.ShouldContainKeyAndValue("os_version", "2.0");
+        pf.Variables.ShouldNotBeNull();
+        pf.Variables!.ShouldContainKeyAndValue("os_version", "2.0");
     }
 
     [Fact]
@@ -597,6 +599,16 @@ public class PackerFileBuilderTests
     }
 
     [Fact]
+    public void GetProvisioner_Returns_Null_When_Empty()
+    {
+        var builder = new PackerFileBuilder();
+        
+        var found = builder.GetProvisioner(p => true);
+        
+        found.ShouldBeNull();
+    }
+
+    [Fact]
     public void GetPostProcessor_Returns_Matching_PostProcessor()
     {
         var builder = new PackerFileBuilder()
@@ -608,6 +620,16 @@ public class PackerFileBuilderTests
     }
 
     [Fact]
+    public void GetPostProcessor_Returns_Null_When_Empty()
+    {
+        var builder = new PackerFileBuilder();
+        
+        var found = builder.GetPostProcessor(pp => true);
+        
+        found.ShouldBeNull();
+    }
+
+    [Fact]
     public void UpdateProvisioner_Updates_Existing_Provisioner()
     {
         var builder = new PackerFileBuilder()
@@ -616,7 +638,9 @@ public class PackerFileBuilderTests
 
         var pf = builder.Build().Value.Resolved();
 
-        pf.Provisioners![0].Scripts.ShouldContain("test.sh");
+        pf.Provisioners.ShouldNotBeNull();
+        pf.Provisioners![0].Scripts.ShouldNotBeNull();
+        pf.Provisioners[0].Scripts!.ShouldContain("test.sh");
     }
 
     [Fact]
@@ -629,6 +653,53 @@ public class PackerFileBuilderTests
         var pf = builder.Build().Value.Resolved();
 
         pf.PostProcessors![0].Output.ShouldBe("output.box");
+    }
+
+    [Fact]
+    public void UpdateProvisioner_Does_Nothing_When_Not_Found()
+    {
+        var builder = new PackerFileBuilder()
+            .Provisioner(p => p.Type("shell"))
+            .UpdateProvisioner(p => false, p => p.AddScript("should-not-add.sh"));
+
+        var pf = builder.Build().Value.Resolved();
+
+        pf.Provisioners.ShouldNotBeNull();
+        pf.Provisioners![0].Scripts.ShouldBeNull();
+    }
+
+    [Fact]
+    public void UpdatePostProcessor_Does_Nothing_When_Not_Found()
+    {
+        var builder = new PackerFileBuilder()
+            .PostProcessor(pp => pp.Type("vagrant").CompressionLevel(6))
+            .UpdatePostProcessor(pp => false, pp => pp.Output("should-not-set.box"));
+
+        var pf = builder.Build().Value.Resolved();
+
+        pf.PostProcessors![0].Output.ShouldBeNull();
+    }
+
+    [Fact]
+    public void UpdateProvisioner_Does_Nothing_When_Empty()
+    {
+        var builder = new PackerFileBuilder()
+            .UpdateProvisioner(p => true, p => p.AddScript("test.sh"));
+
+        var pf = builder.Build().Value.Resolved();
+
+        pf.Provisioners.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void UpdatePostProcessor_Does_Nothing_When_Empty()
+    {
+        var builder = new PackerFileBuilder()
+            .UpdatePostProcessor(pp => true, pp => pp.Output("test.box"));
+
+        var pf = builder.Build().Value.Resolved();
+
+        pf.PostProcessors.ShouldBeEmpty();
     }
 }
 
@@ -818,6 +889,40 @@ public class PackerBuilderBuilderTests
 
         pb.VboxManage!.Any(cmd => cmd.Contains("setextradata")).ShouldBeTrue();
     }
+
+    [Fact]
+    public void ModifyPropertyIf_Does_Not_Add_When_Condition_False()
+    {
+        var builder = CreateBaseBuilder()
+            .ModifyVmIf(() => false, "--memory", "2048");
+
+        var pb = builder.Build().Value.Resolved();
+
+        // Should only have the base command (--cpus 1)
+        pb.VboxManage!.Count.ShouldBe(1);
+        pb.VboxManage.Any(cmd => cmd.Contains("--memory")).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void KeepRegistered_Sets_Property()
+    {
+        var builder = CreateBaseBuilder()
+            .KeepRegistered(true);
+
+        var pb = builder.Build().Value.Resolved();
+
+        pb.KeepRegistered.ShouldBe(true);
+    }
+
+    [Fact]
+    public void KeepRegistered_Defaults_To_Null()
+    {
+        var builder = CreateBaseBuilder();
+
+        var pb = builder.Build().Value.Resolved();
+
+        pb.KeepRegistered.ShouldBeNull();
+    }
 }
 
 #endregion
@@ -888,6 +993,20 @@ public class ProvisionerBuilderTests
 
         var p = builder.Build().Value.Resolved();
         p.Scripts!.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void BeforeScript_When_Scripts_Null_Initializes_Empty_List()
+    {
+        var builder = new ProvisionerBuilder()
+            .Type("shell")
+            .BeforeScript("nonexistent.sh", "new.sh");
+
+        var p = builder.Build().Value.Resolved();
+        
+        // BeforeScript initializes _scripts to empty list, which becomes empty when target not found
+        p.Scripts.ShouldNotBeNull();
+        p.Scripts!.ShouldBeEmpty();
     }
 
     [Fact]
@@ -1242,7 +1361,8 @@ public class PackerBundleExtensionsTests
         
         bundle.PackerFile.Provisioners.ShouldNotBeNull();
         bundle.PackerFile.Provisioners!.Count.ShouldBe(1);
-        bundle.PackerFile.Provisioners[0].Scripts.ShouldContain("setup.sh");
+        bundle.PackerFile.Provisioners[0].Scripts.ShouldNotBeNull();
+        bundle.PackerFile.Provisioners[0].Scripts!.ShouldContain("setup.sh");
     }
 
     [Fact]

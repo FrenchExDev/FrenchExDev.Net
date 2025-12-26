@@ -68,7 +68,7 @@ public class SynchronizationStrategyTests
     }
 
     [Fact]
-    public void ReaderWriterStrategy_ConcurrentReads_ShouldAllowMultipleReaders()
+    public async Task ReaderWriterStrategy_ConcurrentReads_ShouldAllowMultipleReaders()
     {
         var strategy = new ReaderWriterSynchronizationStrategy();
         var readCount = 0;
@@ -84,7 +84,7 @@ public class SynchronizationStrategyTests
             });
         })).ToArray();
 
-        Task.WaitAll(tasks);
+        await Task.WhenAll(tasks);
         readCount.ShouldBe(3);
     }
 
