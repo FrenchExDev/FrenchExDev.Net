@@ -234,6 +234,24 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Ssh.Config.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.Ssh.Config.Tests", "Ssh.Config\test\FrenchExDev.Net.Ssh.Config.Tests\FrenchExDev.Net.Ssh.Config.Tests.csproj", "{2966EEAD-F1D2-481C-A303-1805745DD633}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VirtualBox.Version", "VirtualBox.Version", "{2AF84ECC-33FC-619F-D70E-72132CF4AF2B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{654F9BC4-6A3C-0FA0-02DC-A85D18F96C68}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{1875664D-32F2-2E21-D91D-C5D408E18036}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{558D3081-8706-287D-A3CD-3E1DBA54D697}"
+	ProjectSection(SolutionItems) = preProject
+		VirtualBox.Version\LICENSE.md = VirtualBox.Version\LICENSE.md
+		VirtualBox.Version\README.md = VirtualBox.Version\README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.VirtualBox.Version", "VirtualBox.Version\src\FrenchExDev.Net.VirtualBox.Version\FrenchExDev.Net.VirtualBox.Version.csproj", "{0818E710-AE06-4206-87ED-F97D221FF042}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.VirtualBox.Version.Testing", "VirtualBox.Version\src\FrenchExDev.Net.VirtualBox.Version.Testing\FrenchExDev.Net.VirtualBox.Version.Testing.csproj", "{A3555CE6-D127-430D-AC24-6137D85EAD4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchExDev.Net.VirtualBox.Version.Tests", "VirtualBox.Version\test\FrenchExDev.Net.VirtualBox.Version.Tests\FrenchExDev.Net.VirtualBox.Version.Tests.csproj", "{54C16C2A-83F6-4588-88E4-A98B41B32431}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -376,6 +394,18 @@ Global
 		{2966EEAD-F1D2-481C-A303-1805745DD633}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2966EEAD-F1D2-481C-A303-1805745DD633}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2966EEAD-F1D2-481C-A303-1805745DD633}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0818E710-AE06-4206-87ED-F97D221FF042}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0818E710-AE06-4206-87ED-F97D221FF042}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0818E710-AE06-4206-87ED-F97D221FF042}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0818E710-AE06-4206-87ED-F97D221FF042}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3555CE6-D127-430D-AC24-6137D85EAD4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3555CE6-D127-430D-AC24-6137D85EAD4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3555CE6-D127-430D-AC24-6137D85EAD4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3555CE6-D127-430D-AC24-6137D85EAD4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54C16C2A-83F6-4588-88E4-A98B41B32431}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54C16C2A-83F6-4588-88E4-A98B41B32431}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54C16C2A-83F6-4588-88E4-A98B41B32431}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54C16C2A-83F6-4588-88E4-A98B41B32431}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -447,6 +477,12 @@ Global
 		{86D15FFE-207A-45F6-A0C7-B3700C5B582A} = {00F31DB7-DDAC-56F2-17EB-DB79BFC27BD5}
 		{E2347501-4C6A-44FB-8DC6-CAA5B6E3F7E2} = {00F31DB7-DDAC-56F2-17EB-DB79BFC27BD5}
 		{2966EEAD-F1D2-481C-A303-1805745DD633} = {8EAE5A6E-E9ED-DC82-875C-01DE0EE7850F}
+		{654F9BC4-6A3C-0FA0-02DC-A85D18F96C68} = {2AF84ECC-33FC-619F-D70E-72132CF4AF2B}
+		{1875664D-32F2-2E21-D91D-C5D408E18036} = {2AF84ECC-33FC-619F-D70E-72132CF4AF2B}
+		{558D3081-8706-287D-A3CD-3E1DBA54D697} = {2AF84ECC-33FC-619F-D70E-72132CF4AF2B}
+		{0818E710-AE06-4206-87ED-F97D221FF042} = {654F9BC4-6A3C-0FA0-02DC-A85D18F96C68}
+		{A3555CE6-D127-430D-AC24-6137D85EAD4D} = {654F9BC4-6A3C-0FA0-02DC-A85D18F96C68}
+		{54C16C2A-83F6-4588-88E4-A98B41B32431} = {1875664D-32F2-2E21-D91D-C5D408E18036}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B19F9886-3230-4113-8025-DBBEC1B42A98}
