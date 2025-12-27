@@ -1,0 +1,82 @@
+﻿Summary
+  Generated on: 27/12/2025 - 05:41:20
+  Parser: Cobertura
+  Assemblies: 7
+  Classes: 57
+  Files: 36
+  Line coverage: 63.3%
+  Covered lines: 915
+  Uncovered lines: 529
+  Coverable lines: 1444
+  Total lines: 5180
+
+FrenchExDev.Net.Alpine.Version                                                                           87.3%
+  FrenchExDev.Net.Alpine.Version.AlpineVersion                                                          100.0%
+  FrenchExDev.Net.Alpine.Version.AlpineVersion.MajorMinorPatchRelationalComparer                        100.0%
+  FrenchExDev.Net.Alpine.Version.AlpineVersionArchFlavorRecord                                          100.0%
+  FrenchExDev.Net.Alpine.Version.AlpineVersionArchRecord                                                100.0%
+  FrenchExDev.Net.Alpine.Version.AlpineVersionBuilder                                                   100.0%
+  FrenchExDev.Net.Alpine.Version.AlpineVersionList                                                      100.0%
+  FrenchExDev.Net.Alpine.Version.AlpineVersionRecord                                                    100.0%
+  FrenchExDev.Net.Alpine.Version.AlpineVersionSearcher                                                   78.6%
+  FrenchExDev.Net.Alpine.Version.AlpineVersionSearcher.ShaRecords                                       100.0%
+  FrenchExDev.Net.Alpine.Version.AlpineVersionSearchingFilters                                          100.0%
+  FrenchExDev.Net.Alpine.Version.AlpineVersionSearchingFiltersBuilder                                   100.0%
+
+FrenchExDev.Net.Alpine.Version.Testing                                                                        
+
+FrenchExDev.Net.Alpine.Version.Tests                                                                    100.0%
+  FrenchExDev.Net.Alpine.Version.Tests.AlpineVersionArchFlavorRecordTests                               100.0%
+  FrenchExDev.Net.Alpine.Version.Tests.AlpineVersionComparerTests                                       100.0%
+  FrenchExDev.Net.Alpine.Version.Tests.AlpineVersionListTests                                           100.0%
+  FrenchExDev.Net.Alpine.Version.Tests.AlpineVersionSearchingFiltersBuilderTests                        100.0%
+  FrenchExDev.Net.Alpine.Version.Tests.AlpineVersionTests                                               100.0%
+
+FrenchExDev.Net.CSharp.Object.Builder2                                                                   22.1%
+  FrenchExDev.Net.CSharp.Object.Builder2.AbstractBuilder.<>c__DisplayClass27_0<TClass>                  100.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.AbstractBuilder.<>c__DisplayClass31_0<TClass>                   88.8%
+  FrenchExDev.Net.CSharp.Object.Builder2.AbstractBuilder<TClass>                                         42.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.BuilderList.<>c__DisplayClass3_0<TClass, TBuilder>               0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.BuilderList.<>c<TClass, TBuilder>                                0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.BuilderList<TClass, TBuilder>                                    0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.BuilderListExtensions                                            0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.BuilderListWithFactory.<>c__DisplayClass5_0<TClass, TBuilder>    0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.BuilderListWithFactory.<>c<TClass, TBuilder>                     0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.BuilderListWithFactory<TClass, TBuilder>                         0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.BuildFailureException                                            0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.DefaultReferenceFactory                                         66.6%
+  FrenchExDev.Net.CSharp.Object.Builder2.ExceptionFailure                                                 0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.Failure                                                          0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.FailuresDictionary                                               6.6%
+  FrenchExDev.Net.CSharp.Object.Builder2.LockSynchronizationStrategy                                    100.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.MessageFailure                                                   0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.NestedFailure                                                    0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.NoSynchronizationStrategy                                        0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.ReaderWriterSynchronizationStrategy                              0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.Reference<TClass>                                               57.1%
+  FrenchExDev.Net.CSharp.Object.Builder2.ReferenceList.<AsEnumerable>d__3<TClass>                         0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.ReferenceList<TClass>                                            0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.ReferenceNotResolvedException                                    0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.RequiredPropertyNotSetException                                  0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.ValidationAssertions                                             0.0%
+  FrenchExDev.Net.CSharp.Object.Builder2.VisitedObjectDictionary                                         33.3%
+
+FrenchExDev.Net.CSharp.Object.Result2                                                                     8.1%
+  FrenchExDev.Net.CSharp.Object.Result2.InvalidResultAccessOperationException                             0.0%
+  FrenchExDev.Net.CSharp.Object.Result2.Result.<BindAsync>d__26<TResult, TNew>                            0.0%
+  FrenchExDev.Net.CSharp.Object.Result2.Result.<IfExceptionAsync>d__20<TResult>                           0.0%
+  FrenchExDev.Net.CSharp.Object.Result2.Result.<IfExceptionAsync>d__21<TResult, TException>               0.0%
+  FrenchExDev.Net.CSharp.Object.Result2.Result.<IfSuccessAsync>d__18<TResult>                             0.0%
+  FrenchExDev.Net.CSharp.Object.Result2.Result.<MapAsync>d__24<TResult, TNew>                             0.0%
+  FrenchExDev.Net.CSharp.Object.Result2.Result.<MatchAsync>d__13<TResult>                                 0.0%
+  FrenchExDev.Net.CSharp.Object.Result2.Result.<MatchAsync>d__14<TResult, TException>                     0.0%
+  FrenchExDev.Net.CSharp.Object.Result2.Result<TResult>                                                  14.1%
+  FrenchExDev.Net.CSharp.Object.Result2.ResultException                                                   0.0%
+
+FrenchExDev.Net.Http.Client                                                                             100.0%
+  FrenchExDev.Net.HttpClient.HttpClient                                                                 100.0%
+
+FrenchExDev.Net.Http.Client.Testing                                                                      64.2%
+  FrenchExDev.Net.HttpClient.Testing.FakeHttpClient                                                      52.9%
+  FrenchExDev.Net.HttpClient.Testing.FakeHttpClientBuilder                                               45.4%
+  FrenchExDev.Net.HttpClient.Testing.HttpResponseMessageBuilder                                         100.0%
